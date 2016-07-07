@@ -1,10 +1,16 @@
 package eppic.assembly;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.vecmath.Point3i;
+
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -12,8 +18,6 @@ import java.util.TreeSet;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.cycle.PatonCycleBase;
-import org.jgrapht.graph.ClassBasedEdgeFactory;
-import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.jgrapht.graph.UndirectedSubgraph;
@@ -47,30 +51,6 @@ public class GraphUtils {
 
 		}
 		return map;
-	}
-
-	/**
-	 * Copies the given Graph to a new Graph with same vertices and edges.
-	 * The vertices and edges are the same references as the original Graph.  
-	 * @param g the graph
-	 * @param edgeClass the class of the edges
-	 * @return
-	 */
-	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> UndirectedGraph<V, E> copyGraph(UndirectedGraph<V, E> g, Class<? extends E> edgeClass) {
-		
-		//if (! (g instanceof Pseudograph)) throw new IllegalArgumentException("Given graph is not a pseudograph!");
-				
-		UndirectedGraph<V, E> og = new Pseudograph<V, E>(new ClassBasedEdgeFactory<>(edgeClass)); 
-		
-		for (V v:g.vertexSet()) {
-			og.addVertex(v);
-		}
-		
-		for (E e:g.edgeSet()) {
-			og.addEdge(g.getEdgeSource(e), g.getEdgeTarget(e), e);
-		}
-		
-		return og;
 	}
 	
 	/**
@@ -274,6 +254,45 @@ public class GraphUtils {
 			}							
 		}
 		return set;
+	}
+	
+	/**
+	 * Returns a string representation of the graph with one edge per line.
+	 * Edges are sorted according to their interface ids.
+	 * @param g
+	 * @return
+	 */
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> String asString(UndirectedGraph<V, E> g) {
+		List<E> sortedEdges = new ArrayList<E>();
+		sortedEdges.addAll(g.edgeSet());
+		Collections.sort(sortedEdges, new Comparator<E>() {
+			@Override
+			public int compare(E o1, E o2) {
+				return new Integer(o1.getInterfaceId()).compareTo(new Integer(o2.getInterfaceId()));
+			}			
+		});
+
+		StringBuilder sb = new StringBuilder();
+		
+		for (E edge:sortedEdges) {
+			V first = g.getEdgeSource(edge);
+			V second = g.getEdgeTarget(edge);
+			Point3i xtalT = edge.getXtalTrans();
+			
+			sb.append(String.format("Edge %d (%d) between %s (%d) - %s (%d) [%2d,%2d,%2d]\n", 
+					edge.getInterfaceId(),
+					edge.getClusterId(),
+					first.getChainId()+first.getOpId(), 
+					first.getEntityId(),
+					second.getChainId()+second.getOpId(),
+					second.getEntityId(),
+					xtalT.x,xtalT.y,xtalT.z));
+			
+
+		}
+		
+		return sb.toString();
+
 	}
 	
 }

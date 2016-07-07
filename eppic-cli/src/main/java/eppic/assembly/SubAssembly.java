@@ -94,12 +94,12 @@ public class SubAssembly {
 		
 		
 		UndirectedGraph<ChainVertex, InterfaceEdge> g = connectedGraph;
-		GraphContractor gctr = new GraphContractor(g);
+		GraphContractor<ChainVertex, InterfaceEdge> gctr = new GraphContractor<>(g);
 
 
 		if (heteromer) {
 			
-			g = gctr.contract();
+			g = gctr.contract(InterfaceEdge.class);
 			
 		}		
 		
@@ -241,12 +241,12 @@ public class SubAssembly {
 		
 
 		UndirectedGraph<ChainVertex, InterfaceEdge> g = connectedGraph;
-		GraphContractor gctr = new GraphContractor(g);
+		GraphContractor<ChainVertex, InterfaceEdge> gctr = new GraphContractor<>(g);
 		
 		
 		if (heteromer) {
 
-			g = gctr.contract();
+			g = gctr.contract(InterfaceEdge.class);
 			
 			// TODO we should check the call of contracted interfaces and score properly based on 
 			// them and the relevant interfaces below

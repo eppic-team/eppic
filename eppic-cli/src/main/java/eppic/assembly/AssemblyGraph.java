@@ -55,9 +55,9 @@ public class AssemblyGraph {
 		
 		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
 		
-		Set<ChainVertex> vertexSet = assembly.getCrystalAssemblies().getGraph().vertexSet();
+		Set<ChainVertex> vertexSet = assembly.getCrystalAssemblies().getLatticeGraph().getGraph().vertexSet();
 		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
-		for(InterfaceEdge edge:assembly.getCrystalAssemblies().getGraph().edgeSet()) {
+		for(InterfaceEdge edge:assembly.getCrystalAssemblies().getLatticeGraph().getGraph().edgeSet()) {
 			for (int i=0;i<assembly.getEngagedSet().size();i++) {
 				if (assembly.getEngagedSet().isOn(i)  && edge.getClusterId()==i+1) {
 					edgeSubset.add(edge);
@@ -67,7 +67,7 @@ public class AssemblyGraph {
 		
 		this.subgraph = 
 				new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
-						assembly.getCrystalAssemblies().getGraph(), vertexSet, edgeSubset);
+						assembly.getCrystalAssemblies().getLatticeGraph().getGraph(), vertexSet, edgeSubset);
 		 
 
 		

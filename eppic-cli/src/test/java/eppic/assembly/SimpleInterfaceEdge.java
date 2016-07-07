@@ -1,5 +1,7 @@
 package eppic.assembly;
 
+import javax.vecmath.Point3i;
+
 public class SimpleInterfaceEdge implements InterfaceEdgeInterface {
 	
 	private int interfaceId;
@@ -20,7 +22,13 @@ public class SimpleInterfaceEdge implements InterfaceEdgeInterface {
 		return clusterId;
 	}
 
+	@Override
+	public Point3i getXtalTrans() {
+		return new Point3i(0,0,0);
+	}
+
 	public String toString() {
 		return interfaceId+"-"+clusterId;
 	}
+	
 }

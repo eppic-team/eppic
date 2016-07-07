@@ -79,6 +79,7 @@ public class InterfaceEdge implements InterfaceEdgeInterface {
 		return interf.isInfinite();
 	}
 
+	@Override
 	public Point3i getXtalTrans() {
 		return xtalTrans;
 	}

@@ -1,5 +1,7 @@
 package eppic.assembly;
 
+import javax.vecmath.Point3i;
+
 /**
  * An interface for edges representing protein-protein interfaces in lattice graphs.
  * 
@@ -18,5 +20,11 @@ public interface InterfaceEdgeInterface {
 	 * @return the interface cluster identifier
 	 */
 	int getClusterId();
+	
+	/**
+	 * Return the crystal translation (in crystal coordinates) that this edge represents
+	 * @return
+	 */
+	Point3i getXtalTrans();
 
 }

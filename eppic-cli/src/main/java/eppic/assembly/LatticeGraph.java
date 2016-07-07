@@ -1,9 +1,6 @@
 package eppic.assembly;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -110,8 +107,9 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 		initLatticeGraphTopologically(interfaces,vertexFactory,edgeFactory);
 
-		if(logger.isInfoEnabled())
-			logGraph();
+		logger.info("Found {} vertices and {} edges in unit cell\n{}", graph.vertexSet().size(), graph.edgeSet().size(),
+				GraphUtils.asString(graph));
+
 	}
 	
 
@@ -266,37 +264,6 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			}
 		}
 		return chainTransformations;
-	}
-
-
-
-	private void logGraph() {
-		logger.info("Found {} vertices and {} edges in unit cell", graph.vertexSet().size(), graph.edgeSet().size());
-
-		List<E> sortedEdges = new ArrayList<E>();
-		sortedEdges.addAll(graph.edgeSet());
-		Collections.sort(sortedEdges, new Comparator<E>() {
-			@Override
-			public int compare(E o1, E o2) {
-				return new Integer(o1.getInterfaceId()).compareTo(new Integer(o2.getInterfaceId()));
-			}			
-		});
-
-		for (E edge:sortedEdges) {
-			V first = graph.getEdgeSource(edge);
-			V second = graph.getEdgeTarget(edge);
-			Point3i xtalT = edge.getXtalTrans();
-			logger.info("Edge {} ({}) between {} ({}) - {} ({})"+
-					String.format(" [%2d,%2d,%2d]", xtalT.x,xtalT.y,xtalT.z), 
-					edge.getInterfaceId(),
-					edge.getClusterId(),
-					first.getChainId()+first.getOpId(), 
-					first.getEntityId(),
-					second.getChainId()+second.getOpId(),
-					second.getEntityId());
-
-		}
-
 	}
 
 	private void initLatticeGraphTopologically(List<StructureInterface> interfaces, VertexFactory<V> vertexFactory, EdgeFactory<V, E> edgeFactory) throws StructureException {		
@@ -474,6 +441,17 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		for (E edge:toRemove) {
 			graph.removeEdge(edge);
 		}
+
+	}
+	
+	/**
+	 * Contracts heteromeric edges in graph storing the result in subgraph, while keeping
+	 * the original graph unchanged.
+	 */
+	public void contractGraph(Class<? extends E> edgeClass) {
+		
+		GraphContractor<V,E> contractor = new GraphContractor<>(getGraph());
+		this.subgraph = contractor.contract(edgeClass);
 
 	}
 

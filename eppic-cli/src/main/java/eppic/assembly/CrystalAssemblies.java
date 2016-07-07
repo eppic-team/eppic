@@ -17,7 +17,6 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
-import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,9 +66,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	private Map<Integer,String> idx2ChainIds;
 		
 	private boolean largeNumAssemblies;
-	
-	private UndirectedGraph<ChainVertex, InterfaceEdge> graph;
-	
+		
 	/**
 	 * 
 	 * @param structure
@@ -82,9 +79,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);		
-		
-		this.graph = latticeGraph.getGraph();
-		
+				
 		initEntityMaps();
 		
 		latticeGraph.removeDuplicateEdges();
@@ -103,9 +98,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
-		
-		this.graph = latticeGraph.getGraph();
-		
+				
 		initEntityMaps();
 		
 		latticeGraph.removeDuplicateEdges();
@@ -113,9 +106,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		if (forceContracted) {
 			
-			GraphContractor contractor = new GraphContractor(latticeGraph.getGraph());
-			this.graph = contractor.contract();
-
+			latticeGraph.contractGraph(InterfaceEdge.class);
 			
 			findValidAssembliesContracted();
 			
@@ -232,7 +223,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		Set<Assembly> validAssemblies = new HashSet<Assembly>();
 		
 		
-		int numInterfaceClusters = GraphUtils.getDistinctInterfaceCount(graph); 
+		int numInterfaceClusters = GraphUtils.getDistinctInterfaceCount(latticeGraph.getGraph()); 
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
@@ -464,15 +455,6 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public LatticeGraph<ChainVertex, InterfaceEdge> getLatticeGraph() {
 		return latticeGraph;
-	}
-	
-	/**
-	 * Returns the graph object representing the lattice.
-	 * If on contracted graph enumeration, then the contracted graph will be returned.
-	 * @return
-	 */
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getGraph() {
-		return graph;
 	}
 	
 	/**
