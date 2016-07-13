@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import javax.vecmath.Point3i;
 
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -163,17 +164,45 @@ public class GraphUtils {
 	}
 	
 	/**
-	 * Count the number of distinct interface clusters in the given graph via looking at the number
+	 * Count the number of distinct interface clusters in the given graph by looking at the number
 	 * of distinct interface cluster ids
 	 * @param g
 	 * @return
 	 */
-	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getDistinctInterfaceCount(UndirectedGraph<V, E> g) {
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getNumDistinctInterfaces(UndirectedGraph<V, E> g) {
 		Set<Integer> interfClusterIds = new HashSet<Integer>();
 		for (E e:g.edgeSet()) {
 			interfClusterIds.add(e.getClusterId());
 		}
 		return interfClusterIds.size();
+	}
+	
+	/**
+	 * Get the number of distinct entities in the given graph by looking at the number of
+	 * distinct entity ids. 
+	 * @return
+	 */
+	public static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> int getNumDistinctEntities(UndirectedGraph<V,E> g) {
+		
+		Set<Integer> set = new HashSet<>();
+		for (V vertex: g.vertexSet()) {
+			set.add(vertex.getEntityId());
+		}
+					
+		return set.size();
+	}
+	
+	/**
+	 * Get the sorted set of distinct entity ids in the given graph.
+	 * @return
+	 */
+	public static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> SortedSet<Integer> getDistinctEntities(UndirectedGraph<V,E> g) {
+		SortedSet<Integer> set = new TreeSet<>();
+		for (V vertex: g.vertexSet()) {
+			set.add(vertex.getEntityId());
+		}
+					
+		return set;
 	}
 	
 	/**

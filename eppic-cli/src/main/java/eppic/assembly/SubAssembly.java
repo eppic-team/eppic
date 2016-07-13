@@ -36,11 +36,9 @@ public class SubAssembly {
 		this.connectedGraph = connectedGraph;
 		this.crystalAssemblies = crystalAssemblies;
 		
-		List<Integer> entities = IntStream.range(0, crystalAssemblies.getNumEntitiesInStructure())
-				.mapToObj(i -> crystalAssemblies.getEntityId(i))
-				.collect(Collectors.toList());
+		List<Integer> entities = crystalAssemblies.getLatticeGraph().getDistinctEntities();
 		List<Integer> nodeEntities = connectedGraph.vertexSet().stream()
-				.map(v -> v.getChain().getCompound().getMolId())
+				.map(v -> v.getEntityId())
 				.collect(Collectors.toList());
 		this.sto = new Stoichiometry<>(nodeEntities,entities);
 	}
@@ -112,7 +110,7 @@ public class SubAssembly {
 		// FINDING SYMMETRY:
 
 		// this should work fine for both homomer and pseudo-homomer graph
-		int numDistinctInterfaces = GraphUtils.getDistinctInterfaceCount(g);
+		int numDistinctInterfaces = GraphUtils.getNumDistinctInterfaces(g);
 		
 		// CASE A) n==1
 		

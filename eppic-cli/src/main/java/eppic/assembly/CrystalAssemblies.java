@@ -74,28 +74,23 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @throws StructureException
 	 */
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
-		
-		this.largeNumAssemblies = false;
-				
-		this.structure = structure;
-		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);		
-				
-		initEntityMaps();
-		
-		latticeGraph.removeDuplicateEdges();
-		findValidAssemblies();
-		
-		initGroups();
-		
-		initClusters();
-		
-		
+		init(structure, interfaces, false);
 	}
 	
+	/**
+	 * 
+	 * @param structure
+	 * @param interfaces
+	 * @param forceContracted
+	 * @throws StructureException
+	 */
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) throws StructureException {
-		
+		init(structure, interfaces, forceContracted);
+	}
+	
+	private void init(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) throws StructureException {
 		this.largeNumAssemblies = false;
-				
+		
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
 				
@@ -103,45 +98,31 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		latticeGraph.removeDuplicateEdges();
 		
-		
+
 		if (forceContracted) {
-			
+			logger.info("Doing assemblies enumeration with graph contraction, since forceContracted is true");
+			latticeGraph.contractGraph(InterfaceEdge.class);
+
+		} 
+
+		findValidAssemblies();
+
+		if (!forceContracted && largeNumAssemblies) {
+
+			logger.info("Structure has more than {} assemblies in full enumeration, will contract heteromeric interfaces to enumerate assemblies.", MAX_ALLOWED_ASSEMBLIES);
+
 			latticeGraph.contractGraph(InterfaceEdge.class);
 			
-			findValidAssembliesContracted();
-			
-			initGroups();
-			
-			initClusters();
-			
-		} else {
-			
 			findValidAssemblies();
-			
-			initGroups();
-			
-			initClusters();
-			
 		}
-		
-		
-		
+
+		initGroups();
+
+		initClusters();
 	}
 	
 	public int size() {
 		return clusters.size();
-	}
-	
-	private void findValidAssemblies() {
-		
-		findValidAssembliesFull();
-		
-		if (largeNumAssemblies) {
-			
-			logger.info("Structure has more than {} assemblies in full enumeration, will contract heteromeric interfaces to enumerate assemblies.", MAX_ALLOWED_ASSEMBLIES);
-			
-			findValidAssembliesContracted();
-		}
 	}
 	
 	/**
@@ -162,68 +143,12 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * pruned top nodes.
 	 * @return
 	 */
-	private void findValidAssembliesFull() {
+	private void findValidAssemblies() {
 				
 		Set<Assembly> validAssemblies = new HashSet<Assembly>();
 		
-		int numInterfaceClusters = latticeGraph.getNumInterfaceClusters();
-		
-		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
-		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
-		
-		Assembly emptyAssembly = new Assembly(this, new PowerSet(numInterfaceClusters));
-		
-		validAssemblies.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
-		
-		Set<Assembly> prevLevel = new HashSet<Assembly>();
-		prevLevel.add(emptyAssembly);
-		Set<Assembly> nextLevel = null;
-
-		for (int k = 1; k<=numInterfaceClusters; k++) {
-
-			logger.debug("Traversing level {} of tree: {} parent nodes",k,prevLevel.size());
-
-			nextLevel = new HashSet<Assembly>();
-
-			for (Assembly p:prevLevel) {
-				List<Assembly> children = p.getChildren(invalidNodes);
-
-				for (Assembly c:children) {
-
-					if (!c.isValid()) {
-						logger.debug("Node {} is invalid, will prune off all of its children",c.toString());
-						invalidNodes.add(c);
-					} else {
-						// we only add a child for next level if we know it's valid, if it wasn't valid 
-						// then it's not added and thus the whole branch is pruned
-						nextLevel.add(c);
-						// add assembly as valid
-						validAssemblies.add(c);
-
-						if (validAssemblies.size() > MAX_ALLOWED_ASSEMBLIES) {
-							logger.warn("Exceeded the default max number of allowed assemblies ({}). Will do assembly enumeration from heteromeric-contracted graph", MAX_ALLOWED_ASSEMBLIES);
-							largeNumAssemblies = true;
-							all = new HashSet<Assembly>();
-							return;
-						}
-					}
-				}
-			}
-			prevLevel = new HashSet<Assembly>(nextLevel); 
-
-		}
-
-		this.all = validAssemblies;
-		
-
-	}
-	
-	private void findValidAssembliesContracted() {
-		
-		Set<Assembly> validAssemblies = new HashSet<Assembly>();
-		
-		
-		int numInterfaceClusters = GraphUtils.getDistinctInterfaceCount(latticeGraph.getGraph()); 
+		// in contracted case this will find get the distinct interfaces for the contracted graph
+		int numInterfaceClusters = GraphUtils.getNumDistinctInterfaces(latticeGraph.getGraph());
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
@@ -417,23 +342,6 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		return structure.getChains().size();
 	}
 	
-	/**
-	 * Get the number of entities in the Structure
-	 * @return
-	 */
-	public int getNumEntitiesInStructure() {
-		
-		int size = 0;
-		// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26, 4uo5
-		// we need to skip those to count the entities here
-		for (Compound comp: structure.getCompounds()) {
-			if (comp.getChains().isEmpty()) continue;
-			size++;
-		}
-					
-		return size;
-	}
-	
 	@Override
 	public Iterator<Assembly> iterator() {
 		
@@ -530,7 +438,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public Assembly generateAssembly(int[] interfaceClusterIds) {
 		
-		PowerSet engagedSet = new PowerSet(latticeGraph.getNumInterfaceClusters());
+		PowerSet engagedSet = new PowerSet(GraphUtils.getNumDistinctInterfaces(latticeGraph.getGraph()));
 		
 		for (int clusterId:interfaceClusterIds) {
 			engagedSet.switchOn(clusterId-1);

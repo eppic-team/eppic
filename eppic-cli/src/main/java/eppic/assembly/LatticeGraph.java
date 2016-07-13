@@ -1,5 +1,6 @@
 package eppic.assembly;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,15 +42,15 @@ import eppic.commons.util.GeomTools;
 
 /**
  * Graph representation of the interfaces in a unit cell.
- * 
+ * <p>
  * Nodes are {@link ChainVertex} objects, which are identified by a chain
  * (in the asymmetric unit) and a crystallographic operator giving the
  * transform to the unit cell.
- * 
+ * <p>
  * Edges are {@link InterfaceEdge} objects, identified by an EPPIC interface
  * and associated with a vector indicating whether the edge connects to
  * adjacent cells.
- * 
+ * <p>
  * The class is generic, allowing other properties to be associated with
  * nodes and edges through subclasses. For instance, {@link LatticeGraph3D}
  * includes information for visualizing the graph.
@@ -66,9 +67,15 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 	protected final Structure structure;
 
-	// full graph
+	/**
+	 * The full lattice graph
+	 */
 	protected final UndirectedGraph<V,E> graph;
-	// currently exposed graph
+	
+	/**
+	 * The currently exposed graph. Usually the subgraph resulting from engaging a set of interfaces.
+	 * Also used to store the contracted graph in heteromeric assemblies enumeration.
+	 */
 	private UndirectedGraph<V,E> subgraph;
 
 	private boolean globalReferencePoint;
@@ -558,18 +565,6 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	}
 
 	/**
-	 * Get the number of unique interface clusters present in the graph
-	 * @return
-	 */
-	public int getNumInterfaceClusters() {
-		HashSet<Integer> uniqueInterfClusters = new HashSet<Integer>();
-		for (E e : graph.edgeSet()) {
-			uniqueInterfClusters.add(e.getClusterId());
-		}
-		return uniqueInterfClusters.size();		
-	}
-
-	/**
 	 * Filters a graph down to unique components.
 	 * 
 	 * Filtering occurs by calculating the stoichiometry of a connected component
@@ -578,13 +573,10 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param graph
 	 * @return
 	 */
-	public static <V extends ChainVertex,E extends InterfaceEdge>
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface>
 	UndirectedGraph<V,E> filterUniqueStoichiometries(UndirectedGraph<V,E> graph) {
 		// All entities for the graph
-		List<Integer> entityIds = graph.vertexSet().stream()
-				.map(v -> v.getChain().getCompound().getMolId())
-				.distinct()
-				.collect(Collectors.toList());
+		List<Integer> entityIds = new ArrayList<>(GraphUtils.getDistinctEntities(graph));
 
 		// Store vertices of subgraphs with unique stoich for filtering
 		Set<Stoichiometry<Integer>> entityStoich = new HashSet<>();
@@ -593,9 +585,9 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		ConnectivityInspector<V,E> ci = new ConnectivityInspector<>(graph);
 		for(Set<V> cc : ci.connectedSets()) {
 			List<Integer> nodeEntities = cc.stream()
-					.map(v -> v.getChain().getCompound().getMolId())
+					.map(v -> v.getEntityId())
 					.collect(Collectors.toList());
-			Stoichiometry<Integer> stoich = new Stoichiometry<Integer>(nodeEntities, entityIds);
+			Stoichiometry<Integer> stoich = new Stoichiometry<>(nodeEntities, entityIds);
 			if( !entityStoich.contains(stoich)) {
 				entityStoich.add(stoich);
 				uniqueVertices.addAll(cc);
@@ -618,5 +610,23 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		UndirectedMaskSubgraph<V,E> filtered = new UndirectedMaskSubgraph<>(graph, mask);
 
 		return filtered;
+	}
+	
+	/**
+	 * Get the number of distinct entities in the currently exposed graph. 
+	 * In contracted case this will return the number of unique entities in contracted graph.
+	 * @return
+	 */
+	public int getNumDistinctEntities() {
+		return GraphUtils.getNumDistinctEntities(subgraph);
+	}
+	
+	/**
+	 * Returns a sorted list of all distinct entity ids in currently exposed graph.
+	 * In contracted case this will return the set of entities in the contracted graph.
+	 * @return
+	 */
+	public List<Integer> getDistinctEntities() {
+		return new ArrayList<>(GraphUtils.getDistinctEntities(subgraph));
 	}
 }
