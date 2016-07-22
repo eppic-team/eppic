@@ -17,21 +17,8 @@ public class AssemblyDiagramServletInputValidator
 	public static void validateLatticeGraphInput(String jobId,
 			String interfaces, String clusters, String format) throws ValidationException
 	{
-		if(jobId == null) {
-			throw new ValidationException("Job identifier is not specified.");
-		}
-
-		RunJobDataValidator.validateJobId(jobId);
-		LatticeGraphServletInputValidator.validateInterfaceList(interfaces);
-		LatticeGraphServletInputValidator.validateInterfaceList(clusters); // same format as interfaces
-		validateFormat(format);
+		// Same parameters as the LatticeGraph
+		LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId, interfaces, clusters, format);
 	}
-
-	private static void validateFormat(String format) throws ValidationException {
-		if(format == null || format.equalsIgnoreCase("html") || format.equalsIgnoreCase("json"))
-			return;
-		throw new ValidationException( "Invalid format ({}). Expected html or json.");
-	}
-
 }
  

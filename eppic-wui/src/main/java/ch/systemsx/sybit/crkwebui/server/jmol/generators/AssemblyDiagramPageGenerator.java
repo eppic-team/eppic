@@ -23,7 +23,6 @@ import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
-import eppic.assembly.gui.LatticeGUI3Dmol;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.assembly.layout.GraphLayout;
 
@@ -98,59 +97,14 @@ public class AssemblyDiagramPageGenerator {
 		MustacheFactory mf = new DefaultMustacheFactory();
 		String template = LatticeGUIMustache.expandTemplatePath(TEMPLATE_ASSEMBLY_DIAGRAM_FULL_LAZY);
 		Mustache mustache = mf.compile(template);
-		LazyLatticeGraph3D page = new LazyLatticeGraph3D();
+		LazyLatticeGUIMustache3D page = new LazyLatticeGUIMustache3D();
 		page.setSize(size);
 		page.setTitle(title);
-		page.setStrucURI(jsonURL);
+		page.setDataURL(jsonURL);
 		try {
 			mustache.execute(out, page).flush();
 		} catch (IOException e) {
 			logger.error("Error generating output from template "+template,e);
-		}
-	}
-	
-	/**
-	 * Small bean to mimic elements of {@link LatticeGUI3Dmol} without
-	 * the overhead of calculating the graph
-	 * @author blivens
-	 *
-	 */
-	public static class LazyLatticeGraph3D {
-		private String strucURI; //path to the structure
-		private String libURL; // path to the library (if any)
-		private String title; // Title for HTML page
-		private String size; // Target size for content
-		public LazyLatticeGraph3D() {}
-		public LazyLatticeGraph3D(String strucURI, String libURL,
-				String title, String size) {
-			this.strucURI = strucURI;
-			this.libURL = libURL;
-			this.title = title;
-			this.size = size;
-		}
-		public String getStrucURI() {
-			return strucURI;
-		}
-		public void setStrucURI(String strucURI) {
-			this.strucURI = strucURI;
-		}
-		public String getLibURL() {
-			return libURL;
-		}
-		public void setLibURL(String libURL) {
-			this.libURL = libURL;
-		}
-		public String getTitle() {
-			return title;
-		}
-		public void setTitle(String title) {
-			this.title = title;
-		}
-		public String getSize() {
-			return size;
-		}
-		public void setSize(String size) {
-			this.size = size;
 		}
 	}
 

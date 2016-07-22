@@ -8,13 +8,13 @@ import javax.vecmath.Point3i;
 
 import org.biojava.nbio.structure.contact.StructureInterface;
 
-import eppic.assembly.gui.LatticeGUI3Dmol;
+import eppic.assembly.gui.LatticeGUIMustache3D;
 import eppic.assembly.gui.LatticeGUIJmol;
 
 /**
  * InterfaceEdge, extended with properties for 3D display.
  * Some properties are specific to the {@link LatticeGUIJmol} or
- * {@link LatticeGUI3Dmol}.
+ * {@link LatticeGUIMustache3D}.
  * 
  * @author blivens
  *

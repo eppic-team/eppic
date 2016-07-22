@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import eppic.assembly.gui.LatticeGUI3Dmol;
+import eppic.assembly.gui.LatticeGUIMustache3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 
 /**
@@ -43,8 +43,8 @@ public class LatticeGraphPageGenerator {
 	 * 
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
-	 * @param auFile the file with the AU structure (can be cif or pdb and gzipped or not)
-	 * @param auURI URL to reach auCifFile within the browser
+	 * @param strucFile the file with the AU structure (can be cif or pdb and gzipped or not)
+	 * @param strucURI URL to reach auCifFile within the browser
 	 * @param title Page title [default: structure name]
 	 * @param size the canvas size 
 	 * @param interfaces List of all interfaces to build the latticegraph
@@ -54,29 +54,29 @@ public class LatticeGraphPageGenerator {
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
-	public static void generatePage(File directory, String inputName, File auFile,
-			String auURI, String title, String size, List<Interface> interfaces,
+	public static void generateHTMLPage(File directory, String inputName, File strucFile,
+			String strucURI, String title, String size, String jsonURI, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer) throws IOException, StructureException {
 
 		
-		if( !auFile.exists() ) {
+		if( !strucFile.exists() ) {
 			// this shouldn't happen...
-			throw new IOException("Could not find input AU file "+ auFile.toString());
+			throw new IOException("Could not find input AU file "+ strucFile.toString());
 		
 		}
 		
 		// Read input structure
 		
-		Structure auStruct = readStructure(auFile);
+		Structure struc = readStructure(strucFile);
 
 		// Read spacegroup
-		PDBCrystallographicInfo crystInfo = auStruct
+		PDBCrystallographicInfo crystInfo = struc
 				.getCrystallographicInfo();
 		SpaceGroup sg = crystInfo.getSpaceGroup();
 
 		List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
 
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(LatticeGUIMustache.MUSTACHE_TEMPLATE_NGL, auStruct, auURI,
+		LatticeGUIMustache3D gui = new LatticeGUIMustache3D(LatticeGUIMustache.MUSTACHE_TEMPLATE_NGL, struc, strucURI,
 				requestedIfaces, siList);
 
 		// Override some properties if needed
@@ -86,7 +86,7 @@ public class LatticeGraphPageGenerator {
 			gui.setSize(size);
 		
 		//"https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js"
-		gui.setUrl3Dmol(urlMolViewer);
+		gui.setLibURL(urlMolViewer);
 		
 
 		// Construct page
