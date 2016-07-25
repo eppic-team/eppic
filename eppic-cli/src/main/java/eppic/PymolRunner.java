@@ -24,8 +24,8 @@ public class PymolRunner {
 	
 	private static final String DEF_TN_STYLE = "ribbon";
 	private static final String DEF_TN_BG_COLOR = "white";
-	private static final int[] DEF_TN_HEIGHTS = {75};
-	private static final int[] DEF_TN_WIDTHS = {75};
+	private static final int[] DEF_TN_HEIGHTS = {EppicParams.THUMBNAILS_SIZE};
+	private static final int[] DEF_TN_WIDTHS = {EppicParams.THUMBNAILS_SIZE};
 
 	private static final double MIN_INTERF_AREA_TO_DISPLAY = 400;
 	

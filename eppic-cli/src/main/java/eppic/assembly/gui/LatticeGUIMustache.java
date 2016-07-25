@@ -77,6 +77,7 @@ public class LatticeGUIMustache {
 	private String pdbId; // Defaults to the structure's PDB ID, if available
 	private String title; // Title for HTML page
 	private String size; // Target size for content
+	private String dpi; // the dpi for thumnails generation
 	
 	// cache for getGraph2D
 	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d = null;
@@ -345,6 +346,14 @@ public class LatticeGUIMustache {
 	}
 	public void setSize(String size) {
 		this.size = size;
+	}
+	
+	public String getDpi() {
+		return dpi;
+	}
+	
+	public void setDpi(String dpi) {
+		this.dpi = dpi;
 	}
 
 	/**
