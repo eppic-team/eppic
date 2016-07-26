@@ -725,20 +725,39 @@ public class LatticeGUI {
 	 */
 	public static File getFile(AtomCache cache, String name) {
 		if(cache.isUseMmCif()) {
+			logger.info("Looking for {} in mmcif cache",name);
 			MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
 			reader.setFetchBehavior(cache.getFetchBehavior());
 			reader.setObsoleteBehavior(cache.getObsoleteBehavior());
 
+			// Check for previous download
 			File file = reader.getLocalFile(name);
+			// Force download if not found
+			if( file == null) {
+				try {
+					reader.getStructureById(name);
+				} catch (IOException e) {}
+				file = reader.getLocalFile(name);
+			}
 			return file;
 		} else {
+			logger.info("Looking for {} in pdb cache",name);
+
 			PDBFileReader reader = new PDBFileReader(cache.getPath());
 			reader.setFetchBehavior(cache.getFetchBehavior());
 			reader.setObsoleteBehavior(cache.getObsoleteBehavior());
 
 			reader.setFileParsingParameters(cache.getFileParsingParams());
 
-			File file = reader.getLocalFile(name); 
+			// Check for previous download
+			File file = reader.getLocalFile(name);
+			// Force download if not found
+			if( file == null) {
+				try {
+					reader.getStructureById(name);
+				} catch (IOException e) {}
+				file = reader.getLocalFile(name);
+			}
 
 			return file;
 		}

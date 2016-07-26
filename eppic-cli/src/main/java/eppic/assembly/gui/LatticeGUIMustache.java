@@ -248,14 +248,10 @@ public class LatticeGUIMustache {
 		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 		logger.info("Using LatticeGraph3D with {} vertices and {} edges",graph.vertexSet().size(),graph.edgeSet().size());
 
-		// Compute names and colors
-		for(ChainVertex3D v : graph.vertexSet()) {
-			v.setColorStr(toHexColor(v.getColor()));
-		}
+		// Compute color strings
+		latticeGraph.setHexColors();
 
 		for(InterfaceEdge3D e : graph.edgeSet()) {
-			String colorStr = toHexColor(e.getColor());
-			e.setColorStr(colorStr);
 
 			if(e.getCircles() != null) {
 				for(OrientedCircle circ: e.getCircles()) {
@@ -277,17 +273,6 @@ public class LatticeGUIMustache {
 		title = null;
 		this.size = "800";
 	}
-
-	/**
-	 * hex version of the color (e.g. 'FF00CC')
-	 * @param color
-	 * @return
-	 */
-	private static String toHexColor(Color color) {
-		if(color == null) return null;
-		return String.format("%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
-	}
-
 
 	/**
 	 * Compile and execute the template

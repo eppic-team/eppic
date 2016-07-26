@@ -21,9 +21,9 @@ import eppic.assembly.layout.VertexPositioner;
 public class ChainVertex3D extends ChainVertex {
 	
 	private Point3d center;
-	private String uniqueName;
-	private Color color;
-	private String colorStr;
+	private String  uniqueName;
+	private Color   color;
+	private String  colorStr;
 
 	public ChainVertex3D() {
 		super();

@@ -40,6 +40,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.assembly.gui.LatticeGUI;
+import eppic.assembly.gui.LatticeGUIMustache3D;
 import eppic.commons.util.Interval;
 import eppic.commons.util.IntervalSet;
 import eppic.model.JobDB;
@@ -153,7 +154,7 @@ public class LatticeGraphServlet extends BaseServlet
 			
 			
 			if(format != null && format.equalsIgnoreCase("json")) {
-				//TODO LatticeGraphPageGenerator.generateJSONPage(dir,input, atomCachePath, ifaceList, requestedIfaces,outputStream);
+				LatticeGraphPageGenerator.generateJSONPage(dir, input, auFile, ifaceList, requestedIfaces, outputStream);
 			} else {
 				String nglJsUrl = properties.getProperty("urlNglJs");
 				if (nglJsUrl == null || nglJsUrl.equals("")) {
@@ -320,9 +321,9 @@ public class LatticeGraphServlet extends BaseServlet
 
 				structFile = LatticeGUI.getFile(atomCache, inputName);
 				
-				if (!structFile.exists()) {
-					logger.error("The structure file {} does not exist in atom cache! Will not be able to display lattice graph", structFile.toString());
-					throw new IOException("Structure file " + structFile.toString()+" does not exist in atom cache");
+				if (structFile == null || !structFile.exists()) {
+					logger.error("The structure file {} does not exist in atom cache! Will not be able to display lattice graph", structFile);
+					throw new IOException("Structure file " + structFile+" does not exist in atom cache");
 				}
 
 				File sLink = new File(directory, structFile.getName());
