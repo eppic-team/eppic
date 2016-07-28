@@ -22,6 +22,7 @@ public class ChainVertex3DJsonAdapter implements JsonSerializer<ChainVertex3D>{
 		json.addProperty("color",src.getColorStr());
 		json.add("center",context.serialize(src.getCenter()));
 		json.addProperty("uniqueName",src.getUniqueName());
+		json.addProperty("label", src.toString());
 		return json;
 	}
 }

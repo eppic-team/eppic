@@ -34,6 +34,9 @@ import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.LatticeGraph3DJson
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.ParametricCircularArcJsonAdapter;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -43,7 +46,6 @@ import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.ParametricCircularArc;
 import eppic.assembly.gui.InterfaceEdge3DSourced;
 import eppic.assembly.gui.LatticeGUIMustache;
-import eppic.assembly.gui.LatticeGUIMustache3D;
 
 /**
  * Helper class to generate the LatticeGraph HTML
@@ -55,6 +57,8 @@ public class LatticeGraphPageGenerator {
 	
 	private static final Gson gson = createGson();
 	
+	public static final String TEMPLATE_LATTICE_GUI_NGL_LAZY = "LatticeGUINglLazy.html.mustache";
+
 	/**
 	 * Generates html page containing the NGL canvas.
 	 * 
@@ -73,43 +77,25 @@ public class LatticeGraphPageGenerator {
 	 * @throws IOException For errors reading or writing files
 	 */
 	public static void generateHTMLPage(File directory, String inputName, File strucFile,
-			String strucURI, String title, String size, String jsonURI, List<Interface> interfaces,
+			String strucURI, String title, String size, String jsonURL, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer) throws IOException, StructureException {
-
-		
-		if( !strucFile.exists() ) {
-			// this shouldn't happen...
-			throw new IOException("Could not find input AU file "+ strucFile.toString());
-		
+		logger.info("JSON URL for {}: {}",inputName,jsonURL);
+		logger.info("Structure URL for {}: {}",inputName,strucURI);
+		MustacheFactory mf = new DefaultMustacheFactory();
+		String template = LatticeGUIMustache.expandTemplatePath(TEMPLATE_LATTICE_GUI_NGL_LAZY);
+		Mustache mustache = mf.compile(template);
+		LazyLatticeGUIMustache3D page = new LazyLatticeGUIMustache3D();
+		page.setSize(size);
+		page.setTitle(title);
+		page.setDataURL(jsonURL);
+		page.setLibURL(urlMolViewer);
+		page.setStrucURL(strucURI);
+		try {
+			mustache.execute(out, page)
+				.flush();
+		} catch (IOException e) {
+			logger.error("Error generating output from template "+template,e);
 		}
-		
-		// Read input structure
-		
-		Structure struc = readStructure(strucFile);
-
-		// Read spacegroup
-		PDBCrystallographicInfo crystInfo = struc
-				.getCrystallographicInfo();
-		SpaceGroup sg = crystInfo.getSpaceGroup();
-
-		List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
-
-		LatticeGUIMustache3D gui = new LatticeGUIMustache3D(LatticeGUIMustache.MUSTACHE_TEMPLATE_NGL, struc, strucURI,
-				requestedIfaces, siList);
-
-		// Override some properties if needed
-		if(title != null)
-			gui.setTitle(title);
-		if(size != null) 
-			gui.setSize(size);
-		
-		//"https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js"
-		gui.setLibURL(urlMolViewer);
-		
-
-		// Construct page
-		gui.execute(out);
-		out.flush();
 	}
 	/**
 	 * Generates html page containing the NGL canvas.
