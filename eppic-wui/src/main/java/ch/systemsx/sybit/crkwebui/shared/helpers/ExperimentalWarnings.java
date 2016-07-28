@@ -33,7 +33,8 @@ public class ExperimentalWarnings {
 									"P 63", "P 64", "P 65", "P 6 2 2", "P 61 2 2", "P 62 2 2", "P 63 2 2", "P 64 2 2", "P 65 2 2",
 									"P 2 3", "P 21 3", "F 2 3", "I 2 3", "I 21 3", "P 4 3 2", "P 42 3 2", "P 43 3 2", "P 41 3 2",
 									"F 4 3 2", "F 41 3 2", "I 4 3 2", "I 41 3 2", "P 1 1 2", "P 1 1 21", "B 2", "B 1 1 2",
-									"A 1 2 1", "C 1 21 1", "I 1 2 1", "I 2", "I 1 21 1", "P 21 2 2", "P 2 21 2", "P 21 2 21", "P 2 21 21"};
+									"A 1 2 1", "C 1 21 1", "I 1 2 1", "I 2", "I 1 21 1", "P 21 2 2", "P 2 21 2", "P 21 2 21", "P 2 21 21",
+									"H 3", "H 3 2"};
 	
 	public ExperimentalWarnings(String spaceGroup,
 	   String expMethod,
