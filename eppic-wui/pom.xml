@@ -184,8 +184,13 @@
 			<version>3.12.0.GA</version>
 		</dependency>
 		-->
-		
-		
+	
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-servlets</artifactId>
+			<version>9.2.12.v20150709</version>
+		</dependency>
+			
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
