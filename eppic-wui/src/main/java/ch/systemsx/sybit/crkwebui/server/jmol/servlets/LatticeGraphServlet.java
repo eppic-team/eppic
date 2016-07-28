@@ -4,10 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -28,6 +32,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
+import ch.systemsx.sybit.crkwebui.server.jmol.generators.AssemblyDiagramPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.LatticeGraphPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.LatticeGraphServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
@@ -35,6 +40,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.assembly.gui.LatticeGUI;
+import eppic.assembly.gui.LatticeGUIMustache3D;
 import eppic.commons.util.Interval;
 import eppic.commons.util.IntervalSet;
 import eppic.model.JobDB;
@@ -65,6 +71,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 	public static final String PARAM_INTERFACES = "interfaces";
 	public static final String PARAM_CLUSTERS = "clusters";
+	public static final String PARAM_FORMAT = "format";
 
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphServlet.class);
 
@@ -98,15 +105,17 @@ public class LatticeGraphServlet extends BaseServlet
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
-		
+		String format = request.getParameter(PARAM_FORMAT);
 
-		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={}",jobId,requestedIfacesStr,requestedClusterStr);
+
+		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={},format={}",
+				jobId,requestedIfacesStr,requestedClusterStr,format);
 
 		PrintWriter outputStream = null;
 
 		try
 		{
-			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr);
+			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr,format);
 
 			PdbInfo pdbInfo = getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
@@ -143,14 +152,30 @@ public class LatticeGraphServlet extends BaseServlet
 			outputStream = new PrintWriter(response.getOutputStream());
 			//String molviewerurl = properties.getProperty("urlNglJs");
 			
-			String nglJsUrl = properties.getProperty("urlNglJs");
-			if (nglJsUrl == null || nglJsUrl.equals("")) {
-				logger.info("The URL for NGL js is not set in config file. Will use the js file inside the ewui war");
-				nglJsUrl = JmolViewerServlet.DEFAULT_NGL_URL; //we set it to the js file within the war, the leading '/' is important to point to the right path here
-			}
 			
+			if(format != null && format.equalsIgnoreCase("json")) {
+				LatticeGraphPageGenerator.generateJSONPage(dir, input, auFile, ifaceList, requestedIfaces, outputStream);
+			} else {
+				String nglJsUrl = properties.getProperty("urlNglJs");
+				if (nglJsUrl == null || nglJsUrl.equals("")) {
+					logger.info("The URL for NGL js is not set in config file. Will use the js file inside the ewui war");
+					nglJsUrl = JmolViewerServlet.DEFAULT_NGL_URL; //we set it to the js file within the war, the leading '/' is important to point to the right path here
+				}
+				// Request URL, with format=json
+				StringBuffer jsonURL = request.getRequestURL();
+				Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
+				query.put("format", new String[] {"json"});
+				jsonURL.append('?')
+				.append(
+						query.entrySet().stream()
+						.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
+						.collect(Collectors.joining("&"))
+						);
+				LatticeGraphPageGenerator.generateHTMLPage(dir,input, auFile, auURI, title, size, jsonURL.toString(), ifaceList, requestedIfaces, outputStream, nglJsUrl);
+				// TODO start generating JSON now, since we know that request is coming
+			}
 
-			LatticeGraphPageGenerator.generatePage(dir,input, auFile, auURI, title, size, ifaceList, requestedIfaces, outputStream, nglJsUrl);
+
 
 		}
 		catch(ValidationException e)
@@ -296,9 +321,9 @@ public class LatticeGraphServlet extends BaseServlet
 
 				structFile = LatticeGUI.getFile(atomCache, inputName);
 				
-				if (!structFile.exists()) {
-					logger.error("The structure file {} does not exist in atom cache! Will not be able to display lattice graph", structFile.toString());
-					throw new IOException("Structure file " + structFile.toString()+" does not exist in atom cache");
+				if (structFile == null || !structFile.exists()) {
+					logger.error("The structure file {} does not exist in atom cache! Will not be able to display lattice graph", structFile);
+					throw new IOException("Structure file " + structFile+" does not exist in atom cache");
 				}
 
 				File sLink = new File(directory, structFile.getName());

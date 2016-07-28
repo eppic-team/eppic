@@ -20,7 +20,7 @@ import eppic.assembly.LatticeGraph3D;
 import eppic.commons.util.IntervalSet;
 
 /**
- * 3Dmol viewer for LatticeGraph.
+ * 3D molecular viewer for LatticeGraph.
  * 
  * 3Dmol requires a html file with the commands and an mmcif file with the full
  * unit cell. These are written with the {@link #write3DmolCommands(PrintWriter)}
@@ -28,64 +28,85 @@ import eppic.commons.util.IntervalSet;
  * @author blivens
  *
  */
-public class LatticeGUI3Dmol extends LatticeGUIMustache {
-	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI3Dmol.class);
+public class LatticeGUIMustache3D extends LatticeGUIMustache {
+	private static final Logger logger = LoggerFactory.getLogger(LatticeGUIMustache3D.class);
 
-	static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache";
-	static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
-	
-	private String strucURI;
-	private String url3Dmol = DEFAULT_URL_3DMOL;
+	public static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache";
+	public static final String MUSTACHE_TEMPLATE_NGL = "mustache/eppic/assembly/gui/LatticeGUINgl.html.mustache";
+	public static final String DEFAULT_URL_3DMOL = "http://3Dmol.csb.pitt.edu/build/3Dmol-min.js";
+	public static final String DEFAULT_URL_NGL = "https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js";
+
+	private String strucURL;
+	private String dataURL; // path to the json (or other) data file
+
+	private String libURL = DEFAULT_URL_NGL;
 	
 	/**
 	 * 
 	 * @param struc Structure used to create the graph (must have cell info)
 	 * @param strucFile Location on the filesystem for the unit cell mmcif file
-	 * @param strucURI URI to access strucFile through the browser
+	 * @param strucURL URI to access strucFile through the browser
 	 * @param interfaceIds List of interface numbers, or null for all interfaces
 	 * @throws StructureException For errors parsing the structure
 	 */
-	public LatticeGUI3Dmol(Structure struc,String strucURI,Collection<Integer> interfaceIds) throws StructureException {
+	public LatticeGUIMustache3D(Structure struc,String strucURI,Collection<Integer> interfaceIds) throws StructureException {
 		this(MUSTACHE_TEMPLATE_3DMOL,struc,strucURI,interfaceIds);
 	}
-	public LatticeGUI3Dmol(Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+	public LatticeGUIMustache3D(Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
 		this(MUSTACHE_TEMPLATE_3DMOL,struc,strucURI,interfaceIds,allInterfaces);
 	}
-	public LatticeGUI3Dmol(String template, Structure struc,String strucURI,Collection<Integer> interfaceIds) throws StructureException {
+	public LatticeGUIMustache3D(String template, Structure struc,String strucURI,Collection<Integer> interfaceIds) throws StructureException {
 		this(template,struc,strucURI,interfaceIds,null);
 	}
-	public LatticeGUI3Dmol(String template, LatticeGraph3D graph, String strucURI) throws StructureException {
+	public LatticeGUIMustache3D(String template, LatticeGraph3D graph, String strucURL) throws StructureException {
 		super(template, graph);
-		this.strucURI = strucURI;
+		this.strucURL = strucURL;
 	}
-	public LatticeGUI3Dmol(String template, Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+	public LatticeGUIMustache3D(String template, Structure struc,String strucURL,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
 		super(template, struc,interfaceIds, allInterfaces);
 
-		this.strucURI = strucURI;
+		this.strucURL = strucURL;
 	}
 
 	/**
 	 * get the URL for the CIF structure to write. Defaults to "[PDBID].cif"
 	 * @return
 	 */
-	public String getStrucURI() {
-		if(strucURI == null) {
-			strucURI = String.format("%s.cif",getPdbId());
+	public String getStrucURL() {
+		if(strucURL == null) {
+			strucURL = String.format("%s.cif",getPdbId());
 		}
-		return strucURI;
+		return strucURL;
 	}
-	public void setStrucURI(String strucURI) {
-		this.strucURI = strucURI;
+	public void setStrucURL(String strucURL) {
+		this.strucURL = strucURL;
 	}
-	public String getUrl3Dmol() {
-		return url3Dmol;
+	public String getLibURL() {
+		return libURL;
 	}
-	public void setUrl3Dmol(String url3Dmol) {
-		this.url3Dmol = url3Dmol;
+	public void setLibURL(String libURL) {
+		this.libURL = libURL;
 	}
-
+	public String getDataURL() {
+		return dataURL;
+	}
+	public void setDataURL(String dataURL) {
+		this.dataURL = dataURL;
+	}
 	public static void main(String[] args) throws IOException, StructureException {
-		final String usage = String.format("Usage: %s [template] <PDB code or file> <output.html> [list,of,interfaces,or,* [<output.cif.gz> <http://path/to/cif>]]",LatticeGUI3Dmol.class.getSimpleName());
+		final String usage = String.format(
+				"Usage: %s [template] input output [interfaces [cell cellURL]]%n"
+				+ "%n"
+				+ "Arguments:%n"
+				+ "  template    3Dmol, ngl, or the path to a custom template (default ngl)%n"
+				+ "  input       PDB code or file%n"
+				+ "  output      Path for output HTML file%n"
+				+ "  interfaces  comma-separated list of interfaces, or * for all (default *)%n"
+				+ "  cell        place to put the unit cell cif.gz file, if required for this%n"
+				+ "              template (default don't generate)%n"
+				+ "  cellURL     Path to reach cell (uncompressed) in the browser%n"
+				+ "",
+				LatticeGUIMustache3D.class.getSimpleName());
 		if (args.length<1) {
 			logger.error("Expected at least 2 arguments");
 			logger.error(usage);
@@ -127,9 +148,10 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 
 		PrintWriter cifOut = null;
 		String uri = null;
+		String cifFilename = null;
 		if(args.length>arg) {
+			cifFilename = args[arg++];
 			// need both filename and url
-			String cifFilename = args[arg++];
 			if (args.length<=arg) {
 				logger.error("No URL specified.",arg);
 				logger.error(usage);
@@ -143,6 +165,8 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 				File cifFile = new File(FileDownloadUtils.expandUserHome(cifFilename));
 				cifOut = new PrintWriter(new GZIPOutputStream( new FileOutputStream( cifFile )));
 			}
+		} else {
+			uri = String.format("rcsb://%s",input);
 		}
 
 		if (args.length>arg) {
@@ -157,19 +181,28 @@ public class LatticeGUI3Dmol extends LatticeGUIMustache {
 		cache.getFileParsingParams().setAlignSeqRes(true);
 		Structure struc = cache.getStructure(input);
 
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(template, struc, uri, interfaceIds);
+		LatticeGUIMustache3D gui = new LatticeGUIMustache3D(template, struc, uri, interfaceIds);
 
+		if(template.toLowerCase().contains("ngl")) {
+			gui.setLibURL(DEFAULT_URL_NGL);
+		} else if(template.toLowerCase().contains("3dmol")) {
+			gui.setLibURL(DEFAULT_URL_3DMOL);
+		} else {
+			logger.warn("Unrecognized template, so not setting libURL");
+		}
 		if(cifOut != null) {
 			
-			cifOut.println(struc.toMMCIF());
-			//gui.writeCIFfile(cifOut);
-			
+			//cifOut.println(struc.toMMCIF());
+			gui.writeCIFfile(cifOut);
 		}
 
 		gui.execute(htmlOut);
 
 		if( !output.equals("-")) {
 			htmlOut.close();
+		}
+		if( cifOut != null && !cifFilename.equals("-")) {
+			cifOut.close();
 		}
 	}
 

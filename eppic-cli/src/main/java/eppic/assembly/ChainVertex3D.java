@@ -6,14 +6,14 @@ import javax.vecmath.Point3d;
 
 import org.biojava.nbio.structure.Chain;
 
-import eppic.assembly.gui.LatticeGUI3Dmol;
+import eppic.assembly.gui.LatticeGUIMustache3D;
 import eppic.assembly.gui.LatticeGUIJmol;
 import eppic.assembly.layout.VertexPositioner;
 
 /**
  * ChainVertex, extended with properties for 3D display.
  * Some properties are specific to the {@link LatticeGUIJmol} or
- * {@link LatticeGUI3Dmol}.
+ * {@link LatticeGUIMustache3D}.
  * 
  * @author blivens
  *
@@ -21,9 +21,9 @@ import eppic.assembly.layout.VertexPositioner;
 public class ChainVertex3D extends ChainVertex {
 	
 	private Point3d center;
-	private String uniqueName;
-	private Color color;
-	private String colorStr;
+	private String  uniqueName;
+	private Color   color;
+	private String  colorStr;
 
 	public ChainVertex3D() {
 		super();

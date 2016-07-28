@@ -3,7 +3,7 @@
 <head>
     <meta charset='utf-8'>
     <title>{{title}}</title>
-    <script src="{{url3Dmol}}"></script>
+    <script src="{{libURL}}"></script>
     <style type="text/css">
     #molviewer {
         min-width:200px;
@@ -55,7 +55,7 @@ function axes(viewer) {
  var viewer = $3Dmol.createViewer($("#molviewer"));
  viewer.setBackgroundColor(0xffffffff);
 
- var uri = '{{strucURI}}';
+ var uri = '{{strucURL}}';
  $.get(uri, function(ret) {
     console.log("Success!");
     var mol = viewer.addAsOneMolecule(ret,'cif');
