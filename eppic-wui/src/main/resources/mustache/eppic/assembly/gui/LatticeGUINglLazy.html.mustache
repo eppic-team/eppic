@@ -4,31 +4,8 @@
 	<meta charset="utf-8">
 	<title>{{title}}</title>
 	<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-	<style>
-#spinner {
-	position: relative;
-	width: 100%;
-	height: 100%;
-	top: 0px;
-	left: 0px;
-	background-color: rgba(0, 0, 0, .5);
-	border: solid black 1px;
-}
-
-#spinner div {
-	background-color: white;
-	margin-left: auto;
-	margin-right: auto;
-	width: 174px;
-	height: 174px;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	margin-right: -50%;
-	transform: translate(-50%, -50%);
-	text-align: center;
-}
-	</style>
+	<script src="/resources/js/nglhelper.js"></script>
+	<link rel="stylesheet" type="text/css" href="/resources/css/spinner.css" />
 </head>
 <body>
 	<script src="{{libURL}}"></script>
@@ -40,49 +17,8 @@
 	// exposing the stage variable so that we can do things on the console
 	var stage;
 
-	document.onkeypress = function (e) {
-		e = e || window.event;
+	document.onkeypress = function(e) { default_keypress(stage,e);};
 
-		if (e !== undefined && e.which == 115) { // 115 is s
-			console.log("s was pressed: small screenshot (1x)");
-			screenshot(1);
-		}
-
-		if (e !== undefined && e.which == 109) { // 109 is m
-			console.log("m was pressed: medium screenshot (2x)");
-			screenshot(2);
-		}
-
-		if (e !== undefined && e.which == 108) { // 108 is l
-			console.log("l was pressed: large screenshot (3x)");
-			screenshot(3);
-		}
-
-		if (e !== undefined && e.which == 120) { // 120 is x
-			console.log("x was pressed: xtra large screenshot (4x)");
-			screenshot(4);
-		}
-
-	};
-
-	/**
-	 * A function to trigger a png transparent screenshot with given factor
-	 * @param factor the number of times the current canvas size will be multiplied by
-	 */
-	function screenshot(factor) {
-		if (stage!==undefined) {
-			stage.makeImage({factor: factor, antialias: true, trim: false, transparent: true}).then(function(blob) { NGL.download(blob) } )
-		}
-	}
-
-	// convert from a 6-digit hex string to [r,g,b] array with values in [0,1)
-	function hexToRGB(hex) {
-		var hexVal = parseInt(hex,16);
-		var r = hexVal >> 16;
-		var g = hexVal >> 8 & 0xFF;
-		var b = hexVal & 0xFF;
-		return [r/256.,g/256.,b/256.];
-	}
 	/**
 	 * Given the center of a 3D circle and a point along the normal, compute the
 	 * centers of two faces of a cylinder with the specified thickness
