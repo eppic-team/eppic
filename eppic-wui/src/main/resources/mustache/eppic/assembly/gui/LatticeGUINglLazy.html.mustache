@@ -103,7 +103,7 @@
 	}
 
 
-	document.addEventListener( "DOMContentLoaded", function() {
+	$(document).ready( function() {
 
 		stage = new NGL.Stage( "viewport" );
 		stage.setParameters({ backgroundColor:"white"} );
@@ -263,8 +263,8 @@
 		}, function() {
 			// Error when loading either json or cif
 			$("#spinner div").html("<p>Error generating graph</p>")
-		} ); //add event listener for DOMContentLoaded
-	} );
+		} ); // files loaded
+	} ); //dom ready
 
 	</script>
 
