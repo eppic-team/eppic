@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>{{title}}</title>
+<script src="{{libURL}}"></script>
+<script src="{{jsURL}}"></script>
+</head>
+<body>
+	<script>
+
+// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
+var inputFile = "{{fileURL}}";
+var maxEntropy = {{maxEntropy}};
+
+{{{jsVariables}}}
+
+NGL.mainScriptFilePath = "{{libURL}}";
+
+document.addEventListener( "DOMContentLoaded", function() {
+	onInit();
+} );
+
+	</script>
+
+	<div id="viewport" style="width:{{size}}px; height:{{size}}px;"></div>
+</body>
+</html>

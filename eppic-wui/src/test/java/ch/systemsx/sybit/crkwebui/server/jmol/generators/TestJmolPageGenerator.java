@@ -2,12 +2,16 @@ package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
 import static org.junit.Assert.*;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.AssemblyContent;
@@ -16,6 +20,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import eppic.model.ResidueBurialDB;
 
 public class TestJmolPageGenerator {
+	private static final Logger logger = LoggerFactory.getLogger(TestJmolPageGenerator.class);
 
 	@Test
 	public void testJmolPageGenerator() {
@@ -77,11 +82,17 @@ public class TestJmolPageGenerator {
 		acs.add(ac);
 		assemblyData.setAssemblyContents(acs); 
 		
+		StringWriter out = new StringWriter();
+		try( PrintWriter pw = new PrintWriter(out) ) {
+			JmolPageGenerator.generatePage("test title", "200", "http://myserver",
+					"../files", "1smt.cif", interfData, assemblyData,
+					"/ngl.embedded.min.js",pw);
+		}
+		out.flush();
+		String thepage = out.toString();
 		
-		String thepage = JmolPageGenerator.generatePage("test title", "200", "http://myserver", "../files", "1smt.cif", interfData, assemblyData, "/ngl.embedded.min.js");
 		
-		
-		System.out.println(thepage);
+		logger.debug("Generated JmolPage HTML:\n{}",thepage);
 		
 		// checking that nothing is null
 		assertFalse(thepage.contains("null"));

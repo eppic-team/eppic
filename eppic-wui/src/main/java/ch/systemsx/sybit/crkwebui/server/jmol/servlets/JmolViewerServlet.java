@@ -1,11 +1,11 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -101,10 +101,8 @@ public class JmolViewerServlet extends BaseServlet
 		}
 		
 		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size={}",jobId,input,interfaceId,size);
-		
-		ServletOutputStream outputStream = null;
 
-		try
+		try( PrintWriter outputStream = new PrintWriter(response.getOutputStream());)
 		{
 			JmolViewerServletInputValidator.validateJmolViewerInput(jobId, type, interfaceId, assemblyId, format, input, size);
 
@@ -149,17 +147,14 @@ public class JmolViewerServlet extends BaseServlet
 				title = jobId + " - Interface " + interfaceId;
 			}
 
-			String jmolPage = JmolPageGenerator.generatePage(title, 
+			
+			JmolPageGenerator.generatePage(title, 
 					size, serverUrl,
 					DirLocatorUtil.getJobUrlPath(resultsLocation, jobId), 
 					fileName,   
 					interfData,
 					assemblyData,
-					nglJsUrl);
-
-
-			outputStream = response.getOutputStream();
-			outputStream.println(jmolPage);
+					nglJsUrl,outputStream);
 		}
 		catch(ValidationException e)
 		{
@@ -172,17 +167,6 @@ public class JmolViewerServlet extends BaseServlet
 		catch(DaoException e)
 		{
 			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error during preparation of 3D viewer page.");
-		}
-		finally
-		{
-			if(outputStream != null)
-			{
-				try
-				{
-					outputStream.close();
-				}
-				catch(Throwable t) {}
-			}
 		}
 	}
 	

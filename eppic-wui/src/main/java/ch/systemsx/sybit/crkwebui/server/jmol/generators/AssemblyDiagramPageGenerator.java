@@ -6,6 +6,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
@@ -15,16 +18,20 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileCache;
+import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
+import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
-import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import eppic.EppicParams;
 import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.assembly.layout.GraphLayout;
+import eppic.commons.util.IntervalSet;
 
 /**
  * Helper class to generate the LatticeGraph HTML
@@ -51,44 +58,64 @@ public class AssemblyDiagramPageGenerator {
 	 * @return the HTML page
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
 	public static void generateJSONPage(File directory, String inputName, String atomCachePath,
 			List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException {
+			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException, InterruptedException, ExecutionException {
+		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
+		Callable<String> computeJson = () -> {
 
-		File auFile = LatticeGraphServlet.getAuFileName(directory, inputName, atomCachePath);
-		Structure auStruct = LatticeGraphPageGenerator.readStructure(auFile);
-		
-		// Read spacegroup
-		PDBCrystallographicInfo crystInfo = auStruct
-				.getCrystallographicInfo();
-		SpaceGroup sg = crystInfo.getSpaceGroup();
+			File auFile = LatticeGraphServlet.getAuFileName(directory, inputName, atomCachePath);
+			Structure auStruct = LatticeGraphPageGenerator.readStructure(auFile);
 
-		// Convert `Interface` beans to full StructureInterface objects
-		List<StructureInterface> siList = LatticeGraphPageGenerator.createStructureInterfaces(interfaces, sg);
+			// Read spacegroup
+			PDBCrystallographicInfo crystInfo = auStruct
+					.getCrystallographicInfo();
+			SpaceGroup sg = crystInfo.getSpaceGroup();
 
-		LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces, siList);
+			// Convert `Interface` beans to full StructureInterface objects
+			List<StructureInterface> siList = LatticeGraphPageGenerator.createStructureInterfaces(interfaces, sg);
 
-		GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(auStruct);
-		gui.setLayout2D( layout2D );
+			LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces, siList);
+
+			GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(auStruct);
+			gui.setLayout2D( layout2D );
 
 
-		// Hack to work around Mustache limitations which prevent generating valid JSON
-		try(StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				) {
+			// Hack to work around Mustache limitations which prevent generating valid JSON
+			try(StringWriter sw = new StringWriter();
+					PrintWriter pw = new PrintWriter(sw);
+					) {
 
-			// Construct page
-			gui.execute(pw);
+				// Construct page
+				gui.execute(pw);
 
-			pw.flush();
-			sw.flush();
-			String json = sw.toString();
-			// Remove all trailing commas from lists (invalid JSON)
-			json = json.replaceAll(",(?=\\s*[}\\]])","");
-			out.write(json);
+				pw.flush();
+				sw.flush();
+				String json = sw.toString();
+				// Remove all trailing commas from lists (invalid JSON)
+				json = json.replaceAll(",(?=\\s*[}\\]])","");
+				logger.info("Caching Assembly JSON at {}",jsonFilename);
+				return json.toString();
+			}
+		};
+		FileCache cache = FileCache.getInstance();
+		String json = cache.getString(jsonFilename, computeJson);
+		out.println(json);
+
+	}
+
+	private static String getJsonFilename(File directory, String inputName, Collection<Integer> requestedIfaces) {
+		String interfaceIntervals;
+		if(requestedIfaces == null || requestedIfaces.isEmpty() ) {
+			interfaceIntervals = "*";
+		} else {
+			interfaceIntervals = new IntervalSet(new TreeSet<>(requestedIfaces)).toSelectionString();
 		}
-		out.flush();
+		String jsonFilename = new File(directory,String.format("%s%s.%s.json", inputName, EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX, interfaceIntervals)).toString();
+		return jsonFilename;
 	}
 	
 	public static void generateHTMLPage(File directory, String inputName, String atomCachePath,
