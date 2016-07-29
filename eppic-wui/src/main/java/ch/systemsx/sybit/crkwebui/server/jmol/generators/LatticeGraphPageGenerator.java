@@ -9,6 +9,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
 
 import org.biojava.nbio.structure.Atom;
@@ -27,6 +30,7 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileCache;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.ChainVertex3DJsonAdapter;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.InterfaceEdge3DJsonAdapter;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.InterfaceEdge3DSourcedJsonAdapter;
@@ -46,6 +50,7 @@ import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.ParametricCircularArc;
 import eppic.assembly.gui.InterfaceEdge3DSourced;
 import eppic.assembly.gui.LatticeGUIMustache;
+import eppic.commons.util.IntervalSet;
 
 /**
  * Helper class to generate the LatticeGraph HTML
@@ -108,37 +113,56 @@ public class LatticeGraphPageGenerator {
 	 * @param out Stream to output the HTML page
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
 	public static void generateJSONPage(File directory, String inputName, File strucFile, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException {
+			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException, InterruptedException, ExecutionException {
+		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 
-		
-		if( !strucFile.exists() ) {
-			// this shouldn't happen...
-			throw new IOException("Could not find input AU file "+ strucFile.toString());
-		
-		}
-		
-		// Read input structure
-		
-		Structure struc = readStructure(strucFile);
+		Callable<String> computeJson = () -> {
+			if( !strucFile.exists() ) {
+				// this shouldn't happen...
+				throw new IOException("Could not find input AU file "+ strucFile.toString());
 
-		// Read spacegroup
-		PDBCrystallographicInfo crystInfo = struc
-				.getCrystallographicInfo();
-		SpaceGroup sg = crystInfo.getSpaceGroup();
+			}
 
-		List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
+			// Read input structure
 
-		LatticeGraph3D graph = new LatticeGraph3D(struc,siList);
-		if( requestedIfaces != null ) {
-			logger.info("Filtering LatticeGraph3D to edges {}",requestedIfaces);
-			graph.filterEngagedInterfaces(requestedIfaces);
-		}
-		graph.setHexColors();
-		
-		String json = gson.toJson(graph);
+			Structure struc = readStructure(strucFile);
+
+			// Read spacegroup
+			PDBCrystallographicInfo crystInfo = struc
+					.getCrystallographicInfo();
+			SpaceGroup sg = crystInfo.getSpaceGroup();
+
+			List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
+
+			LatticeGraph3D graph = new LatticeGraph3D(struc,siList);
+			if( requestedIfaces != null ) {
+				logger.info("Filtering LatticeGraph3D to edges {}",requestedIfaces);
+				graph.filterEngagedInterfaces(requestedIfaces);
+			}
+			graph.setHexColors();
+
+			String json = gson.toJson(graph);
+
+			logger.info("Caching LatticeGraph JSON at {}",jsonFilename);
+			return json;
+		};
+		FileCache cache = FileCache.getInstance();
+		String json = cache.getString(jsonFilename, computeJson);
 		out.println(json);
+	}
+	private static String getJsonFilename(File directory, String inputName, Collection<Integer> requestedIfaces) {
+		String interfaceIntervals;
+		if(requestedIfaces == null || requestedIfaces.isEmpty() ) {
+			interfaceIntervals = "*";
+		} else {
+			interfaceIntervals = new IntervalSet(new TreeSet<>(requestedIfaces)).toSelectionString();
+		}
+		String jsonFilename = new File(directory,String.format("%s.latticeGraph.%s.json", inputName, interfaceIntervals)).toString();
+		return jsonFilename;
 	}
 
 	/**

@@ -124,6 +124,9 @@ public class FileCache {
 		public String getFilename() {
 			return file.toString();
 		}
+		/**
+		 * Delete this cachefile. The CacheFile object should be discarded afterwards.
+		 */
 		public void delete() {
 			if(writer != null)
 				writer.cancel(true);
@@ -262,6 +265,9 @@ public class FileCache {
 			cacheFile = memcache.get(path);
 		} else {
 			File file = new File(path);
+			if(notpurged != null && !notpurged.contains(path)) {
+				file.delete();
+			}
 			cacheFile = new CacheFile(file, contents, executor);
 			memcache.put(path, cacheFile);
 			queue.add(cacheFile);
@@ -455,5 +461,10 @@ public class FileCache {
 		}
 	}
 
+	@Override
+	protected void finalize() throws Throwable {
+		flush();
+		super.finalize();
+	}
 
 }
