@@ -37,7 +37,7 @@ public class JmolPageGenerator
 	 * Note that the leading '/' is important in order to point to the in-war location (without it, it points to ewui/)
 	 */
 	private static final String EPPIC_NGL_JS_FUNCTIONS = "/eppic_ngl.js";
-	private static final String TEMPLATE_NGL = "/mustache/ch/systemsx/sybit/crkwebui/server/jmol/generators/ngl.html.mustache";
+	private static final String TEMPLATE_NGL = "ngl.html.mustache";
 	
     /**
      * Generates html page containing the 3D viewer.

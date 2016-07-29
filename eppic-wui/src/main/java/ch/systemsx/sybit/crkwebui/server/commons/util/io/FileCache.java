@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -18,8 +21,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gwt.dev.util.collect.HashSet;
 
 
 /**
@@ -157,6 +158,16 @@ public class FileCache {
 			}
 			super.finalize();
 		}
+		/**
+		 * Get whether the contents have finished writing to disk
+		 * @return
+		 */
+		public boolean isSynced() {
+			if(writer != null && writer.isDone() && !writer.isCancelled() ) {
+				return true;
+			}
+			return file.exists() && file.length()>0;
+		}
 	}
 		
 
@@ -229,10 +240,19 @@ public class FileCache {
 
 	protected void removeExpired() {
 		synchronized( memcache ) {
+			List<CacheFile> stillwriting = new LinkedList<>();
 			while(queue.size() > capacity) {
 				CacheFile expired = queue.remove(); //lowest serial
-				memcache.remove(expired.getFilename());
+				if( !expired.isSynced()) {
+					// save actively writing cases to be pushed back on the queue
+					stillwriting.add(expired);
+				} else {
+					memcache.remove(expired.getFilename());
+				}
 			}
+			//re-add cases that are still writing
+			//Note that this may cause memcache to be temporarily over-capacity
+			queue.addAll(stillwriting);
 		}
 	}
 	
@@ -340,6 +360,19 @@ public class FileCache {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Ensure that all files are synced to disk
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
+	 */
+	public void flush() throws InterruptedException, ExecutionException {
+		synchronized(memcache) {
+			for( CacheFile f : memcache.values()) {
+				f.getFile();
+			}
+		}
 	}
 	/**
 	 * Get the maximum number of recent files to keep in memory

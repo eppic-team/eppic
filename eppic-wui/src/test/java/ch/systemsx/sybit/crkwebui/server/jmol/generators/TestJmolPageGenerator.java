@@ -92,7 +92,7 @@ public class TestJmolPageGenerator {
 		String thepage = out.toString();
 		
 		
-		logger.info("Generated JmolPage HTML: {}",thepage);
+		logger.debug("Generated JmolPage HTML:\n{}",thepage);
 		
 		// checking that nothing is null
 		assertFalse(thepage.contains("null"));
