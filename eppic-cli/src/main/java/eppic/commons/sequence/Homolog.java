@@ -9,10 +9,14 @@ import eppic.commons.blast.BlastHsp;
  * Class to encapsulate a blast hit representing a homolog to a certain
  * sequence. 
  * It stores data from the blast hit and the UniRef entry (can be UniProt or UniParc)
+ * <p>
+ * Note: the {@link HomologList} class removes elements from its Homolog lists by using references,
+ * that relies on having no equals() implemented here. If we implement an equals() method we should
+ * double check that things still work properly in {@link HomologList}.
  *  
  * @see HomologList
  * 
- * @author duarte_j
+ * @author Jose Duarte
  *
  */
 public class Homolog implements Serializable {

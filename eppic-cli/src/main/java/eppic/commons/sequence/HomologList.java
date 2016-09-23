@@ -289,8 +289,8 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	}
 	
 	/**
-	 * Retrieves from UniprotKB the sequence, taxonomy and EMBL CDS ids data,
-	 * by using the remote Uniprot API
+	 * Retrieves from UniprotKB the sequence and taxonomy info,
+	 * by using the remote UniProt API, for both UniProt entries and UniParc entries.
 	 * @param uniprotConn
 	 * @throws IOException
 	 * @throws ServiceException 
@@ -336,6 +336,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 				if (hom.isUniprot()) {				
 					LOGGER.info("Removing UniProt id "+hom.getUniId()+" from homologs because it wasn't returned by the UniProt connection.");
 					it.remove();
+					removeFromMainList(hom);
 				}
 			}
 		}
@@ -356,11 +357,17 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			} catch (NoMatchFoundException e) {
 				LOGGER.warn("Could not find UniParc id {} through UniProt JAPI. Will not use this homolog.", hom.getUniId());
 				it.remove();
+				removeFromMainList(hom);
+
 			} catch (ServiceException e) {
 				LOGGER.warn("Problems retrieving UniParc id {} through UniProt JAPI. Will not use this homolog. Error: {}", hom.getUniId(), e.getMessage());
 				it.remove();
+				removeFromMainList(hom);
+
 			}
 		}
+		
+		checkRetrievedLengthsVsBlastIntervals();
 	}
 	
 	/**
@@ -397,10 +404,56 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 				hom.getUnirefEntry().setTaxons(uniref.getTaxons());				
 			} else { // the query might have not found some uniprot ids
 				LOGGER.info("Removing UniProt/UniParc id "+hom.getUniId()+" from homologs because it wasn't returned by the UniProt connection.");
-				it.remove();				
+				it.remove();
+				removeFromMainList(hom);
+
 			}
 		}
 		
+		checkRetrievedLengthsVsBlastIntervals();
+	}
+	
+	/**
+	 * Removes a homolog from the main list.
+	 * Note this will remove based on the memory reference, because {@link Homolog} does not have equals implemented. 
+	 * If we implement equals in {@link Homolog} this will most likely break!
+	 * @param hom
+	 */
+	private void removeFromMainList(Homolog hom) {
+		boolean gotit = list.remove(hom);
+		if (!gotit) {
+			LOGGER.warn("Could not find homlog {} in HomologList, can't remove it! ", hom.getIdentifier());
+		}
+	}
+	
+	/**
+	 * Checks for sequence intervals read from blast to be within the bounds of the actual sequence length retrieved from 
+	 * the UniProt connection (local or JAPI). If they aren't the entry is removed from the homolog list and a warning printed.
+	 * This can happen for instance if the UniProt version in the blast database is not the same than the version where sequences 
+	 * are retrieved from. 
+	 */
+	private void checkRetrievedLengthsVsBlastIntervals() {
+		
+		Iterator<Homolog> it = subList.iterator(); 
+		while (it.hasNext()) {
+			Homolog hom = it.next();
+			Interval interv = new Interval(hom.getBlastHsp().getSubjectStart(),
+					 hom.getBlastHsp().getSubjectEnd());
+			Sequence seq = hom.getUnirefEntry().getSeq();
+			
+			try {
+				// this subsets the sequence given the interval, if interval off bounds it produces the exception
+				seq.getInterval(interv);
+				
+			} catch (StringIndexOutOfBoundsException e) {
+				
+				LOGGER.warn("The interval found from blast is off the bounds of the sequence retrieved from UniProt for entry {}. Mismatch of UniProt versions perhaps? Removing entry from list", hom.getIdentifier());
+				it.remove();
+				removeFromMainList(hom);
+				
+			}
+		}
+
 	}
 	
 	/**
