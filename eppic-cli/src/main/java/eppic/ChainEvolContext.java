@@ -36,6 +36,7 @@ import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.SiftsFeature;
 import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
+import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 
 public class ChainEvolContext implements Serializable {
@@ -270,6 +271,11 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
+			} catch (ServiceException e) {
+				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from UniProt JAPI, error: "+e.getMessage());
+				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
+				query = null;
+				hasQueryMatch = false;								
 			} catch (SQLException e) {
 				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database "+params.getLocalUniprotDbName()+", error: "+e.getMessage());
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
@@ -562,13 +568,13 @@ public class ChainEvolContext implements Serializable {
 	 * Retrieves the Uniprot data and metadata
 	 * @throws IOException
 	 * @throws SQLException 
+	 * @throws ServiceException
 	 */
-	public void retrieveHomologsData() throws IOException, SQLException {
+	public void retrieveHomologsData() throws IOException, SQLException, ServiceException {
 		if (parent.isUseLocalUniprot()) {
 			homologs.retrieveUniprotKBData(parent.getUniProtLocalConnection());
 		} else {
 			homologs.retrieveUniprotKBData(parent.getUniProtJapiConnection());
-			homologs.retrieveUniparcData(null);
 		}
 	}
 	

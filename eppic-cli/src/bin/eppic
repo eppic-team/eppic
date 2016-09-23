@@ -1,8 +1,7 @@
 #!/bin/bash
 # Wrapper script to run eppic.
 #
-# Checks for the uniprot prerequisite and downloads it when possible.
-# Other prerequisites should be configured in ~/.eppic.conf
+# Prerequisites should be configured in ~/.eppic.conf
 #
 # Examples:
 #   eppic -h
@@ -21,37 +20,8 @@ function scriptdir {
 DIR="$(scriptdir "$0" )"
 
 LIB="$DIR/../lib"
-# Unitprot executable path
-uniprotjar="$LIB/uniprotjapi.jar"
-uniprotjarurl="http://www.ebi.ac.uk/uniprot/remotingAPI/download/uniprotjapi.jar"
+
 # Resolve eppic to a specific version
 eppicjar="$(ls "$LIB"/uber-eppic*.jar)"
 
-# Download a file using wget
-function download {
-	local url="$1"
-	local out="$2"
-
-	if [ ! -x $(which wget) ]; then
-		echo "No wget command. Unable to download $1." >&2
-		return 1
-	fi
-
-	/usr/bin/env wget -O "$out" -- "$url"
-	return $?
-}
-
-# Ensure uniprotjar is installed
-if [ ! -f "$uniprotjar" ]
-then
-	download "$uniprotjarurl" "$uniprotjar" ||
-	echo "Error downloading $uniprotjar from $uniprotjarurl." >&2 &&
-	exit 1
-fi
-if [ ! -f "$uniprotjar" ]
-then
-	echo "$uniprotjar is missing and unable to download. Can't run eppic without it." >&2
-	exit 1
-fi
-
-java -cp $uniprotjar:$eppicjar eppic.Main $*
+java -cp $eppicjar eppic.Main $*

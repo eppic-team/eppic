@@ -13,6 +13,7 @@ import uk.ac.ebi.kraken.interfaces.uniprot.UniProtEntry;
 import uk.ac.ebi.kraken.interfaces.uniprot.description.Field;
 import uk.ac.ebi.kraken.interfaces.uniprot.description.FieldType;
 import uk.ac.ebi.kraken.interfaces.uniprot.description.Name;
+import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 import eppic.commons.sequence.NoMatchFoundException;
 import eppic.commons.sequence.UniProtConnection;
 
@@ -88,7 +89,7 @@ public class GetUniProtAnnotations {
 		return list;
 	}
 
-	private static boolean checkAnnotation(UniProtConnection upc, String uniProtId) throws NoMatchFoundException {
+	private static boolean checkAnnotation(UniProtConnection upc, String uniProtId) throws NoMatchFoundException, ServiceException {
 		
 		System.out.println("### "+uniProtId);
 		

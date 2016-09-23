@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +31,8 @@ import eppic.commons.blast.BlastXMLParser;
 import eppic.commons.sequence.AAAlphabet;
 import eppic.commons.util.Goodies;
 import eppic.commons.util.Interval;
+import uk.ac.ebi.kraken.interfaces.uniparc.UniParcEntry;
+import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 /**
  * Class to store a set of homologs of a given sequence.
@@ -292,15 +293,27 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * by using the remote Uniprot API
 	 * @param uniprotConn
 	 * @throws IOException
+	 * @throws ServiceException 
 	 */
-	public void retrieveUniprotKBData(UniProtConnection uniprotConn) throws IOException {
-		String japiVer = uniprotConn.getVersion();
-		if (!japiVer.equals(this.uniprotVer)){
+	public void retrieveUniprotKBData(UniProtConnection uniprotConn) throws IOException, ServiceException {
+		String japiVer = null;
+		try {
+			japiVer = uniprotConn.getVersion();
+		} catch (ServiceException e) {
+			LOGGER.warn("Could not get UniProt release version from UniProt JAPI. Will not check if version used for blast coincides with version queried through JAPI. Error: "+e.getMessage());
+		}
+
+		if (japiVer!=null && !japiVer.equals(this.uniprotVer)){
 			LOGGER.warn("UniProt version used for blast ("+uniprotVer+") and UniProt version being queried with JAPI ("+japiVer+") don't match!");
 		}
+		
 		List<String> uniprotIds = new ArrayList<String>();
+		
 		for (Homolog hom:subList) {
-			if (hom.isUniprot()) uniprotIds.add(hom.getUniId());
+			
+			if (hom.isUniprot()) 
+				uniprotIds.add(hom.getUniId());
+			
 		}
 		
 		List<UnirefEntry> unirefs = uniprotConn.getMultipleUnirefEntries(uniprotIds);
@@ -327,38 +340,27 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			}
 		}
 		
-	}
-	
-	public void retrieveUniparcData(File cacheFile) throws IOException {
+		// now retrieve uniparc ids
 		
-		List<String> allIds = new ArrayList<String>();
-		for (Homolog hom:subList) {
-			if (!hom.isUniprot()) {
-				allIds.add(hom.getUniId());
+		it = subList.iterator();
+		while (it.hasNext()) {
+			Homolog hom = it.next();
+			if (hom.isUniprot()) continue;			
+			// ok this is a uniparc, let's get it from japi
+			
+			try {
+				UniParcEntry uniparcEntry = uniprotConn.getUniparcEntry(hom.getUniId());
+				String seq = uniparcEntry.getSequence().getValue();
+				hom.getUnirefEntry().setSequence(seq);
+				
+			} catch (NoMatchFoundException e) {
+				LOGGER.warn("Could not find UniParc id {} through UniProt JAPI. Will not use this homolog.", hom.getUniId());
+				it.remove();
+			} catch (ServiceException e) {
+				LOGGER.warn("Problems retrieving UniParc id {} through UniProt JAPI. Will not use this homolog. Error: {}", hom.getUniId(), e.getMessage());
+				it.remove();
 			}
 		}
-		
-		// do nothing if there were no uniparc ids at all
-		if (allIds.isEmpty()) return;
-		
-		try {
-			List<Sequence> allSeqs = EmblWSDBfetchConnection.fetchUniparc(allIds, cacheFile);
-			// we put the list (containing all the sequences from all the homologs) in a lookup table
-			// so that we can then retrieve the ones corresponding to each homolog below
-			Map<String,Sequence> lookup = new HashMap<String,Sequence>();
-			for (Sequence seq:allSeqs) {
-				lookup.put(seq.getName().substring(0, seq.getName().lastIndexOf(" ")), seq);
-			}
-			for (Homolog hom:subList) {
-				if (hom.isUniprot()) continue;
-				if (lookup.containsKey(hom.getUniId())) {
-					hom.getUnirefEntry().setSequence(lookup.get(hom.getUniId()).getSeq());
-				}
-			}		
-		} catch (NoMatchFoundException e) {
-			LOGGER.warn("Couldn't retrieve UniParc sequences");
-		}
-
 	}
 	
 	/**
