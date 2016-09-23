@@ -31,6 +31,11 @@ public class UniProtConnection {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(UniProtConnection.class);
 	
+	/**
+	 * The maximum number of UniProt entries to fetch in one request, see {@link #getMultipleUnirefEntries(List)}
+	 */
+	private static final int MAX_ENTRIES_PER_REQUEST = 100;
+	
 	/*--------------------------- member variables --------------------------*/
 	private UniProtService uniProtService;
 	private UniParcService uniparcService;
@@ -118,6 +123,8 @@ public class UniProtConnection {
 	 * Gets a list of Uniprot entries as an Iterator given a list of Uniprot identifiers.
 	 * If any of the input entries can not be retrieved through JAPI then they will be
 	 * missing in the returned iterator. The user must check for those.  
+	 * Note the JAPI has some limit of number of entries per request, use a max of {@value #MAX_ENTRIES_PER_REQUEST}
+	 * in the input list or things can go wrong.
 	 * @param idsList a list of uniprot ids
 	 * @return
 	 * @throws ServiceException if problems getting the entries
@@ -141,35 +148,45 @@ public class UniProtConnection {
 		
 		List<UnirefEntry> unirefEntries = new ArrayList<UnirefEntry>();
 		
-		QueryResult<UniProtEntry> entries = getMultipleEntries(uniprotIds);
-
-		while (entries.hasNext()) {
+		for (int i=0;i<uniprotIds.size();i+=MAX_ENTRIES_PER_REQUEST) {
 			
-			UniProtEntry entry = entries.next();
-			String uniId = entry.getPrimaryUniProtAccession().getValue();
-			if (!uniprotIds.contains(uniId)) { // TODO this could be more efficient by using a Map, is it necessary?
-				// this happens if the JAPI/server are really broken and return records that we didn't ask for (actually happened on the 09.02.2011!!!)
-				throw new IOException("Uniprot JAPI server returned an unexpected record: "+uniId);
+			List<String> uniprotIdsChunk = new ArrayList<>();
+			for (int c=i;c<i+MAX_ENTRIES_PER_REQUEST && c<uniprotIds.size();c++) {				
+				uniprotIdsChunk.add(uniprotIds.get(c));
 			}
-			String sequence = entry.getSequence().getValue();
-
-			List<NcbiTaxonomyId> ncbiTaxIds = entry.getNcbiTaxonomyIds();
-			if (ncbiTaxIds.size()>1) {
-				LOGGER.warn("More than one taxonomy id for uniprot entry "+uniId);
-			}
-			int ncbiTaxId = Integer.parseInt(ncbiTaxIds.get(0).getValue());
+		
+			QueryResult<UniProtEntry> entries = getMultipleEntries(uniprotIdsChunk);
 			
-			List<String> taxons = new ArrayList<String>();
-			for(NcbiTaxon ncbiTaxon:entry.getTaxonomy()) {
-				taxons.add(ncbiTaxon.getValue());
+			while (entries.hasNext()) {
+				
+				UniProtEntry entry = entries.next();
+				String uniId = entry.getPrimaryUniProtAccession().getValue();
+				if (!uniprotIds.contains(uniId)) { // TODO this could be more efficient by using a Map, is it necessary?
+					// this happens if the JAPI/server are really broken and return records that we didn't ask for (actually happened on the 09.02.2011!!!)
+					throw new IOException("Uniprot JAPI server returned an unexpected record: "+uniId);
+				}
+				String sequence = entry.getSequence().getValue();
+
+				List<NcbiTaxonomyId> ncbiTaxIds = entry.getNcbiTaxonomyIds();
+				if (ncbiTaxIds.size()>1) {
+					LOGGER.warn("More than one taxonomy id for uniprot entry "+uniId);
+				}
+				int ncbiTaxId = Integer.parseInt(ncbiTaxIds.get(0).getValue());
+				
+				List<String> taxons = new ArrayList<String>();
+				for(NcbiTaxon ncbiTaxon:entry.getTaxonomy()) {
+					taxons.add(ncbiTaxon.getValue());
+				}
+				UnirefEntry uniref = new UnirefEntry();
+				uniref.setUniprotId(uniId);
+				uniref.setNcbiTaxId(ncbiTaxId);
+				uniref.setTaxons(taxons);
+				uniref.setSequence(sequence);
+				unirefEntries.add(uniref);
 			}
-			UnirefEntry uniref = new UnirefEntry();
-			uniref.setUniprotId(uniId);
-			uniref.setNcbiTaxId(ncbiTaxId);
-			uniref.setTaxons(taxons);
-			uniref.setSequence(sequence);
-			unirefEntries.add(uniref);
 		}
+
+		
 		
 		// now we check if the query to uniprot JAPI did really return all requested uniprot ids
 	    HashSet<String> returnedUniIds = new HashSet<String>();
