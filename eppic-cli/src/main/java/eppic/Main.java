@@ -13,25 +13,19 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
-
-import javax.vecmath.Point3d;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
-import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
-import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -54,12 +48,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
-import eppic.assembly.ChainVertex;
 import eppic.assembly.CrystalAssemblies;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
-import eppic.commons.util.GeomTools;
 import eppic.commons.util.Goodies;
 import eppic.commons.util.StructureUtils;
 import eppic.predictors.CombinedClusterPredictor;
@@ -710,9 +702,11 @@ public class Main {
 
 				LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
 				GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
+				String fileFormat = "png";
+				
 				for (Assembly a:validAssemblies) {
 
-					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".75x75.png");
+					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
 					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 					
@@ -728,16 +722,20 @@ public class Main {
 					guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
 					guiThumb.setTitle("Assembly "+a.getId());
 					guiThumb.setPdbId(pdb.getPDBCode());
+					int dpi = 72; // 72 dots per inch for output
+					// size is in inches
+					guiThumb.setSize(String.valueOf((double)EppicParams.THUMBNAILS_SIZE/(double)dpi));
+					guiThumb.setDpi(String.valueOf(dpi));
 
 					// Generate thumbs via dot file
 					//File dotFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".dot");
 					//try (PrintWriter out = new PrintWriter(dotFile)) {
 					//	guiThumb.execute(out);
 					//}
-					//runner.generateFromDot(dotFile, pngFile, "png");
+					//runner.generateFromDot(dotFile, pngFile, fileFormat);
 					
 					// Generate thumbs via pipe
-					runner.generateFromDot(guiThumb, pngFile, "png");
+					runner.generateFromDot(guiThumb, pngFile, fileFormat);
 				}
 			}
 
@@ -785,32 +783,6 @@ public class Main {
 //		}
 //	}
 	
-	/**
-	 * Compute centroids for the Chains and store as a map: chainId_opId -> centroid.
-	 * 
-	 * These should be available elsewhere already, but for now it's easier to 
-	 * recompute than to pass them along. (TODO)
-	 * @param positions list of vertices with pre-transformed chains
-	 * @return A map between chain/op ids and the centroid
-	 */
-	private Map<String, Point3d> computeCentroidsAgain(
-			List<List<ChainVertex>> positions) {
-		Map<String, Point3d> map = new HashMap<String, Point3d>();
-		for(List<ChainVertex> complex:positions) {
-			for(ChainVertex vert : complex) {
-				String ident = vert.toString();
-				Atom[] atoms = StructureTools.getRepresentativeAtomArray(vert.getChain());
-				Point3d centroid = GeomTools.getCentroid(vert.getChain());
-				if(map.containsKey(ident)) {
-					LOGGER.error("Vertices have non-unique mapping ({}). Layout will fail.",ident);
-				}
-				map.put(ident, centroid);
-			}
-		}
-		return map;
-	}
-
-
 
 	public void doWritePymolFiles() throws EppicException {
 		

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>{{title}}</title>
+	<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+	<script src="/resources/js/nglhelper.js"></script>
+	<link rel="stylesheet" type="text/css" href="/resources/css/spinner.css" />
+</head>
+<body>
+	<script src="{{libURL}}"></script>
+
+	<script>
+	// regen
+	NGL.mainScriptFilePath = "{{libURL}}";
+
+	// exposing the stage variable so that we can do things on the console
+	var stage;
+
+	document.onkeypress = function(e) { default_keypress(stage,e);};
+
+	/**
+	 * Given the center of a 3D circle and a point along the normal, compute the
+	 * centers of two faces of a cylinder with the specified thickness
+	 */
+	function scaleCircle(centerPt,perpendicular,thickness) {
+		var center = new THREE.Vector3(centerPt.x,centerPt.y,centerPt.z);
+		var norm = new THREE.Vector3(perpendicular.x,perpendicular.y,perpendicular.z);
+		norm.sub(center);
+		var len = norm.length();
+		var scale = thickness/len/2.;
+
+		var start = center.clone();
+		start.addScaledVector(norm,scale);
+		var end = center.clone();
+		end.addScaledVector(norm,-scale);
+
+		return [start,end]
+	}
+
+
+	$(document).ready( function() {
+
+		stage = new NGL.Stage( "viewport" );
+		stage.setParameters({ backgroundColor:"white"} );
+
+		// Ensure both files loaded before proceeding
+		$.when(
+			$.getJSON( "{{{dataURL}}}" ),
+			stage.loadFile( "{{{strucURL}}}", { defaultRepresentation: false } )
+		).then(function(jsonXHR,o) {
+			var json = jsonXHR[0]
+
+			// operators to create the unit cell
+			var operators = json.unitCellTransforms.map(function(x) {
+				return new THREE.Matrix4().set(
+					x.m00, x.m01, x.m02, x.m03,
+					x.m10, x.m11, x.m12, x.m13,
+					x.m20, x.m21, x.m22, x.m23,
+					x.m30, x.m31, x.m32, x.m33);
+			});
+
+			// show full unit cell with NGL's built-in assembly
+			//o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide, assembly: "UNITCELL" } );
+
+			// show our own full unit cell from our operators list
+			var assembly = new NGL.Assembly( "LATTICEGRAPH_UNITCELL" );
+			for (var i=0; i < operators.length; i++) {
+				assembly.addPart(
+					[ operators[i] ],
+					[]  // leave empty for all chains, otherwise author chainnames [ "A", "B" ]
+				);
+			}
+			o.structure.biomolDict[ "LATTICEGRAPH_UNITCELL" ] = assembly;
+			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide, assembly: "LATTICEGRAPH_UNITCELL" } );
+			o.centerView();
+
+
+			////////  spheres  ///////////////////////////////////////////////
+			var spherePositions = [];
+			var sphereColors = [];
+			var sphereRadii = [];
+
+			var textLabels = [];
+			var labelColors = [];
+			
+			json.vertices.forEach( function(v) {
+				spherePositions.push(v.center.x, v.center.y, v.center.z);
+				var color = hexToRGB(v.color);
+				sphereColors.push.apply(sphereColors,color);
+				sphereRadii.push(5.0);
+				
+				textLabels.push(v.label);
+				labelColors.push(0,0,0);
+				
+			});
+			
+			var sphereBuffer = new NGL.SphereBuffer(
+					new Float32Array( spherePositions ),  // position (xyz)
+					new Float32Array( sphereColors ),  // color (rgb) - first 3 numbers is the color code for 1 sphere
+					new Float32Array( sphereRadii )  // radius
+			);
+
+			o.addBufferRepresentation( sphereBuffer );
+
+			////////  sphere labels ///////////////////////////////////////////////
+			var textBuffer = new NGL.TextBuffer(
+					spherePositions,
+					sphereRadii, // size
+					labelColors, // color
+					textLabels, // text
+					// note "sdf:false" is to workaround an issue in firefox where labels are not shown
+					// see https://github.com/arose/ngl/issues/136
+					// we can remove it when next release is available (after 0.7.1.a)
+					{zOffset: 10, yOffset:-1, xOffset:-2, sdf: false} // params
+			);
+
+			o.addBufferRepresentation( textBuffer );
+
+			////////  unit cell ///////////////////////////////////////////////
+			o.addRepresentation( "unitcell" );
+
+			////////  cylinders ///////////////////////////////////////////////
+			//// cylinders - arrows /////
+
+			var arrowsStartPositions = [];
+			var arrowsEndPositions =  [];
+			var arrowsColors = [];
+			var arrowsRadii = [];
+
+			var circlesStartPositions = [];
+			var circlesEndPositions =  [];
+			var circlesColors = [];
+			var circlesRadii = [];
+			
+			var textLabelsCircles = [];
+			var labelColorsCircles = [];
+			
+			json.edges.forEach( function(e) {
+				var color = hexToRGB(e.color);
+				e.segments.forEach( function(s) {
+					arrowsStartPositions.push(s.start.x, s.start.y, s.start.z);
+					arrowsEndPositions.push(s.end.x, s.end.y, s.end.z);
+					arrowsColors.push.apply(arrowsColors,color);
+					arrowsRadii.push(.3);
+				});
+				
+				e.circles.forEach( function(c) {
+					var thickness = 0.5;
+					var endpoints = scaleCircle(c.center, c.perpendicular, thickness);
+					var start = endpoints[0];
+					var end = endpoints[1];
+					circlesStartPositions.push(start.x,start.y,start.z);
+					circlesEndPositions.push(end.x,end.y,end.z);
+					circlesColors.push.apply(circlesColors,color);
+					circlesRadii.push(c.radius);
+					textLabelsCircles.push(e.interfaceId.toString());
+					labelColorsCircles.push(0,0,0);
+				});
+			});
+
+			var arrowsCylinderBuffer = new NGL.CylinderBuffer(
+					new Float32Array( arrowsStartPositions ),  // from position (xyz)
+					new Float32Array( arrowsEndPositions ),  // to position (xyz)
+					new Float32Array( arrowsColors ),  // from color (rgb)
+					new Float32Array( arrowsColors ),  // to color (rgb)
+					new Float32Array( arrowsRadii )  // radius
+			);
+
+			o.addBufferRepresentation( arrowsCylinderBuffer );
+
+			//// cylinders - circles /////
+			var circlesCylinderBuffer = new NGL.CylinderBuffer(
+					new Float32Array( circlesStartPositions ),  // from position (xyz)
+					new Float32Array( circlesEndPositions ),  // to position (xyz)
+					new Float32Array( circlesColors ),  // from color (rgb)
+					new Float32Array( circlesColors ),  // to color (rgb)
+					new Float32Array( circlesRadii )  // radius
+			);
+
+			o.addBufferRepresentation( circlesCylinderBuffer );
+
+
+			/////////////// labels - circles ////////////////////////////////////
+			var textBufferCircles = new NGL.TextBuffer(
+					circlesStartPositions,
+					circlesRadii, // size
+					labelColorsCircles, // color
+					textLabelsCircles, // text
+					// note "sdf:false" is to workaround an issue in firefox where labels are not shown
+					// see https://github.com/arose/ngl/issues/136
+					// we can remove it when next release is available (after 0.7.1.a)
+					{zOffset: 5, sdf: false} // params
+			);
+
+			o.addBufferRepresentation( textBufferCircles );
+
+			$("#spinner").hide();
+		}, function() {
+			// Error when loading either json or cif
+			$("#spinner div").html("<p>Error generating graph</p>")
+		} ); // files loaded
+	} ); //dom ready
+
+	</script>
+
+	<div id="viewport" style="width:{{size}}px; height:{{size}}px;">
+		<div id="spinner">
+			<div>
+				<img width=120 height=120 src="/resources/images/spinner_d1c5ka1.gif" />
+				<p>Loading...</p>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

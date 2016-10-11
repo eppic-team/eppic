@@ -1,22 +1,43 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
+
 import eppic.EppicParams;
 import eppic.MolViewersHelper;
+import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.model.ResidueBurialDB;
 
+/**
+ * Generate 3D molecular viewer pages. Note that the "Jmol" title is historical;
+ * structures are currently displayed using NGL.
+ *
+ */
 public class JmolPageGenerator 
 {
+	private static final Logger logger = LoggerFactory.getLogger(JmolPageGenerator.class);
+
 	/**
 	 * Note that the leading '/' is important in order to point to the in-war location (without it, it points to ewui/)
 	 */
 	private static final String EPPIC_NGL_JS_FUNCTIONS = "/eppic_ngl.js";
+	private static final String TEMPLATE_NGL = "ngl.html.mustache";
 	
     /**
      * Generates html page containing the 3D viewer.
@@ -29,8 +50,8 @@ public class JmolPageGenerator
      * @param nglJsUrl
      * @return html page with jmol aplet
      */
-	public static String generatePage(String title, String size, String serverUrl, String resultsLocation,
-			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl)  {
+	public static void generatePage(String title, String size, String serverUrl, String resultsLocation,
+			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl, PrintWriter out)  {
 		
 		
 		boolean isCif = true;
@@ -40,54 +61,32 @@ public class JmolPageGenerator
 			isCif = false;
 		}
 		
-		String jsVariables = generateSelectionVarsNgl(interfData, assemblyData, isCif);	
+		String jsVariables = generateSelectionVarsNgl(interfData, assemblyData, isCif);
 		
 		// we assume that the alphabet is the default (since in wui there's no way that user can change it)
 		double maxEntropy = Math.log(EppicParams.DEF_ENTROPY_ALPHABET.getNumLetters()) / Math.log(2);
-		
-		StringBuffer jmolPage = new StringBuffer();
 
 		String fileUrl = serverUrl + "/" + resultsLocation + "/" + fileName;
 
-		jmolPage.append("<!DOCTYPE html>");
-		jmolPage.append("<html>" + "\n");
-		jmolPage.append("<head>" + "\n");
-		jmolPage.append("<meta charset=\"utf-8\">");
-		jmolPage.append("<title>" + "\n");
-		jmolPage.append(title+"\n"); 
-		jmolPage.append("</title>" + "\n");
+		Map<String,Object> page = new HashMap<>();
+		page.put("title", title);
+		page.put("libURL", nglJsUrl);
+		page.put("jsURL", EPPIC_NGL_JS_FUNCTIONS);
+		page.put("fileURL", fileUrl);
+		page.put("jsVariables", jsVariables);
+		page.put("maxEntropy", String.format("%.4f",maxEntropy));
+		page.put("size", size);
 
-		jmolPage.append("<script src=\""+nglJsUrl+"\"></script> \n");
-		jmolPage.append("<script src=\""+EPPIC_NGL_JS_FUNCTIONS+"\"></script>\n");
+		MustacheFactory mf = new DefaultMustacheFactory();
+		String template = LatticeGUIMustache.expandTemplatePath(TEMPLATE_NGL);
+		Mustache mustache = mf.compile(template);
 
-		jmolPage.append("</head>" + "\n");
-		jmolPage.append("<body>" + "\n");
-
-		jmolPage.append(
-		
-		"<script>\n"+
-
-		// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
-		"var inputFile = \""+fileUrl+"\";\n"+
-		"var maxEntropy = "+String.format("%.4f",maxEntropy)+";\n"+
-		
-		jsVariables +
-		
-		"NGL.mainScriptFilePath = \""+nglJsUrl+"\";\n"+
-
-		"document.addEventListener( \"DOMContentLoaded\", function() {\n"+
-		"	onInit();\n"+
-		"} );\n"+
-
-		"</script>\n"+
-
-		"<div id=\"viewport\" style=\"width:"+size+"px; height:"+size+"px;\"></div>\n");
-		
-		
-		jmolPage.append("</body>" + "\n");
-		jmolPage.append("</html>" + "\n");
-
-		return jmolPage.toString();
+		try {
+			mustache.execute(out, page)
+				.flush();
+		} catch (IOException e) {
+			logger.error("Error generating output from template "+template,e);
+		}
     }
 	
 	@SuppressWarnings("unused")

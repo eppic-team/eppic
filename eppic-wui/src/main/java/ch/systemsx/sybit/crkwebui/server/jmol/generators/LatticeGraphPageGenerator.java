@@ -9,6 +9,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
 
 import org.biojava.nbio.structure.Atom;
@@ -27,9 +30,27 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileCache;
+import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.ChainVertex3DJsonAdapter;
+import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.InterfaceEdge3DJsonAdapter;
+import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.InterfaceEdge3DSourcedJsonAdapter;
+import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.LatticeGraph3DJson;
+import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.ParametricCircularArcJsonAdapter;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import eppic.assembly.gui.LatticeGUI3Dmol;
+
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import eppic.assembly.ChainVertex3D;
+import eppic.assembly.InterfaceEdge3D;
+import eppic.assembly.LatticeGraph3D;
+import eppic.assembly.ParametricCircularArc;
+import eppic.assembly.gui.InterfaceEdge3DSourced;
 import eppic.assembly.gui.LatticeGUIMustache;
+import eppic.commons.util.IntervalSet;
 
 /**
  * Helper class to generate the LatticeGraph HTML
@@ -38,60 +59,110 @@ import eppic.assembly.gui.LatticeGUIMustache;
  */
 public class LatticeGraphPageGenerator {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphPageGenerator.class);
+	
+	private static final Gson gson = createGson();
+	
+	public static final String TEMPLATE_LATTICE_GUI_NGL_LAZY = "LatticeGUINglLazy.html.mustache";
+
 	/**
 	 * Generates html page containing the NGL canvas.
 	 * 
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
-	 * @param auFile the file with the AU structure (can be cif or pdb and gzipped or not)
-	 * @param auURI URL to reach auCifFile within the browser
+	 * @param strucFile the file with the AU structure (can be cif or pdb and gzipped or not)
+	 * @param strucURI URL to reach auCifFile within the browser
 	 * @param title Page title [default: structure name]
-	 * @param size the canvas size 
+	 * @param size the canvas size
+	 * @param jsonURI path to the json dataURL
 	 * @param interfaces List of all interfaces to build the latticegraph
-	 * @param requestedIfaces 
-	 * @param out
-	 * @return the HTML page
+	 * @param requestedIfaces subset of the interfaces to display
+	 * @param out Stream to output the HTML page
+	 * @param urlMolViewer path to the libURL
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
-	public static void generatePage(File directory, String inputName, File auFile,
-			String auURI, String title, String size, List<Interface> interfaces,
+	public static void generateHTMLPage(File directory, String inputName, File strucFile,
+			String strucURI, String title, String size, String jsonURL, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer) throws IOException, StructureException {
-
-		
-		if( !auFile.exists() ) {
-			// this shouldn't happen...
-			throw new IOException("Could not find input AU file "+ auFile.toString());
-		
+		logger.info("JSON URL for {}: {}",inputName,jsonURL);
+		logger.info("Structure URL for {}: {}",inputName,strucURI);
+		MustacheFactory mf = new DefaultMustacheFactory();
+		String template = LatticeGUIMustache.expandTemplatePath(TEMPLATE_LATTICE_GUI_NGL_LAZY);
+		Mustache mustache = mf.compile(template);
+		LazyLatticeGUIMustache3D page = new LazyLatticeGUIMustache3D();
+		page.setSize(size);
+		page.setTitle(title);
+		page.setDataURL(jsonURL);
+		page.setLibURL(urlMolViewer);
+		page.setStrucURL(strucURI);
+		try {
+			mustache.execute(out, page)
+				.flush();
+		} catch (IOException e) {
+			logger.error("Error generating output from template "+template,e);
 		}
-		
-		// Read input structure
-		
-		Structure auStruct = readStructure(auFile);
+	}
+	/**
+	 * Generates html page containing the NGL canvas.
+	 * 
+	 * @param directory path to the job directory
+	 * @param inputName the input: either a PDB id or the file name as input by user
+	 * @param strucFile the file with the AU structure (can be cif or pdb and gzipped or not)
+	 * @param interfaces List of all interfaces to build the latticegraph
+	 * @param requestedIfaces subset of the interfaces to display
+	 * @param out Stream to output the HTML page
+	 * @throws StructureException For errors parsing the input structure
+	 * @throws IOException For errors reading or writing files
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
+	 */
+	public static void generateJSONPage(File directory, String inputName, File strucFile, List<Interface> interfaces,
+			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException, InterruptedException, ExecutionException {
+		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 
-		// Read spacegroup
-		PDBCrystallographicInfo crystInfo = auStruct
-				.getCrystallographicInfo();
-		SpaceGroup sg = crystInfo.getSpaceGroup();
+		Callable<String> computeJson = () -> {
+			if( !strucFile.exists() ) {
+				// this shouldn't happen...
+				throw new IOException("Could not find input AU file "+ strucFile.toString());
 
-		List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
+			}
 
-		LatticeGUI3Dmol gui = new LatticeGUI3Dmol(LatticeGUIMustache.MUSTACHE_TEMPLATE_NGL, auStruct, auURI,
-				requestedIfaces, siList);
+			// Read input structure
 
-		// Override some properties if needed
-		if(title != null)
-			gui.setTitle(title);
-		if(size != null) 
-			gui.setSize(size);
-		
-		//"https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js"
-		gui.setUrl3Dmol(urlMolViewer);
-		
+			Structure struc = readStructure(strucFile);
 
-		// Construct page
-		gui.execute(out);
-		out.flush();
+			// Read spacegroup
+			PDBCrystallographicInfo crystInfo = struc
+					.getCrystallographicInfo();
+			SpaceGroup sg = crystInfo.getSpaceGroup();
+
+			List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
+
+			LatticeGraph3D graph = new LatticeGraph3D(struc,siList);
+			if( requestedIfaces != null ) {
+				logger.info("Filtering LatticeGraph3D to edges {}",requestedIfaces);
+				graph.filterEngagedInterfaces(requestedIfaces);
+			}
+			graph.setHexColors();
+
+			String json = gson.toJson(graph);
+
+			logger.info("Caching LatticeGraph JSON at {}",jsonFilename);
+			return json;
+		};
+		FileCache cache = FileCache.getInstance();
+		String json = cache.getString(jsonFilename, computeJson);
+		out.println(json);
+	}
+	private static String getJsonFilename(File directory, String inputName, Collection<Integer> requestedIfaces) {
+		String interfaceIntervals;
+		if(requestedIfaces == null || requestedIfaces.isEmpty() ) {
+			interfaceIntervals = "*";
+		} else {
+			interfaceIntervals = new IntervalSet(new TreeSet<>(requestedIfaces)).toSelectionString();
+		}
+		String jsonFilename = new File(directory,String.format("%s.latticeGraph.%s.json", inputName, interfaceIntervals)).toString();
+		return jsonFilename;
 	}
 
 	/**
@@ -189,6 +260,21 @@ public class LatticeGraphPageGenerator {
 		}
 
 		return auStruct;
+	}
+
+	/**
+	 * Create a Gson object that can serialize LatticeGraph3D objects
+	 * @return
+	 */
+	private static Gson createGson() {
+		return new GsonBuilder()
+			.registerTypeAdapter(LatticeGraph3D.class, new LatticeGraph3DJson())
+			.registerTypeAdapter(ChainVertex3D.class, new ChainVertex3DJsonAdapter())
+			.registerTypeAdapter(InterfaceEdge3DSourced.class, new InterfaceEdge3DSourcedJsonAdapter())
+			.registerTypeAdapter(InterfaceEdge3D.class, new InterfaceEdge3DJsonAdapter())
+			.registerTypeAdapter(ParametricCircularArc.class, new ParametricCircularArcJsonAdapter())
+			.setPrettyPrinting()
+			.create();
 	}
 
 }

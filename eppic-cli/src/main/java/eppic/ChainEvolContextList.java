@@ -19,6 +19,7 @@ import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.UniProtConnection;
 import eppic.commons.sequence.UniprotLocalConnection;
+import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 
 public class ChainEvolContextList implements Serializable {
@@ -288,13 +289,15 @@ public class ChainEvolContextList implements Serializable {
 			} catch (IOException e) {
 				throw new EppicException(e, "Problems while retrieving homologs data: "+e.getMessage(),true);
 			} catch (SQLException e) {
-				throw new EppicException(e, "Problem while retrieving homologs data from UniProt local database: "+e.getMessage(), true);
+				throw new EppicException(e, "Problems while retrieving homologs data from UniProt local database: "+e.getMessage(), true);
+			} catch (ServiceException e) {
+				throw new EppicException(e, "Problems while retrieving homologs data from UniProt JAPI: "+e.getMessage(), true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
 				String msg = null;
 				if (useLocalUniprot) {
 					msg = "Problems while retrieving homologs data from UniProt local database. Error "+e.getMessage();
 				} else {
-					msg = "Problems while retrieving homologs data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage();
+					msg = "Problems while retrieving homologs data through UniProt JAPI. Are UniProt servers down?. Error: "+e.getMessage();
 				}
 				throw new EppicException(e, msg, true);
 			}
@@ -429,7 +432,9 @@ public class ChainEvolContextList implements Serializable {
 		if (useLocalUniprot) {			
 			this.uniprotLocalConn.close();
 			LOGGER.info("Connection to local UniProt database closed");
+		} else {
+			this.uniprotJapiConn.close();
+			LOGGER.info("Connection to UniProt JAPI closed");
 		}
-		// there doesn't seem to be a way of closing the japi connection, we do nothing in that case
 	}
 }

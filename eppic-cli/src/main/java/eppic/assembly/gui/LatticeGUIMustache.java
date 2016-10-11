@@ -66,7 +66,7 @@ public class LatticeGUIMustache {
 	private static final String TEMPLATE_DIR = "mustache/eppic/assembly/gui/";
 	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.html.mustache";
 	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_THUMB = TEMPLATE_DIR+"AssemblyDiagramThumb.dot.mustache";
-	public static final String TEMPLATE_3DMOL = LatticeGUI3Dmol.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUI3Dmol";
+	public static final String TEMPLATE_3DMOL = LatticeGUIMustache3D.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUIMustache3D";
 	public static final String MUSTACHE_TEMPLATE_NGL = "mustache/eppic/assembly/gui/LatticeGUINgl.html.mustache";
 
 
@@ -77,6 +77,7 @@ public class LatticeGUIMustache {
 	private String pdbId; // Defaults to the structure's PDB ID, if available
 	private String title; // Title for HTML page
 	private String size; // Target size for content
+	private String dpi; // the dpi for thumnails generation
 	
 	// cache for getGraph2D
 	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d = null;
@@ -89,8 +90,8 @@ public class LatticeGUIMustache {
 	 * 
 	 * The template file can be given as a path to the mustache template, which
 	 * can be either a full path or a short name within the eppic.assembly.gui
-	 * resource directory. For instance, '3Dmol', 'LatticeGUI3Dmol.html.mustache'
-	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache'
+	 * resource directory. For instance, '3Dmol', 'LatticeGUIMustache3D.html.mustache'
+	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUIMustache3D.html.mustache'
 	 * should all locate the correct template.
 	 * @param template String giving the path to the template.
 	 * @return
@@ -102,17 +103,17 @@ public class LatticeGUIMustache {
 		logger.info("Loading mustache template from {}",templatePath);
 
 		if( templatePath.toLowerCase().contains(TEMPLATE_3DMOL.toLowerCase()) ) {
-			LatticeGUI3Dmol gui = new LatticeGUI3Dmol(templatePath.toString(),struc, null, interfaceIds);
+			LatticeGUIMustache3D gui = new LatticeGUIMustache3D(templatePath.toString(),struc, null, interfaceIds);
 			//TODO work out how to set this
-			gui.setStrucURI(struc.getIdentifier()+".cif");
+			gui.setStrucURL(struc.getIdentifier()+".cif");
 			return gui;
 		}
 		return new LatticeGUIMustache(templatePath.toString(), struc, interfaceIds);
 	}
 	
 	/**
-	 * Attempts to expand a short template name into a full path. For instance, '3Dmol', 'LatticeGUI3Dmol.html.mustache'
-	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache' should all locate
+	 * Attempts to expand a short template name into a full path. For instance, '3Dmol', 'LatticeGUIMustache3D.html.mustache'
+	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUIMustache3D.html.mustache' should all locate
 	 * the correct template.
 	 * 
 	 * @param template Short template name
@@ -247,14 +248,10 @@ public class LatticeGUIMustache {
 		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 		logger.info("Using LatticeGraph3D with {} vertices and {} edges",graph.vertexSet().size(),graph.edgeSet().size());
 
-		// Compute names and colors
-		for(ChainVertex3D v : graph.vertexSet()) {
-			v.setColorStr(toHexColor(v.getColor()));
-		}
+		// Compute color strings
+		latticeGraph.setHexColors();
 
 		for(InterfaceEdge3D e : graph.edgeSet()) {
-			String colorStr = toHexColor(e.getColor());
-			e.setColorStr(colorStr);
 
 			if(e.getCircles() != null) {
 				for(OrientedCircle circ: e.getCircles()) {
@@ -276,17 +273,6 @@ public class LatticeGUIMustache {
 		title = null;
 		this.size = "800";
 	}
-
-	/**
-	 * hex version of the color (e.g. 'FF00CC')
-	 * @param color
-	 * @return
-	 */
-	private static String toHexColor(Color color) {
-		if(color == null) return null;
-		return String.format("%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
-	}
-
 
 	/**
 	 * Compile and execute the template
@@ -345,6 +331,14 @@ public class LatticeGUIMustache {
 	}
 	public void setSize(String size) {
 		this.size = size;
+	}
+	
+	public String getDpi() {
+		return dpi;
+	}
+	
+	public void setDpi(String dpi) {
+		this.dpi = dpi;
 	}
 
 	/**

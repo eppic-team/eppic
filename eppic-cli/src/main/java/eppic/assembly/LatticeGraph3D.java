@@ -34,6 +34,7 @@ import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
+import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -363,6 +364,31 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		return colorMap;
 	}
 
+	/**
+	 * For each vertex and edge, set the colorStr property to the hex value of the color.
+	 * 
+	 * @param graph
+	 */
+	public void setHexColors() {
+		for(ChainVertex3D v : graph.vertexSet()) {
+			v.setColorStr(toHexColor(v.getColor()));
+		}
+
+		for(InterfaceEdge3D e : graph.edgeSet()) {
+			String colorStr = toHexColor(e.getColor());
+			e.setColorStr(colorStr);
+		}
+	}
+
+	/**
+	 * hex version of the color (e.g. 'FF00CC')
+	 * @param color
+	 * @return
+	 */
+	public static String toHexColor(Color color) {
+		if(color == null) return null;
+		return String.format("%02x%02x%02x", color.getRed(),color.getGreen(),color.getBlue());
+	}
 
 	/**
 	 * Calculate the intersection of a line (given by two points) with a plane

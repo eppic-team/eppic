@@ -366,8 +366,7 @@ public class SubAssembly {
 	}
 	
 	/**
-	 * Returns the description corresponding to this AssemblyGraph as a list 
-	 * of AssemblyDescriptions per disjoint set.
+	 * Returns the description corresponding to this SubAssembly
 	 * @return
 	 */
 	public AssemblyDescription getDescription() {

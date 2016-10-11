@@ -54,10 +54,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 	 */
 	public static final String SERVLET_NAME = "assemblyDiagram";
 
-	public static final String PARAM_INTERFACES = "interfaces";
-	public static final String PARAM_CLUSTERS = "clusters";
-	public static final String PARAM_FORMAT = "format";
-
 	//public static final String NGL_URL = "https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js";
 	//public static final String VIS_JS_URL = "https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.js";
 
@@ -90,12 +86,12 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
-		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
-		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
+		String requestedIfacesStr = request.getParameter(LatticeGraphServlet.PARAM_INTERFACES);
+		String requestedClusterStr = request.getParameter(LatticeGraphServlet.PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
-		String format = request.getParameter(PARAM_FORMAT);
+		String format = request.getParameter(LatticeGraphServlet.PARAM_FORMAT);
 
-		logger.info("Requested assemblyDiagram page for jobId={},interfaces={},clusters={}",jobId,requestedIfacesStr,requestedClusterStr);
+		logger.info("Requested assemblyDiagram page for jobId={},interfaces={},clusters={},format={}",jobId,requestedIfacesStr,requestedClusterStr,format);
 
 		PrintWriter outputStream = null;
 
@@ -106,17 +102,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 			PdbInfo pdbInfo = LatticeGraphServlet.getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
 
-			// Request URL, with format=json
-			StringBuffer jsonURL = request.getRequestURL();
-			Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
-			query.put("format", new String[] {"json"});
-			jsonURL.append('?')
-			.append(
-					query.entrySet().stream()
-					.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
-					.collect(Collectors.joining("&"))
-					);
-			
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
@@ -137,6 +122,16 @@ public class AssemblyDiagramServlet extends BaseServlet
 			if(format != null && format.equalsIgnoreCase("json")) {
 				AssemblyDiagramPageGenerator.generateJSONPage(dir,input, atomCachePath, ifaceList, requestedIfaces,outputStream);
 			} else {
+				// Request URL, with format=json
+				StringBuffer jsonURL = request.getRequestURL();
+				Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
+				query.put("format", new String[] {"json"});
+				jsonURL.append('?')
+				.append(
+						query.entrySet().stream()
+						.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
+						.collect(Collectors.joining("&"))
+						);
 				AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream);
 				// TODO start generating JSON now, since we know that request is coming
 			}
