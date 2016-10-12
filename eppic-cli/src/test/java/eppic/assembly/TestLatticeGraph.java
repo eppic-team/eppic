@@ -440,8 +440,16 @@ public class TestLatticeGraph {
 	
 	public static CrystalAssemblies getCrystalAssemblies(String pdbId, boolean forceContracted) throws IOException, StructureException {
 		
-		logger.info("Calculating interfaces for "+pdbId);
+		Structure s = getStructure(pdbId);
 		
+		StructureInterfaceList interfaces = getAllInterfaces(s);
+		
+		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, forceContracted);
+		
+		return crystalAssemblies; 
+	}
+	
+	public static Structure getStructure(String pdbId) throws IOException, StructureException {
 		AtomCache cache = new AtomCache();
 		FileParsingParameters params = new FileParsingParameters();
 		params.setAlignSeqRes(true); 
@@ -449,18 +457,18 @@ public class TestLatticeGraph {
 		StructureIO.setAtomCache(cache);
 		
 		Structure s =  StructureIO.getStructure(pdbId);
+		return s;
+	}
+	
+	public static StructureInterfaceList getAllInterfaces(Structure s)  {
+		logger.info("Calculating interfaces for "+s.getIdentifier().toString());
 		
 		CrystalBuilder cb = new CrystalBuilder(s);
 		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
 		interfaces.calcAsas();
 		interfaces.removeInterfacesBelowArea();
 		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
-		
-		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, forceContracted);
-		
-		return crystalAssemblies; 
+		return interfaces;
 	}
-	
-	
 	
 }
