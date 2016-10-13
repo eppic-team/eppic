@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
 
@@ -139,7 +140,7 @@ public class Assembly {
 	}
 	
 	/**
-	 * Get the parent CrystalAssemly object containing references to all other Assemblies and to the original Structure
+	 * Get the parent CrystalAssemblies object containing references to all other Assemblies and to the original Structure
 	 * @return
 	 */
 	public CrystalAssemblies getCrystalAssemblies() {
@@ -946,15 +947,20 @@ public class Assembly {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		int numClusters = getNumEngagedInterfaceClusters();
+		
+		SortedSet<Integer> interfClusterIds = GraphUtils.getDistinctInterfaceClusters(assemblyGraph.getSubgraph());
+		int numClusters = interfClusterIds.size();
+		
 		sb.append("{");
-		int e = 0;
-		for (int i=0;i<engagedSet.size();i++) {
-			if (engagedSet.isOn(i)) {
-				sb.append(i+1);
-				e++;
-				if (e!=numClusters) sb.append(",");
-			}
+
+		int i = 0;
+		for (int interfClusterId : interfClusterIds) {
+
+			sb.append(interfClusterId);
+			
+			if (i!=numClusters-1) sb.append(",");
+
+			i++;
 		}
 		sb.append("}");
 		return sb.toString();

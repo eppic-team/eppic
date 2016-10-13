@@ -178,6 +178,19 @@ public class GraphUtils {
 	}
 	
 	/**
+	 * Get the sorted set of distinct interface cluster ids in the given graph.
+	 * @param g
+	 * @return
+	 */
+	public static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> SortedSet<Integer> getDistinctInterfaceClusters(UndirectedGraph<V,E> g) {
+		SortedSet<Integer> interfClusterIds = new TreeSet<Integer>();
+		for (E e:g.edgeSet()) {
+			interfClusterIds.add(e.getClusterId());
+		}
+		return interfClusterIds;
+	}
+	
+	/**
 	 * Get the number of distinct entities in the given graph by looking at the number of
 	 * distinct entity ids. 
 	 * @return

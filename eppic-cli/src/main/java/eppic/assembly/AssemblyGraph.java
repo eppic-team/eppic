@@ -60,12 +60,22 @@ public class AssemblyGraph {
 		
 		Set<ChainVertex> vertexSet = graph.vertexSet();
 		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
-		for(InterfaceEdge edge:graph.edgeSet()) {
-			for (int i=0;i<assembly.getEngagedSet().size();i++) {
-				if (assembly.getEngagedSet().isOn(i)  && edge.getClusterId()==i+1) {
-					edgeSubset.add(edge);
-				}
+		
+		List<Integer> distinctInterfClusterIds = new ArrayList<>(GraphUtils.getDistinctInterfaceClusters(graph));
+		
+		Set<Integer> interfClusterIdsToEngage = new HashSet<>();
+		for (int i=0;i<assembly.getEngagedSet().size();i++) {
+			if (assembly.getEngagedSet().isOn(i)) {
+				interfClusterIdsToEngage.add(distinctInterfClusterIds.get(i));
 			}
+		}
+		
+		for(InterfaceEdge edge:graph.edgeSet()) {
+			
+			if (interfClusterIdsToEngage.contains(edge.getClusterId())) {
+				edgeSubset.add(edge);
+			}
+			
 		}
 		
 		this.subgraph = 
@@ -80,7 +90,7 @@ public class AssemblyGraph {
 		List<Set<ChainVertex>> connectedSets = ci.connectedSets();
 		
 		logger.debug("Subgraph of assembly {} has {} vertices and {} edges, with {} connected components",
-				assembly.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedSets.size());
+				assembly.getId(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedSets.size());
 		
 		StringBuilder sb = new StringBuilder();
 		for (Set<ChainVertex> cc:connectedSets) {

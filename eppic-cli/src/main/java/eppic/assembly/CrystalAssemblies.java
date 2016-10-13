@@ -147,7 +147,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				
 		Set<Assembly> validAssemblies = new HashSet<Assembly>();
 		
-		// in contracted case this will find get the distinct interfaces for the contracted graph
+		// in contracted case this will find the distinct interfaces for the contracted graph
 		int numInterfaceClusters = GraphUtils.getNumDistinctInterfaces(latticeGraph.getGraph());
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
