@@ -459,6 +459,9 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		
 		GraphContractor<V,E> contractor = new GraphContractor<>(getGraph());
 		this.subgraph = contractor.contract(edgeClass);
+		
+		logger.info("Graph after contraction: {} vertices and {} edges in unit cell\n{}", subgraph.vertexSet().size(), subgraph.edgeSet().size(),
+				GraphUtils.asString(subgraph));
 
 	}
 

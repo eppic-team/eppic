@@ -254,8 +254,9 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				Set<E> edges = contGraph.getAllEdges(iVertex, jVertex);
 				Map<Integer,Set<E>> groups = GraphUtils.groupIntoTypes(edges, true);
 
-				for (int interfaceId:groups.keySet()){
-					Set<E> group = groups.get(interfaceId);
+				for (Entry<Integer, Set<E>> entry : groups.entrySet()){
+					int interfaceId = entry.getKey();
+					Set<E> group = entry.getValue();					
 
 					if (group.size()==0) {
 						continue;

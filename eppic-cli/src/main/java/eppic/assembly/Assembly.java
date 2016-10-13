@@ -227,6 +227,9 @@ public class Assembly {
 	 * if Assembly is heteromeric and stoichiometry is uneven returns false
 	 * </li>
 	 * <li>
+	 * if Assembly is not automorphic (i.e. all vertices of a kind must have the same kind and number of interface clusters) returns false
+	 * </li>
+	 * <li>
 	 * finally checks that all cycles are closed by enumerating cycles and checking the translations add up to 0
 	 * </li>
 	 * @return
