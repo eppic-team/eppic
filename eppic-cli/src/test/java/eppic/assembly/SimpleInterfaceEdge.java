@@ -30,5 +30,22 @@ public class SimpleInterfaceEdge implements InterfaceEdgeInterface {
 	public String toString() {
 		return interfaceId+"-"+clusterId;
 	}
+
+	@Override
+	public void setInterfaceId(int interfaceId) {
+		this.interfaceId = interfaceId;
+		
+	}
+
+	@Override
+	public void setClusterId(int clusterId) {
+		this.clusterId = clusterId;
+		
+	}
+
+	@Override
+	public void setXtalTrans(Point3i xtalTrans) {
+		// not implemented
+	}
 	
 }

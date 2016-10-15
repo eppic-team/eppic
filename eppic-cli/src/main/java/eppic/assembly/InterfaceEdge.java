@@ -63,12 +63,22 @@ public class InterfaceEdge implements InterfaceEdgeInterface {
 	public int getInterfaceId() {
 		return interf.getId();
 	}
+	
+	@Override
+	public void setInterfaceId(int interfaceId) {
+		// TODO implement it, we need to have interfaceId as a field
+	}
 
 	@Override
 	public int getClusterId() {
 		if(interf.getCluster() == null)
 			return -1;
 		return interf.getCluster().getId();
+	}
+	
+	@Override
+	public void setClusterId(int clusterId) {
+		// TODO implement it, we need to have clusterId as a field
 	}
 
 	public boolean isIsologous() {
@@ -83,6 +93,8 @@ public class InterfaceEdge implements InterfaceEdgeInterface {
 	public Point3i getXtalTrans() {
 		return xtalTrans;
 	}
+	
+	@Override
 	public void setXtalTrans(Point3i xtalTrans) {
 		this.xtalTrans = xtalTrans;
 	}
