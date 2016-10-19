@@ -130,15 +130,18 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				// we make sure we put them back in the same direction as we encountered them
 				logger.debug("Adding edge {} between {} {} {}. Before it was {}-{}", 
 						eToAdd.toString(), vToKeep.toString(), ( invert?"<-":"->" ), target.toString(),vToRemove.toString(),target.toString());
-				if (!invert) {
-					Point3i newTrans = new Point3i(eToAdd.getXtalTrans());
+				
+				Point3i newTrans = new Point3i(eToAdd.getXtalTrans());
+				eToAdd.setXtalTrans(newTrans);
+				
+				if (!invert) {				
+					//newTrans.add(e.getXtalTrans());									
 					newTrans.sub(e.getXtalTrans());
-					eToAdd.setXtalTrans(newTrans);
 					contGraph.addEdge(vToKeep, target, eToAdd);
-				} else {
-					Point3i newTrans = new Point3i(e.getXtalTrans());
-					newTrans.sub(eToAdd.getXtalTrans());
-					eToAdd.setXtalTrans(newTrans);					
+					
+				} else {					
+					//newTrans.sub(e.getXtalTrans());					
+					newTrans.add(e.getXtalTrans());
 					contGraph.addEdge(target, vToKeep, eToAdd);
 				}
 
