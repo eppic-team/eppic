@@ -111,6 +111,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 
 				boolean invert = false;
 				V target = null;
+				
 				if (vToRemove.equals(inputGraph.getEdgeSource(eToAdd))) {
 					target = inputGraph.getEdgeTarget(eToAdd);
 				} else if (vToRemove.equals(inputGraph.getEdgeTarget(eToAdd))) {
@@ -126,26 +127,29 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 							target, eToAdd, contractedVertices.get(target));
 					target = contractedVertices.get(target);
 				}
+				
+				V src = null;
+				V trt = null;
+						
+				if (invert) {
+					src = target;
+					trt = vToKeep;
+				} else {
+					src = vToKeep;
+					trt = target;
+				}
+				
 
 				// we make sure we put them back in the same direction as we encountered them
 				logger.debug("Adding edge {} between {} {} {}. Before it was {}-{}", 
 						eToAdd.toString(), vToKeep.toString(), ( invert?"<-":"->" ), target.toString(),vToRemove.toString(),target.toString());
 				
-				Point3i newTrans = new Point3i(eToAdd.getXtalTrans());
-				eToAdd.setXtalTrans(newTrans);
-				
-				if (!invert) {				
-					//newTrans.add(e.getXtalTrans());									
-					newTrans.sub(e.getXtalTrans());
-					contGraph.addEdge(vToKeep, target, eToAdd);
-					
-				} else {					
-					//newTrans.sub(e.getXtalTrans());					
-					newTrans.add(e.getXtalTrans());
-					contGraph.addEdge(target, vToKeep, eToAdd);
-				}
-
-
+				//Point3i newTrans = new Point3i(eToAdd.getXtalTrans());
+				Point3i newTrans = eToAdd.getXtalTrans();
+				//eToAdd.setXtalTrans(newTrans);
+				if (invert) newTrans.negate();				
+				newTrans.add(e.getXtalTrans());
+				contGraph.addEdge(src, trt, eToAdd);
 
 				logger.debug("Graph has {} vertices and {} edges", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 			}
