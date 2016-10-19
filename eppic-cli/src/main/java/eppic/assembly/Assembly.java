@@ -120,17 +120,6 @@ public class Assembly {
 		return assemblyGraph;
 	}
 	
-	public List<StructureInterfaceCluster> getEngagedInterfaceClusters() {
-		TreeMap<Integer, StructureInterfaceCluster> map = new TreeMap<Integer, StructureInterfaceCluster>();
-		for (InterfaceEdge e : assemblyGraph.getSubgraph().edgeSet()) {
-			map.put ( e.getClusterId(), e.getInterfaceCluster());
-		}
-		
-		List<StructureInterfaceCluster> list = new ArrayList<StructureInterfaceCluster>();
-		list.addAll(map.values());
-		return list;
-	}
-	
 	public int getNumEngagedInterfaceClusters() {
 		int count=0;
 		for (int i=0;i<engagedSet.size();i++) {

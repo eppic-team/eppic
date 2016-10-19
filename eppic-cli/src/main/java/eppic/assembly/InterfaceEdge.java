@@ -14,6 +14,11 @@ import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
  */
 public class InterfaceEdge implements InterfaceEdgeInterface {
 
+	private int interfaceId;
+	private int clusterId;
+	private boolean isInfinite;
+	private boolean isIsologous;
+	
 	private StructureInterface interf;
 	
 	private Point3i xtalTrans;
@@ -35,24 +40,55 @@ public class InterfaceEdge implements InterfaceEdgeInterface {
 	public InterfaceEdge(StructureInterface interf, Point3i xtalTrans) {
 		this.interf = interf;
 		this.xtalTrans = xtalTrans;
+		
+		if (interf!=null) {
+			this.interfaceId = interf.getId();
+			this.isInfinite = interf.isInfinite();
+			this.isIsologous = interf.isIsologous();
+		}
+		else { 
+			this.interfaceId = -1;
+			this.isInfinite = false;
+			this.isIsologous = false;
+		}
+		
+		if (interf!=null && interf.getCluster()!=null)
+			this.clusterId = interf.getCluster().getId();
+		else 
+			this.clusterId = -1;
 	}
 	
 	/** Copy constructor */
 	public InterfaceEdge(InterfaceEdge o) {
 		this.interf = o.interf;
 		this.xtalTrans = o.xtalTrans;
+		this.interfaceId = o.interfaceId;
+		this.clusterId = o.clusterId;
+		this.isInfinite = o.isInfinite;
+		this.isIsologous = o.isIsologous;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("-%d(%d)-",interf.getId(),interf.getCluster().getId());
+		return String.format("-%d(%d)-", getInterfaceId(), getClusterId());
 	}
 
 	public StructureInterface getInterface() {
 		return interf;
 	}
+	
 	public void setInterface(StructureInterface i) {
 		this.interf = i;
+		this.interfaceId = interf.getId();
+		this.isInfinite = interf.isInfinite();
+		this.isIsologous = interf.isIsologous();
+
+		if (interf.getCluster()!=null) {
+			this.clusterId = interf.getCluster().getId();
+		}
+		else {
+			this.clusterId = -1;
+		}
 	}
 	
 	public StructureInterfaceCluster getInterfaceCluster() {
@@ -61,32 +97,42 @@ public class InterfaceEdge implements InterfaceEdgeInterface {
 	
 	@Override
 	public int getInterfaceId() {
-		return interf.getId();
+		return interfaceId;
 	}
 	
 	@Override
 	public void setInterfaceId(int interfaceId) {
-		// TODO implement it, we need to have interfaceId as a field
+		this.interfaceId = interfaceId;
 	}
 
 	@Override
 	public int getClusterId() {
-		if(interf.getCluster() == null)
-			return -1;
-		return interf.getCluster().getId();
+		return clusterId;
 	}
 	
 	@Override
 	public void setClusterId(int clusterId) {
-		// TODO implement it, we need to have clusterId as a field
+		this.clusterId = clusterId;
 	}
 
+	@Override
 	public boolean isIsologous() {
-		return interf.isIsologous();
+		return isIsologous;
 	}
-
+	
+	@Override
+	public void setIsIsologous(boolean isIsologous) {
+		this.isIsologous = isIsologous;
+	}
+	
+	@Override
 	public boolean isInfinite() {
-		return interf.isInfinite();
+		return isInfinite;
+	}
+	
+	@Override
+	public void setIsInfinite(boolean isInfinite) {
+		this.isInfinite = isInfinite;
 	}
 
 	@Override
@@ -102,6 +148,7 @@ public class InterfaceEdge implements InterfaceEdgeInterface {
 	public String getXtalTransString() {
 		return InterfaceEdge.getXtalTransString(getXtalTrans());
 	}
+	
 	public static String getXtalTransString(Point3i xtalTrans) {
 		int[] coords = new int[3];
 		xtalTrans.get(coords);

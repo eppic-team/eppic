@@ -15,7 +15,6 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -396,16 +395,16 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				} 
 				
 				// if both of same size, we sort based on engaged interface cluster ids
-				List<StructureInterfaceCluster> interfClusters0 = arg0.getEngagedInterfaceClusters();
-				List<StructureInterfaceCluster> interfClusters1 = arg1.getEngagedInterfaceClusters();
-				if (interfClusters0.size()!=interfClusters1.size()) {
+				List<Integer> interfClusterIds0 = new ArrayList<>(GraphUtils.getDistinctInterfaceClusters(arg0.getAssemblyGraph().getSubgraph()));
+				List<Integer> interfClusterIds1 = new ArrayList<>(GraphUtils.getDistinctInterfaceClusters(arg1.getAssemblyGraph().getSubgraph()));
+				if (interfClusterIds0.size()!=interfClusterIds1.size()) {
 					// if different number of interface clusters we put the one with the most clusters first
-					return Integer.compare(interfClusters1.size(),interfClusters0.size());
+					return Integer.compare(interfClusterIds1.size(),interfClusterIds0.size());
 				}
 
-				for (int i=0;i<interfClusters0.size();i++) {
-					int id0 = interfClusters0.get(i).getId();
-					int id1 = interfClusters1.get(i).getId();
+				for (int i=0;i<interfClusterIds0.size();i++) {
+					int id0 = interfClusterIds0.get(i);
+					int id1 = interfClusterIds1.get(i);
 					
 					if (id0==id1) continue;
 					

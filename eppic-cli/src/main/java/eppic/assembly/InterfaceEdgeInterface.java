@@ -44,5 +44,29 @@ public interface InterfaceEdgeInterface {
 	 * @param xtalTrans
 	 */
 	void setXtalTrans(Point3i xtalTrans);
+	
+	/**
+	 * Tells whether this interface is isologous
+	 * @return
+	 */
+	boolean isIsologous();
+	
+	/**
+	 * Sets the isIsologous property
+	 * @param isIsologous
+	 */
+	void setIsIsologous(boolean isIsologous);	
+	
+	/**
+	 * Tells whether this interface is infinite, i.e. its engagement produces an infinite subgraph in the lattice
+	 * @return
+	 */
+	boolean isInfinite();
+	
+	/**
+	 * Sets the isInfinite property
+	 * @param isInfinite
+	 */
+	void setIsInfinite(boolean isInfinite);
 
 }

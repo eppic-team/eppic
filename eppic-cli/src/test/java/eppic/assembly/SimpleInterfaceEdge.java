@@ -47,5 +47,30 @@ public class SimpleInterfaceEdge implements InterfaceEdgeInterface {
 	public void setXtalTrans(Point3i xtalTrans) {
 		// not implemented
 	}
+
+	@Override
+	public boolean isIsologous() {
+		// not implemented
+		return false;
+	}
+
+	@Override
+	public void setIsIsologous(boolean isIsologous) {
+		// not implemented
+		
+	}
+
+	@Override
+	public boolean isInfinite() {
+		// not implemented
+		return false;
+	}
+
+	@Override
+	public void setIsInfinite(boolean isInfinite) {
+		// not implemented
+		
+	}
+	
 	
 }

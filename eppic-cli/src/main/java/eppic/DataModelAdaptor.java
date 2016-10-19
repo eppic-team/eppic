@@ -38,6 +38,7 @@ import eppic.analysis.compare.SimpleInterface;
 import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyDescription;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.GraphUtils;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
 import eppic.model.AssemblyContentDB;
@@ -423,8 +424,8 @@ public class DataModelAdaptor {
 			pdbInfo.addAssembly(assembly);
 			
 			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
-			for (StructureInterfaceCluster ic:validAssembly.getEngagedInterfaceClusters()) {
-				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(ic.getId());
+			for (int id: GraphUtils.getDistinctInterfaceClusters(validAssembly.getAssemblyGraph().getSubgraph())) {
+				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(id);
 				interfaceClusters.add(icDB);
 				icDB.addAssembly(assembly);
 			}

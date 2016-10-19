@@ -13,9 +13,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -49,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.GraphUtils;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
@@ -711,11 +711,7 @@ public class Main {
 					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 					
 					// Filter down to this assembly
-					List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
-					Set<Integer> clusterIds = new HashSet<Integer>(clusters.size());
-					for(StructureInterfaceCluster cluster : clusters) {
-						clusterIds.add(cluster.getId());
-					}
+					SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());					
 					latticeGraph.filterEngagedClusters(clusterIds);
 					
 					LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);

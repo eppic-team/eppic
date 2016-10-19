@@ -144,12 +144,24 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				logger.debug("Adding edge {} between {} -> {}. Before it was {}-{}", 
 						eToAdd.toString(), src.toString(), trt.toString(), vToRemove.toString(), vToLink.toString());
 				
-				//Point3i newTrans = new Point3i(eToAdd.getXtalTrans());
-				Point3i newTrans = eToAdd.getXtalTrans();
-				//eToAdd.setXtalTrans(newTrans);
-				if (invert) newTrans.negate();				
+				// we create a new edge so that we can keep the original edges from the original graph intact
+				InterfaceEdge newEdge = new InterfaceEdge();
+				
+				newEdge.setInterfaceId(eToAdd.getInterfaceId());
+				newEdge.setClusterId(eToAdd.getClusterId());
+				newEdge.setIsInfinite(eToAdd.isInfinite());
+				newEdge.setIsIsologous(eToAdd.isIsologous());
+				
+				Point3i newTrans = new Point3i(eToAdd.getXtalTrans());
+				newEdge.setXtalTrans(newTrans);
+				
+				if (invert) newTrans.negate();
+				
 				newTrans.add(e.getXtalTrans());
-				contGraph.addEdge(src, trt, eToAdd);
+								
+				@SuppressWarnings("unchecked") // should be safe in my understanding
+				E thenewEdge = (E) newEdge;
+				contGraph.addEdge(src, trt, thenewEdge);
 
 				logger.debug("Graph has {} vertices and {} edges", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 			}
