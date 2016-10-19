@@ -110,39 +110,39 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				}
 
 				boolean invert = false;
-				V target = null;
+				V vToLink = null;
 				
 				if (vToRemove.equals(inputGraph.getEdgeSource(eToAdd))) {
-					target = inputGraph.getEdgeTarget(eToAdd);
+					vToLink = inputGraph.getEdgeTarget(eToAdd);
 				} else if (vToRemove.equals(inputGraph.getEdgeTarget(eToAdd))) {
-					target = inputGraph.getEdgeSource(eToAdd);
+					vToLink = inputGraph.getEdgeSource(eToAdd);
 					invert = true;
 				} else {
 					logger.error("vToRemove is neither source nor target");
 					continue;
 				}
 
-				if (!contGraph.containsVertex(target)) {
+				if (!contGraph.containsVertex(vToLink)) {
 					logger.debug("Vertex {}, needed to add new edge {} is not in graph, replacing it by its contracted vertex {}", 
-							target, eToAdd, contractedVertices.get(target));
-					target = contractedVertices.get(target);
+							vToLink, eToAdd, contractedVertices.get(vToLink));
+					vToLink = contractedVertices.get(vToLink);
 				}
 				
 				V src = null;
 				V trt = null;
 						
 				if (invert) {
-					src = target;
+					src = vToLink;
 					trt = vToKeep;
 				} else {
 					src = vToKeep;
-					trt = target;
+					trt = vToLink;
 				}
 				
 
 				// we make sure we put them back in the same direction as we encountered them
-				logger.debug("Adding edge {} between {} {} {}. Before it was {}-{}", 
-						eToAdd.toString(), vToKeep.toString(), ( invert?"<-":"->" ), target.toString(),vToRemove.toString(),target.toString());
+				logger.debug("Adding edge {} between {} -> {}. Before it was {}-{}", 
+						eToAdd.toString(), src.toString(), trt.toString(), vToRemove.toString(), vToLink.toString());
 				
 				//Point3i newTrans = new Point3i(eToAdd.getXtalTrans());
 				Point3i newTrans = eToAdd.getXtalTrans();
