@@ -1,14 +1,11 @@
 package eppic.assembly;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -321,67 +318,66 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				j++;
 				if (j<i) continue; // i.e. we include i==j (to remove loop edges)
 
-				Set<E> directEdges = contGraph.getAllEdges(iVertex, jVertex);
-				
-				List<E> sortedEdges = new ArrayList<>(directEdges);
-				
-				Collections.sort(sortedEdges, new Comparator<E>() {
-					@Override
-					public int compare(E e1, E e2) {
-						return Integer.compare(e1.getClusterId(), e2.getClusterId());
-					}
-				});
-				
-//				Map<Integer,Set<E>> groups = GraphUtils.groupIntoTypes(edges, true);
-//				
-//				if (edges.size()>1 && groups.size()>1) {
-//					logger.info("Duplicate edge of different type between vertices {},{}", iVertex, jVertex);
-//					for (E edge: sortedEdges) {
-//						logger.info("Edge {} - {}", edge.toString(), edge.getXtalTrans().toString());
-//					}
-//				}
+				// note edges contains all edges between iVertex and jVertex, BUT there source/targets can be either iVertex/jVertex or viceversa (see docs of getAllEdges)
+				Set<E> edges = contGraph.getAllEdges(iVertex, jVertex);
 				
 				if (i==j) {
 					// loop edges: we remove them all
-					for (E e : sortedEdges) {
+					for (E e : edges) {
 						toRemove.add(e);
 						logger.debug("Removed loop edge {} on vertex {} after contraction", e, iVertex);
 					}
 					
 				} else {
-					// others: we keep first from sorted list (the one with lowest interf cluster id)
-					for (int k=1; k<sortedEdges.size(); k++) {						
-						toRemove.add(sortedEdges.get(k));
-						logger.debug("Removed duplicate edge {} between vertices {},{} after contraction", sortedEdges.get(k), iVertex, jVertex);
+					// before removing them, we go by edge types and find the total translation for all edges of one type and assign that to the edge that we will keep
+					SortedMap<Integer,Set<E>> groups = GraphUtils.groupIntoTypes(edges, true);
+					
+					int k = -1;
+					for (Entry<Integer, Set<E>> entry : groups.entrySet()) {
+						k++;
+						// each group below contains all edges of one type
+						int clusterId = entry.getKey();
+						Set<E> group = entry.getValue();
+						
+						if (k>0) { // i.e. second iteration and beyond
+							// there's more than 1 group: we get rid of all edges beyond first group
+							// TODO check that that's the right thing to do, do we lose anything by removing all the edges except for one type?							
+							toRemove.addAll(group);
+							logger.info("Removed after contraction {} edges with cluster id {} between vertices {},{}", group.size(), clusterId, iVertex.toString(), jVertex.toString());
+							continue;
+						}
+						
+						// only for first group
+						if (group.size()>1) {
+							E firstEdgeInGroup = null;
+							Point3i totalTrans = new Point3i(0,0,0);
+							V sourceRef = null;
+							for (E edge : group) {
+								if (sourceRef==null) {
+									// we initialize sourceRef and then take as the reference for the other iterations
+									sourceRef = contGraph.getEdgeSource(edge);
+								}
+								if (firstEdgeInGroup==null) {
+									firstEdgeInGroup = edge;
+								} else {
+									// not the first one: we add edge to remove list
+									logger.info("Removed after contraction duplicate edge {} between vertices {},{}", edge, iVertex, jVertex);
+									toRemove.add(edge);
+								}
+								Point3i trans = new Point3i(edge.getXtalTrans());
+								if (!contGraph.getEdgeSource(edge).equals(sourceRef)) {
+									trans.negate();
+								}
+								totalTrans.add(trans);
+							}
+							// finally we set the new totalTrans to the edge that we will keep
+							logger.info("Resetting after contraction edge {} to translation {}", firstEdgeInGroup.toString(), totalTrans.toString());
+							firstEdgeInGroup.setXtalTrans(totalTrans);
+						}
+						
 					}
+					
 				}
-
-//				for (Entry<Integer, Set<E>> entry : groups.entrySet()){
-//					int interfaceId = entry.getKey();
-//					Set<E> group = entry.getValue();					
-//
-//					if (group.size()==0) {
-//						continue;
-//					} else if (group.size()==1 && i!=j) { 
-//						continue;
-//					} else if (group.size()==1 && i==j) {
-//						// i!=j condition makes sure that loop edges are removed below (i==j case)
-//						toRemove.add(group.iterator().next());
-//						logger.debug("Removed loop edge with interface id {}",interfaceId);
-//						continue;
-//					}
-//					// now we are in case 2 or more edges 
-//					// we keep first and remove the rest
-//					Iterator<E> it = group.iterator();
-//					it.next(); // first edge: we keep it
-//					while (it.hasNext()) {						
-//						E edge = it.next();
-//						toRemove.add(edge);
-//						logger.debug("Removed edge with interface id {} between vertices {},{} ", 
-//								interfaceId,iVertex.toString(),jVertex.toString());
-//					}
-//
-//				}
 
 
 			}

@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import javax.vecmath.Point3i;
 
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -31,10 +32,10 @@ public class GraphUtils {
 	 * Given a set of edges groups them into interface id or interface cluster id groups
 	 * @param edges
 	 * @param byClusters if true grouping is by interface cluster ids, if false grouping by interface ids
-	 * @return a map of interface ids (or interface cluster ids) to sets of edges with the corresponding id
+	 * @return a sorted map of interface ids (or interface cluster ids) to sets of edges with the corresponding id
 	 */
-	public static <E extends InterfaceEdgeInterface> Map<Integer,Set<E>> groupIntoTypes(Set<E> edges, boolean byClusters) {
-		Map<Integer,Set<E>> map = new HashMap<>();
+	public static <E extends InterfaceEdgeInterface> SortedMap<Integer,Set<E>> groupIntoTypes(Set<E> edges, boolean byClusters) {
+		SortedMap<Integer,Set<E>> map = new TreeMap<>();
 
 		for (E edge:edges) {
 			int id = -1;
