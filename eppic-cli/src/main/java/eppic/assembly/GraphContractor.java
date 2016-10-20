@@ -87,6 +87,8 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 			V vToRemove = pair.first;
 			V vToKeep  = pair.second;					
 
+			contGraph.removeVertex(vToRemove);
+
 			contractedVertices.put(vToRemove, vToKeep);
 
 		}
@@ -102,9 +104,6 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 			V vToRemove = pair.first;
 			V vToKeep  = pair.second;					
 			
-			logger.debug("Graph has {} vertices and {} edges, before removing anything", contGraph.vertexSet().size(), contGraph.edgeSet().size());
-
-			contGraph.removeVertex(vToRemove);
 
 			logger.debug("Graph has {} vertices and {} edges, before add edges loop", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 
@@ -193,7 +192,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 	}
 	
 	/**
-	 * Given the inputGraph and an edge to remove finds the pairs of vertices to remove and keep (returned by reference to parameters vToRemove and vToKeep)
+	 * Given the inputGraph and an edge to remove finds the pairs of vertices to remove and keep 
 	 * @param inputGraph
 	 * @param e
 	 * @param referenceEntityId
@@ -322,9 +321,9 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				j++;
 				if (j<i) continue; // i.e. we include i==j (to remove loop edges)
 
-				Set<E> edges = contGraph.getAllEdges(iVertex, jVertex);
+				Set<E> directEdges = contGraph.getAllEdges(iVertex, jVertex);
 				
-				List<E> sortedEdges = new ArrayList<>(edges);
+				List<E> sortedEdges = new ArrayList<>(directEdges);
 				
 				Collections.sort(sortedEdges, new Comparator<E>() {
 					@Override
