@@ -1,7 +1,9 @@
 package eppic.assembly;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -160,6 +162,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				
 				if (invert) newTrans.negate();
 				
+				// and we and the translation from the edge that we are removing
 				newTrans.add(e.getXtalTrans());
 							
 				// the casting should be safe				 				
@@ -301,8 +304,8 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 	}
 	
 	/**
-	 * Eliminates duplicate edges in the given graph: for any 2 nodes joined by more than 1 edge of the same type (interface cluster id)
-	 * only 1 edge per type is kept. Also eliminates all loop edges (of a node to itself). 
+	 * Eliminates duplicate edges in the given graph: for any 2 nodes joined by more than 1 edge 
+	 * only 1 edge is kept. Also eliminates all loop edges (of a node to itself). 
 	 * 
 	 * @param contGraph
 	 */
@@ -329,7 +332,6 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 					}
 					
 				} else {
-					// before removing them, we go by edge types and find the total translation for all edges of one type and assign that to the edge that we will keep
 					SortedMap<Integer,Set<E>> groups = GraphUtils.groupIntoTypes(edges, true);
 					
 					int k = -1;
@@ -337,40 +339,29 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 						k++;
 						// each group below contains all edges of one type
 						int clusterId = entry.getKey();
-						Set<E> group = entry.getValue();
-						
-						if (k>0) { // i.e. second iteration and beyond
+						List<E> group = new ArrayList<>(entry.getValue());
+
+						if (k==0) { // only for first group
+							
+							// we remove all but first
+							for (int l=1;l<group.size();l++) {
+								logger.debug("Removed (after contraction) duplicate edge {} between vertices {},{}", group.get(l), iVertex, jVertex); 
+								toRemove.add(group.get(l));
+							}
+
+
+						} else { // i.e. second group and beyond
+							
 							// there's more than 1 group: we get rid of all edges beyond first group
-							// TODO check that that's the right thing to do, do we lose anything by removing all the edges except for one type?							
+							// TODO check that this is the right thing to do, do we lose anything by removing all the edges except for one type?	
+							// TODO or do we want to keep one edge per type?
+							
 							toRemove.addAll(group);
-							logger.debug("Removed after contraction {} edges with cluster id {} between vertices {},{}", group.size(), clusterId, iVertex.toString(), jVertex.toString());
+							logger.debug("Removed (after contraction) {} edges with cluster id {} between vertices {},{}", group.size(), clusterId, iVertex.toString(), jVertex.toString());
 							continue;
 						}
-						
-						// only for first group
-						if (group.size()>1) {
-							E firstEdgeInGroup = null;
-							Point3i totalTrans = new Point3i(0,0,0);							
-							for (E edge : group) {
-								if (firstEdgeInGroup==null) {
-									firstEdgeInGroup = edge;
-								} else {
-									// not the first one: we add edge to remove list
-									logger.debug("Removed after contraction duplicate edge {} between vertices {},{}", edge, iVertex, jVertex);
-									toRemove.add(edge);
-								}
-								Point3i trans = new Point3i(edge.getXtalTrans());
-								if (!contGraph.getEdgeSource(edge).equals(iVertex)) {
-									// the edge is in the reverse direction, we negate it
-									trans.negate();
-								}
-								totalTrans.add(trans);
-							}
-							// finally we set the new totalTrans to the edge that we will keep
-							logger.debug("Resetting after contraction edge {} to translation {}", firstEdgeInGroup.toString(), totalTrans.toString());
-							firstEdgeInGroup.setXtalTrans(totalTrans);
-						}
-						
+
+
 					}
 					
 				}
