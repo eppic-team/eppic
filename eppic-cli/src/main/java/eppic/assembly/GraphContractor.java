@@ -343,7 +343,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 							// there's more than 1 group: we get rid of all edges beyond first group
 							// TODO check that that's the right thing to do, do we lose anything by removing all the edges except for one type?							
 							toRemove.addAll(group);
-							logger.info("Removed after contraction {} edges with cluster id {} between vertices {},{}", group.size(), clusterId, iVertex.toString(), jVertex.toString());
+							logger.debug("Removed after contraction {} edges with cluster id {} between vertices {},{}", group.size(), clusterId, iVertex.toString(), jVertex.toString());
 							continue;
 						}
 						
@@ -361,7 +361,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 									firstEdgeInGroup = edge;
 								} else {
 									// not the first one: we add edge to remove list
-									logger.info("Removed after contraction duplicate edge {} between vertices {},{}", edge, iVertex, jVertex);
+									logger.debug("Removed after contraction duplicate edge {} between vertices {},{}", edge, iVertex, jVertex);
 									toRemove.add(edge);
 								}
 								Point3i trans = new Point3i(edge.getXtalTrans());
@@ -371,7 +371,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 								totalTrans.add(trans);
 							}
 							// finally we set the new totalTrans to the edge that we will keep
-							logger.info("Resetting after contraction edge {} to translation {}", firstEdgeInGroup.toString(), totalTrans.toString());
+							logger.debug("Resetting after contraction edge {} to translation {}", firstEdgeInGroup.toString(), totalTrans.toString());
 							firstEdgeInGroup.setXtalTrans(totalTrans);
 						}
 						
