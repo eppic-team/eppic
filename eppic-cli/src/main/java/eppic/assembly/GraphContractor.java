@@ -350,13 +350,8 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 						// only for first group
 						if (group.size()>1) {
 							E firstEdgeInGroup = null;
-							Point3i totalTrans = new Point3i(0,0,0);
-							V sourceRef = null;
+							Point3i totalTrans = new Point3i(0,0,0);							
 							for (E edge : group) {
-								if (sourceRef==null) {
-									// we initialize sourceRef and then take as the reference for the other iterations
-									sourceRef = contGraph.getEdgeSource(edge);
-								}
 								if (firstEdgeInGroup==null) {
 									firstEdgeInGroup = edge;
 								} else {
@@ -365,7 +360,8 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 									toRemove.add(edge);
 								}
 								Point3i trans = new Point3i(edge.getXtalTrans());
-								if (!contGraph.getEdgeSource(edge).equals(sourceRef)) {
+								if (!contGraph.getEdgeSource(edge).equals(iVertex)) {
+									// the edge is in the reverse direction, we negate it
 									trans.negate();
 								}
 								totalTrans.add(trans);

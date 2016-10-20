@@ -20,26 +20,26 @@ public class TestContractedAssemblyEnumeration {
 		
 		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
 		
-		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, false);
+		//CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, false);
 		
 		CrystalAssemblies crystalAssembliesC = new CrystalAssemblies(s, interfaces, true);
 		
 		
-		System.out.printf("%d assemblies found using full graph: \n", crystalAssemblies.size());
+		//System.out.printf("%d assemblies found using full graph: \n", crystalAssemblies.size());
 		
 		boolean gotTetrahedralAssembly = false;
 		
-		for (Assembly a : crystalAssemblies) {
-			
-			System.out.println("assembly "+a.toString() + " -- " + getDescription(a));
-			
-			if (a.toString().equals("{1,2,3,8}")) {
-				gotTetrahedralAssembly = true;
-				assertEquals("T", a.getDescription().iterator().next().getSymmetry());
-			}
-		}
+		//for (Assembly a : crystalAssemblies) {
+		//	
+		//	System.out.println("assembly "+a.toString() + " -- " + getDescription(a));
+		//	
+		//	if (a.toString().equals("{1,2,3,8}")) {
+		//		gotTetrahedralAssembly = true;
+		//		assertEquals("T", a.getDescription().iterator().next().getSymmetry());
+		//	}
+		//}
 		
-		assertTrue("A tetrahedral assembly should have been present", gotTetrahedralAssembly);
+		//assertTrue("A tetrahedral assembly should have been present", gotTetrahedralAssembly);
 
 		System.out.printf("%d assemblies found using contracted graph: \n", crystalAssembliesC.size());
 		

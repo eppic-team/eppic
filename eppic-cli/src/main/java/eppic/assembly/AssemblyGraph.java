@@ -356,6 +356,7 @@ public class AssemblyGraph {
 				}
 			}
 			
+			logger.debug("Edge {} between {},{}, translation {}", edge.toString(), s.toString(), t.toString(), trans);
 			p.add(trans);
 		}
 		
