@@ -298,11 +298,11 @@ public class AssemblyGraph {
 			logger.debug("Cycle of size {}: {}", cycle.size(),sb.toString());
 
 			if (isZeroTranslation(subgraph, cycle)) {
-				logger.debug("Closed cycle (0 translation)");
+				logger.debug("Closed cycle {} (0 translation)", cycle.toString());
 				// we continue to next cycle, if all cycles are translation 0, then we'll return true below
 			} else {
 				// one cycle has non-zero translation: we abort straight away: return false
-				logger.debug("Non-closed cycle (non-0 translation). Discarding assembly {}", assembly.toString());
+				logger.debug("Non-closed cycle {} (non-0 translation). Discarding assembly {}", cycle.toString(), assembly.toString());
 				return false;
 			}
 		}

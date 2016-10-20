@@ -17,6 +17,7 @@ import javax.vecmath.Point3i;
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 	 * @param edgeClass
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	private UndirectedGraph<V, E> contractInterfaceCluster(
 			UndirectedGraph<V, E> inputGraph, int interfClusterId, Class<? extends E> edgeClass) {
 		
@@ -66,13 +68,12 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 
 		int referenceEntityId = -1;
 
+		// 1. We go through each edge to remove, find the end point vertices and build a map of vertices to remove and their replacements.
+		//    We need to have the full removal map before starting the rewiring of edges to be able to connect to the right vertices.
 		for (E e:toRemove) {
-
-			logger.debug("Removing edge {}", e.toString());
-
-			V s = inputGraph.getEdgeSource(e);			
-			V t = inputGraph.getEdgeTarget(e);			
-
+			
+			V s = inputGraph.getEdgeSource(e);
+			
 			if (s.getEntityId()<0) logger.error("Entity id for vertex {} is negative!",s.getEntityId());
 
 			if (referenceEntityId<0) {
@@ -80,24 +81,30 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				logger.debug("Chose reference entity id {}. Vertices that have this entity id will be kept.", referenceEntityId); 
 			}
 
-			// we will keep the vertices matching referenceEntityId
-			V vToRemove = null;
-			V vToKeep = null;
-			if (s.getEntityId() == referenceEntityId) {
-				vToRemove = t;
-				vToKeep = s;
-			} else if (t.getEntityId() == referenceEntityId) {
-				vToRemove = s;
-				vToKeep = t;
-			} else {
-				logger.warn("Neither vertex matched entity id {}. Something is wrong!",referenceEntityId);
-			}
+			
+			Pair<V,V> pair = findRemoveKeepPair(inputGraph, e, referenceEntityId);
 
+			V vToRemove = pair.first;
+			V vToKeep  = pair.second;					
+
+			contractedVertices.put(vToRemove, vToKeep);
+
+		}
+
+
+		// 2. Now we go ahead and start removing vertices and rearranging edges
+		for (E e:toRemove) {
+
+			logger.debug("Removing edge {}", e.toString());						
+			
+			Pair<V,V> pair = findRemoveKeepPair(inputGraph, e, referenceEntityId);
+
+			V vToRemove = pair.first;
+			V vToKeep  = pair.second;					
+			
 			logger.debug("Graph has {} vertices and {} edges, before removing anything", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 
 			contGraph.removeVertex(vToRemove);
-			
-			contractedVertices.put(vToRemove, vToKeep);
 
 			logger.debug("Graph has {} vertices and {} edges, before add edges loop", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 
@@ -158,10 +165,9 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				if (invert) newTrans.negate();
 				
 				newTrans.add(e.getXtalTrans());
-								
-				@SuppressWarnings("unchecked") // should be safe in my understanding
-				E thenewEdge = (E) newEdge;
-				contGraph.addEdge(src, trt, thenewEdge);
+							
+				// the casting should be safe				 				
+				contGraph.addEdge(src, trt, (E) newEdge);
 
 				logger.debug("Graph has {} vertices and {} edges", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 			}
@@ -184,6 +190,34 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 		}
 		
 		return contGraph;
+	}
+	
+	/**
+	 * Given the inputGraph and an edge to remove finds the pairs of vertices to remove and keep (returned by reference to parameters vToRemove and vToKeep)
+	 * @param inputGraph
+	 * @param e
+	 * @param referenceEntityId
+	 * @return the pair to remove and keep (first is the vertex to remove, second is the vertex to keep)
+	 */
+	private Pair<V,V> findRemoveKeepPair(UndirectedGraph<V, E> inputGraph, E e, int referenceEntityId) {
+		V s = inputGraph.getEdgeSource(e);			
+		V t = inputGraph.getEdgeTarget(e);			
+
+		V vToRemove = null;
+		V vToKeep = null;
+		
+		// we will keep the vertices matching referenceEntityId
+		if (s.getEntityId() == referenceEntityId) {
+			vToRemove = t;
+			vToKeep = s;
+		} else if (t.getEntityId() == referenceEntityId) {
+			vToRemove = s;
+			vToKeep = t;
+		} else {
+			logger.warn("Neither vertex matched entity id {}. Something is wrong!",referenceEntityId);
+		}
+		
+		return new Pair<>(vToRemove, vToKeep);
 	}
 	
 	/**
