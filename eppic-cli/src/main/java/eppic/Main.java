@@ -934,18 +934,6 @@ public class Main {
 		// d) computing entropies
 		cecs.computeEntropies(params);
 		
-		if (!params.isGenerateModelSerializedFile()) {
-			// TODO to write the serialized file with Biojava we need to make everything Serializable, 
-			//      including MANY classes related to alignments and sequences in core package, perhaps
-			//      we should just use our db model classes to serialize and give up on this
-			// we only produce the chainevolcontext.dat file if not in -w mode (for WUI not to produce so many files)
-			//try {
-			//	Goodies.serialize(params.getOutputFile(EppicParams.CHAINEVCONTEXTDAT_FILE_SUFFIX),cecs);
-			//} catch (IOException e) {
-			//	throw new EppicException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
-			//}
-		}
-		
 	}
 	
 	public void doEvolScoring() throws EppicException {
@@ -1122,6 +1110,8 @@ public class Main {
 			LOGGER.error(e.getMessage());
 			e.exitIfFatal(1);
 		} 
+		
+		// TODO must uncomment this code before the release!
 //		catch (Exception e) {
 //			//e.printStackTrace();
 //
