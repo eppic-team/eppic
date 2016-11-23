@@ -253,20 +253,6 @@ public class Main {
 		
 		
 	}
-	
-	public void doLoadInterfacesFromFile() throws EppicException {
-		try {
-			params.getProgressLog().println("Loading interfaces enumeration from file "+params.getInterfSerFile());
-			LOGGER.info("Loading interfaces enumeration from file "+params.getInterfSerFile());
-			interfaces = (StructureInterfaceList)Goodies.readFromFile(params.getInterfSerFile());
-		} catch (ClassNotFoundException e) {
-			throw new EppicException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
-		} catch (IOException e) {
-			throw new EppicException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
-		}
-		// TODO check that the input from serialized file matches the PDB input 
-		
-	}
 
 	public void doFindInterfaces() throws EppicException {
 
@@ -923,24 +909,6 @@ public class Main {
 		LOGGER.info(sb.toString());
 	}
 	
-	public void doLoadEvolContextFromFile() throws EppicException {
-		if (interfaces.size()==0) return;
-		
-		findUniqueChains();
-		
-		try {
-			params.getProgressLog().println("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
-			LOGGER.info("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
-			cecs = (ChainEvolContextList)Goodies.readFromFile(params.getChainEvContextSerFile());
-		} catch (ClassNotFoundException e) {
-			throw new EppicException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
-		} catch(IOException e) {
-			throw new EppicException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
-		}
-
-		// TODO check whether this looks compatible with the interfaces that we have
-	}
-	
 	public void doFindEvolContext() throws EppicException {
 		if (interfaces.size()==0) return;
 		
@@ -1098,11 +1066,8 @@ public class Main {
 			doLoadPdb();
 
 			// 1 finding interfaces
-			if (params.getInterfSerFile()!=null) {
-				doLoadInterfacesFromFile();
-			} else {
-				doFindInterfaces();
-			}
+			doFindInterfaces();
+			
 					
 			// 2 find the assemblies
 			doFindAssemblies();
@@ -1115,12 +1080,9 @@ public class Main {
 			doGeomScoring();
 			
 			if (params.isDoEvolScoring()) {
-				// 3 finding evolutionary context
-				if (params.getChainEvContextSerFile()!=null) {
-					doLoadEvolContextFromFile();
-				} else {
-					doFindEvolContext();
-				}
+				// 3 finding evolutionary context		
+				doFindEvolContext();
+				
 
 				// 4 scoring
 				doEvolScoring();

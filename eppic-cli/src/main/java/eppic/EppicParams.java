@@ -213,9 +213,6 @@ public class EppicParams {
 	
 	private double coreSurfScoreCutoff;
 	
-	private File interfSerFile;
-	private File chainEvContextSerFile;
-	
 	private boolean generateOutputCoordFiles;
 	private boolean generateThumbnails;
 	private boolean generateDiagrams;
@@ -315,8 +312,6 @@ public class EppicParams {
 		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
 		this.coreRimScoreCutoff = DEF_CORERIM_SCORE_CUTOFF;
 		this.coreSurfScoreCutoff = DEF_CORESURF_SCORE_CUTOFF;
-		this.interfSerFile = null;
-		this.chainEvContextSerFile = null;
 		this.generateOutputCoordFiles = false;
 		this.generateDiagrams = false;
 		this.generatePdbFiles = false;
@@ -332,7 +327,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:OI:C:pPlfwL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:OpPlfwL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -384,12 +379,6 @@ public class EppicParams {
 				break;
 			case 'O':
 				filterByDomain = true;
-				break;
-			case 'I':
-				interfSerFile = new File(g.getOptarg());
-				break;
-			case 'C':
-				chainEvContextSerFile = new File(g.getOptarg());
 				break;
 			case 'p':
 				generateOutputCoordFiles = true;
@@ -471,10 +460,6 @@ public class EppicParams {
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 		"  [-O]         :  restrict homologs search to those within the same domain of \n" +
 		"                  life as query\n"+
-		"  [-I <file>]  :  binary file containing the interface enumeration output of a \n" +
-		"                  previous run of "+PROGRAM_NAME+"\n" +
-		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
-		"                  sequence output of a previous run of "+PROGRAM_NAME+"\n" +
 		"  [-p]         :  if specified coordinate files (gzipped mmCIF) for each interface and assembly will \n"+
 		"                  be generated\n"+
 		"                  Use -f as well to additionally generate PDB files (backwards compatibility)\n"+
@@ -770,25 +755,6 @@ public class EppicParams {
 	
 	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
 		this.coreSurfScoreCutoff = coreSurfScoreCutoff;
-	}
-
-	public File getInterfSerFile() {
-		return interfSerFile;
-	}
-
-
-	public void setInterfSerFile(File interfSerFile) {
-		this.interfSerFile = interfSerFile;
-	}
-
-
-	public File getChainEvContextSerFile() {
-		return chainEvContextSerFile;
-	}
-
-
-	public void setChainEvContextSerFile(File chainEvContextSerFile) {
-		this.chainEvContextSerFile = chainEvContextSerFile;
 	}
 
 	public void setInFile(File inFile) {
