@@ -37,18 +37,19 @@ public class ClusterCrystalForms {
 
 		String help = 
 				"Usage: ClusterCrystalForms \n" +
-				" -D : the database name to use\n"+
-				" -i : PDB code and chain e.g. 1abcA, all members in its same sequence cluster will be clustered\n"+
-				" -l : sequence cluster level (default "+DEFAULT_SEQ_CLUSTER_LEVEL+")\n"+
-				" -c : contact overlap score cutoff (default "+String.format("%3.1f",DEFAULT_CO_CUTOFF)+")\n"+
-				" -a : minimum area cutoff (default "+String.format("%3.0f",DEFAULT_MIN_AREA)+")\n"+
-				" -s : lattice overlap score cutoff for crystal-form clustering (default "+String.format("%3.1f",DEFAULT_LOS_CLUSTER_CUTOFF)+")\n"+
-				" -A : ignore -i and calculate crystal-form clusters for all sequence clusters in DB\n"+
-				" -f : file to write the crystal form cluster identifiers (only used in -A)\n"+
-				" -F : file to write the global interface cluster identifiers (only used in -A)\n"+
-				" -d : print some debug output (full lattice comparison and interfaces comparison matrices)\n"+
-				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
-
+				" -D <string> : the database name to use\n"+
+				" -i <string> : PDB code and chain e.g. 1abcA, all members in its same sequence cluster will be clustered\n"+
+				" [-l <int>]  : sequence cluster level (default "+DEFAULT_SEQ_CLUSTER_LEVEL+")\n"+
+				" [-c <float>]: contact overlap score cutoff (default "+String.format("%3.1f",DEFAULT_CO_CUTOFF)+")\n"+
+				" [-a <float>]: minimum area cutoff (default "+String.format("%3.0f",DEFAULT_MIN_AREA)+")\n"+
+				" [-s <float>]: lattice overlap score cutoff for crystal-form clustering (default "+String.format("%3.1f",DEFAULT_LOS_CLUSTER_CUTOFF)+")\n"+
+				" [-A]        : ignore -i and calculate crystal-form clusters for all sequence clusters in DB\n"+
+				" [-f <file>] : file to write the crystal form cluster identifiers (only used in -A)\n"+
+				" [-F <file>] : file to write the global interface cluster identifiers (only used in -A)\n"+
+				" [-d]        : print some debug output (full lattice comparison and interfaces comparison matrices)\n"+
+				" [-g <file>] : a configuration file containing the database access parameters, if not provided\n" +
+				"               the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
+		
 		String pdbString = null;
 		
 		double coCutoff = DEFAULT_CO_CUTOFF;
@@ -60,9 +61,10 @@ public class ClusterCrystalForms {
 		File cfClustersFile = null;
 		File interfClustersFile = null;
 		String dbName = null;
+		File configFile = null;
 		
 		
-		Getopt g = new Getopt("ClusterCrystalForms", args, "D:i:c:a:l:s:Af:F:dh?");
+		Getopt g = new Getopt("ClusterCrystalForms", args, "D:i:c:a:l:s:Af:F:dg:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -95,6 +97,9 @@ public class ClusterCrystalForms {
 				break;
 			case 'd':
 				debug = true;
+				break;
+			case 'g':
+				configFile = new File(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -131,8 +136,8 @@ public class ClusterCrystalForms {
 			}
 		}
 
-		
-		DBHandler dbh = new DBHandler(dbName);	
+		// note if configFile is null, DBHandler will use a default location in user's home dir
+		DBHandler dbh = new DBHandler(dbName, configFile);	
 
 		PrintWriter cfcPw = null;
 		PrintWriter icPw = null;

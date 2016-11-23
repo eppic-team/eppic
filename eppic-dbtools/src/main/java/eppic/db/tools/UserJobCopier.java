@@ -33,7 +33,8 @@ public class UserJobCopier {
 						"  [-t <int>]  : select jobs from last <int> days (default: select all jobs)\n" +
 						"  [-f <file>] : select only the job identifiers listed in given file\n" +
 						"  [-F]        : force removal of entries in target database if already present\n"+
-						"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+						"  [-c <file>] : a configuration file containing the database access parameters, if not provided\n" +
+						"                the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
 
 		File jobDirectoriesRoot = null;
 		
@@ -49,8 +50,10 @@ public class UserJobCopier {
 		
 		String sourceDbName = null;
 		String targetDbName = null;
+		
+		File configFile = null;
 
-		Getopt g = new Getopt("UserJobCopier", args, "d:s:g:rt:f:Fh?");
+		Getopt g = new Getopt("UserJobCopier", args, "d:s:g:rt:f:Fc:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -75,6 +78,9 @@ public class UserJobCopier {
 				break;
 			case 'F':
 				force = true;
+				break;
+			case 'c':
+				configFile = new File(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -123,8 +129,8 @@ public class UserJobCopier {
 		}
 		
 		// initialising the db connections
-		DBHandler sourceDbh = new DBHandler(sourceDbName);
-		DBHandler targetDbh = new DBHandler(targetDbName);
+		DBHandler sourceDbh = new DBHandler(sourceDbName, configFile);
+		DBHandler targetDbh = new DBHandler(targetDbName, configFile);
 
 
 		//Print Mode of Usage

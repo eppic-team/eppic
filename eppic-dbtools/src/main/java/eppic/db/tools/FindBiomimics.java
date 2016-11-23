@@ -2,6 +2,7 @@ package eppic.db.tools;
 
 import static eppic.db.Interface.*;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class FindBiomimics {
 	private static final Logger logger = LoggerFactory.getLogger(FindBiomimics.class);
 
 	private static final SeqClusterLevel DEFAULT_SEQ_CLUSTER_LEVEL = SeqClusterLevel.C100;
-	private static double DEFAULT_JACCARD_OVERLAP_THRESHOLD = 0.2;
+	private static final double DEFAULT_JACCARD_OVERLAP_THRESHOLD = 0.2;
 
 	private final List<ChainClusterDB> clusterMembers;
 	private final Profile<ProteinSequence, AminoAcidCompound> profile; //Row  for each chain
@@ -357,12 +358,13 @@ public class FindBiomimics {
 	public static void main(String[] args) {
 		String help = 
 				"Usage: FindBiomimics \n" +		
-				"  -D         : the database name to use\n"+
-				"  -p         : input pdbCode or filename\n"+
-				"  -c         : chainId\n"+
-				"  -l         : sequence cluster level to be used (default "+DEFAULT_SEQ_CLUSTER_LEVEL.getLevel()+"\n"+
-				"  -o         : minimum Jaccard overlap required to cluster interfaces (default "+DEFAULT_JACCARD_OVERLAP_THRESHOLD+"\n"+
-				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+				"  -D <string> : the database name to use\n"+
+				"  -p <string> : input pdbCode \n"+
+				"  -c <string> : chainId\n"+
+				" [-l <int>  ] : sequence cluster level to be used (default "+DEFAULT_SEQ_CLUSTER_LEVEL.getLevel()+"\n"+
+				" [-o <float>] : minimum Jaccard overlap required to cluster interfaces (default "+DEFAULT_JACCARD_OVERLAP_THRESHOLD+"\n"+
+				" [-g <file> ] : a configuration file containing the database access parameters, if not provided\n" +
+				"                the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
 		
 		
 		String dbName = null;
@@ -370,8 +372,9 @@ public class FindBiomimics {
 		String chainId = null;
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
 		double overlapThreshold = DEFAULT_JACCARD_OVERLAP_THRESHOLD;
+		File configFile = null;
 		
-		Getopt g = new Getopt("FindBiomimics", args, "D:p:c:l:o:h?");
+		Getopt g = new Getopt("FindBiomimics", args, "D:p:c:l:o:g:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -388,7 +391,10 @@ public class FindBiomimics {
 				seqClusterLevel = SeqClusterLevel.getByLevel(Integer.parseInt(g.getOptarg())); 
 				break;
 			case 'o':
-				overlapThreshold = Integer.parseInt(g.getOptarg());
+				overlapThreshold = Double.parseDouble(g.getOptarg());
+				break;
+			case 'g':
+				configFile = new File(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -411,7 +417,7 @@ public class FindBiomimics {
 		}
 		
 		
-		DBHandler dbh = new DBHandler(dbName);
+		DBHandler dbh = new DBHandler(dbName, configFile);
 		
 		PrintWriter out = new PrintWriter(System.out);
 		try {

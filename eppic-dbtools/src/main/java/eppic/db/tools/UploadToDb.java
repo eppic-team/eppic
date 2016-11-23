@@ -30,18 +30,20 @@ public class UploadToDb {
 		
 		String help = 
 				"Usage: UploadToDB\n" +
-				"  -D           : the database name to use\n"+
+				"  -D <string>  : the database name to use\n"+
 				"  -d <dir>     : root directory of eppic output files with subdirectories as PDB codes \n" +
 				" [-l]          : if specified subdirs under root dir (-d) are considered to be in PDB divided layout\n"+
 				"                 (this affects the behaviour of -d and -f).\n"+
 				"                 Default: subdirs under root are taken directly as PDB codes \n"+
 				" [-f <file>]   : file specifying a list of PDB codes indicating subdirs of root \n"+
 				"                 directory to take (default: uses all subdirs in the root directory) \n" +
+				" [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
+				"                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
 				" OPERATION MODE\n" +
 				" Default operation: only entries not already present in database will be inserted \n"+
 				" [-F]          : forces everything chosen to be inserted, deletes previous entries if present\n" +
-				" [-r]          : removes the specified entries from database\n"+
-				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+				" [-r]          : removes the specified entries from database\n";
+				
 
 		boolean isDividedLayout = false;
 		
@@ -53,8 +55,9 @@ public class UploadToDb {
 		boolean modeRemove = false;
 		
 		String dbName = null;
+		File configFile = null;
 		
-		Getopt g = new Getopt("UploadToDB", args, "D:d:lf:Frh?");
+		Getopt g = new Getopt("UploadToDB", args, "D:d:lf:g:Frh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -70,6 +73,9 @@ public class UploadToDb {
 			case 'f':
 				choosefromFile = new File(g.getOptarg());
 				break;
+			case 'g':
+				configFile = new File(g.getOptarg());
+				break;				
 			case 'F':
 				modeEverything = true;
 				modeNew = false;
@@ -137,7 +143,7 @@ public class UploadToDb {
 			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to be PDB codes directly, no PDB divided layout will be used. ");
 		}
 		
-		dbh = new DBHandler(dbName);
+		dbh = new DBHandler(dbName, configFile);
 		
 		List<String> pdbsWithWarnings = new ArrayList<String>();
 		

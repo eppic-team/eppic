@@ -32,7 +32,7 @@ public class DumpToXml {
 			System.exit(1);
 		}
 		
-		dbh = new DBHandler(args[0]);
+		dbh = new DBHandler(args[0], null);
 		dir = new File(args[1]);
 		
 		int limit = -1;

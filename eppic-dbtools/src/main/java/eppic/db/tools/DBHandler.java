@@ -58,18 +58,33 @@ import eppic.model.SeqClusterDB_;
 public class DBHandler {
 	
 	public static final String PERSISTENCE_UNIT_NAME = "eppicjpa";
-	public static final String CONFIG_FILE_NAME = "eppic-db.properties";
+	public static final String DEFAULT_CONFIG_FILE_NAME = "eppic-db.properties";
+	public static final File DEFAULT_CONFIG_FILE = new File(System.getProperty("user.home"), DEFAULT_CONFIG_FILE_NAME);
 	
 	
 	@PersistenceUnit
 	private EntityManagerFactory emf;
 	
 	/**
-	 * Constructor
+	 * Constructor.
+	 * 
+	 * @param dbName the database name
+	 * @param userConfigFile a user supplied config file, if null the default location {@value #DEFAULT_CONFIG_FILE} will be used.
 	 */
-	public DBHandler(String dbName) {
-
-		File configurationFile = new File(System.getProperty("user.home"), CONFIG_FILE_NAME);
+	public DBHandler(String dbName, File userConfigFile) {
+		
+		File configurationFile = null;
+		
+		if (userConfigFile!=null) {			
+			configurationFile = userConfigFile;
+		} else {
+			// default location: config file read from user's home directory
+			configurationFile = DEFAULT_CONFIG_FILE;
+		}
+		
+		System.out.println("Configuration will be loaded from file " + configurationFile.toString());
+		
+		
 		Map<String, String> properties = null;
 		try {
 			properties = DbConfigGenerator.createDatabaseProperties(configurationFile, dbName);
