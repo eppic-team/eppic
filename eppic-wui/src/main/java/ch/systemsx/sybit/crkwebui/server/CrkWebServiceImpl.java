@@ -77,7 +77,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
 import ch.systemsx.sybit.shared.model.InputType;
 import ch.systemsx.sybit.shared.model.StatusOfJob;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 
 import eppic.EppicParams;
@@ -102,8 +101,24 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	// the within-war location for server config files, read with getServletContext().getResourceAsStream()
 	private static final String CONFIG_FILES_RESOURCE_LOCATION = "/WEB-INF/classes/META-INF";
 
+	/**
+	 * The property that needs to be passed to JVM with a -D to specify the 
+	 * directory where all config files are located (the "config profile").
+	 */
+	public static final String CONFIG_DIR_PROPERTY	  = "eppicWuiConfigDir";
+	
 	// the off-war location for server config files
-	private static final String CONFIG_FILES_LOCATION = System.getProperty("user.home")+"/server-config";
+	private static final String CONFIG_FILES_LOCATION = System.getProperty(CONFIG_DIR_PROPERTY);
+	
+	static {
+		if (CONFIG_FILES_LOCATION==null || CONFIG_FILES_LOCATION.isEmpty()) {
+			logger.error("Property {} wasn't specified correctly. The property must be passed to the JVM with a -D parameter", CONFIG_DIR_PROPERTY);
+			throw new RuntimeException("Can't continue without a valid config file dir");
+		} else if (! new File(CONFIG_FILES_LOCATION).isDirectory()) {
+			logger.error("The value '{}' specified for the config files directory with system property {} is not a directory!", CONFIG_FILES_LOCATION , CONFIG_DIR_PROPERTY);
+			throw new RuntimeException("Can't continue without a valid config file dir");
+		}
+	}
 
 	public static final String SERVER_PROPERTIES_FILE 	= CONFIG_FILES_LOCATION+"/server.properties";
 	private static final String EMAIL_PROPERTIES_FILE   = CONFIG_FILES_LOCATION + "/email.properties";
