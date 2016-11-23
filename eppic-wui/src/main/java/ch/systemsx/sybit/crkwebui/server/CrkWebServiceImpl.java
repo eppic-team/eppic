@@ -117,6 +117,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		} else if (! new File(CONFIG_FILES_LOCATION).isDirectory()) {
 			logger.error("The value '{}' specified for the config files directory with system property {} is not a directory!", CONFIG_FILES_LOCATION , CONFIG_DIR_PROPERTY);
 			throw new RuntimeException("Can't continue without a valid config file dir");
+		} else {
+			logger.info("Reading configuration files from dir {}, passed through property {}", CONFIG_FILES_LOCATION, CONFIG_DIR_PROPERTY);
 		}
 	}
 
