@@ -37,6 +37,23 @@ public class PdbInfoDB implements Serializable {
 	
 	private int crystalFormId;
 	
+	/**
+	 * Whether this structure is a PDB structure in a non-standard space group 
+	 */
+	private boolean nonStandardSg;
+	
+	/**
+	 * Whether this structure is a PDB structure in a 
+	 * non-standard frame (for which our scale matrix calculation and thus the crystal reconstruction
+	 * will be incorrect).
+	 * There's ~ 200 old structures in the PDB affected by the non-standard frame problem, hopefully they will
+	 * be remediated in the future.
+	 * For more info see:
+	 * https://github.com/eppic-team/eppic/issues/37 and
+	 * https://github.com/eppic-team/owl/issues/4
+	 */
+	private boolean nonStandardCoordFrameConvention;
+	
 	private RunParametersDB runParameters;
 	
 	private List<ChainClusterDB> chainClusters;
@@ -255,6 +272,22 @@ public class PdbInfoDB implements Serializable {
 
 	public void setNcsOpsPresent(boolean ncsOpsPresent) {
 		this.ncsOpsPresent = ncsOpsPresent;
+	}
+
+	public boolean isNonStandardSg() {
+		return nonStandardSg;
+	}
+	
+	public void setNonStandardSg(boolean nonStandardSg) {
+		this.nonStandardSg = nonStandardSg;
+	}
+
+	public boolean isNonStandardCoordFrameConvention() {
+		return nonStandardCoordFrameConvention;
+	}
+	
+	public void setNonStandardCoordFrameConvention(boolean nonStandardCoordFrameConvention) {
+		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
 	}
 
 	public double getCellA() {

@@ -92,6 +92,9 @@
 			
 			<basic name="ncsOpsPresent"></basic>
 			
+			<basic name="nonStandardSg"></basic>
+			<basic name="nonStandardCoordFrameConvention"></basic>
+			
 			<basic name="crystalFormId"></basic>
 			
 			<basic name="numChainClusters"></basic>

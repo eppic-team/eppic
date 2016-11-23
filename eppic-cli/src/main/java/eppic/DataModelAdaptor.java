@@ -145,7 +145,12 @@ public class DataModelAdaptor {
 		}
 		pdbInfo.setExpMethod(exp);
 		
-		pdbInfo.setNcsOpsPresent(pdb.getCrystallographicInfo().getNcsOperators()!=null);
+		if (pdbXtallographicInfo!=null) {
+			pdbInfo.setNcsOpsPresent(pdbXtallographicInfo.getNcsOperators()!=null);
+
+			pdbInfo.setNonStandardSg(pdbXtallographicInfo.isNonStandardSg());
+			pdbInfo.setNonStandardCoordFrameConvention(pdbXtallographicInfo.isNonStandardCoordFrameConvention());
+		}
 		
 		CrystalCell cc = (pdbXtallographicInfo==null?null:pdbXtallographicInfo.getCrystalCell());
 		if (cc!=null) {
