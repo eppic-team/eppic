@@ -5,8 +5,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
@@ -24,7 +24,7 @@ import eppic.model.ScoringMethod;
 
 public class TextOutputWriter {
 	
-	//private static final Logger LOGGER = LoggerFactory.getLogger(TextOutputWriter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(TextOutputWriter.class);
 	
 	private PdbInfoDB pdbInfo;
 	private EppicParams params;
@@ -32,6 +32,9 @@ public class TextOutputWriter {
 	public TextOutputWriter (PdbInfoDB pdbInfo, EppicParams params) {
 		this.pdbInfo = pdbInfo;
 		this.params = params;
+		
+		LOGGER.debug("Is non-standard SG: {}", pdbInfo.isNonStandardSg());
+		LOGGER.debug("Is non-standard coord frame convention: {}", pdbInfo.isNonStandardCoordFrameConvention());
 	}
 
 	
