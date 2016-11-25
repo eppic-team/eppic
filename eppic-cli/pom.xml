@@ -252,6 +252,20 @@
 					</execution>
 				</executions>
 			</plugin>
+			
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+
+					<excludes>
+						<!-- we exclude by default the long tests, they will only be 
+							executed if explicitly called -->
+						<exclude>**/TestLargeStructures.java</exclude>
+						
+					</excludes>
+				</configuration>
+			</plugin>
 
 		</plugins>
 	</build>

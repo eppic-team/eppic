@@ -334,10 +334,10 @@
 			<basic name="clusterId"></basic>
 			<basic name="area"></basic>
 			<basic name="chain1">
-				<column length="1" />
+				<column length="4" />
 			</basic>
 			<basic name="chain2">
-				<column length="1" />
+				<column length="4" />
 			</basic>
 			<basic name="operator">
 				<column length="25" />
@@ -436,8 +436,12 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 			
-			<basic name="repChain"></basic>
-			<basic name="pdbCode"></basic>
+			<basic name="repChain">
+				<column length="4" />
+			</basic>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
 		
 			<basic name="residueNumber"></basic>
 			<basic name="pdbResidueNumber"></basic>
@@ -694,7 +698,9 @@
 			https://github.com/eppic-team/eppic-wui/issues/4 
 			https://github.com/eppic-team/eppic/issues/36 
 			-->
-			<basic name="repChain"></basic>
+			<basic name="repChain">
+				<column length="4" />
+			</basic>
 			
 			<basic name="c100"></basic>
 			<basic name="c95"></basic>
