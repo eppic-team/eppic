@@ -304,14 +304,7 @@ public class Main {
 
 		checkClashes();
 
-		if (!params.isGenerateModelSerializedFile()) {
-			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
-			try {
-				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
-			} catch (IOException e) {
-				throw new EppicException(e,"Couldn't write serialized StructureInterfaceList object to file: "+e.getMessage(),false);
-			}
-		}
+		
 		
 	}
 	
@@ -1070,7 +1063,6 @@ public class Main {
 			if (params.isDoEvolScoring()) {
 				// 3 finding evolutionary context		
 				doFindEvolContext();
-				
 
 				// 4 scoring
 				doEvolScoring();
@@ -1128,6 +1120,10 @@ public class Main {
 		}
 		
 		
+	}
+	
+	protected DataModelAdaptor getDataModelAdaptor() {
+		return modelAdaptor;
 	}
 	
 
