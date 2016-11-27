@@ -1034,6 +1034,7 @@ public class Main {
 
 			
 			LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
+			LOGGER.info("Build git SHA: {}", EppicParams.BUILD_GIT_SHA);
 			
 			loadConfigFile();
 			

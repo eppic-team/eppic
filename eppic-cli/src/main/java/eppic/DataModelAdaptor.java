@@ -118,6 +118,7 @@ public class DataModelAdaptor {
 		runParameters.setGeomCallCutoff(params.getMinCoreSizeForBio());
 		runParameters.setPdbInfo(pdbInfo);
 		runParameters.setEppicVersion(EppicParams.PROGRAM_VERSION);
+		runParameters.setEppicBuild(EppicParams.BUILD_GIT_SHA);
 		runParameters.setSearchMode(params.getHomologsSearchMode().getName());
 		pdbInfo.setRunParameters(runParameters);
 	}

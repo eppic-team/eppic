@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Properties;
@@ -23,9 +24,29 @@ public class EppicParams {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EppicParams.class);
 	
 	// CONSTANTS
-	public static final String     PROGRAM_NAME    = "eppic";
-	public static final String	   PROGRAM_VERSION = "3.0-alpha";
+	public static final String     PROGRAM_NAME    = "eppic";	
 	public static final String 	   CONTACT_EMAIL   = "eppic@systemsx.ch";
+	
+	// the version and git sha come from the about.properties file, so they can't be final
+	public static String	   	   PROGRAM_VERSION;
+	public static String		   BUILD_GIT_SHA;
+	static {
+		PROGRAM_VERSION = "NA";
+		BUILD_GIT_SHA = "NA";
+		try {
+			Properties p = new Properties();
+			InputStream is = EppicParams.class.getClass().getResourceAsStream("/about.properties");
+			if (is!=null) {
+				p.load(is);
+				PROGRAM_VERSION = p.getProperty("project.version");
+				BUILD_GIT_SHA = p.getProperty("build.hash");
+			} else {
+				LOGGER.error("Couldn't get InputStream for about.properties resource. Version will be unavailable!");
+			}
+		} catch (IOException e) {
+			LOGGER.error("Problems reading the about.properties file. Version will be unavailable!");
+		}
+	}
 	
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	public static final String     CONFIG_FILE_NAME = ".eppic.conf";

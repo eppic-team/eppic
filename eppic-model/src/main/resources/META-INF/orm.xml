@@ -590,6 +590,10 @@
 			<basic name="eppicVersion">
 				<column length="15" />
 			</basic>
+			<basic name="eppicBuild">
+				<!-- Setting it to 50 after looking at some examples with length just over 40 - JD 2016-11-27 -->
+				<column length="50" />
+			</basic>
 
 			<one-to-one name="pdbInfo" mapped-by="runParameters">
 			</one-to-one>
