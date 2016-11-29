@@ -1,11 +1,6 @@
 package ch.systemsx.sybit.crkwebui.shared.helpers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
-import com.google.gwt.user.client.Window;
-
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
@@ -24,6 +19,8 @@ public class ExperimentalWarnings {
 	private boolean spaceGroupWarning;
 	private String warningTooltip;
 	//public static LabelWithTooltip staticWarningsLabel = null;
+	private boolean nonStandardSg;
+	private boolean nonStandardCoordFrameConvention;
 	
 	public String[] spaceGroups = {null, "P 1", "P 2", "P 21", "P 1 2 1", "P 1 21 1", "C 2", "C 1 2 1", "P 2 2 2", "P 2 2 21", "P 21 21 2",
 									"P 21 21 21", "C 2 2 2", "C 2 2 21", "F 2 2 2", "I 2 2 2", "I 21 21 21", "P 4", "P 41", "P 42",
@@ -39,7 +36,9 @@ public class ExperimentalWarnings {
 	public ExperimentalWarnings(String spaceGroup,
 	   String expMethod,
 	   double resolution,
-	   double rFree){
+	   double rFree, 
+	   boolean nonStandardSg,
+	   boolean nonStandardCoordFrameConvention){
 		// TODO we should try to set a constant "alw//ays-low-res exp method=ELECTRON MICROSCOPY". 
 		// It's not ideal that the name is hard-coded
 		emWarning = (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY") && (resolution <=0 || resolution>=99));
@@ -49,6 +48,8 @@ public class ExperimentalWarnings {
 				        rFree > ApplicationContext.getSettings().getRfreeCutOff() && rFree > 0 && rFree<1);
 		noRfreeWarning = (rFree == 1 && expMethod.equals("X-RAY DIFFRACTION"));
 		spaceGroupWarning = (expMethod.equals("X-RAY DIFFRACTION") && !Arrays.asList(spaceGroups).contains(spaceGroup));
+		this.nonStandardSg = nonStandardSg;
+		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
 	}
 
 	public boolean isEmWarning() {
@@ -141,7 +142,19 @@ public class ExperimentalWarnings {
 			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title(), warningTooltip);	
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text() + "<br>";
-		}		
+		}
+		if(this.nonStandardSg){
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title(), warningTooltip);
+			warningCount++;
+			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text() + "<br>";
+		}
+		if(this.nonStandardCoordFrameConvention){
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text();
+			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title(), warningTooltip);
+			warningCount++;
+			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text() + "<br>";
+		}
 		if(warningCount > 1){
 			warningLabel = createWarningLabel(warningCount + " Warnings", multiWarningTooltip);
 		}

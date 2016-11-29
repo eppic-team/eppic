@@ -63,7 +63,9 @@ public class GeneralInfoPanel extends FieldSet {
 		fillGeneralInfoPanel(pdbInfo.getSpaceGroup(), 
 									pdbInfo.getExpMethod(), 
 									pdbInfo.getResolution(), 
-									pdbInfo.getRfreeValue());
+									pdbInfo.getRfreeValue(),
+									pdbInfo.isNonStandardSg(),
+									pdbInfo.isNonStandardCoordFrameConvention());
 	}
 	
 	/**
@@ -72,7 +74,9 @@ public class GeneralInfoPanel extends FieldSet {
 	public void fillGeneralInfoPanel(String spaceGroup,
 			   String expMethod,
 			   double resolution,
-			   double rFree){
+			   double rFree,
+			   boolean nonStandardSg,
+			   boolean nonStandardCoordFrameConvention){
 		
 		panelTable.clear();
 		
@@ -95,7 +99,7 @@ public class GeneralInfoPanel extends FieldSet {
 		
 		}
 		
-		fillWarnings(new ExperimentalWarnings(spaceGroup, expMethod, resolution, rFree));
+		fillWarnings(new ExperimentalWarnings(spaceGroup, expMethod, resolution, rFree, nonStandardSg, nonStandardCoordFrameConvention));
 		
 	}
 	

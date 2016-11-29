@@ -61,13 +61,15 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 			  			   String expMethod,
 			  			   double resolution,
 			  			   double rfreeValue,
+			  			   boolean nonStandardSg,
+			  			   boolean nonStandardCoordFrameConvention,
 			  			   int inputType)
 	{
 		
 		pdbNameLabel = new HTML(inputName);
 		
 		//Check for warnings
-		ExperimentalWarnings warnings = new ExperimentalWarnings(spaceGroup, expMethod, resolution, rfreeValue);
+		ExperimentalWarnings warnings = new ExperimentalWarnings(spaceGroup, expMethod, resolution, rfreeValue, nonStandardSg, nonStandardCoordFrameConvention);
 		warningLabel = warnings.getWarningLabel();
 		
 		pdbNameLabel.addStyleName("eppic-pdb-identifier-label");
