@@ -48,6 +48,7 @@ import com.mxgraph.model.mxICell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
 
+import eppic.EppicParams;
 import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
 import eppic.assembly.LatticeGraph;
@@ -169,7 +170,7 @@ public class LatticeGUI {
 				Runtime.getRuntime().availableProcessors(),
 				StructureInterfaceList.DEFAULT_MIN_COFACTOR_SIZE);
 		interfaces.removeInterfacesBelowArea();
-		interfaces.getClusters();
+		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		logger.info("Found "+interfaces.size()+" interfaces");
 		return interfaces;
 	}

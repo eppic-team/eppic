@@ -105,7 +105,8 @@ public class EppicParams {
 	//public static final double   CLUSTERING_RMSD_CUTOFF = 2.0;
 	//public static final int 	   CLUSTERING_MINATOMS = 10;
 	//public static final String   CLUSTERING_ATOM_TYPE = "CA";
-	public static final double	   CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF = 0.2;
+	// see https://github.com/eppic-team/eppic/issues/41
+	public static final double	   CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF = 0.3;
 	
 	// the distance for two atoms between chains to be considered a clashing pair
 	public static final double 	   CLASH_DISTANCE = 1.5;
