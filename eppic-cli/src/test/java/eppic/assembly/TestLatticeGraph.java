@@ -349,10 +349,10 @@ public class TestLatticeGraph {
 		assertFalse(a.isValid());
 		assertFalse(a.isIsomorphic());
 		
-		// clusters 4: isologous and isomorphic
+		// cluster 4: non-isomorphic
 		a = ab.generateAssembly(4);
-		assertTrue(a.isValid());
-		assertTrue(a.isIsomorphic());
+		assertFalse(a.isValid());
+		assertFalse(a.isIsomorphic());
 		
 
 	}
