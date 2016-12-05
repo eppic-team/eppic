@@ -88,6 +88,9 @@ public class Main {
 		this.stepCount = 1;
 	}
 	
+	protected Structure getStructure() {
+		return pdb;
+	}
 
 		
 	public void setUpLogging() {

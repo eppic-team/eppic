@@ -91,6 +91,9 @@ public class DataModelAdaptor {
 	// a temp map to hold the warnings per interface, used in order to eliminate duplicate warnings
 	private HashMap<Integer,HashSet<String>> interfId2Warnings;
 	
+	// a map to convert between asym ids and chain ids so that we can match PDB biounits correctly
+	private HashMap<String,String> asymIds2chainIds;
+	
 	public DataModelAdaptor() {
 		pdbInfo = new PdbInfoDB();
 		interfId2Warnings = new HashMap<Integer, HashSet<String>>();
@@ -174,6 +177,26 @@ public class DataModelAdaptor {
 		}
 		pdbInfo.setNumChainClusters(chainClusterDBs.size());
 		pdbInfo.setChainClusters(chainClusterDBs);
+		
+		initAsymIds2chainIdsMap(pdb);
+	}
+	
+	/**
+	 * Initialize the map of asym ids to chain ids, this is a hack needed to work around the
+	 * limitations of the data structure in Biojava 4.2. The map is used in the PDB biounit to our
+	 * own interfaces matching.
+	 * <p/>
+	 * Note that the map should work in most cases, but it's not guaranteed because there is a one-to-many
+	 * relationship between author chain ids and asym ids (internal ids). This is the best we can do 
+	 * with the data available from Biojava 4.2 
+	 * @param pdb
+	 */
+	private void initAsymIds2chainIdsMap(Structure pdb) {
+		asymIds2chainIds = new HashMap<>();
+		
+		for (Chain c : pdb.getChains()) {
+			asymIds2chainIds.put(c.getInternalChainID(), c.getChainID());
+		}
 	}
 	
 	private ChainClusterDB createChainCluster(Compound compound) {
@@ -643,7 +666,7 @@ public class DataModelAdaptor {
 		// the Set will eliminate duplicates if any found, I'm not sure if duplicates are even possible really...
 		Set<Integer> matchingClusterIds = new TreeSet<Integer>();
 
-		List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit, cell);
+		List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit, cell, asymIds2chainIds);
 		InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
 			for (InterfaceDB i:ic.getInterfaces()) {
