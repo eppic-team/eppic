@@ -74,7 +74,7 @@ public class TestMultiPdbBiounits {
 	private List<AssemblyScoreDB> getPdbBiounitAnnotations(List<AssemblyScoreDB> assemblyScores) {
 		List<AssemblyScoreDB> pdbAssemblies = new ArrayList<>();
 		for (AssemblyScoreDB assemblyScore : assemblyScores) {
-			if (assemblyScore.getMethod().startsWith("pdb") && assemblyScore.getCallName().equals("bio")) { 
+			if (assemblyScore.getMethod().startsWith(DataModelAdaptor.PDB_BIOUNIT_METHOD_PREFIX) && assemblyScore.getCallName().equals("bio")) { 
 				pdbAssemblies.add(assemblyScore);
 			}		
 		}
@@ -83,7 +83,7 @@ public class TestMultiPdbBiounits {
 	
 	private AssemblyScoreDB getPdbBiounit(List<AssemblyScoreDB> pdbAssemblyScores, int pdbBiounitNumber) {
 		for (AssemblyScoreDB pdbAssemblyScore : pdbAssemblyScores) {
-			if (pdbAssemblyScore.getMethod().equals("pdb"+pdbBiounitNumber) && pdbAssemblyScore.getCallName().equals("bio")) 
+			if (pdbAssemblyScore.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD_PREFIX+pdbBiounitNumber) && pdbAssemblyScore.getCallName().equals("bio")) 
 				return pdbAssemblyScore;
 		}
 		
