@@ -64,7 +64,7 @@ public class TestInterfaceMatching {
 		int pdb1Assemblies = 0;
 		for (AssemblyScoreDB asdb : assembly.getAssemblyScores()) {
 			if (asdb.getMethod().equals(ScoringMethod.EPPIC_FINAL)) eppicAssemblies ++;
-			if (asdb.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD)) pdb1Assemblies ++;
+			if (asdb.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD_PREFIX +"1")) pdb1Assemblies ++;
 			//System.out.println(asdb.getMethod());
 		}
 		

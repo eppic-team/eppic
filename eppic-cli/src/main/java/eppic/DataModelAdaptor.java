@@ -85,7 +85,10 @@ public class DataModelAdaptor {
 	
 	private static final int UNKNOWN_RESIDUE_INDEX = -1;
 	
-	public static final String PDB_BIOUNIT_METHOD = "pdb1";
+	/**
+	 * The method name for PDB biounit annotations, suffixed with the biounit number, e.g. pdb1, pdb2, ...
+	 */
+	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pbd";	
 	
 	public static final int INVALID_ASSEMBLY_ID = 0;
 	
@@ -568,7 +571,7 @@ public class DataModelAdaptor {
 		}
 		
 		AssemblyScoreDB as = new AssemblyScoreDB();
-		as.setMethod("pdb" + bioAssemblyNumber);
+		as.setMethod(PDB_BIOUNIT_METHOD_PREFIX + bioAssemblyNumber);
 		as.setCallName(CallType.BIO.getName());
 		as.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 		as.setScore(SCORE_NOT_AVAILABLE);
@@ -655,7 +658,7 @@ public class DataModelAdaptor {
 			if (matchingAssemblyDB!=null && assembly == matchingAssemblyDB) continue;
 			
 			AssemblyScoreDB asxtal = new AssemblyScoreDB();
-			asxtal.setMethod(PDB_BIOUNIT_METHOD);
+			asxtal.setMethod(PDB_BIOUNIT_METHOD_PREFIX + bioAssemblyNumber);
 			asxtal.setCallName(CallType.CRYSTAL.getName());
 			asxtal.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 			asxtal.setScore(SCORE_NOT_AVAILABLE);
