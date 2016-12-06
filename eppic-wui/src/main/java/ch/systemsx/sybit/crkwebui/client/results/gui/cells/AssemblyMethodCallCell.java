@@ -54,7 +54,7 @@ public class AssemblyMethodCallCell extends AbstractCell<String> {
 
 	private String addIcon(boolean pdb1Assembly) {
 	    if(pdb1Assembly)
-	    	return "<img src=\"resources/icons/excellent.png\" width=\"16\">";
+	    	return "<img src=\"resources/icons/pdb_biounit_annotation.png\" width=\"18\">";
 	    else 
 	    	return "";
 	}
