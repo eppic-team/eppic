@@ -542,8 +542,6 @@ public class DataModelAdaptor {
 			return;
 		}
 		
-		String[] symmetries = getSymmetry(pdb, bioAssemblyNumber);
-		
 		CrystalCell cell = null;
 		if (validAssemblies.getStructure().getCrystallographicInfo()!=null && validAssemblies.getStructure().isCrystallographic()) {
 			cell = validAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
@@ -581,14 +579,21 @@ public class DataModelAdaptor {
 
 			as.setAssembly(matchingAssemblyDB);
 			
+			// we use the symmetry detected with biojava's quat symmetry detection just to double check that we get it right in eppic
+			String[] symmetries = getSymmetry(pdb, bioAssemblyNumber);
+			
 			if (!getSymmetryString(matchingAssemblyDB.getAssemblyContents()).equals(symmetries[0])) {
 				LOGGER.warn("Symmetry calculated from graph is {} whilst detected from biounit is {}",
 						getSymmetryString(matchingAssemblyDB.getAssemblyContents()),symmetries[0]);
 			}
 			
-			if (!getStoichiometryString(matchingAssemblyDB.getAssemblyContents()).equals(symmetries[1])) {
+			// we represent the stoichiometries in db with parenthesis, e.g. A(2), we need to strip them before comparing 
+			String stoFromEppic = getStoichiometryString(matchingAssemblyDB.getAssemblyContents());
+			stoFromEppic = stoFromEppic.replaceAll("[()]", "");
+			
+			if (!stoFromEppic.equals(symmetries[1])) {
 				LOGGER.warn("Stoichiometry calculated from graph is {} whilst detected from biounit is {}",
-						getStoichiometryString(matchingAssemblyDB.getAssemblyContents()),symmetries[1]);
+						stoFromEppic,symmetries[1]);
 			}
 			matchingAssemblyDB.addAssemblyScore(as);
 			
