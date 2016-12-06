@@ -85,7 +85,9 @@ public class PdbInfoDB implements Serializable {
 						double cellBeta,
 						double cellGamma,
 						int crystalFormId,
-						RunParametersDB runParameters) {
+						RunParametersDB runParameters,						
+						boolean nonStandardSg,
+						boolean nonStandardCoordFrameConvention) {
 		
 		chainClusters = new ArrayList<ChainClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
@@ -105,6 +107,8 @@ public class PdbInfoDB implements Serializable {
 		this.cellBeta = cellBeta;
 		this.cellGamma = cellGamma;
 		this.crystalFormId = crystalFormId;
+		this.nonStandardSg = nonStandardSg;
+		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
 	}
 	
 	/**

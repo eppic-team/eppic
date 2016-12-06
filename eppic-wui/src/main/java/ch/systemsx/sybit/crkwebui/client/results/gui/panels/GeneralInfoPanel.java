@@ -59,6 +59,8 @@ public class GeneralInfoPanel extends FieldSet {
 		mainContainer.add(panelTable);
     	
     	this.setWidget(mainContainer);
+    	
+    	Window.alert("nonstandardsg is " + pdbInfo.isNonStandardSg() + " frame is " + pdbInfo.isNonStandardCoordFrameConvention());
 		
 		fillGeneralInfoPanel(pdbInfo.getSpaceGroup(), 
 									pdbInfo.getExpMethod(), 
