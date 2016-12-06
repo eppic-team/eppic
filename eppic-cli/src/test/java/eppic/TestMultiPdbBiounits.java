@@ -43,6 +43,7 @@ public class TestMultiPdbBiounits {
 		// assembly 6 is a tetramer and has a PDB biounit annotation (pdb1)
 		AssemblyDB assembly6 = pdbInfo.getAssemblies().get(6);		
 		assertEquals(4, assembly6.getAssemblyContents().get(0).getMmSize());
+		assertEquals("{1,2,3}", assembly6.getInterfaceClusterIds());
 		
 		List<AssemblyScoreDB> pdbAssemblyScores = getPdbBiounitAnnotations(assembly6.getAssemblyScores());
 		
@@ -56,6 +57,7 @@ public class TestMultiPdbBiounits {
 		// assembly 7 is a tetramer and has a PDB biounit annotation (pdb2)
 		AssemblyDB assembly7 = pdbInfo.getAssemblies().get(7);
 		assertEquals(4, assembly7.getAssemblyContents().get(0).getMmSize());
+		assertEquals("{2,4,8}", assembly7.getInterfaceClusterIds());
 		
 		pdbAssemblyScores = getPdbBiounitAnnotations(assembly7.getAssemblyScores());
 		
