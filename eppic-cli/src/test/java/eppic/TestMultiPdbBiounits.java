@@ -25,7 +25,7 @@ public class TestMultiPdbBiounits {
 	@Test
 	public void test3gzh() throws IOException {
 		
-		File outDir = new File(TMPDIR, "eppicTestLargeStructures");
+		File outDir = new File(TMPDIR, "eppicTestMultiPdbBiounits");
 		
 		outDir.mkdir();
 		
@@ -40,12 +40,12 @@ public class TestMultiPdbBiounits {
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
-		// assembly 6 is a tetramer and has a PDB biounit annotation (pdb1)
-		AssemblyDB assembly6 = pdbInfo.getAssemblies().get(6);		
-		assertEquals(4, assembly6.getAssemblyContents().get(0).getMmSize());
-		assertEquals("{1,2,3}", assembly6.getInterfaceClusterIds());
+		// assembly 7 is a tetramer and has a PDB biounit annotation (pdb1)
+		AssemblyDB assembly7 = pdbInfo.getAssemblies().get(6);		
+		assertEquals(4, assembly7.getAssemblyContents().get(0).getMmSize());
+		assertEquals("{1,2,3}", assembly7.getInterfaceClusterIds());
 		
-		List<AssemblyScoreDB> pdbAssemblyScores = getPdbBiounitAnnotations(assembly6.getAssemblyScores());
+		List<AssemblyScoreDB> pdbAssemblyScores = getPdbBiounitAnnotations(assembly7.getAssemblyScores());
 		
 		assertEquals(1, pdbAssemblyScores.size());
 
@@ -54,12 +54,12 @@ public class TestMultiPdbBiounits {
 		AssemblyScoreDB pdbBiounit2 = getPdbBiounit(pdbAssemblyScores, 2);
 		assertNull(pdbBiounit2);
 		
-		// assembly 7 is a tetramer and has a PDB biounit annotation (pdb2)
-		AssemblyDB assembly7 = pdbInfo.getAssemblies().get(7);
-		assertEquals(4, assembly7.getAssemblyContents().get(0).getMmSize());
-		assertEquals("{2,4,8}", assembly7.getInterfaceClusterIds());
+		// assembly 8 is a tetramer and has a PDB biounit annotation (pdb2)
+		AssemblyDB assembly8 = pdbInfo.getAssemblies().get(7);
+		assertEquals(4, assembly8.getAssemblyContents().get(0).getMmSize());
+		assertEquals("{2,4,8}", assembly8.getInterfaceClusterIds());
 		
-		pdbAssemblyScores = getPdbBiounitAnnotations(assembly7.getAssemblyScores());
+		pdbAssemblyScores = getPdbBiounitAnnotations(assembly8.getAssemblyScores());
 		
 		assertEquals(1, pdbAssemblyScores.size());
 		
@@ -67,6 +67,53 @@ public class TestMultiPdbBiounits {
 		assertNull(pdbBiounit1);
 		pdbBiounit2 = getPdbBiounit(pdbAssemblyScores, 2);		
 		assertNotNull(pdbBiounit2);
+		
+		
+		outDir.delete();
+		
+	}
+	
+	/**
+	 * 3p3f has multiple redundant pdb biounit annotations, all mapping to 1 eppic assembly
+	 * See https://github.com/eppic-team/eppic/issues/139
+	 * @throws IOException
+	 */
+	@Test
+	public void test3p3f() throws IOException {
+		
+		File outDir = new File(TMPDIR, "eppicTestMultiPdbBiounits");
+		
+		outDir.mkdir();
+		
+		assertTrue(outDir.isDirectory());
+		
+		
+		String[] args = {"-i", "3p3f", "-o", outDir.toString()};
+		
+		Main m = new Main();
+		
+		m.run(args);
+		
+		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		
+		// assembly 2 is a dimer and has several PDB biounits redundant annotation (pdb1, pdb2, pdb3)
+		AssemblyDB assembly2 = pdbInfo.getAssemblies().get(1);		
+		assertEquals(2, assembly2.getAssemblyContents().get(0).getMmSize());
+		assertEquals("{1}", assembly2.getInterfaceClusterIds());
+		
+		List<AssemblyScoreDB> pdbAssemblyScores = getPdbBiounitAnnotations(assembly2.getAssemblyScores());
+		
+		assertEquals(3, pdbAssemblyScores.size());
+
+		AssemblyScoreDB pdbBiounit1 = getPdbBiounit(pdbAssemblyScores, 1);		
+		assertNotNull(pdbBiounit1);
+		AssemblyScoreDB pdbBiounit2 = getPdbBiounit(pdbAssemblyScores, 2);
+		assertNotNull(pdbBiounit2);
+		AssemblyScoreDB pdbBiounit3 = getPdbBiounit(pdbAssemblyScores, 3);
+		assertNotNull(pdbBiounit3);
+		AssemblyScoreDB pdbBiounit4 = getPdbBiounit(pdbAssemblyScores, 4);
+		assertNull(pdbBiounit4);
+
 		
 		
 		outDir.delete();
