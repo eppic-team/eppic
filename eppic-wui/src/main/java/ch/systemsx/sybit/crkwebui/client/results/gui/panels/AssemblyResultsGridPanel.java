@@ -35,6 +35,7 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.SubscriptTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
+import ch.systemsx.sybit.crkwebui.shared.model.AssemblyScore;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
@@ -68,6 +69,7 @@ import com.sencha.gxt.widget.core.client.tips.QuickTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
+import eppic.DataModelAdaptor;
 import eppic.EppicParams;
 import eppic.model.ScoringMethod;
 
@@ -408,6 +410,13 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				model.setAssemblyId(assembly.getId()); //not actually visible
 				model.setIdentifier(assembly.getIdentifierString());
 				model.setPdbCode(resultsData.getPdbCode());
+				model.setPdb1Assembly(false);
+				for (AssemblyScore as : assembly.getAssemblyScores()) {
+					if (as.getMethod()!=null && as.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD) && 
+							as.getCallName()!=null && as.getCallName().equals("bio") ) {
+						model.setPdb1Assembly(true);	
+					}					
+				}
 
 				String thumbnailUrl = 
 						ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
