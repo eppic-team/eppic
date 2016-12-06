@@ -412,7 +412,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				model.setPdbCode(resultsData.getPdbCode());
 				model.setPdb1Assembly(false);
 				for (AssemblyScore as : assembly.getAssemblyScores()) {
-					if (as.getMethod()!=null && as.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD)) {
+					if (as.getMethod()!=null && as.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD) && 
+							as.getCallName()!=null && as.getCallName().equals("bio") ) {
 						model.setPdb1Assembly(true);	
 					}					
 				}
