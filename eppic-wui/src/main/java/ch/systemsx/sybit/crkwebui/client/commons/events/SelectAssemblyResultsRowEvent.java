@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectResultsRowHandler;
 
 import com.google.gwt.event.shared.GwtEvent;
 

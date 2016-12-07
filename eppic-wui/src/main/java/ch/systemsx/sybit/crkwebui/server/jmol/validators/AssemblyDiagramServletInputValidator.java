@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.validators;
 
-import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
 /**

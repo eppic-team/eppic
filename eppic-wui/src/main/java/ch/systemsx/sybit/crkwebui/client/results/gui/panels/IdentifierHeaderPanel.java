@@ -6,11 +6,8 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadS
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;

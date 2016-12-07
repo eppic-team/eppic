@@ -21,7 +21,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.XsrfTokenServiceAsync;
 import com.sencha.gxt.core.client.GXT;
 

@@ -19,9 +19,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowHomologsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowQueryWarningsEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
-import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
-//import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ApplicationWindowResizeHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.HideAllWindowsHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowQueryWarningsHandler;
@@ -42,8 +40,6 @@ import com.google.gwt.core.client.GWT;
 //import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
@@ -54,15 +50,10 @@ import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.button.IconButton;
 import com.sencha.gxt.widget.core.client.button.IconButton.IconConfig;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
-import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer.HorizontalLayoutData;
-import com.sencha.gxt.widget.core.client.container.SimpleContainer;
-import com.sencha.gxt.widget.core.client.event.SelectEvent;
-import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.FieldSet;
 import com.sencha.gxt.widget.core.client.tips.ToolTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 
-import eppic.EppicParams;
 
 /**
  * Panel containing information about the sequences and their homologs.
@@ -433,6 +424,7 @@ public class SequenceInfoPanel extends FieldSet
 	/**
 	 * Creates a more Icon Button
 	 */
+	@SuppressWarnings("unused")
 	private IconButton createMoreInfoButton(String tooltipText){
 		IconConfig cnfg = new IconConfig("eppic-seq-info-panel-more-button");
 		IconButton button = new IconButton(cnfg);

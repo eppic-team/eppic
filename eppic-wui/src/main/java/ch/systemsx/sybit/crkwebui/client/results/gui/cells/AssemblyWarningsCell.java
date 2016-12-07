@@ -5,7 +5,6 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
-import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceWarning;
 
 import com.google.gwt.cell.client.AbstractCell;
