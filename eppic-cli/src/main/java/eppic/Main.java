@@ -360,19 +360,6 @@ public class Main {
 	public void doFindAssemblies() throws StructureException { 
 		
 		params.getProgressLog().println("Calculating possible assemblies...");
-		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-		if (!pdb.isCrystallographic()) {
-			LOGGER.info("The input structure is not crystallographic: won't do analysis of assemblies");
-			return;
-		}
-		if (pdb.getCrystallographicInfo().getSpaceGroup()==null) {
-			LOGGER.warn("No space group available, will not do analysis of assemblies");
-			return;
-		}
-		if (pdb.getCrystallographicInfo().getCrystalCell()==null) {
-			LOGGER.warn("No crystal cell definition, will not do analysis of assemblies");
-			return;
-		}
 		validAssemblies = new CrystalAssemblies(pdb, interfaces); 
 
 		StringBuilder sb = new StringBuilder();
@@ -386,23 +373,17 @@ public class Main {
 	
 	public void doAssemblyScoring() {
 
-		
-		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-		if (pdb.isCrystallographic() && 
-			pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-			pdb.getCrystallographicInfo().getCrystalCell()!=null) {
 
-			if (params.isDoEvolScoring()) {
-				validAssemblies.setInterfaceEvolContextList(iecList);
+		if (params.isDoEvolScoring()) {
+			validAssemblies.setInterfaceEvolContextList(iecList);
 
-				validAssemblies.score();
-			}
-
-
-			modelAdaptor.setAssemblies(validAssemblies);
-			
-			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb);
+			validAssemblies.score();
 		}
+
+
+		modelAdaptor.setAssemblies(validAssemblies);
+
+		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb);
 
 	}
 	
@@ -543,29 +524,23 @@ public class Main {
 			}
 				
 			// ASSEMBLY files
-			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-			if (pdb.isCrystallographic() && 
-					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+			for (Assembly a:validAssemblies) {
 
-				for (Assembly a:validAssemblies) {
+				File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 
-					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
-					
-					try {
-						LOGGER.info("Writing assembly {} to {}",a.getId(),outputFile);
-						a.writeToMmCifFile(outputFile);
-						if (params.isGeneratePdbFiles()) {
-							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);
-							a.writeToPdbFile(outputFile);
-						}
-						
-					} catch (StructureException e) {
-						LOGGER.error("Could not write assembly coordinates file {}: {}",a.getId(),e.getMessage());
-						continue;
+				try {
+					LOGGER.info("Writing assembly {} to {}",a.getId(),outputFile);
+					a.writeToMmCifFile(outputFile);
+					if (params.isGeneratePdbFiles()) {
+						outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);
+						a.writeToPdbFile(outputFile);
 					}
 
+				} catch (StructureException e) {
+					LOGGER.error("Could not write assembly coordinates file {}: {}",a.getId(),e.getMessage());
+					continue;
 				}
+
 			}
 			
 		} catch (IOException e) {
@@ -583,49 +558,42 @@ public class Main {
 		LOGGER.info("Generating Assembly Diagram files");
 
 		try {
-			// ASSEMBLY files
-			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-			if (pdb.isCrystallographic() && 
-					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+			LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
+			GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
+			String fileFormat = "png";
 
-				LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
-				GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
-				String fileFormat = "png";
-				
-				for (Assembly a:validAssemblies) {
+			for (Assembly a:validAssemblies) {
 
-					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
+				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
-					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
-					
-					// Filter down to this assembly
-					List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
-					Set<Integer> clusterIds = new HashSet<Integer>(clusters.size());
-					for(StructureInterfaceCluster cluster : clusters) {
-						clusterIds.add(cluster.getId());
-					}
-					latticeGraph.filterEngagedClusters(clusterIds);
-					
-					LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
-					guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
-					guiThumb.setTitle("Assembly "+a.getId());
-					guiThumb.setPdbId(pdb.getPDBCode());
-					int dpi = 72; // 72 dots per inch for output
-					// size is in inches
-					guiThumb.setSize(String.valueOf((double)EppicParams.THUMBNAILS_SIZE/(double)dpi));
-					guiThumb.setDpi(String.valueOf(dpi));
+				LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 
-					// Generate thumbs via dot file
-					//File dotFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".dot");
-					//try (PrintWriter out = new PrintWriter(dotFile)) {
-					//	guiThumb.execute(out);
-					//}
-					//runner.generateFromDot(dotFile, pngFile, fileFormat);
-					
-					// Generate thumbs via pipe
-					runner.generateFromDot(guiThumb, pngFile, fileFormat);
+				// Filter down to this assembly
+				List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
+				Set<Integer> clusterIds = new HashSet<Integer>(clusters.size());
+				for(StructureInterfaceCluster cluster : clusters) {
+					clusterIds.add(cluster.getId());
 				}
+				latticeGraph.filterEngagedClusters(clusterIds);
+
+				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
+				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
+				guiThumb.setTitle("Assembly "+a.getId());
+				guiThumb.setPdbId(pdb.getPDBCode());
+				int dpi = 72; // 72 dots per inch for output
+				// size is in inches
+				guiThumb.setSize(String.valueOf((double)EppicParams.THUMBNAILS_SIZE/(double)dpi));
+				guiThumb.setDpi(String.valueOf(dpi));
+
+				// Generate thumbs via dot file
+				//File dotFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".dot");
+				//try (PrintWriter out = new PrintWriter(dotFile)) {
+				//	guiThumb.execute(out);
+				//}
+				//runner.generateFromDot(dotFile, pngFile, fileFormat);
+
+				// Generate thumbs via pipe
+				runner.generateFromDot(guiThumb, pngFile, fileFormat);
 			}
 
 
@@ -722,17 +690,11 @@ public class Main {
 				
 			}
 			
-			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-			if (pdb.isCrystallographic() && 
-					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+			for (Assembly a:validAssemblies) {
+				File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
 
-				for (Assembly a:validAssemblies) {
-					File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
-
-					pr.generateAssemblyPng(a, cifFile,  
-							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
-				}
+				pr.generateAssemblyPng(a, cifFile,  
+						params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
 			}
 			
 		} catch (IOException e) {

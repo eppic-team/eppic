@@ -247,6 +247,13 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 				PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
 				SpaceGroup sg = crystalInfo.getSpaceGroup();
 				CrystalCell cell = crystalInfo.getCrystalCell();
+				
+				// non-crystallographic cases (e.g. NMR): we set an "identity" cell
+				// see https://github.com/eppic-team/eppic/issues/50
+				if (cell==null) {
+					logger.info("No cell was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
+					cell = new CrystalCell(1, 1, 1, 90, 90, 90);
+				}
 
 				// Transformations in crystal coords
 				Matrix4d[] transfs = new Matrix4d[sg.getNumOperators()];
@@ -259,7 +266,9 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 				Point3d reference = new Point3d(getReferenceCoordinate(chainId));
 				cell.transfToCrystal(reference);
 
+				// TODO transfToOriginCellCrystal seems to be like a static function (doesn't use any data from cell), we should make it static! - JD 2016-12-06
 				chainTransformations = cell.transfToOriginCellCrystal(transfs, reference);
+				
 				unitCellOperators.put(chainId, chainTransformations);
 			} else {
 				chainTransformations = unitCellOperators.get(chainId);
