@@ -96,4 +96,20 @@ public class TestSymmetryDetection {
 			}
 		}
 	}
+	
+	@Test
+	public void test1auyIcosahedralAssembly() throws IOException, StructureException {
+		
+		// 1auy is a viral capsid structure with ncs ops that we expand together with space group ops 
+		// to produce the full assembly. The largest assembly should be the full icosahedron
+		
+		CrystalAssemblies assemblies = TestLatticeGraph.getCrystalAssemblies("1auy");
+
+		for (Assembly a:assemblies) {
+
+			if (a.toString().equals("{2,3}")) {
+				assertEquals("I",a.getDescription().get(0).getSymmetry());
+			}
+		}
+	}
 }
