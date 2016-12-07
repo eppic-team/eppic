@@ -329,13 +329,7 @@ public class Assembly {
 		List<ChainVertex> chains = new ArrayList<ChainVertex>();
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
-		// non-crystallographic cases (e.g. NMR): we set an "identity" cell
-		// see https://github.com/eppic-team/eppic/issues/50
-		if (cell==null) {
-			logger.info("No cell was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
-			cell = new CrystalCell(1, 1, 1, 90, 90, 90);
-		}
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		for(List<SubAssembly> subgroup : assemblyGraph.getSubAssembliesGroupedByStoichiometries()) {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
@@ -359,13 +353,7 @@ public class Assembly {
 	public List<List<ChainVertex>> getStructureCentered() throws StructureException {
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
-		// non-crystallographic cases (e.g. NMR): we set an "identity" cell
-		// see https://github.com/eppic-team/eppic/issues/50
-		if (cell==null) {
-			logger.info("No cell was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
-			cell = new CrystalCell(1, 1, 1, 90, 90, 90);
-		}
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		List<List<ChainVertex>> components = new ArrayList<List<ChainVertex>>(assemblyGraph.getSubAssembliesGroupedByStoichiometries().size());
 
@@ -398,13 +386,7 @@ public class Assembly {
 
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
-		// non-crystallographic cases (e.g. NMR): we set an "identity" cell
-		// see https://github.com/eppic-team/eppic/issues/50
-		if (cell==null) {
-			logger.info("No cell was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
-			cell = new CrystalCell(1, 1, 1, 90, 90, 90);
-		}
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		List<Entry<Dimension2D, List<ChainVertex>>> boxes = new ArrayList<Map.Entry<Dimension2D,List<ChainVertex>>>();
 

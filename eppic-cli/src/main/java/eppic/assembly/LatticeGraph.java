@@ -210,14 +210,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @throws StructureException if an error occurs calculating the centroid
 	 */
 	public Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) throws StructureException {
-		PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
-		CrystalCell cell = crystalInfo.getCrystalCell();
-		// non-crystallographic cases (e.g. NMR): we set an "identity" cell
-		// see https://github.com/eppic-team/eppic/issues/50
-		if (cell==null) {
-			logger.info("No cell was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
-			cell = new CrystalCell(1, 1, 1, 90, 90, 90);
-		}
+		
+		CrystalCell cell = getCrystalCell(structure);
 
 		Matrix4d[] crystalTrnsf = getUnitCellTransformationsCrystal(chainId);
 
@@ -252,15 +246,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			if( ! unitCellOperators.containsKey(chainId) ) {
 				PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
 				SpaceGroup sg = crystalInfo.getSpaceGroup();
-				CrystalCell cell = crystalInfo.getCrystalCell();
+				CrystalCell cell = getCrystalCell(structure);
 				
-				// non-crystallographic cases (e.g. NMR): we set an "identity" cell
-				// see https://github.com/eppic-team/eppic/issues/50
-				if (cell==null) {
-					logger.info("No cell was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
-					cell = new CrystalCell(1, 1, 1, 90, 90, 90);
-				}
-
 				// Transformations in crystal coords
 				Matrix4d[] transfs = new Matrix4d[sg.getNumOperators()];
 				for (int i=0;i<sg.getNumOperators();i++) {
@@ -655,5 +642,33 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		UndirectedMaskSubgraph<V,E> filtered = new UndirectedMaskSubgraph<>(graph, mask);
 
 		return filtered;
+	}
+	
+	/**
+	 * Return the CrystalCell for the given Structure. If the structure is not crystallographic
+	 * returns the trivial 1, 1, 1, 90, 90, 90 cell.
+	 * @param s
+	 * @return
+	 */
+	protected static CrystalCell getCrystalCell(Structure s) {
+		PDBCrystallographicInfo crystalInfo = s.getCrystallographicInfo();
+		
+		// non-crystallographic cases (e.g. NMR): we set an "identity" cell
+		// see https://github.com/eppic-team/eppic/issues/50
+		CrystalCell cell = null;
+		
+		if (crystalInfo!=null) {
+			cell = crystalInfo.getCrystalCell();
+
+			if (cell==null) {
+				logger.info("No cell was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
+				cell =  new CrystalCell(1, 1, 1, 90, 90, 90);
+			}
+		} else {
+			logger.info("No crystallographic info was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
+			cell =  new CrystalCell(1, 1, 1, 90, 90, 90);
+		}
+		
+		return cell;
 	}
 }
