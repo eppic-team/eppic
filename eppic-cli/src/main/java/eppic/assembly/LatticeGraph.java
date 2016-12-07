@@ -24,6 +24,7 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.biojava.nbio.structure.xtal.SymoplibParser;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.VertexFactory;
@@ -244,8 +245,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		Matrix4d[] chainTransformations;
 		synchronized(unitCellOperators) {
 			if( ! unitCellOperators.containsKey(chainId) ) {
-				PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
-				SpaceGroup sg = crystalInfo.getSpaceGroup();
+				
+				SpaceGroup sg = getSpaceGroup(structure);
 				CrystalCell cell = getCrystalCell(structure);
 				
 				// Transformations in crystal coords
@@ -303,7 +304,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 	private void initLatticeGraphTopologically(List<StructureInterface> interfaces, VertexFactory<V> vertexFactory, EdgeFactory<V, E> edgeFactory) throws StructureException {		
 
-		final int numOps = structure.getCrystallographicInfo().getSpaceGroup().getNumOperators();
+		SpaceGroup sg = getSpaceGroup(structure);
+		final int numOps = sg.getNumOperators();
 
 		for (Chain c:structure.getChains()) {
 			
@@ -670,5 +672,32 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		}
 		
 		return cell;
+	}
+	
+	/**
+	 * Return the space group for a given structure. If the structure is not crystallographic, return P1.
+	 * @param s
+	 * @return
+	 */
+	protected static SpaceGroup getSpaceGroup(Structure s) {
+		PDBCrystallographicInfo crystalInfo = s.getCrystallographicInfo();
+		
+		// non-crystallographic cases (e.g. NMR): we set to P1
+		// see https://github.com/eppic-team/eppic/issues/50
+		SpaceGroup sg = null;
+		
+		if (crystalInfo!=null) {
+			sg = crystalInfo.getSpaceGroup();
+
+			if (sg==null) {
+				logger.info("No space group was found! Most likely this is a non-crystallographic entry. Setting it to P 1.");
+				sg =  SymoplibParser.getSpaceGroup("P 1");
+			}
+		} else {
+			logger.info("No crystallographic info was found! Most likely this is a non-crystallographic entry. Setting space group to P 1.");
+			sg = SymoplibParser.getSpaceGroup("P 1");
+		}
+		
+		return sg;
 	}
 }

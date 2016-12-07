@@ -16,12 +16,12 @@ public class TestAssembliesForNonXtals {
 private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	
 	/**
-	 * 1mxl: NMR heterodimer
+	 * 1tlh: NMR heterodimer without space group or cell defined
 	 * See https://github.com/eppic-team/eppic/issues/50
 	 * @throws IOException
 	 */
 	@Test
-	public void test1mxl() throws IOException {
+	public void test1tlh() throws IOException {
 		
 		File outDir = new File(TMPDIR, "eppicTestAssembliesForNonXtals");
 		
@@ -30,7 +30,7 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		assertTrue(outDir.isDirectory());
 		
 		
-		String[] args = {"-i", "1mxl", "-o", outDir.toString()};
+		String[] args = {"-i", "1tlh", "-o", outDir.toString()};
 		
 		Main m = new Main();
 		
@@ -56,6 +56,7 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		outDir.delete();
 		
 	}
+	
 	
 	/**
 	 * 5a7u: EM monomer
