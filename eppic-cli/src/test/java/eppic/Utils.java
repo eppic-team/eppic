@@ -10,7 +10,7 @@ public class Utils {
 		params.setInput();
 		params.setOutDir(outDir);
 		params.setAlphabet(EppicParams.DEF_ENTROPY_ALPHABET);
-		params.setnSpherePointsASAcalc(1000);
+		params.setnSpherePointsASAcalc(100);
 		return params;
 	}
 
