@@ -39,12 +39,13 @@ public class TestLargeStructures {
 		
 		assertTrue(outDir.isDirectory());
 		
-		
-		String[] args = {"-i", "4v9e", "-o", outDir.toString()};
+				
+		String pdbId = "4v9e";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
 		
 		Main m = new Main();
 		
-		m.run(args);
+		m.run(params);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		

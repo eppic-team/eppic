@@ -31,12 +31,11 @@ public class TestMultiPdbBiounits {
 		
 		assertTrue(outDir.isDirectory());
 		
-		
-		String[] args = {"-i", "3gzh", "-o", outDir.toString()};
-		
+		String pdbId = "3gzh";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
 		Main m = new Main();
 		
-		m.run(args);
+		m.run(params);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
@@ -87,12 +86,13 @@ public class TestMultiPdbBiounits {
 		
 		assertTrue(outDir.isDirectory());
 		
-		
-		String[] args = {"-i", "3p3f", "-o", outDir.toString()};
+				
+		String pdbId = "3p3f";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
 		
 		Main m = new Main();
 		
-		m.run(args);
+		m.run(params);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		

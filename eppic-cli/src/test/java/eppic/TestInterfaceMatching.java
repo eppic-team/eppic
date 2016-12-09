@@ -22,7 +22,7 @@ public class TestInterfaceMatching {
 	 * Test interface matching, specifically issues https://github.com/eppic-team/eppic/issues/98 and https://github.com/eppic-team/eppic/issues/74
 	 */
 	@Test
-	public void test4hwd() {
+	public void test4hwd() throws EppicException {
 		
 		File outDir = new File(TMPDIR, "eppicTestInterfMatching");
 		
@@ -30,12 +30,13 @@ public class TestInterfaceMatching {
 		
 		assertTrue(outDir.isDirectory());
 		
-		
-		String[] args = {"-i", "4hwd", "-o", outDir.toString()};
+				
+		String pdbId = "4hwd";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
 		
 		Main m = new Main();
 		
-		m.run(args);
+		m.run(params);
 		
 		Structure s = m.getStructure();
 		

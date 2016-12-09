@@ -891,15 +891,39 @@ public class Main {
 		eppicMain.run(args);
 	}
 	
+	/**
+	 * Run the full eppic analysis given a parameters object
+	 * @param params
+	 */
+	protected void run(EppicParams params) {
+		this.params = params;
+		run(false);
+	}
+	
+	/**
+	 * Run the full eppic analysis given the command line arguments (which are then converted into an {@link EppicParams} object)
+	 * @param args
+	 */
 	public void run(String[] args) {
+		
+		try {
+			params.parseCommandLine(args);
+			
+		} catch (EppicException e) {
+			LOGGER.error(e.getMessage());
+			e.exitIfFatal(1);
+		}
+		
+		run(true);
+	}
+	
+	private void run(boolean loadConfigFile) {
 
-		
-		
+				
 		long start = System.nanoTime();
 
 		try {
-						
-			params.parseCommandLine(args);
+									
 
 			// this has to come after getting the command line args, since it reads the location and name of log file from those
 			setUpLogging();
@@ -908,7 +932,8 @@ public class Main {
 			LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
 			LOGGER.info("Build git SHA: {}", EppicParams.BUILD_GIT_SHA);
 			
-			loadConfigFile();
+			if (loadConfigFile)
+				loadConfigFile();
 			
 			try {
 				LOGGER.info("Running in host "+InetAddress.getLocalHost().getHostName());

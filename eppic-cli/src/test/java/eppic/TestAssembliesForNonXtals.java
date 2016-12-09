@@ -30,11 +30,14 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		assertTrue(outDir.isDirectory());
 		
 		
-		String[] args = {"-i", "1tlh", "-o", outDir.toString()};
+		
+		String pdbId = "1tlh";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
+
 		
 		Main m = new Main();
 		
-		m.run(args);
+		m.run(params);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
@@ -72,12 +75,14 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		assertTrue(outDir.isDirectory());
 		
-		
-		String[] args = {"-i", "5a7u", "-o", outDir.toString()};
+				
+		String pdbId = "5a7u";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
+
 		
 		Main m = new Main();
 		
-		m.run(args);
+		m.run(params);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
@@ -110,11 +115,13 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		assertTrue(outDir.isDirectory());
 		
 		
-		String[] args = {"-i", "5h1q", "-o", outDir.toString()};
+		String pdbId = "5h1q";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
+
 		
 		Main m = new Main();
 		
-		m.run(args);
+		m.run(params);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		

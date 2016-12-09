@@ -663,6 +663,10 @@ public class EppicParams {
 		
 	}
 	
+	public void setInputStr(String inputStr) {
+		this.inputStr = inputStr;
+	}
+	
 	public boolean isDoEvolScoring() {
 		return doEvolScoring;
 	}
@@ -1011,6 +1015,10 @@ public class EppicParams {
 	
 	public AAAlphabet getAlphabet() {
 		return alphabet;
+	}
+	
+	public void setAlphabet(AAAlphabet alphabet) {
+		this.alphabet = alphabet;
 	}
 	
 }
