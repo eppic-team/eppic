@@ -493,8 +493,6 @@ public class Main {
 	
 	public void doWriteCoordFiles() throws EppicException {
 
-		if (interfaces.size() == 0) return;
-		
 		if (!params.isGenerateOutputCoordFiles()) return;
 		
 		
@@ -549,7 +547,9 @@ public class Main {
 	}
 
 	public void doWriteAssemblyDiagrams() throws EppicException {
-		if (interfaces.size() == 0) return;
+
+		// should not happen, there should always be 1 assembly (the trivial no-interfaces engaged one)
+		if (validAssemblies.getUniqueAssemblies().size() == 0) return; 
 
 		if (!params.isGenerateDiagrams()) return;
 		
@@ -645,8 +645,6 @@ public class Main {
 		
 		if (!params.isGenerateThumbnails()) return;
 		
-		if (interfaces.size() == 0) return;
-		
 		params.getProgressLog().println("Writing PyMOL files");
 		writeStep("Generating Thumbnails and PyMOL Files");
 		LOGGER.info("Generating PyMOL files");
@@ -663,7 +661,9 @@ public class Main {
 				
 			}
 
-			if (params.isDoEvolScoring()) {
+			// at the moment we don't calculate evol scores if no interfaces found, 
+			// if we change that, we can get rid of the interfaces.size condition. See https://github.com/eppic-team/eppic/issues/121
+			if (interfaces.size()>0 && params.isDoEvolScoring()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
 					Chain chain = pdb.getChainByPDB(cec.getRepresentativeChainCode());
 					cec.setConservationScoresAsBfactors(chain);
@@ -712,7 +712,7 @@ public class Main {
 		if (interfaces.size()==0) return;
 		
 		if (!params.isGenerateThumbnails()) return;
-		// from here only if in -l mode: compress interface pses and chain pses
+		// from here only if in -l mode: compress chain pses
 		
 		params.getProgressLog().println("Compressing files");
 		LOGGER.info("Compressing files");
