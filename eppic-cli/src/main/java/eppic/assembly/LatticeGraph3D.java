@@ -187,7 +187,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 					logger.error("Non-identity source transformation:\n{}",transA);
 				}
 
-				CrystalCell cell = structure.getCrystallographicInfo().getCrystalCell();
+				CrystalCell cell = LatticeGraph.getCrystalCell(structure);
 
 
 				// Vertex positions within the unit cell
