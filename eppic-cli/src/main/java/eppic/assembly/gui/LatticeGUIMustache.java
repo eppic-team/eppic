@@ -1,6 +1,5 @@
 package eppic.assembly.gui;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -80,9 +79,9 @@ public class LatticeGUIMustache {
 	private String dpi; // the dpi for thumnails generation
 	
 	// cache for getGraph2D
-	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d = null;
+	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d;
 
-	private GraphLayout<ChainVertex3D,InterfaceEdge3D> layout2d = null;
+	private GraphLayout<ChainVertex3D,InterfaceEdge3D> layout2d;
 
 	/**
 	 * Factory method for known templates. Most templates use this class directly.
@@ -489,7 +488,7 @@ public class LatticeGUIMustache {
 		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
 		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
 
-		layouts.add( new UnitCellLayout<>(vertexPositioner, struc.getCrystallographicInfo().getCrystalCell()));
+		layouts.add( new UnitCellLayout<>(vertexPositioner, LatticeGraph.getCrystalCell(struc)));
 		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
 
 //		Point3d center = new Point3d();

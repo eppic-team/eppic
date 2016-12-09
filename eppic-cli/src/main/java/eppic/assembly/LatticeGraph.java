@@ -652,7 +652,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param s
 	 * @return
 	 */
-	protected static CrystalCell getCrystalCell(Structure s) {
+	public static CrystalCell getCrystalCell(Structure s) {
 		PDBCrystallographicInfo crystalInfo = s.getCrystallographicInfo();
 		
 		// non-crystallographic cases (e.g. NMR): we set an "identity" cell
