@@ -30,6 +30,7 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
@@ -465,7 +466,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 		out.print(FileConvert.getAtomSiteHeader());
 
-		List<Object> atomSites = new ArrayList<>();
+		List<AtomSite> atomSites = new ArrayList<>();
 
 		int atomId = 1;
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
@@ -500,7 +501,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 			}
 		}
 
-		out.print(MMCIFFileTools.toMMCIF(atomSites));
+		out.print(MMCIFFileTools.toMMCIF(atomSites, AtomSite.class));
 
 
 		out.close();
