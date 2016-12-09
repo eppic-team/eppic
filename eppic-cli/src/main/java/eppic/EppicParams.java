@@ -618,10 +618,13 @@ public class EppicParams {
 			if (!pymolExe.exists()) {
 				throw new EppicException(null, "PYMOL_EXE must be set to a valid value in config file.", true);
 			}
+
+		}
+		
+		if (isGenerateDiagrams()) {
 			if (!graphvizExe.exists()) {
 				throw new EppicException(null, "GRAPHVIZ_EXE must be set to a valid value in config file.", true);
 			}
-
 		}
 		
 		if (alphabet == null) {
