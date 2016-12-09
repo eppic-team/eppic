@@ -101,12 +101,12 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 	}
 	
 	/**
-	 * 5h1q: EM octamer
+	 * 5sv9: EM dimer
 	 * See https://github.com/eppic-team/eppic/issues/50
 	 * @throws IOException
 	 */
 	@Test
-	public void test5h1q() throws IOException {
+	public void test5sv9() throws IOException {
 		
 		File outDir = new File(TMPDIR, "eppicTestAssembliesForNonXtals");
 		
@@ -115,7 +115,7 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		assertTrue(outDir.isDirectory());
 		
 		
-		String pdbId = "5h1q";
+		String pdbId = "5sv9";
 		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
 
 		
@@ -125,7 +125,7 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
-		// 2 assemblies: monomer and octameric
+		// 2 assemblies: monomer and dimer
 		assertEquals(2, pdbInfo.getAssemblies().size());
 		
 		AssemblyDB assembly1 = pdbInfo.getAssemblies().get(0);
@@ -135,8 +135,8 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		AssemblyDB assembly2 = pdbInfo.getAssemblies().get(1);
 		
-		assertEquals(8, assembly2.getAssemblyContents().get(0).getMmSize());
-		assertEquals("C8", assembly2.getAssemblyContents().get(0).getSymmetry());
+		assertEquals(2, assembly2.getAssemblyContents().get(0).getMmSize());
+		assertEquals("C2", assembly2.getAssemblyContents().get(0).getSymmetry());
 		
 		outDir.delete();
 		
