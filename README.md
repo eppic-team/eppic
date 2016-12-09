@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/eppic-team/eppic.svg)](https://travis-ci.org/eppic-team/eppic)
-
 eppic
 =====
 
