@@ -4,7 +4,7 @@ import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
 /**
- * Jmol data validator.
+ * Lattice graph data validator.
  */
 public class LatticeGraphServletInputValidator 
 {

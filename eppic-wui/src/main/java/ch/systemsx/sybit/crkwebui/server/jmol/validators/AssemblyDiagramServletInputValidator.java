@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.jmol.validators;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
 /**
- * Jmol data validator.
+ * Assembly diagram data validator.
  */
 public class AssemblyDiagramServletInputValidator 
 {

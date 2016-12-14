@@ -148,7 +148,10 @@
 			
 			<basic name="topologicallyValid"></basic>
 
-			<basic name="interfaceClusterIds"></basic>
+			<!-- Entries like ribosomes can have very long list of interfaces here, we need text -->
+			<basic name="interfaceClusterIds">
+				<column column-definition="text" />
+			</basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
@@ -195,7 +198,11 @@
 			<basic name="composition"></basic>
 			<basic name="compositionRepChainIds"></basic>
 			<basic name="stoichiometry"></basic>
-			<basic name="chainIds"></basic>
+			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
+			     very long list of chains in their assemblies, we need text here -->
+			<basic name="chainIds">
+				<column column-definition="text" />
+			</basic>
 						
 			<many-to-one name="assembly">
 			</many-to-one>
