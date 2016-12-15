@@ -31,7 +31,10 @@
 	</entity>
 
 	<entity class="eppic.model.JobDB" name="Job">
-		<table name="Job" />
+		<table name="Job">
+			<!-- Whenever a job is invoked, the table has to be searched for jobIds, this index is very important! -->
+			<index name="jobId_idx" column-list="jobId" unique="true"></index>
+		</table>
 		<attributes>
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
