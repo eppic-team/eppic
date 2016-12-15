@@ -265,6 +265,11 @@ public class InterfaceDAOJpa implements InterfaceDAO
 
 			return result;
 		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
 		finally
 		{
 			try
