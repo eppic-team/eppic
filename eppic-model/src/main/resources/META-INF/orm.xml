@@ -198,7 +198,11 @@
 			<basic name="symmetry">
 				<column length="10"/>
 			</basic>
-			<basic name="composition"></basic>
+			<basic name="composition">
+			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
+			     very long list of chains in their assemblies, we need text here -->
+				<column column-definition="text" />
+			</basic>
 			<basic name="compositionRepChainIds"></basic>
 			<basic name="stoichiometry"></basic>
 			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
