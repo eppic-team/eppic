@@ -93,11 +93,13 @@ public class LatticeGUIMustache {
 	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUIMustache3D.html.mustache'
 	 * should all locate the correct template.
 	 * @param template String giving the path to the template.
+	 * @param struc
+	 * @param interfaceIds
 	 * @return
 	 * @throws StructureException 
 	 * @throws IllegalArgumentException if the template couldn't be found or was ambiguous
 	 */
-	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds) throws StructureException {
 		String templatePath = expandTemplatePath(template);
 		logger.info("Loading mustache template from {}",templatePath);
 
@@ -469,7 +471,7 @@ public class LatticeGUIMustache {
 
 		LatticeGUIMustache gui;
 		try {
-			gui = createLatticeGUIMustache(template, struc, interfaceIds,null);
+			gui = createLatticeGUIMustache(template, struc, interfaceIds);
 		} catch( IllegalArgumentException e) {
 			System.err.println(e.getMessage());
 			System.exit(1); return;
