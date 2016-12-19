@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationWindowResizeEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
@@ -11,11 +10,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.Cookies;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;
 import com.sencha.gxt.core.client.util.Margins;
@@ -93,6 +89,8 @@ public class ResultsPanel extends DisplayPanel
 							  	 	resultsData.getExpMethod(),
 							  	 	resultsData.getResolution(),
 							  	 	resultsData.getRfreeValue(),
+							  	 	resultsData.isNonStandardSg(),
+							  	 	resultsData.isNonStandardCoordFrameConvention(),
 							  	 	resultsData.getInputType());
 		
 		headerPanel.setEppicLogoPanel(resultsData.getRunParameters().getEppicVersion());

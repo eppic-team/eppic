@@ -22,6 +22,7 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.biojava.nbio.structure.xtal.SymoplibParser;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.VertexFactory;
@@ -42,15 +43,15 @@ import eppic.commons.util.GeomTools;
 
 /**
  * Graph representation of the interfaces in a unit cell.
- * <p>
+ * <p/>
  * Nodes are {@link ChainVertex} objects, which are identified by a chain
  * (in the asymmetric unit) and a crystallographic operator giving the
  * transform to the unit cell.
- * <p>
+ * <p/>
  * Edges are {@link InterfaceEdge} objects, identified by an EPPIC interface
  * and associated with a vector indicating whether the edge connects to
  * adjacent cells.
- * <p>
+ * <p/>
  * The class is generic, allowing other properties to be associated with
  * nodes and edges through subclasses. For instance, {@link LatticeGraph3D}
  * includes information for visualizing the graph.
@@ -215,8 +216,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @throws StructureException if an error occurs calculating the centroid
 	 */
 	public Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) throws StructureException {
-		PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
-		CrystalCell cell = crystalInfo.getCrystalCell();
+		
+		CrystalCell cell = getCrystalCell(structure);
 
 		Matrix4d[] crystalTrnsf = getUnitCellTransformationsCrystal(chainId);
 
@@ -249,10 +250,10 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		Matrix4d[] chainTransformations;
 		synchronized(unitCellOperators) {
 			if( ! unitCellOperators.containsKey(chainId) ) {
-				PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
-				SpaceGroup sg = crystalInfo.getSpaceGroup();
-				CrystalCell cell = crystalInfo.getCrystalCell();
-
+				
+				SpaceGroup sg = getSpaceGroup(structure);
+				CrystalCell cell = getCrystalCell(structure);
+				
 				// Transformations in crystal coords
 				Matrix4d[] transfs = new Matrix4d[sg.getNumOperators()];
 				for (int i=0;i<sg.getNumOperators();i++) {
@@ -264,7 +265,9 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 				Point3d reference = new Point3d(getReferenceCoordinate(chainId));
 				cell.transfToCrystal(reference);
 
+				// TODO transfToOriginCellCrystal seems to be like a static function (doesn't use any data from cell), we should make it static! - JD 2016-12-06
 				chainTransformations = cell.transfToOriginCellCrystal(transfs, reference);
+				
 				unitCellOperators.put(chainId, chainTransformations);
 			} else {
 				chainTransformations = unitCellOperators.get(chainId);
@@ -275,7 +278,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 	private void initLatticeGraphTopologically(List<StructureInterface> interfaces, VertexFactory<V> vertexFactory, EdgeFactory<V, E> edgeFactory) throws StructureException {		
 
-		final int numOps = structure.getCrystallographicInfo().getSpaceGroup().getNumOperators();
+		SpaceGroup sg = getSpaceGroup(structure);
+		final int numOps = sg.getNumOperators();
 
 		for (Chain c:structure.getChains()) {
 			
@@ -631,5 +635,60 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 */
 	public List<Integer> getDistinctEntities() {
 		return new ArrayList<>(GraphUtils.getDistinctEntities(subgraph));
+	}
+	
+		/**
+	 * Return the CrystalCell for the given Structure. If the structure is not crystallographic
+	 * returns the trivial 1, 1, 1, 90, 90, 90 cell.
+	 * @param s
+	 * @return
+	 */
+	public static CrystalCell getCrystalCell(Structure s) {
+		PDBCrystallographicInfo crystalInfo = s.getCrystallographicInfo();
+		
+		// non-crystallographic cases (e.g. NMR): we set an "identity" cell
+		// see https://github.com/eppic-team/eppic/issues/50
+		CrystalCell cell = null;
+		
+		if (crystalInfo!=null) {
+			cell = crystalInfo.getCrystalCell();
+
+			if (cell==null) {
+				logger.info("No cell was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
+				cell =  new CrystalCell(1, 1, 1, 90, 90, 90);
+			}
+		} else {
+			logger.info("No crystallographic info was found! Most likely this is a non-crystallographic entry. Setting cell to: 1,1,1,90,90,90.");
+			cell =  new CrystalCell(1, 1, 1, 90, 90, 90);
+		}
+		
+		return cell;
+	}
+	
+	/**
+	 * Return the space group for a given structure. If the structure is not crystallographic, return P1.
+	 * @param s
+	 * @return
+	 */
+	protected static SpaceGroup getSpaceGroup(Structure s) {
+		PDBCrystallographicInfo crystalInfo = s.getCrystallographicInfo();
+		
+		// non-crystallographic cases (e.g. NMR): we set to P1
+		// see https://github.com/eppic-team/eppic/issues/50
+		SpaceGroup sg = null;
+		
+		if (crystalInfo!=null) {
+			sg = crystalInfo.getSpaceGroup();
+
+			if (sg==null) {
+				logger.info("No space group was found! Most likely this is a non-crystallographic entry. Setting it to P 1.");
+				sg =  SymoplibParser.getSpaceGroup("P 1");
+			}
+		} else {
+			logger.info("No crystallographic info was found! Most likely this is a non-crystallographic entry. Setting space group to P 1.");
+			sg = SymoplibParser.getSpaceGroup("P 1");
+		}
+		
+		return sg;
 	}
 }

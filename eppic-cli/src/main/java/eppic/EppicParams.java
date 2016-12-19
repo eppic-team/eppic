@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Properties;
@@ -23,9 +24,29 @@ public class EppicParams {
 	private static final Logger LOGGER = LoggerFactory.getLogger(EppicParams.class);
 	
 	// CONSTANTS
-	public static final String     PROGRAM_NAME    = "eppic";
-	public static final String	   PROGRAM_VERSION = "3.0-alpha";
+	public static final String     PROGRAM_NAME    = "eppic";	
 	public static final String 	   CONTACT_EMAIL   = "eppic@systemsx.ch";
+	
+	// the version and git sha come from the about.properties file, so they can't be final
+	public static String	   	   PROGRAM_VERSION;
+	public static String		   BUILD_GIT_SHA;
+	static {
+		PROGRAM_VERSION = "NA";
+		BUILD_GIT_SHA = "NA";
+		try {
+			Properties p = new Properties();
+			InputStream is = EppicParams.class.getClass().getResourceAsStream("/about.properties");
+			if (is!=null) {
+				p.load(is);
+				PROGRAM_VERSION = p.getProperty("project.version");
+				BUILD_GIT_SHA = p.getProperty("build.hash");
+			} else {
+				LOGGER.error("Couldn't get InputStream for about.properties resource. Version will be unavailable!");
+			}
+		} catch (IOException e) {
+			LOGGER.error("Problems reading the about.properties file. Version will be unavailable!");
+		}
+	}
 	
 	private static final Pattern   PDBCODE_PATTERN = Pattern.compile("^\\d\\w\\w\\w$");
 	public static final String     CONFIG_FILE_NAME = ".eppic.conf";
@@ -38,8 +59,6 @@ public class EppicParams {
 	public static final String     ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  INTERFACES_FILE_SUFFIX = ".interfaces";
 	protected static final String  CONTACTS_FILE_SUFFIX = ".contacts";
-	protected static final String  INTERFACESDAT_FILE_SUFFIX = ".interfaces.dat";
-	protected static final String  CHAINEVCONTEXTDAT_FILE_SUFFIX = ".chainevolcontext.dat";
 	protected static final String  SERIALIZED_MODEL_FILE_SUFFIX = ".webui.dat";
 	protected static final String  SCORES_FILE_SUFFIX = ".scores";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
@@ -86,7 +105,8 @@ public class EppicParams {
 	//public static final double   CLUSTERING_RMSD_CUTOFF = 2.0;
 	//public static final int 	   CLUSTERING_MINATOMS = 10;
 	//public static final String   CLUSTERING_ATOM_TYPE = "CA";
-	public static final double	   CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF = 0.2;
+	// see https://github.com/eppic-team/eppic/issues/41
+	public static final double	   CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF = 0.3;
 	
 	// the distance for two atoms between chains to be considered a clashing pair
 	public static final double 	   CLASH_DISTANCE = 1.5;
@@ -213,9 +233,6 @@ public class EppicParams {
 	
 	private double coreSurfScoreCutoff;
 	
-	private File interfSerFile;
-	private File chainEvContextSerFile;
-	
 	private boolean generateOutputCoordFiles;
 	private boolean generateThumbnails;
 	private boolean generateDiagrams;
@@ -315,8 +332,6 @@ public class EppicParams {
 		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
 		this.coreRimScoreCutoff = DEF_CORERIM_SCORE_CUTOFF;
 		this.coreSurfScoreCutoff = DEF_CORESURF_SCORE_CUTOFF;
-		this.interfSerFile = null;
-		this.chainEvContextSerFile = null;
 		this.generateOutputCoordFiles = false;
 		this.generateDiagrams = false;
 		this.generatePdbFiles = false;
@@ -332,7 +347,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:OI:C:pPlfwL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:OpPlfwL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -384,12 +399,6 @@ public class EppicParams {
 				break;
 			case 'O':
 				filterByDomain = true;
-				break;
-			case 'I':
-				interfSerFile = new File(g.getOptarg());
-				break;
-			case 'C':
-				chainEvContextSerFile = new File(g.getOptarg());
 				break;
 			case 'p':
 				generateOutputCoordFiles = true;
@@ -471,10 +480,6 @@ public class EppicParams {
 		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
 		"  [-O]         :  restrict homologs search to those within the same domain of \n" +
 		"                  life as query\n"+
-		"  [-I <file>]  :  binary file containing the interface enumeration output of a \n" +
-		"                  previous run of "+PROGRAM_NAME+"\n" +
-		"  [-C <file>]  :  binary file containing the evolutionary scores for a particular \n" +
-		"                  sequence output of a previous run of "+PROGRAM_NAME+"\n" +
 		"  [-p]         :  if specified coordinate files (gzipped mmCIF) for each interface and assembly will \n"+
 		"                  be generated\n"+
 		"                  Use -f as well to additionally generate PDB files (backwards compatibility)\n"+
@@ -613,10 +618,13 @@ public class EppicParams {
 			if (!pymolExe.exists()) {
 				throw new EppicException(null, "PYMOL_EXE must be set to a valid value in config file.", true);
 			}
+
+		}
+		
+		if (isGenerateDiagrams()) {
 			if (!graphvizExe.exists()) {
 				throw new EppicException(null, "GRAPHVIZ_EXE must be set to a valid value in config file.", true);
 			}
-
 		}
 		
 		if (alphabet == null) {
@@ -656,6 +664,10 @@ public class EppicParams {
 			this.pdbCode = null;
 		}
 		
+	}
+	
+	public void setInputStr(String inputStr) {
+		this.inputStr = inputStr;
 	}
 	
 	public boolean isDoEvolScoring() {
@@ -770,25 +782,6 @@ public class EppicParams {
 	
 	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
 		this.coreSurfScoreCutoff = coreSurfScoreCutoff;
-	}
-
-	public File getInterfSerFile() {
-		return interfSerFile;
-	}
-
-
-	public void setInterfSerFile(File interfSerFile) {
-		this.interfSerFile = interfSerFile;
-	}
-
-
-	public File getChainEvContextSerFile() {
-		return chainEvContextSerFile;
-	}
-
-
-	public void setChainEvContextSerFile(File chainEvContextSerFile) {
-		this.chainEvContextSerFile = chainEvContextSerFile;
 	}
 
 	public void setInFile(File inFile) {
@@ -1025,6 +1018,10 @@ public class EppicParams {
 	
 	public AAAlphabet getAlphabet() {
 		return alphabet;
+	}
+	
+	public void setAlphabet(AAAlphabet alphabet) {
+		this.alphabet = alphabet;
 	}
 	
 }

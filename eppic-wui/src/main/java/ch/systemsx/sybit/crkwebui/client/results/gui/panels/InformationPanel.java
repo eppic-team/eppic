@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
-import com.google.gwt.user.client.Window;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.core.client.util.Margins;
 

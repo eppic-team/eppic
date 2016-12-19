@@ -1,15 +1,12 @@
 package ch.systemsx.sybit.crkwebui.client.results.data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceWarning;
 
 /**
- * Data model for interfaces grid.
- * @author srebniak_a
+ * Data model for assemblies grid.
+ * @author Althea Parker
  *
  */
 public class AssemblyItemModel implements Serializable {
@@ -28,6 +25,7 @@ public class AssemblyItemModel implements Serializable {
 	private String diagramUrl = "";
 	private String pdbCode;
 	private String numInterfaces;
+	private boolean pdb1Assembly;
 	
 	public String getPdbCode() {
 		return pdbCode;
@@ -105,6 +103,14 @@ public class AssemblyItemModel implements Serializable {
 	}
 	public void setNumInterfaces(String numInterfaces) { 
 		this.numInterfaces = numInterfaces;
+	}
+	
+	public boolean isPdb1Assembly() {
+		return pdb1Assembly;
+	}
+	
+	public void setPdb1Assembly(boolean pdb1Assembly) {
+		this.pdb1Assembly = pdb1Assembly;
 	}
 	
 }

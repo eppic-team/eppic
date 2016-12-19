@@ -31,7 +31,10 @@
 	</entity>
 
 	<entity class="eppic.model.JobDB" name="Job">
-		<table name="Job" />
+		<table name="Job">
+			<!-- Whenever a job is invoked, the table has to be searched for jobIds, this index is very important! -->
+			<index name="jobId_idx" column-list="jobId" unique="true"></index>
+		</table>
 		<attributes>
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
@@ -92,6 +95,9 @@
 			
 			<basic name="ncsOpsPresent"></basic>
 			
+			<basic name="nonStandardSg"></basic>
+			<basic name="nonStandardCoordFrameConvention"></basic>
+			
 			<basic name="crystalFormId"></basic>
 			
 			<basic name="numChainClusters"></basic>
@@ -145,7 +151,10 @@
 			
 			<basic name="topologicallyValid"></basic>
 
-			<basic name="interfaceClusterIds"></basic>
+			<!-- Entries like ribosomes can have very long list of interfaces here, we need text -->
+			<basic name="interfaceClusterIds">
+				<column column-definition="text" />
+			</basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
@@ -189,10 +198,18 @@
 			<basic name="symmetry">
 				<column length="10"/>
 			</basic>
-			<basic name="composition"></basic>
+			<basic name="composition">
+			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
+			     very long list of chains in their assemblies, we need text here -->
+				<column column-definition="text" />
+			</basic>
 			<basic name="compositionRepChainIds"></basic>
 			<basic name="stoichiometry"></basic>
-			<basic name="chainIds"></basic>
+			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
+			     very long list of chains in their assemblies, we need text here -->
+			<basic name="chainIds">
+				<column column-definition="text" />
+			</basic>
 						
 			<many-to-one name="assembly">
 			</many-to-one>
@@ -331,10 +348,10 @@
 			<basic name="clusterId"></basic>
 			<basic name="area"></basic>
 			<basic name="chain1">
-				<column length="1" />
+				<column length="4" />
 			</basic>
 			<basic name="chain2">
-				<column length="1" />
+				<column length="4" />
 			</basic>
 			<basic name="operator">
 				<column length="25" />
@@ -433,8 +450,12 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 			
-			<basic name="repChain"></basic>
-			<basic name="pdbCode"></basic>
+			<basic name="repChain">
+				<column length="4" />
+			</basic>
+			<basic name="pdbCode">
+				<column length="4" />
+			</basic>
 		
 			<basic name="residueNumber"></basic>
 			<basic name="pdbResidueNumber"></basic>
@@ -583,6 +604,10 @@
 			<basic name="eppicVersion">
 				<column length="15" />
 			</basic>
+			<basic name="eppicBuild">
+				<!-- Setting it to 50 after looking at some examples with length just over 40 - JD 2016-11-27 -->
+				<column length="50" />
+			</basic>
 
 			<one-to-one name="pdbInfo" mapped-by="runParameters">
 			</one-to-one>
@@ -691,7 +716,9 @@
 			https://github.com/eppic-team/eppic-wui/issues/4 
 			https://github.com/eppic-team/eppic/issues/36 
 			-->
-			<basic name="repChain"></basic>
+			<basic name="repChain">
+				<column length="4" />
+			</basic>
 			
 			<basic name="c100"></basic>
 			<basic name="c95"></basic>

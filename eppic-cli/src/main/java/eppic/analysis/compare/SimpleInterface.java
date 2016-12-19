@@ -1,6 +1,7 @@
 package eppic.analysis.compare;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.vecmath.Matrix4d;
@@ -111,7 +112,7 @@ public class SimpleInterface {
 	}
 	
 	public static List<SimpleInterface> createSimpleInterfaceListFromPdbBioUnit(
-			BioAssemblyInfo bioUnit, CrystalCell cell) {
+			BioAssemblyInfo bioUnit, CrystalCell cell, HashMap<String, String> asymIds2chainIds) {
 	
 		List<SimpleInterface> list = new ArrayList<SimpleInterface>();
 		
@@ -120,8 +121,19 @@ public class SimpleInterface {
 		for (int i = 0; i<bioUnit.getTransforms().size(); i++) {
 			for (int j = 0; j<bioUnit.getTransforms().size(); j++) {
 				if (j>i) {
-					String iChain = bioUnit.getTransforms().get(i).getChainId();
-					String jChain = bioUnit.getTransforms().get(j).getChainId();
+					// note: in BioJava the BioAssemblyInfo have asym_ids as the chain ids, 
+					// we need to convert the asym ids to chain ids or we'd have problems (see issues https://github.com/eppic-team/eppic/issues/98 and https://github.com/eppic-team/eppic/issues/74)
+					String iAsymId = bioUnit.getTransforms().get(i).getChainId();
+					String jAsymId = bioUnit.getTransforms().get(j).getChainId();
+					
+					String iChainId = asymIds2chainIds.get(iAsymId);
+					String jChainId = asymIds2chainIds.get(jAsymId);
+					
+					if (iChainId==null || jChainId==null) {
+						// either asym id didn't have a corresponding chain id, most likely the chain was a ligand-only or water-only chain that we can ignore
+						continue;
+					}
+					
 					Matrix4d iOp = bioUnit.getTransforms().get(i).getTransformationMatrix();
 					Matrix4d jOp = bioUnit.getTransforms().get(j).getTransformationMatrix();
 					if (cell!=null) {
@@ -130,8 +142,8 @@ public class SimpleInterface {
 						jOp = cell.transfToCrystal(bioUnit.getTransforms().get(j).getTransformationMatrix());
 					}
 					SimpleInterface si = new SimpleInterface();
-					si.setChain1(iChain);
-					si.setChain2(jChain);
+					si.setChain1(iChainId);
+					si.setChain2(jChainId);
 					si.setOperator1(iOp);
 					si.setOperator2(jOp);
 					si.setId(id);

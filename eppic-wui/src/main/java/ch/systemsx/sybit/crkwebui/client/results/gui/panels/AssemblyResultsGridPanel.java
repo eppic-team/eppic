@@ -35,6 +35,7 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.SubscriptTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
+import ch.systemsx.sybit.crkwebui.shared.model.AssemblyScore;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
@@ -68,6 +69,7 @@ import com.sencha.gxt.widget.core.client.tips.QuickTip;
 import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
+import eppic.DataModelAdaptor;
 import eppic.EppicParams;
 import eppic.model.ScoringMethod;
 
@@ -228,6 +230,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return identifierColumn;
 	}
 	
+	@SuppressWarnings("unused")
 	private ColumnConfig<AssemblyItemModel, String> getCompositionColumn() {
 		ColumnConfig<AssemblyItemModel, String> compositionColumn = 
 				new ColumnConfig<AssemblyItemModel, String>(props.composition());
@@ -400,52 +403,62 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		{
 			for(Assembly assembly : assemblies)
 			{
-				
-					AssemblyItemModel model = new AssemblyItemModel();
-					model.setAssemblyId(assembly.getId()); //not actually visible
-					model.setIdentifier(assembly.getIdentifierString());
-					model.setPdbCode(resultsData.getPdbCode());
-					
-					String thumbnailUrl = 
-							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
-							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX +
-							"." + assembly.getId() + ".75x75.png";
-					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
-						thumbnailUrl = 
-							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
-							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-							EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
-							"." + assembly.getId() + ".75x75.png";
-					model.setThumbnailUrl(thumbnailUrl);
-					
-					String diagramUrl = 
-							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
-							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-							EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX +
-							"." + assembly.getId() + ".75x75.png";
-					model.setDiagramUrl(diagramUrl);
-					
-					model.setMmSize(assembly.getMmSizeString());
-					//testing only
-					/*String stio = assembly.getStoichiometryString();
+				// issue #102: as a temporary fix for 3.0, we'll simply skip the invalid assemblies (which can only come from PDB annotation, not from EPPIC)
+				if (!assembly.isTopologicallyValid()) continue;
+
+				AssemblyItemModel model = new AssemblyItemModel();
+				model.setAssemblyId(assembly.getId()); //not actually visible
+				model.setIdentifier(assembly.getIdentifierString());
+				model.setPdbCode(resultsData.getPdbCode());
+				model.setPdb1Assembly(false);
+				for (AssemblyScore as : assembly.getAssemblyScores()) {
+					// if pdb1 is present (with bio) then we set the field in model (see issue #100)
+					if (as.getMethod()!=null && as.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD_PREFIX +"1") && 
+							as.getCallName()!=null && as.getCallName().equals("bio") ) {
+						model.setPdb1Assembly(true);	
+					}					
+				}
+
+				String thumbnailUrl = 
+						ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
+						"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+						EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX +
+						"." + assembly.getId() + ".75x75.png";
+				if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
+					thumbnailUrl = 
+					ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
+					"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+					EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
+					"." + assembly.getId() + ".75x75.png";
+				model.setThumbnailUrl(thumbnailUrl);
+
+				String diagramUrl = 
+						ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
+						"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+						EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX +
+						"." + assembly.getId() + ".75x75.png";
+				model.setDiagramUrl(diagramUrl);
+
+				model.setMmSize(assembly.getMmSizeString());
+				//testing only
+				/*String stio = assembly.getStoichiometryString();
 					if (stio.indexOf("2") != -1)
 						stio = "A(2)";
 					model.setStoichiometry(stio);*/
-					model.setStoichiometry(assembly.getStoichiometryString());
-					model.setSymmetry(assembly.getSymmetryString());
-					model.setComposition(assembly.getCompositionString());
-					model.setPrediction(assembly.getPredictionString());
-					//model.setNumInterfaces(assembly.getInterfaces().size()+"");
-					if(assembly.getInterfaces().size() == 0)
-						model.setNumInterfaces("0 Interfaces");
-					else if(assembly.getInterfaces().size() == 1)
-						//model.setNumInterfaces("<a href='/ewui/#interfaces/1'>" + assembly.getInterfaces().size() + " Interface</a>");
-						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
-					else 
-						model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
-										
-					data.add(model);
+				model.setStoichiometry(assembly.getStoichiometryString());
+				model.setSymmetry(assembly.getSymmetryString());
+				model.setComposition(assembly.getCompositionString());
+				model.setPrediction(assembly.getPredictionString());
+				//model.setNumInterfaces(assembly.getInterfaces().size()+"");
+				if(assembly.getInterfaces().size() == 0)
+					model.setNumInterfaces("0 Interfaces");
+				else if(assembly.getInterfaces().size() == 1)
+					//model.setNumInterfaces("<a href='/ewui/#interfaces/1'>" + assembly.getInterfaces().size() + " Interface</a>");
+					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
+				else 
+					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
+
+				data.add(model);
 			}
 		}
 		resultsStore.addAll(data);
@@ -635,11 +648,11 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				newResultsData.setInterfaceClusters(interfaceClusters);
 				EventBusManager.EVENT_BUS.fireEvent(new ShowInterfacesOfAssemblyDataEvent(newResultsData));		
 				History.newItem("interfaces/" + pdbCode + "/" + assemblyID);	
-				ResultsPanel.headerPanel.pdbIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
+				PDBIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
 								AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
-				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in ");// + pdbCode);
-				ResultsPanel.headerPanel.pdbIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+pdbCode+"'>"+pdbCode+"</a>");
-				ResultsPanel.informationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
+				PDBIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in ");// + pdbCode);
+				PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+pdbCode+"'>"+pdbCode+"</a>");
+				InformationPanel.assemblyInfoPanel.setHeadingHtml("General Information");			
 			}
 		}); 
 		

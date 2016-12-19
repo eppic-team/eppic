@@ -4,10 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import ch.systemsx.sybit.crkwebui.client.commons.events.SelectAssemblyResultsRowEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.SelectResultsRowEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowAssembliesEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDetailsEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 
 import com.google.gwt.cell.client.AbstractCell;
@@ -15,7 +11,6 @@ import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.Window;
 
 
 /**

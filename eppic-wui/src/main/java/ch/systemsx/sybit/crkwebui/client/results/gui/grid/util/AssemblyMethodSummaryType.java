@@ -3,7 +3,6 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.grid.util;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
-import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.widget.core.client.grid.SummaryType;
@@ -94,6 +93,7 @@ public class AssemblyMethodSummaryType {
 		return -2;
 	}
 	
+	@SuppressWarnings("unused")
 	private static int convertConfidenceToInt(double clusterConfidence) {
 	    if(clusterConfidence > .66)
 		return 100;
@@ -107,6 +107,7 @@ public class AssemblyMethodSummaryType {
 	 * @param callName
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private static int convertCallToInt(String callName){
 		if(callName == null) return -1;
 		

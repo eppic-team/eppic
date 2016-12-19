@@ -1,5 +1,7 @@
 package eppic.db.tools;
 
+import java.io.File;
+
 import org.biojava.nbio.structure.contact.Pair;
 
 import eppic.db.LatticeMatchMatrix;
@@ -18,14 +20,15 @@ public class CompareLattices {
 
 		String help = 
 				"Usage: CompareLattices \n" +
-				" -D : the database name to use\n"+
-				" -f : first PDB code\n" +
-				" -s : second PDB code\n"+
-				" -c : contact overlap score cutoff\n"+
-				" -a : minimum area cutoff\n"+
-				" -l : sequence cluster level to be used\n"+
-				" -d : print some debug output\n"+
-				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+				" -D <string> : the database name to use\n"+
+				" -f <string> : first PDB code\n" +
+				" -s <string> : second PDB code\n"+
+				" [-c <float>]: contact overlap score cutoff, default "+String.format("%.1f", DEFAULT_CO_CUTOFF)+"\n"+
+				" [-a <float>]: minimum area cutoff, default "+String.format("%.0f", DEFAULT_MIN_AREA)+"\n"+
+				" [-l <int>  ]: sequence cluster level to be used, default "+DEFAULT_SEQ_CLUSTER_LEVEL+"\n"+
+				" [-d]        : print some debug output\n"+
+				" [-g <file> ]: a configuration file containing the database access parameters, if not provided\n" +
+				"               the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
 		
 		boolean debug = false;
 		
@@ -37,9 +40,10 @@ public class CompareLattices {
 		SeqClusterLevel seqClusterLevel = DEFAULT_SEQ_CLUSTER_LEVEL;
 		
 		String dbName = null;
+		File configFile = null;
 		
 		
-		Getopt g = new Getopt("CompareLattices", args, "D:f:s:c:a:l:dh?");
+		Getopt g = new Getopt("CompareLattices", args, "D:f:s:c:a:l:dg:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -64,6 +68,9 @@ public class CompareLattices {
 			case 'd':
 				debug = true;
 				break;
+			case 'g':
+				configFile = new File(g.getOptarg());
+				break;
 			case 'h':
 				System.out.println(help);
 				System.exit(0);
@@ -87,7 +94,7 @@ public class CompareLattices {
 		}
 		
 		
-		DBHandler dbh = new DBHandler(dbName);	
+		DBHandler dbh = new DBHandler(dbName, configFile);	
 		
 		PdbInfo pdb1 = new PdbInfo(dbh.deserializePdb(pdbCode1));
 		PdbInfo pdb2 = new PdbInfo(dbh.deserializePdb(pdbCode2));

@@ -37,6 +37,7 @@ public class RunParameters implements Serializable
 	
 	private String uniprotVersion;
 	private String eppicVersion;
+	private String eppicBuild;
 
 	public RunParameters() 
 	{
@@ -171,6 +172,30 @@ public class RunParameters implements Serializable
 		this.searchMode = searchMode;
 	}
 
+	public int getMinNumSeqsCutoff() {
+		return minNumSeqsCutoff;
+	}
+
+	public void setMinNumSeqsCutoff(int minNumSeqsCutoff) {
+		this.minNumSeqsCutoff = minNumSeqsCutoff;
+	}
+
+	public int getGeomCallCutoff() {
+		return geomCallCutoff;
+	}
+
+	public void setGeomCallCutoff(int geomCallCutoff) {
+		this.geomCallCutoff = geomCallCutoff;
+	}
+
+	public String getEppicBuild() {
+		return eppicBuild;
+	}
+
+	public void setEppicBuild(String eppicBuild) {
+		this.eppicBuild = eppicBuild;
+	}
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param runParametersDB model item to convert
@@ -195,6 +220,7 @@ public class RunParameters implements Serializable
 		runParameters.setUniprotVersion(runParametersDB.getUniProtVersion());
 		runParameters.setEppicVersion(runParametersDB.getEppicVersion());
 		runParameters.setSearchMode(runParametersDB.getSearchMode());
+		runParameters.setEppicBuild(runParametersDB.getEppicBuild());
 		return runParameters;
 	}
 

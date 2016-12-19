@@ -23,6 +23,13 @@ import org.apache.commons.math.stat.descriptive.UnivariateStatistic;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
 import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
 
+/**
+ * A script to calculate eppic's performance on a given dataset and a set of parameters
+ * by extracting the precalculated data from the eppic database.
+ * 
+ * 
+ * @author Joseph Somody
+ */
 public class EvaluateParamset {
 	
 	// CONSTANTS
@@ -53,6 +60,8 @@ public class EvaluateParamset {
 	public static File datasetFile;
 	public static File paramsetFile;
 	
+	private static File configFile;
+	
 	public static void main(String[] args) throws Exception {
 		parseCommandLine(args);
 		System.out.println("Collecting data from database...");
@@ -65,18 +74,22 @@ public class EvaluateParamset {
 	
 	private static void parseCommandLine(String[] args) throws Exception {
 		String help = 
-				"Usage: AlphabetOptimisation\n" +
-						" -D : the database name to use (example: \"eppic_2014_10\")\n" +
-						" -i : the dataset used for scoring (example line: \"Many\\t1v6d\\tA\\tA\\t1\\txtal\")\n" +
-						" -P : the list of parameter sets to test (line: \"GeomBurialCutoff\\t" +
+				"Usage: EvaluateParamset \n" +
+						" -D <string> : the database name to use (example: \"eppic_2014_10\")\n" +
+						" -i <file>   : the dataset used for scoring (example line: \"Many\\t1v6d\\tA\\tA\\t1\\txtal\")\n" +
+						" -P <file>   : the list of parameter sets to test (line: \"GeomBurialCutoff\\t" +
 						"EvolBurialCutoff\\tCoreSurfaceCallThreshold\\tSurfMinASA\\tNumSurfResTolerance\\t" +
 						"NumSurfSamples\\tMinHomologues\\tMinHomology\\tAAAlphabet\")\n" +
-						"The database access must be set in file " + DBHandler.CONFIG_FILE_NAME + " in home dir\n";
+						"[-g <file>]  : a configuration file containing the database access parameters, if not provided\n" +
+						"               the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
+						
 		
 		String localDbName = null;
 		String listFileName = null;
 		String paramsetFileName = null;
-		Getopt g = new Getopt("EvaluateParamset", args, "D:i:P:h?");
+		Getopt g = new Getopt("EvaluateParamset", args, "D:i:P:g:h?");
+		
+		
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -88,6 +101,9 @@ public class EvaluateParamset {
 				break;
 			case 'P':
 				paramsetFileName = g.getOptarg();
+				break;
+			case 'g':
+				configFile = new File(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -101,6 +117,10 @@ public class EvaluateParamset {
 		}
 		
 		dbName = localDbName;
+		if (localDbName==null) {
+			System.err.println("A database name must be provided with -D");
+			System.exit(1);
+		}
 		
 		if (listFileName == null) {
 			System.err.println("A file with a list of PDB codes has to be provided with the -i flag.");
@@ -126,7 +146,7 @@ public class EvaluateParamset {
 	
 	private static void collectData() throws Exception {
 		// START DATABASE HANDLER
-		DBHandler dbh = new DBHandler(dbName);
+		DBHandler dbh = new DBHandler(dbName, configFile);
 		
 		// EXTRACT INFORMATION FROM DATASET
 		List<ArrayList<String>> listList = readList(datasetFile);

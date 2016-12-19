@@ -36,11 +36,6 @@ import org.biojava.nbio.structure.io.mmcif.DownloadChemCompProvider;
 import org.biojava.nbio.structure.io.mmcif.MMcifParser;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
-import org.biojava.nbio.structure.quaternary.BiologicalAssemblyBuilder;
-import org.biojava.nbio.structure.quaternary.BiologicalAssemblyTransformation;
-import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
-import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
-import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
@@ -59,6 +54,13 @@ import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
 
+/**
+ * The eppic main class to execute the CLI workflow.
+ * 
+ * 
+ * @author Jose Duarte
+ *
+ */
 public class Main {
 	
 	
@@ -88,6 +90,9 @@ public class Main {
 		this.stepCount = 1;
 	}
 	
+	protected Structure getStructure() {
+		return pdb;
+	}
 
 		
 	public void setUpLogging() {
@@ -253,20 +258,6 @@ public class Main {
 		
 		
 	}
-	
-	public void doLoadInterfacesFromFile() throws EppicException {
-		try {
-			params.getProgressLog().println("Loading interfaces enumeration from file "+params.getInterfSerFile());
-			LOGGER.info("Loading interfaces enumeration from file "+params.getInterfSerFile());
-			interfaces = (StructureInterfaceList)Goodies.readFromFile(params.getInterfSerFile());
-		} catch (ClassNotFoundException e) {
-			throw new EppicException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
-		} catch (IOException e) {
-			throw new EppicException(e,"Couldn't load interface enumeration binary file: "+e.getMessage(),true);
-		}
-		// TODO check that the input from serialized file matches the PDB input 
-		
-	}
 
 	public void doFindInterfaces() throws EppicException {
 
@@ -318,14 +309,7 @@ public class Main {
 
 		checkClashes();
 
-		if (!params.isGenerateModelSerializedFile()) {
-			// we only produce the interfaces.dat file if not in -w mode (for WUI not to produce so many files)
-			try {
-				Goodies.serialize(params.getOutputFile(EppicParams.INTERFACESDAT_FILE_SUFFIX),interfaces);
-			} catch (IOException e) {
-				throw new EppicException(e,"Couldn't write serialized StructureInterfaceList object to file: "+e.getMessage(),false);
-			}
-		}
+		
 		
 	}
 	
@@ -376,19 +360,6 @@ public class Main {
 	public void doFindAssemblies() throws StructureException { 
 		
 		params.getProgressLog().println("Calculating possible assemblies...");
-		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-		if (!pdb.isCrystallographic()) {
-			LOGGER.info("The input structure is not crystallographic: won't do analysis of assemblies");
-			return;
-		}
-		if (pdb.getCrystallographicInfo().getSpaceGroup()==null) {
-			LOGGER.warn("No space group available, will not do analysis of assemblies");
-			return;
-		}
-		if (pdb.getCrystallographicInfo().getCrystalCell()==null) {
-			LOGGER.warn("No crystal cell definition, will not do analysis of assemblies");
-			return;
-		}
 		validAssemblies = new CrystalAssemblies(pdb, interfaces); 
 
 		StringBuilder sb = new StringBuilder();
@@ -402,27 +373,17 @@ public class Main {
 	
 	public void doAssemblyScoring() {
 
-		
-		// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-		if (pdb.isCrystallographic() && 
-			pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-			pdb.getCrystallographicInfo().getCrystalCell()!=null) {
 
-			if (params.isDoEvolScoring()) {
-				validAssemblies.setInterfaceEvolContextList(iecList);
+		if (params.isDoEvolScoring()) {
+			validAssemblies.setInterfaceEvolContextList(iecList);
 
-				validAssemblies.score();
-			}
-
-
-			modelAdaptor.setAssemblies(validAssemblies);
-
-			// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY, whatever its type
-			String[] symmetries = getSymmetry(EppicParams.PDB_BIOUNIT_TO_USE);
-			modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies().get(EppicParams.PDB_BIOUNIT_TO_USE),
-					symmetries,
-					validAssemblies);
+			validAssemblies.score();
 		}
+
+
+		modelAdaptor.setAssemblies(validAssemblies);
+
+		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb);
 
 	}
 	
@@ -469,97 +430,6 @@ public class Main {
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueBurialDetails(interfaces);
 
-	}
-	
-	/**
-	 * Finds the symmetry of the biounit with the biojava quat symmetry algorithms
-	 * @param bioUnitNumber
-	 * @return an array of size 4 with members: symmetry, stoichiometry, pseudosymmetry, pseudoStoichiometry
-	 */
-	private String[] getSymmetry(int bioUnitNumber) {
-		
-		
-		if (pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber)==null || 
-			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms() == null || 
-			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms().size() == 0){
-			
-			LOGGER.warn("Could not load transformations for PDB biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
-			return new String[]{null,null,null,null};
-		}
-		
-		List<BiologicalAssemblyTransformation> transformations = 
-				pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms();
-
-		
-		BiologicalAssemblyBuilder builder = new BiologicalAssemblyBuilder();
-
-		Structure bioAssembly = builder.rebuildQuaternaryStructure(pdb, transformations);
-
-		QuatSymmetryParameters parameters = new QuatSymmetryParameters();
-        parameters.setOnTheFly(true);
-        parameters.setLocalSymmetry(false);
-		parameters.setVerbose(false);
-
-		QuatSymmetryDetector detector = new QuatSymmetryDetector(bioAssembly, parameters);
-
-		if (!detector.hasProteinSubunits()) {	
-			LOGGER.info("No protein chains in biounit {}, can't calculate symmetry. Will not assign a symmetry value to it.", bioUnitNumber);
-			return new String[]{null,null,null,null};
-		}		
-
-		List<QuatSymmetryResults> globalResults = detector.getGlobalSymmetry();
-		
-		if (globalResults.isEmpty()) {
-			LOGGER.warn("No global symmetry found for biounit {}. Will not assign a symmetry value to it.",  bioUnitNumber);
-			return new String[]{null, null, null, null};
-		}
-		
-		String symmetry = null;
-		String stoichiometry = null;
-		String pseudoSymmetry = null;
-		String pseudoStoichiometry = null;
-
-		
-		if (globalResults.size()>2) {
-			StringBuilder sb = new StringBuilder();
-			for (QuatSymmetryResults r:globalResults) {
-				sb.append(r.getSymmetry()+" ");
-			}
-			LOGGER.warn("More than 2 symmetry results found for biounit {}. The {} results are: {}", 
-					bioUnitNumber, globalResults.size(), sb.toString());
-		}
-		
-		for (QuatSymmetryResults r:globalResults) {
-			
-			if (r.getSubunits().isPseudoSymmetric()) {				
-				pseudoSymmetry = r.getSymmetry();
-				pseudoStoichiometry = r.getSubunits().getStoichiometry();
-				LOGGER.info("Pseudosymmetry {} (stoichiometry {}) found in biounit {}", 
-						pseudoSymmetry, pseudoStoichiometry, bioUnitNumber);
-			} else {
-				symmetry = r.getSymmetry();
-				stoichiometry = r.getSubunits().getStoichiometry();
-				LOGGER.info("Symmetry {} (stoichiometry {}) found in biounit {}", 
-						symmetry, stoichiometry, bioUnitNumber);
-			}
-			
-		}
-		// note: if there's no pseudosymmetry in the results then it remains null
-
-
-		if (symmetry==null) {
-			// this should not happen, will there ever be no global symmetry (non-pseudo) in the results?
-			LOGGER.warn("Could not find global symmetry for biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
-		} else if (stoichiometry==null){
-			LOGGER.warn("Symmetry found for biounit {}, but no stoichiometry value associated to it.", bioUnitNumber);
-		}
-		
-		if (pseudoSymmetry!=null && pseudoStoichiometry==null) {
-			LOGGER.warn("Pseudosymmetry found for biounit {}, but no stoichiometry value associated to it", bioUnitNumber);
-		}
-		
-		return new String[]{symmetry, stoichiometry, pseudoSymmetry, pseudoStoichiometry};
-		
 	}
 	
 	public void doWriteTextOutputFiles() throws EppicException {
@@ -623,8 +493,6 @@ public class Main {
 	
 	public void doWriteCoordFiles() throws EppicException {
 
-		if (interfaces.size() == 0) return;
-		
 		if (!params.isGenerateOutputCoordFiles()) return;
 		
 		
@@ -654,29 +522,23 @@ public class Main {
 			}
 				
 			// ASSEMBLY files
-			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-			if (pdb.isCrystallographic() && 
-					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+			for (Assembly a:validAssemblies) {
 
-				for (Assembly a:validAssemblies) {
+				File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 
-					File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
-					
-					try {
-						LOGGER.info("Writing assembly {} to {}",a.getId(),outputFile);
-						a.writeToMmCifFile(outputFile);
-						if (params.isGeneratePdbFiles()) {
-							outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);
-							a.writeToPdbFile(outputFile);
-						}
-						
-					} catch (StructureException e) {
-						LOGGER.error("Could not write assembly coordinates file {}: {}",a.getId(),e.getMessage());
-						continue;
+				try {
+					LOGGER.info("Writing assembly {} to {}",a.getId(),outputFile);
+					a.writeToMmCifFile(outputFile);
+					if (params.isGeneratePdbFiles()) {
+						outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);
+						a.writeToPdbFile(outputFile);
 					}
 
+				} catch (StructureException e) {
+					LOGGER.error("Could not write assembly coordinates file {}: {}",a.getId(),e.getMessage());
+					continue;
 				}
+
 			}
 			
 		} catch (IOException e) {
@@ -685,7 +547,9 @@ public class Main {
 	}
 
 	public void doWriteAssemblyDiagrams() throws EppicException {
-		if (interfaces.size() == 0) return;
+
+		// should not happen, there should always be 1 assembly (the trivial no-interfaces engaged one)
+		if (validAssemblies.getUniqueAssemblies().size() == 0) return; 
 
 		if (!params.isGenerateDiagrams()) return;
 		
@@ -694,47 +558,39 @@ public class Main {
 		LOGGER.info("Generating Assembly Diagram files");
 
 		try {
-			// ASSEMBLY files
-			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-			if (pdb.isCrystallographic() && 
-					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+			LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
+			GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
+			String fileFormat = "png";
 
-				LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
-				GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
-				String fileFormat = "png";
-				
-				for (Assembly a:validAssemblies) {
+			for (Assembly a:validAssemblies) {
 
-					File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
+				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
-					LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
+				LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 					
-					// Filter down to this assembly
-					SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());					
-					latticeGraph.filterEngagedClusters(clusterIds);
+				// Filter down to this assembly
+				SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());					
+				latticeGraph.filterEngagedClusters(clusterIds);
 					
-					LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
-					guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
-					guiThumb.setTitle("Assembly "+a.getId());
-					guiThumb.setPdbId(pdb.getPDBCode());
-					int dpi = 72; // 72 dots per inch for output
-					// size is in inches
-					guiThumb.setSize(String.valueOf((double)EppicParams.THUMBNAILS_SIZE/(double)dpi));
-					guiThumb.setDpi(String.valueOf(dpi));
+				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
+				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
+				guiThumb.setTitle("Assembly "+a.getId());
+				guiThumb.setPdbId(pdb.getPDBCode());
+				int dpi = 72; // 72 dots per inch for output
+				// size is in inches
+				guiThumb.setSize(String.valueOf((double)EppicParams.THUMBNAILS_SIZE/(double)dpi));
+				guiThumb.setDpi(String.valueOf(dpi));
 
-					// Generate thumbs via dot file
-					//File dotFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".dot");
-					//try (PrintWriter out = new PrintWriter(dotFile)) {
-					//	guiThumb.execute(out);
-					//}
-					//runner.generateFromDot(dotFile, pngFile, fileFormat);
-					
-					// Generate thumbs via pipe
-					runner.generateFromDot(guiThumb, pngFile, fileFormat);
+				// Generate thumbs via dot file
+				//File dotFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".dot");
+				//try (PrintWriter out = new PrintWriter(dotFile)) {
+				//	guiThumb.execute(out);
+				//}
+				//runner.generateFromDot(dotFile, pngFile, fileFormat);
+
+				// Generate thumbs via pipe
+				runner.generateFromDot(guiThumb, pngFile, fileFormat);
 				}
-			}
-
 
 		} catch( IOException|StructureException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
@@ -784,8 +640,6 @@ public class Main {
 		
 		if (!params.isGenerateThumbnails()) return;
 		
-		if (interfaces.size() == 0) return;
-		
 		params.getProgressLog().println("Writing PyMOL files");
 		writeStep("Generating Thumbnails and PyMOL Files");
 		LOGGER.info("Generating PyMOL files");
@@ -802,7 +656,9 @@ public class Main {
 				
 			}
 
-			if (params.isDoEvolScoring()) {
+			// at the moment we don't calculate evol scores if no interfaces found, 
+			// if we change that, we can get rid of the interfaces.size condition. See https://github.com/eppic-team/eppic/issues/121
+			if (interfaces.size()>0 && params.isDoEvolScoring()) {
 				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
 					Chain chain = pdb.getChainByPDB(cec.getRepresentativeChainCode());
 					cec.setConservationScoresAsBfactors(chain);
@@ -829,17 +685,11 @@ public class Main {
 				
 			}
 			
-			// TODO for the moment we are only doing assemblies for crystallographic structures, but we should also try to deal with NMR and EM
-			if (pdb.isCrystallographic() && 
-					pdb.getCrystallographicInfo().getSpaceGroup()!=null &&
-					pdb.getCrystallographicInfo().getCrystalCell()!=null) {
+			for (Assembly a:validAssemblies) {
+				File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
 
-				for (Assembly a:validAssemblies) {
-					File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
-
-					pr.generateAssemblyPng(a, cifFile,  
-							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
-				}
+				pr.generateAssemblyPng(a, cifFile,  
+						params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
 			}
 			
 		} catch (IOException e) {
@@ -857,7 +707,7 @@ public class Main {
 		if (interfaces.size()==0) return;
 		
 		if (!params.isGenerateThumbnails()) return;
-		// from here only if in -l mode: compress interface pses and chain pses
+		// from here only if in -l mode: compress chain pses
 		
 		params.getProgressLog().println("Compressing files");
 		LOGGER.info("Compressing files");
@@ -919,24 +769,6 @@ public class Main {
 		LOGGER.info(sb.toString());
 	}
 	
-	public void doLoadEvolContextFromFile() throws EppicException {
-		if (interfaces.size()==0) return;
-		
-		findUniqueChains();
-		
-		try {
-			params.getProgressLog().println("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
-			LOGGER.info("Loading chain evolutionary scores from file "+params.getChainEvContextSerFile());
-			cecs = (ChainEvolContextList)Goodies.readFromFile(params.getChainEvContextSerFile());
-		} catch (ClassNotFoundException e) {
-			throw new EppicException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
-		} catch(IOException e) {
-			throw new EppicException(e,"Couldn't load interface evolutionary context binary file: "+e.getMessage(),true);
-		}
-
-		// TODO check whether this looks compatible with the interfaces that we have
-	}
-	
 	public void doFindEvolContext() throws EppicException {
 		if (interfaces.size()==0) return;
 		
@@ -961,18 +793,6 @@ public class Main {
 		
 		// d) computing entropies
 		cecs.computeEntropies(params);
-		
-		if (!params.isGenerateModelSerializedFile()) {
-			// TODO to write the serialized file with Biojava we need to make everything Serializable, 
-			//      including MANY classes related to alignments and sequences in core package, perhaps
-			//      we should just use our db model classes to serialize and give up on this
-			// we only produce the chainevolcontext.dat file if not in -w mode (for WUI not to produce so many files)
-			//try {
-			//	Goodies.serialize(params.getOutputFile(EppicParams.CHAINEVCONTEXTDAT_FILE_SUFFIX),cecs);
-			//} catch (IOException e) {
-			//	throw new EppicException(e,"Couldn't write serialized ChainEvolContextList object to file: "+e.getMessage(),false);
-			//}
-		}
 		
 	}
 	
@@ -1066,23 +886,49 @@ public class Main {
 		eppicMain.run(args);
 	}
 	
+	/**
+	 * Run the full eppic analysis given a parameters object
+	 * @param params
+	 */
+	protected void run(EppicParams params) {
+		this.params = params;
+		run(false);
+	}
+	
+	/**
+	 * Run the full eppic analysis given the command line arguments (which are then converted into an {@link EppicParams} object)
+	 * @param args
+	 */
 	public void run(String[] args) {
+		
+		try {
+			params.parseCommandLine(args);
+			
+		} catch (EppicException e) {
+			LOGGER.error(e.getMessage());
+			e.exitIfFatal(1);
+		}
+		
+		run(true);
+	}
+	
+	private void run(boolean loadConfigFile) {
 
-		
-		
+				
 		long start = System.nanoTime();
 
 		try {
-						
-			params.parseCommandLine(args);
+									
 
 			// this has to come after getting the command line args, since it reads the location and name of log file from those
 			setUpLogging();
 
 			
 			LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
+			LOGGER.info("Build git SHA: {}", EppicParams.BUILD_GIT_SHA);
 			
-			loadConfigFile();
+			if (loadConfigFile)
+				loadConfigFile();
 			
 			try {
 				LOGGER.info("Running in host "+InetAddress.getLocalHost().getHostName());
@@ -1094,11 +940,8 @@ public class Main {
 			doLoadPdb();
 
 			// 1 finding interfaces
-			if (params.getInterfSerFile()!=null) {
-				doLoadInterfacesFromFile();
-			} else {
-				doFindInterfaces();
-			}
+			doFindInterfaces();
+			
 					
 			// 2 find the assemblies
 			doFindAssemblies();
@@ -1111,12 +954,8 @@ public class Main {
 			doGeomScoring();
 			
 			if (params.isDoEvolScoring()) {
-				// 3 finding evolutionary context
-				if (params.getChainEvContextSerFile()!=null) {
-					doLoadEvolContextFromFile();
-				} else {
-					doFindEvolContext();
-				}
+				// 3 finding evolutionary context		
+				doFindEvolContext();
 
 				// 4 scoring
 				doEvolScoring();
@@ -1156,6 +995,8 @@ public class Main {
 			LOGGER.error(e.getMessage());
 			e.exitIfFatal(1);
 		} 
+		
+		// TODO must uncomment this code before the release!
 //		catch (Exception e) {
 //			//e.printStackTrace();
 //
@@ -1172,6 +1013,10 @@ public class Main {
 		}
 		
 		
+	}
+	
+	protected DataModelAdaptor getDataModelAdaptor() {
+		return modelAdaptor;
 	}
 	
 

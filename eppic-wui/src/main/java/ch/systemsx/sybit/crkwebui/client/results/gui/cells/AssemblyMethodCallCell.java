@@ -3,25 +3,16 @@
  */
 package ch.systemsx.sybit.crkwebui.client.results.gui.cells;
 
-import java.util.List;
-
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.AssemblyItemModel;
-import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.Window;
 import com.sencha.gxt.data.shared.ListStore;
 
-import eppic.model.ScoringMethod;
 
 /**
  * Cell used to used to style the results of calculations for each of the method call (xtal/bio).
- * @author nikhil
+ * @author Althea Parker
  *
  */
 public class AssemblyMethodCallCell extends AbstractCell<String> {
@@ -54,17 +45,18 @@ public class AssemblyMethodCallCell extends AbstractCell<String> {
 		}
 
 		value = value.toUpperCase();
+		
+		value += addIcon(item.isPdb1Assembly());
+		
 		tooltipText = "";
 		sb.appendHtmlConstant("<span style='color:" + color + ";' qtip='" + tooltipText + "'>"+ value +"</span>");
 	}
 
-	@SuppressWarnings("unused")
-	private String addIcon(double d) {
-	    if(d > .66)
-		return "<img src=\"resources/icons/excellent.png\" width=\"16\">";
-	    if(d > .33)
-		return "</img><img src=\"resources/icons/good.png\" width=\"16\"></img>";
-	    return "";
+	private String addIcon(boolean pdb1Assembly) {
+	    if(pdb1Assembly)
+	    	return "<img src=\"resources/icons/pdb_biounit_annotation.png\" width=\"18\">";
+	    else 
+	    	return "";
 	}
 
 }

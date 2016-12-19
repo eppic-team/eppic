@@ -33,6 +33,7 @@ public class RunParametersDB implements Serializable {
 
 	private String uniProtVersion;
 	private String eppicVersion;
+	private String eppicBuild;
 	
 	private PdbInfoDB pdbInfo;
 	
@@ -174,5 +175,13 @@ public class RunParametersDB implements Serializable {
 
 	public void setEppicVersion(String eppicVersion) {
 		this.eppicVersion = eppicVersion;
+	}
+
+	public String getEppicBuild() {
+		return eppicBuild;
+	}
+
+	public void setEppicBuild(String eppicBuild) {
+		this.eppicBuild = eppicBuild;
 	}
 }

@@ -6,11 +6,8 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadS
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
@@ -133,9 +130,10 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     	
     }
     
-    public void setPDBText(String inputName, String spaceGroup, String expMethod, double resolution, double rfreeValue, int inputType)
+    public void setPDBText(String inputName, String spaceGroup, String expMethod, double resolution, double rfreeValue, boolean nonStandardSg,
+			   boolean nonStandardCoordFrameConvention,int inputType)
     {
-    	pdbIdentifierPanel.setPDBText(inputName, spaceGroup, expMethod, resolution, rfreeValue, inputType);
+    	pdbIdentifierPanel.setPDBText(inputName, spaceGroup, expMethod, resolution, rfreeValue, nonStandardSg, nonStandardCoordFrameConvention, inputType);
     }
 
     public void setPDBIdentifierSubtitle(String subtitle)

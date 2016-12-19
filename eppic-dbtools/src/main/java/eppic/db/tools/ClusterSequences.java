@@ -28,18 +28,21 @@ public class ClusterSequences {
 
 		String help = 
 				"Usage: ClusterSequences \n" +		
-				"  -D         : the database name to use\n"+
+				"  -D <string>: the database name to use\n"+
 				" [-a]        : number of threads (default 1)\n"+
 				" [-s <file>] : a blastclust save file with precomputed blast for all chains\n"+
-				"The database access parameters must be set in file "+DBHandler.CONFIG_FILE_NAME+" in home dir\n";
+				" [-g <file>] : a configuration file containing the database access parameters, if not provided\n" +
+				"               the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
+				
 		
 		
 		int numThreads = 1;
 		File saveFile = null;
 		String dbName = null;
+		File configFile = null;
 
 		
-		Getopt g = new Getopt("ClusterSequences", args, "D:a:s:h?");
+		Getopt g = new Getopt("ClusterSequences", args, "D:a:s:g:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -56,6 +59,9 @@ public class ClusterSequences {
 			case 's':
 				saveFile = new File(g.getOptarg());
 				break;
+			case 'g':
+				configFile = new File(g.getOptarg());
+				break;
 			case '?':
 				System.err.println(help);
 				System.exit(1);
@@ -68,7 +74,8 @@ public class ClusterSequences {
 			System.exit(1);
 		}
 		
-		DBHandler dbh = new DBHandler(dbName);
+		// note if configFile is null, DBHandler will use a default location in user's home dir
+		DBHandler dbh = new DBHandler(dbName, configFile);
 		
 		boolean canDoUpdate = true;
 		

@@ -119,6 +119,10 @@ public interface AppProperties extends Constants
 	String warning_NoRfree_text();
 	String warning_SpaceGroup_title();
 	String warning_SpaceGroup_text();
+	String warning_NonStandardSg_text();
+	String warning_NonStandardSg_title();
+	String warning_NonStandardCoordFrameConvention_text();
+	String warning_NonStandardCoordFrameConvention_title();
 
 	String homologs_panel_chains_hint();
 	String homologs_panel_uniprot_hint();

@@ -22,7 +22,7 @@ import eppic.model.InterfaceClusterDB;
 import eppic.model.PdbInfoDB;
 
 /**
- * DTO class for PDBScore item.
+ * DTO class for PDBInfo.
  * @author AS
  */
 
@@ -30,7 +30,7 @@ import eppic.model.PdbInfoDB;
 @XmlType(propOrder = { "pdbCode", "title", "releaseDate", "expMethod",
 		"spaceGroup", "resolution", "rfreeValue", "numChainClusters",
 		"cellA","cellB","cellC","cellAlpha","cellBeta","cellGamma",
-		"crystalFormId",
+		"crystalFormId", "ncsOpsPresent", "nonStandardSg", "nonStandardCoordFrameConvention",
 		"chainClusters", "interfaceClusters",  "assemblies",
 "runParameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -69,6 +69,11 @@ public class PdbInfo implements Serializable, ProcessingData
 	private double cellGamma;
 
 	private int crystalFormId;
+	
+	private boolean ncsOpsPresent;
+	
+	private boolean nonStandardSg;
+	private boolean nonStandardCoordFrameConvention;
 
 	private RunParameters runParameters;
 
@@ -109,6 +114,9 @@ public class PdbInfo implements Serializable, ProcessingData
 			double cellBeta,
 			double cellGamma,
 			int crystalFormId,
+			boolean ncsOpsPresent,
+			boolean nonStandardSg,
+			boolean nonStandardCoordFrameConvention,
 			RunParameters runParameters) 
 	{
 		this.interfaceClusters = new ArrayList<InterfaceCluster>();
@@ -129,6 +137,9 @@ public class PdbInfo implements Serializable, ProcessingData
 		this.cellBeta = cellBeta;
 		this.cellGamma = cellGamma;
 		this.crystalFormId = crystalFormId;
+		this.ncsOpsPresent = ncsOpsPresent;
+		this.nonStandardSg = nonStandardSg;
+		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
 		this.runParameters = runParameters;
 	}
 
@@ -283,6 +294,30 @@ public class PdbInfo implements Serializable, ProcessingData
 	public void setCrystalFormId(int crystalFormId) {
 		this.crystalFormId = crystalFormId;
 	}
+	
+	public boolean isNcsOpsPresent() {
+		return ncsOpsPresent;
+	}
+	
+	public void setNcsOpsPresent(boolean ncsOpsPresent) {
+		this.ncsOpsPresent = ncsOpsPresent;
+	}
+	
+	public boolean isNonStandardSg() {
+		return nonStandardSg;
+	}
+	
+	public void setNonStandardSg(boolean nonStandardSg) {
+		this.nonStandardSg = nonStandardSg;
+	}
+	
+	public boolean isNonStandardCoordFrameConvention() {
+		return nonStandardCoordFrameConvention;
+	}
+	
+	public void setNonStandardCoordFrameConvention(boolean nonStandardCoordFrameConvention) {
+		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
+	}
 
 	public void setRunParameters(RunParameters runParameters) {
 		this.runParameters = runParameters;
@@ -432,6 +467,10 @@ public class PdbInfo implements Serializable, ProcessingData
 		 pdbInfo.setCellBeta(pdbInfoDB.getCellBeta());
 		 pdbInfo.setCellGamma(pdbInfoDB.getCellGamma());
 		 pdbInfo.setCrystalFormId(pdbInfo.getCrystalFormId());
+		 pdbInfo.setNcsOpsPresent(pdbInfoDB.isNcsOpsPresent());
+		 pdbInfo.setNonStandardSg(pdbInfoDB.isNonStandardSg());
+		 pdbInfo.setNonStandardCoordFrameConvention(pdbInfoDB.isNonStandardCoordFrameConvention());
+		 
 		 return pdbInfo;
 	 }
 	 

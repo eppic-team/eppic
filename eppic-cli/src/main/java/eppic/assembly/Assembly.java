@@ -328,7 +328,7 @@ public class Assembly {
 		List<ChainVertex> chains = new ArrayList<ChainVertex>();
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		for(List<SubAssembly> subgroup : assemblyGraph.getSubAssembliesGroupedByStoichiometries()) {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
@@ -352,7 +352,7 @@ public class Assembly {
 	public List<List<ChainVertex>> getStructureCentered() throws StructureException {
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		List<List<ChainVertex>> components = new ArrayList<List<ChainVertex>>(assemblyGraph.getSubAssembliesGroupedByStoichiometries().size());
 
@@ -385,8 +385,7 @@ public class Assembly {
 
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
-
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		List<Entry<Dimension2D, List<ChainVertex>>> boxes = new ArrayList<Map.Entry<Dimension2D,List<ChainVertex>>>();
 
