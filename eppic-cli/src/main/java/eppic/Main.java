@@ -381,7 +381,7 @@ public class Main {
 		}
 
 
-		modelAdaptor.setAssemblies(validAssemblies);
+		modelAdaptor.setAssemblies(validAssemblies, pdb);
 
 		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb);
 
@@ -563,7 +563,7 @@ public class Main {
 			String fileFormat = "png";
 
 			for (Assembly a:validAssemblies) {
-
+				
 				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
 				LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
@@ -585,15 +585,10 @@ public class Main {
 				guiThumb.setSize(String.valueOf((double)EppicParams.THUMBNAILS_SIZE/(double)dpi));
 				guiThumb.setDpi(String.valueOf(dpi));
 
-				// Generate thumbs via dot file
-				//File dotFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + ".dot");
-				//try (PrintWriter out = new PrintWriter(dotFile)) {
-				//	guiThumb.execute(out);
-				//}
-				//runner.generateFromDot(dotFile, pngFile, fileFormat);
 
 				// Generate thumbs via pipe
 				runner.generateFromDot(guiThumb, pngFile, fileFormat);
+				
 			}
 
 

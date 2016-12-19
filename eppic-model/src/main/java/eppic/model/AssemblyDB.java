@@ -28,10 +28,15 @@ public class AssemblyDB implements Serializable {
 	private List<AssemblyScoreDB> assemblyScores;
 	
 	private List<AssemblyContentDB> assemblyContents;
+	
+	private List<LatticeGraphVertexDB> vertexSet;
+	private List<LatticeGraphEdgeDB> edgeSet;
 
 	public AssemblyDB() {
 		assemblyScores = new ArrayList<AssemblyScoreDB>();
 		interfaceClusters = new HashSet<InterfaceClusterDB>();
+		vertexSet = new ArrayList<>();
+		edgeSet = new ArrayList<>();
 	}
 
 	public void addAssemblyScore(AssemblyScoreDB assemblyScore) {
@@ -108,6 +113,22 @@ public class AssemblyDB implements Serializable {
 
 	public void setAssemblyContents(List<AssemblyContentDB> assemblyContents) {
 		this.assemblyContents = assemblyContents;
+	}
+
+	public List<LatticeGraphVertexDB> getVertexSet() {
+		return vertexSet;
+	}
+
+	public void setVertexSet(List<LatticeGraphVertexDB> vertexSet) {
+		this.vertexSet = vertexSet;
+	}
+
+	public List<LatticeGraphEdgeDB> getEdgeSet() {
+		return edgeSet;
+	}
+
+	public void setEdgeSet(List<LatticeGraphEdgeDB> edgeSet) {
+		this.edgeSet = edgeSet;
 	}	
 	
 

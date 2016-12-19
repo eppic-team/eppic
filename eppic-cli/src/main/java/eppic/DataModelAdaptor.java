@@ -37,6 +37,7 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,13 @@ import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
 import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyDescription;
+import eppic.assembly.ChainVertex;
+import eppic.assembly.ChainVertex3D;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.InterfaceEdge;
+import eppic.assembly.InterfaceEdge3D;
+import eppic.assembly.gui.LatticeGUIMustache;
+import eppic.assembly.layout.GraphLayout;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
 import eppic.model.AssemblyContentDB;
@@ -91,6 +98,9 @@ public class DataModelAdaptor {
 	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pbd";	
 	
 	public static final int INVALID_ASSEMBLY_ID = 0;
+	
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_JSON = LatticeGUIMustache.expandTemplatePath("AssemblyDiagramFull.json.mustache");
+
 	
 	private PdbInfoDB pdbInfo;
 	
@@ -446,7 +456,7 @@ public class DataModelAdaptor {
 		
 	}
 	
-	public void setAssemblies(CrystalAssemblies validAssemblies) {
+	public void setAssemblies(CrystalAssemblies validAssemblies, Structure s) {
 		
 		for (Assembly validAssembly:validAssemblies) {
 			AssemblyDB assembly = new AssemblyDB();
@@ -503,6 +513,8 @@ public class DataModelAdaptor {
 			as.setAssembly(assembly);
 			assembly.addAssemblyScore(as);
 			
+			// populating the lattice graph tables
+			setLatticeGraph(s, validAssembly);
 			
 		}
 	}
@@ -1438,5 +1450,15 @@ public class DataModelAdaptor {
 		
 		return new String[]{symmetry, stoichiometry, pseudoSymmetry, pseudoStoichiometry};
 		
+	}
+	
+	public void setLatticeGraph(Structure s, Assembly a) {
+		
+		UndirectedGraph<ChainVertex, InterfaceEdge> subgraph = a.getAssemblyGraph().getSubgraph();
+			
+		LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(TEMPLATE_ASSEMBLY_DIAGRAM_JSON, s, requestedIfaces);
+
+		GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(s);
+		gui.setLayout2D( layout2D );
 	}
 }
