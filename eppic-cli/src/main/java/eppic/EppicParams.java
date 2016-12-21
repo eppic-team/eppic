@@ -213,6 +213,10 @@ public class EppicParams {
 	public static final double LOGIT_CR_COEFFICIENT = 0.0;
 	public static final double LOGIT_CS_COEFFICIENT = -2.0;
 	public static final double LOGIT_AREA_COEFFICIENT = 0.0;
+	
+	// Confidence thresholds for the WUI stars
+	public static final double HIGH_CONFIDENCE = 0.9;
+	public static final double MEDIUM_CONFIDENCE = 0.75;
 		
 
 	// FIELDS
