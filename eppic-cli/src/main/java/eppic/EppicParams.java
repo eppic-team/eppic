@@ -206,6 +206,13 @@ public class EppicParams {
 	
 	// default use pdb res serials for output
 	public static final boolean   DEF_USE_PDB_RES_SER = true;
+	
+	// Logistic regression model parameters (coefficients)
+	public static final double LOGIT_INTERSECT = -3.9;
+	public static final double LOGIT_GM_COEFFICIENT = 0.3;
+	public static final double LOGIT_CR_COEFFICIENT = 0.0;
+	public static final double LOGIT_CS_COEFFICIENT = -2.0;
+	public static final double LOGIT_AREA_COEFFICIENT = 0.0;
 		
 
 	// FIELDS
