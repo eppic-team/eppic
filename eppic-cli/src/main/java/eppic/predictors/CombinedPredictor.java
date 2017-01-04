@@ -13,21 +13,18 @@ import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 
 /**
- * The CombinedPredictor takes as input all other predictors (scores) and computes
- * a probability of the interface being BIO, P(BIO|scores), with a logistic regression
- * model trained with the Many interface dataset.
+ * The CombinedPredictor takes as input all other predictors (scores) and outputs
+ * the probability of the interface being BIO, P(BIO|scores), calculated with a 
+ * logistic regression classifier.
  * <p>
  * The model is P(BIO|scores) = 1 / (1 + exp(-x)), where 
  * x = {@link EppicParams#LOGIT_INTERSECT} + 
  * {@link EppicParams#LOGIT_GM_COEFFICIENT} * gm +
- * {@link EppicParams#LOGIT_CS_COEFFICIENT} * cs +
- * {@link EppicParams#LOGIT_CR_COEFFICIENT} * cr +
- * {@link EppicParams#LOGIT_AREA_COEFFICIENT} * area +
+ * {@link EppicParams#LOGIT_CS_COEFFICIENT} * cs
  * <p>
- * The NOPRED value (most uncertain score) for gm in the model is 6.5, and for cs is 0.975.
+ * The NOPRED value (most uncertain score) for cs score is {@link EppicParams#CS_NOPRED}.
  * <p>
- * The confidence is set to be the probability difference to a totally certain call 
- * (0 for XTAL, 1 for BIO), normalized between 0 and 1.
+ * The confidence is set to be the probability of the final call to be true (BIO or XTAL).
  * 
  * @author Jose
  * @author Aleix
@@ -173,20 +170,16 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		return true; // for the moment there's no conditions to reject a score
 	}
 	
-	/**
-	 * The confidence of the combined predictor is the probability difference from
-	 * the best probability of the call (0 XTAL, 1 BIO) and the reported probability.
-	 */
 	private void calcConfidence() {
 		
 		switch (call) {
 		case BIO: 
-			confidence = (probability - 0.5) / 0.5;
+			confidence = probability;
 			break;
 		case CRYSTAL: 
-			confidence = (0.5 - probability) / 0.5;
+			confidence = 1 - probability;
 			break;
-		case NO_PREDICTION: 
+		case NO_PREDICTION:
 			confidence = CONFIDENCE_UNASSIGNED;
 		
 		}
@@ -213,11 +206,17 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	private double calcProbability() {
 		
-		// TODO include Area and Core-Rim if needed
 		if (ecsp.getCall() == CallType.NO_PREDICTION) {
-			return 1 / (1 + Math.exp(-(EppicParams.LOGIT_INTERSECT + 
-					EppicParams.LOGIT_GM_COEFFICIENT * gp.getScore() + 
-					EppicParams.LOGIT_CS_COEFFICIENT * -0.975)));
+			// The NOPRED is due to the lack of homologs
+			if (gp.getScore() < 1) {
+				return 1 / (1 + Math.exp(-(EppicParams.LOGIT_INTERSECT + 
+						EppicParams.LOGIT_GM_COEFFICIENT * gp.getScore() + 
+						EppicParams.LOGIT_CS_COEFFICIENT * EppicParams.LOGIT_CS_NOPRED)));
+			} 
+			// The NOPRED is due to the lack of core residues
+			else {
+				return 0;
+			}
 		} else {
 			return 1 / (1 + Math.exp(-(EppicParams.LOGIT_INTERSECT + 
 					EppicParams.LOGIT_GM_COEFFICIENT * gp.getScore() + 

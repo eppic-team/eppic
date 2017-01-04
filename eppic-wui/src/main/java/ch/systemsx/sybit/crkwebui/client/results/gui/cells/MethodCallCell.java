@@ -86,9 +86,9 @@ public class MethodCallCell extends AbstractCell<String> {
 	}
 
 	private String addIcon(double d) {
-	    if(d > EppicParams.HIGH_CONFIDENCE)
+	    if(d > EppicParams.HIGH_PROB_CONFIDENCE)
 		return "<img src=\"resources/icons/excellent.png\" width=\"16\">";
-	    if(d > EppicParams.MEDIUM_CONFIDENCE)
+	    if(d > EppicParams.LOW_PROB_CONFIDENCE)
 		return "</img><img src=\"resources/icons/good.png\" width=\"16\"></img>";
 	    return "";
 	}

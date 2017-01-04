@@ -207,16 +207,36 @@ public class EppicParams {
 	// default use pdb res serials for output
 	public static final boolean   DEF_USE_PDB_RES_SER = true;
 	
-	// Logistic regression model parameters (coefficients)
+	// Logistic regression model for interface classification
+	/** Intersection of the logistic regression classifier */
 	public static final double LOGIT_INTERSECT = -3.9;
-	public static final double LOGIT_GM_COEFFICIENT = 0.3;
-	public static final double LOGIT_CR_COEFFICIENT = 0.0;
-	public static final double LOGIT_CS_COEFFICIENT = -2.0;
-	public static final double LOGIT_AREA_COEFFICIENT = 0.0;
 	
-	// Confidence thresholds for the WUI stars
-	public static final double HIGH_CONFIDENCE = 0.9;
-	public static final double MEDIUM_CONFIDENCE = 0.75;
+	/** Geometry score coefficient of the logistic regression classifier */
+	public static final double LOGIT_GM_COEFFICIENT = 0.31;
+	
+	/** Core-Surface score coefficient of the logistic regression classifier */
+	public static final double LOGIT_CS_COEFFICIENT = -2.1;
+	
+	/** Number of features included in the logistic regression classifier */
+	public static final int LOGIT_NUM_FEATURES = 2;
+	
+	/**
+	 * Most uncertain Core-Surface score value for the logistic regression 
+	 * classifier, for interfaces with not enough number of homologous 
+	 * sequences (NOPRED).
+	 * <p>
+	 * This value is calculated so that the Geometry score decides alone the
+	 * final call, but with higher uncertainty due to the lack of sequences.
+	 **/
+	public static final double LOGIT_CS_NOPRED = - LOGIT_INTERSECT / 
+			(LOGIT_NUM_FEATURES * LOGIT_CS_COEFFICIENT);
+	
+	// Probability thresholds for the WUI call confidence stars
+	/** Calls with probabilities higher than this value are considered high confidence */
+	public static final double HIGH_PROB_CONFIDENCE = 0.95;
+	
+	/** Calls with probabilities lower than this value are considered low confidence */
+	public static final double LOW_PROB_CONFIDENCE = 0.8;
 		
 
 	// FIELDS
