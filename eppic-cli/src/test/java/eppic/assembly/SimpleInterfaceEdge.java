@@ -72,5 +72,10 @@ public class SimpleInterfaceEdge implements InterfaceEdgeInterface {
 		
 	}
 	
+	@Override
+	public String getXtalTransString() {
+		return ""; // not implemented
+	}
+
 	
 }

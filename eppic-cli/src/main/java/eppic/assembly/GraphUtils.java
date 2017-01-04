@@ -338,4 +338,27 @@ public class GraphUtils {
 
 	}
 	
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> String toDot(UndirectedGraph<V, E> g, String title) {
+//		// Run with dot -Tpng -Kneato -O -n2 dotfile
+//		digraph "{{title}}" {
+//		{{#graph2D.vertexSet}}
+//			"{{toString}}" [ pos="{{center.x}},{{center.y}}"{{#colorStr}} color="#{{colorStr}}" fillcolor="#{{colorStr}}"{{/colorStr}}]
+//		{{/graph2D.vertexSet}}
+//
+//		{{#graph2D.edgeSet}}
+//			"{{source}}" -> "{{target}}" {{#colorStr}}[ color="#{{colorStr}}" ]{{/colorStr}}
+//		{{/graph2D.edgeSet}}
+//	}
+		StringBuilder str = new StringBuilder()
+				.append(String.format("digraph \"%s\" {%n", title));
+		
+		for(E e : g.edgeSet()) {
+			V s = g.getEdgeSource(e);
+			V t = g.getEdgeTarget(e);
+			str.append(String.format("\"%s\" -> \"%s\" [label=\"%s %s\"]%n", s, t, e.toString(), e.getXtalTransString() ));
+		}
+		
+		str.append(String.format("}%n"));
+		return str.toString();
+	}
 }

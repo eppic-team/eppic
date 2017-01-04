@@ -69,4 +69,34 @@ public interface InterfaceEdgeInterface {
 	 */
 	void setIsInfinite(boolean isInfinite);
 
+	String getXtalTransString();
+	
+	/**
+	 * converts the crystal translation of an edge into a crystallographic string, e.g. "+a,-b,+2c"
+	 * @param edge
+	 * @return
+	 */
+	static String getXtalTransString(Point3i xtalTrans) {
+		int[] coords = new int[3];
+		xtalTrans.get(coords);
+		final String[] letters = new String[] {"a","b","c"};
+
+		StringBuilder str = new StringBuilder();
+		for(int i=0;i<3;i++) {
+			if( coords[i] != 0) {
+				if( Math.abs(coords[i]) == 1 ) {
+					if(str.length()>0)
+						str.append(',');
+					String sign = coords[i] > 0 ? "+" : "-";
+					str.append(sign+letters[i]);
+				} else {
+					if(str.length()>0)
+						str.append(',');
+					str.append(String.format("%d%s",coords[i],letters[i]));
+				}
+			}
+		}
+		return str.toString();
+	}
+
 }

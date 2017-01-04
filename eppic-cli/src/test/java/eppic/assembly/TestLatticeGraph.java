@@ -17,6 +17,7 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
 import org.biojava.nbio.structure.align.util.AtomCache;
+import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
@@ -465,7 +466,9 @@ public class TestLatticeGraph {
 		
 		CrystalBuilder cb = new CrystalBuilder(s);
 		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
-		interfaces.calcAsas();
+		interfaces.calcAsas(StructureInterfaceList.DEFAULT_ASA_SPHERE_POINTS/4,
+				Runtime.getRuntime().availableProcessors(),
+				StructureInterfaceList.DEFAULT_MIN_COFACTOR_SIZE);
 		interfaces.removeInterfacesBelowArea();
 		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		return interfaces;
