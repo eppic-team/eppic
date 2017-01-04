@@ -52,6 +52,7 @@ import eppic.EppicParams;
 import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
 import eppic.assembly.LatticeGraph;
+import eppic.commons.util.IntervalSet;
 
 public class LatticeGUI {
 	private static Logger logger = LoggerFactory.getLogger(LatticeGUI.class);
@@ -150,6 +151,9 @@ public class LatticeGUI {
 		for (String item:items) {
 			debugInterfaceIds.add(Integer.parseInt(item));
 		}
+	}
+	public void setDebugInterfaceIds(Set<Integer> ids) {
+		this.debugInterfaceIds = ids;
 	}
 	
 	private static Point3d getCentroid(Chain c) {
@@ -372,30 +376,9 @@ public class LatticeGUI {
 		return jmol.toString();
 	}
 	
-	private String getXtalTransString(InterfaceEdge edge) {
-		int[] coords = new int[3];
-		edge.getXtalTrans().get(coords);
-		final String[] letters = new String[] {"a","b","c"};
 
-		StringBuilder str = new StringBuilder();
-		for(int i=0;i<3;i++) {
-			if( coords[i] != 0) {
-				if( Math.abs(coords[i]) == 1 ) {
-					if(str.length()>0)
-						str.append(',');
-					String sign = coords[i] > 0 ? "+" : "-";
-					str.append(sign+letters[i]);
-				} else {
-					if(str.length()>0)
-						str.append(',');
-					str.append(String.format("%d%s",coords[i],letters[i]));
-				}
-			}
-		}
-		return str.toString();
-	}
 	private String getEdgeLabel(InterfaceEdge edge) {
-		String xtal = getXtalTransString(edge);
+		String xtal = edge.getXtalTransString();
 		if(xtal != null && !xtal.isEmpty()) {
 			return String.format("%d: %s", edge.getInterfaceId(),xtal );
 		} else {
@@ -684,9 +667,10 @@ public class LatticeGUI {
 		
 		
 		String input = args[0];
-		String interfaceIdsCommaSep = null;
+		Set<Integer> interfaceIds = null;
 		if (args.length==2) {
-			interfaceIdsCommaSep = args[1];
+			String interfaceIdsCommaSep = args[1];
+			interfaceIds = new IntervalSet(interfaceIdsCommaSep).getIntegerSet();
 		}
 
 		String filename;
@@ -713,7 +697,7 @@ public class LatticeGUI {
 		}
 		
 		LatticeGUI gui = new LatticeGUI(struc);
-		gui.setDebugInterfaceIds(interfaceIdsCommaSep);
+		gui.setDebugInterfaceIds(interfaceIds);
 		gui.display(filename);
 		gui.display2D();
 	}
