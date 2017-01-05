@@ -117,7 +117,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			call = CallType.BIO;
 		} 
 		// 2) XTAL call
-		else if (probability < 0.5) {
+		else if (probability <= 0.5) {
 			callReason = "P(BIO) = " + probability + " < 0.5";
 			call = CallType.CRYSTAL;
 		}
