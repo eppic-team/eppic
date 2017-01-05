@@ -458,14 +458,17 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		this.interfEvolContextList = interfEvolContextList;
 	}
 	
+	/**
+	 * 
+	 */
 	public void score() {
 
 		// this gets each of the unique assembly clusters, represented by the maximal member
 		List<Assembly> uniques = getUniqueAssemblies();
 
 		// 1 Do individual assemblies scoring
-		for (Assembly a:uniques) {			
-			a.score();							
+		for (Assembly a:uniques) {
+			a.score();
 		}
 		
 		// 2 Look at all calls and keep only the largest bio assembly. If no bios at all then assign bio to monomers

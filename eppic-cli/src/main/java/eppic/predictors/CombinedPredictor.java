@@ -26,8 +26,8 @@ import eppic.InterfaceEvolContext;
  * <p>
  * The confidence is set to be the probability of the final call to be true (BIO or XTAL).
  * 
- * @author Jose
- * @author Aleix
+ * @author Jose Duarte
+ * @author Aleix Lafita
  *
  */
 public class CombinedPredictor implements InterfaceTypePredictor {

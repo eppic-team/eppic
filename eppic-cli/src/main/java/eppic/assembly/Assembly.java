@@ -73,6 +73,7 @@ import eppic.commons.util.GeomTools;
  * </pre>
  * 
  * @author Jose Duarte
+ * @author Aleix Lafita
  *
  */
 public class Assembly {
@@ -98,10 +99,13 @@ public class Assembly {
 	 * The AssemblyGraph object containing the subgraph and its connected components
 	 */
 	private AssemblyGraph assemblyGraph;
-		
+	
+	/** 
+	 * Probability of this assembly being the biologically relevant one.
+	 */
+	private double probability;
 	private CallType call;
 	
-
 	
 	public Assembly(CrystalAssemblies crystalAssemblies, PowerSet engagedSet) {
 		this.crystalAssemblies = crystalAssemblies;
@@ -955,7 +959,8 @@ public class Assembly {
 	}
 
 	/**
-	 * Assign a call to this Assembly, retrieve the call subsequently with {@link #getCall()}
+	 * Compute an initial (non-normalized) probabilistic score from
+	 * the individual interface probabilities.
 	 */
 	public void score() {
 
@@ -967,9 +972,17 @@ public class Assembly {
 		
 		
 		SubAssembly firstSubAssembly = assemblyGraph.getSubAssemblies().get(0);
-		
-		setCall(firstSubAssembly.score());
 				
+	}
+	
+	/**
+	 * Normalize the probabilistic score by the total sum of assembly
+	 * probabilities. This is needed to account for the 0 probability
+	 * of impossible interface combinations.
+	 * @param sumProbs total sum of assembly probabilities in the crystal.
+	 */
+	public void normalize(double sumProbs) {
+		probability = probability / sumProbs;
 	}
 	
 	/**
