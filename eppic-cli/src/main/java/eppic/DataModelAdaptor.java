@@ -552,8 +552,6 @@ public class DataModelAdaptor {
 		}
 
 		
-		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY whatever its type
-
 		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);	
 		int[] matchingClusterIdsArray = new int[matchingClusterIds.size()];
 		Iterator<Integer> it = matchingClusterIds.iterator();
