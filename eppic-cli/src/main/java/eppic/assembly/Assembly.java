@@ -926,6 +926,10 @@ public class Assembly {
 		return call;
 	}
 	
+	public double getScore() {
+		return probability;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (! (other instanceof Assembly)) return false;
@@ -964,21 +968,17 @@ public class Assembly {
 	 */
 	public void score() {
 
-		// we won't support non-fully-covering stoichiometries for the moment
-		// TODO support them: most likely requires a more complex data model where we can have score/calls for each of the subcomponents of the assembly
-		if (!assemblyGraph.isFullyCovering()) {
-			logger.warn("Assembly {} does not cover all entities, assembly scoring will be done for first sub-assembly only", toString());
-		}
+		List<StructureInterfaceCluster> ics = getEngagedInterfaceClusters();
 		
 		
-		SubAssembly firstSubAssembly = assemblyGraph.getSubAssemblies().get(0);
+		
 				
 	}
 	
 	/**
 	 * Normalize the probabilistic score by the total sum of assembly
 	 * probabilities. This is needed to account for the 0 probability
-	 * of impossible interface combinations.
+	 * of impossible interface combinations (assemblies).
 	 * @param sumProbs total sum of assembly probabilities in the crystal.
 	 */
 	public void normalize(double sumProbs) {

@@ -459,7 +459,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	}
 	
 	/**
-	 * 
+	 * Calculates the probabilistic scores for each valid assembly in the crystal,
+	 * normalizes the assembly probabilities to account for the 0 probability of 
+	 * impossible assemblies and assigns the BIO call to the most probable one.
 	 */
 	public void score() {
 
@@ -469,44 +471,26 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		// 1 Do individual assemblies scoring
 		for (Assembly a:uniques) {
 			a.score();
+			a.setCall(CallType.CRYSTAL);
 		}
 		
-		// 2 Look at all calls and keep only the largest bio assembly. If no bios at all then assign bio to monomers
-		Assembly maxSizeBioAssembly = null;
-		int maxSize = 0;
+		// 2 Compute the sum of probabilities and normalize
+		double sumProbs = 0;
+		double maxScore = 0;
+		int maxIndx = 0;
+		int indx = 0;
 		for (Assembly a:uniques) {
-						
-			// TODO this ignores other non-overlapping stoichiometries, must take care of that
-			Stoichiometry<?> sto = a.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry();
-			int size = sto.getTotalSize();
-			
-			if (a.getCall() == CallType.BIO && maxSize<size) {
-				maxSizeBioAssembly = a;
-				maxSize = size;
+			sumProbs += a.getScore();
+			if (maxScore < a.getScore()) {
+				maxIndx = indx;
+				maxScore = a.getScore();
 			}
+			indx++;
 		}
+		for (Assembly a:uniques)
+			a.normalize(sumProbs);
 		
-		if (maxSizeBioAssembly == null) {
-			// no assemblies were BIO
-			
-			for (Assembly a:uniques) {
-				
-				// TODO check how this would work with heteromers
-				
-				if (a.getNumEngagedInterfaceClusters()==0) {
-					a.setCall(CallType.BIO);
-				}
-			}
-			
-		} else {			
-			
-			for (Assembly a:uniques) {			
-				if (a == maxSizeBioAssembly) continue;
-				
-				a.setCall(CallType.CRYSTAL);
-				
-			}
-		}
+		// 3 Assign the BIO call to the highest probability
+		uniques.get(maxIndx).setCall(CallType.BIO);
 	}
-	
 }
