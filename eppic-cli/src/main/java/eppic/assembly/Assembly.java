@@ -58,8 +58,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.CallType;
+import eppic.InterfaceEvolContextList;
 import eppic.commons.util.GeomTools;
-
 
 /**
  * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
@@ -104,6 +104,12 @@ public class Assembly {
 	 * Probability of this assembly being the biologically relevant one.
 	 */
 	private double probability;
+	
+	/**
+	 * Confidence of the assembly call, as a value between 0 and 1.
+	 */
+	private double confidence;
+	
 	private CallType call;
 	
 	
@@ -968,11 +974,19 @@ public class Assembly {
 	 */
 	public void score() {
 
-		List<StructureInterfaceCluster> ics = getEngagedInterfaceClusters();
+		probability = 1;
 		
+		InterfaceEvolContextList iecl = getCrystalAssemblies().getInterfaceEvolContextList();
 		
+		// For each interface cluster include the probability
+		for (int i = 0; i < engagedSet.size(); i++) {
+			// p if it occurs, (1-p) if not
+			double p = iecl.getCombinedClusterPredictor(i).getScore();
+			if (engagedSet.isOff(i))
+				p = (1-p);
+			probability *= probability;
+		}
 		
-				
 	}
 	
 	/**
