@@ -87,10 +87,10 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 		
 		switch (call) {
 		case BIO: 
-			confidence = (probability - 0.5) / 0.5;
+			confidence = probability;
 			break;
 		case CRYSTAL: 
-			confidence = (0.5 - probability) / 0.5;
+			confidence = 1 - probability;
 			break;
 		case NO_PREDICTION: 
 			confidence = CONFIDENCE_UNASSIGNED;
