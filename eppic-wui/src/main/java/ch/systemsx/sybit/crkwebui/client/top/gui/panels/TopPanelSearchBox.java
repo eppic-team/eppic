@@ -1,8 +1,5 @@
 package ch.systemsx.sybit.crkwebui.client.top.gui.panels;
 
-import java.util.Iterator;
-import java.util.List;
-
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.events.HideTopPanelSearchBoxEvent;
@@ -13,8 +10,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowTopPanelSearchBoxH
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.jobs.data.MyJobsModel;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.panels.MyJobsPanel;
-import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.validators.PdbCodeVerifier;
 
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -22,7 +17,6 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.widget.core.client.button.IconButton;

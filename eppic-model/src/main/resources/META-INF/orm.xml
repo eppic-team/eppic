@@ -31,7 +31,10 @@
 	</entity>
 
 	<entity class="eppic.model.JobDB" name="Job">
-		<table name="Job" />
+		<table name="Job">
+			<!-- Whenever a job is invoked, the table has to be searched for jobIds, this index is very important! -->
+			<index name="jobId_idx" column-list="jobId" unique="true"></index>
+		</table>
 		<attributes>
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
@@ -148,7 +151,10 @@
 			
 			<basic name="topologicallyValid"></basic>
 
-			<basic name="interfaceClusterIds"></basic>
+			<!-- Entries like ribosomes can have very long list of interfaces here, we need text -->
+			<basic name="interfaceClusterIds">
+				<column column-definition="text" />
+			</basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
@@ -192,10 +198,18 @@
 			<basic name="symmetry">
 				<column length="10"/>
 			</basic>
-			<basic name="composition"></basic>
+			<basic name="composition">
+			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
+			     very long list of chains in their assemblies, we need text here -->
+				<column column-definition="text" />
+			</basic>
 			<basic name="compositionRepChainIds"></basic>
 			<basic name="stoichiometry"></basic>
-			<basic name="chainIds"></basic>
+			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
+			     very long list of chains in their assemblies, we need text here -->
+			<basic name="chainIds">
+				<column column-definition="text" />
+			</basic>
 						
 			<many-to-one name="assembly">
 			</many-to-one>

@@ -22,7 +22,7 @@ public class TestInterfaceMatching {
 	 * Test interface matching, specifically issues https://github.com/eppic-team/eppic/issues/98 and https://github.com/eppic-team/eppic/issues/74
 	 */
 	@Test
-	public void test4hwd() {
+	public void test4hwd() throws EppicException {
 		
 		File outDir = new File(TMPDIR, "eppicTestInterfMatching");
 		
@@ -30,12 +30,13 @@ public class TestInterfaceMatching {
 		
 		assertTrue(outDir.isDirectory());
 		
-		
-		String[] args = {"-i", "4hwd", "-o", outDir.toString()};
+				
+		String pdbId = "4hwd";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
 		
 		Main m = new Main();
 		
-		m.run(args);
+		m.run(params);
 		
 		Structure s = m.getStructure();
 		
@@ -64,7 +65,7 @@ public class TestInterfaceMatching {
 		int pdb1Assemblies = 0;
 		for (AssemblyScoreDB asdb : assembly.getAssemblyScores()) {
 			if (asdb.getMethod().equals(ScoringMethod.EPPIC_FINAL)) eppicAssemblies ++;
-			if (asdb.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD)) pdb1Assemblies ++;
+			if (asdb.getMethod().equals(DataModelAdaptor.PDB_BIOUNIT_METHOD_PREFIX +"1")) pdb1Assemblies ++;
 			//System.out.println(asdb.getMethod());
 		}
 		

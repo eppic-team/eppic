@@ -39,6 +39,7 @@ import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
 import org.biojava.nbio.structure.symmetry.core.AxisAligner;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
@@ -329,7 +330,7 @@ public class Assembly {
 		List<ChainVertex> chains = new ArrayList<ChainVertex>();
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		for(List<SubAssembly> subgroup : assemblyGraph.getSubAssembliesGroupedByStoichiometries()) {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
@@ -353,7 +354,7 @@ public class Assembly {
 	public List<List<ChainVertex>> getStructureCentered() throws StructureException {
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		List<List<ChainVertex>> components = new ArrayList<List<ChainVertex>>(assemblyGraph.getSubAssembliesGroupedByStoichiometries().size());
 
@@ -386,8 +387,7 @@ public class Assembly {
 
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
-		CrystalCell cell = crystalAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
-
+		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		List<Entry<Dimension2D, List<ChainVertex>>> boxes = new ArrayList<Map.Entry<Dimension2D,List<ChainVertex>>>();
 
@@ -863,7 +863,7 @@ public class Assembly {
 
 		ps.print(FileConvert.getAtomSiteHeader());
 
-		List<Object> atomSites = new ArrayList<>();
+		List<AtomSite> atomSites = new ArrayList<>();
 
 		int atomId = 1;
 		for (ChainVertex cv:structure) {
@@ -892,7 +892,7 @@ public class Assembly {
 			}
 		}
 
-		ps.print(MMCIFFileTools.toMMCIF(atomSites));
+		ps.print(MMCIFFileTools.toMMCIF(atomSites, AtomSite.class));
 
 
 		ps.close();

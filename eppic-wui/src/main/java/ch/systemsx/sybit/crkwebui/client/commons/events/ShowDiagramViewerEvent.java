@@ -1,8 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowDiagramViewerHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowViewerHandler;
 
 import com.google.gwt.event.shared.GwtEvent;
 

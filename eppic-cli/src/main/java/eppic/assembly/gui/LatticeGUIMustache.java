@@ -1,6 +1,5 @@
 package eppic.assembly.gui;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -80,9 +79,9 @@ public class LatticeGUIMustache {
 	private String dpi; // the dpi for thumnails generation
 	
 	// cache for getGraph2D
-	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d = null;
+	private UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d;
 
-	private GraphLayout<ChainVertex3D,InterfaceEdge3D> layout2d = null;
+	private GraphLayout<ChainVertex3D,InterfaceEdge3D> layout2d;
 
 	/**
 	 * Factory method for known templates. Most templates use this class directly.
@@ -94,11 +93,13 @@ public class LatticeGUIMustache {
 	 * and 'eppic-cli/src/main/resources/mustache/eppic/assembly/gui/LatticeGUIMustache3D.html.mustache'
 	 * should all locate the correct template.
 	 * @param template String giving the path to the template.
+	 * @param struc
+	 * @param interfaceIds
 	 * @return
 	 * @throws StructureException 
 	 * @throws IllegalArgumentException if the template couldn't be found or was ambiguous
 	 */
-	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds) throws StructureException {
 		String templatePath = expandTemplatePath(template);
 		logger.info("Loading mustache template from {}",templatePath);
 
@@ -470,7 +471,7 @@ public class LatticeGUIMustache {
 
 		LatticeGUIMustache gui;
 		try {
-			gui = createLatticeGUIMustache(template, struc, interfaceIds,null);
+			gui = createLatticeGUIMustache(template, struc, interfaceIds);
 		} catch( IllegalArgumentException e) {
 			System.err.println(e.getMessage());
 			System.exit(1); return;
@@ -489,7 +490,7 @@ public class LatticeGUIMustache {
 		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
 		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
 
-		layouts.add( new UnitCellLayout<>(vertexPositioner, struc.getCrystallographicInfo().getCrystalCell()));
+		layouts.add( new UnitCellLayout<>(vertexPositioner, LatticeGraph.getCrystalCell(struc)));
 		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
 
 //		Point3d center = new Point3d();

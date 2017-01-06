@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -28,6 +30,11 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.quaternary.BioAssemblyInfo;
+import org.biojava.nbio.structure.quaternary.BiologicalAssemblyBuilder;
+import org.biojava.nbio.structure.quaternary.BiologicalAssemblyTransformation;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
+import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
@@ -78,7 +85,10 @@ public class DataModelAdaptor {
 	
 	private static final int UNKNOWN_RESIDUE_INDEX = -1;
 	
-	public static final String PDB_BIOUNIT_METHOD = "pdb1";
+	/**
+	 * The method name for PDB biounit annotations, suffixed with the biounit number, e.g. pdb1, pdb2, ...
+	 */
+	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pbd";	
 	
 	public static final int INVALID_ASSEMBLY_ID = 0;
 	
@@ -497,8 +507,38 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void setPdbBioUnits(BioAssemblyInfo bioAssembly, String[] symmetries,
-			CrystalAssemblies validAssemblies) {
+	/**
+	 * Populate the data model with all the PDB biounit annotations.
+	 * @param bioAssemblies
+	 * @param validAssemblies
+	 * @param pdb
+	 */
+	public void setPdbBioUnits(Map<Integer, BioAssemblyInfo> bioAssemblies, CrystalAssemblies validAssemblies, Structure pdb) {
+		
+		// see https://github.com/eppic-team/eppic/issues/139
+		
+		if (bioAssemblies == null) {
+			LOGGER.info("No bio assembly annotations present, will not add bio assemblies info to data model");
+			return;
+		}
+		
+		for (Entry<Integer, BioAssemblyInfo> entry : bioAssemblies.entrySet()) {
+			int bioAssemblyNumber = entry.getKey();
+			BioAssemblyInfo bioAssembly = entry.getValue();
+			
+			setPdbBioUnit(bioAssemblyNumber, bioAssembly, validAssemblies, pdb);
+		}
+		
+	}
+	
+	/**
+	 * Populate the data model with 1 PDB biounit annotation.
+	 * @param bioAssemblyNumber
+	 * @param bioAssembly
+	 * @param validAssemblies
+	 * @param pdb
+	 */
+	private void setPdbBioUnit(int bioAssemblyNumber, BioAssemblyInfo bioAssembly, CrystalAssemblies validAssemblies, Structure pdb) {
 
 		if (bioAssembly == null) {
 			LOGGER.info("No bio assembly annotation present, will not add bio assembly info to data model");
@@ -531,7 +571,7 @@ public class DataModelAdaptor {
 		}
 		
 		AssemblyScoreDB as = new AssemblyScoreDB();
-		as.setMethod(PDB_BIOUNIT_METHOD);
+		as.setMethod(PDB_BIOUNIT_METHOD_PREFIX + bioAssemblyNumber);
 		as.setCallName(CallType.BIO.getName());
 		as.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 		as.setScore(SCORE_NOT_AVAILABLE);
@@ -542,14 +582,21 @@ public class DataModelAdaptor {
 
 			as.setAssembly(matchingAssemblyDB);
 			
+			// we use the symmetry detected with biojava's quat symmetry detection just to double check that we get it right in eppic
+			String[] symmetries = getSymmetry(pdb, bioAssemblyNumber);
+			
 			if (!getSymmetryString(matchingAssemblyDB.getAssemblyContents()).equals(symmetries[0])) {
 				LOGGER.warn("Symmetry calculated from graph is {} whilst detected from biounit is {}",
 						getSymmetryString(matchingAssemblyDB.getAssemblyContents()),symmetries[0]);
 			}
 			
-			if (!getStoichiometryString(matchingAssemblyDB.getAssemblyContents()).equals(symmetries[1])) {
+			// we represent the stoichiometries in db with parenthesis, e.g. A(2), we need to strip them before comparing 
+			String stoFromEppic = getStoichiometryString(matchingAssemblyDB.getAssemblyContents());
+			stoFromEppic = stoFromEppic.replaceAll("[()]", "");
+			
+			if (!stoFromEppic.equals(symmetries[1])) {
 				LOGGER.warn("Stoichiometry calculated from graph is {} whilst detected from biounit is {}",
-						getStoichiometryString(matchingAssemblyDB.getAssemblyContents()),symmetries[1]);
+						stoFromEppic,symmetries[1]);
 			}
 			matchingAssemblyDB.addAssemblyScore(as);
 			
@@ -611,7 +658,7 @@ public class DataModelAdaptor {
 			if (matchingAssemblyDB!=null && assembly == matchingAssemblyDB) continue;
 			
 			AssemblyScoreDB asxtal = new AssemblyScoreDB();
-			asxtal.setMethod(PDB_BIOUNIT_METHOD);
+			asxtal.setMethod(PDB_BIOUNIT_METHOD_PREFIX + bioAssemblyNumber);
 			asxtal.setCallName(CallType.CRYSTAL.getName());
 			asxtal.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 			asxtal.setScore(SCORE_NOT_AVAILABLE);
@@ -1300,5 +1347,96 @@ public class DataModelAdaptor {
 			if (isDisulfideInteraction(contact)) return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Finds the symmetry of the biounit with the biojava quat symmetry algorithms
+	 * @param bioUnitNumber
+	 * @return an array of size 4 with members: symmetry, stoichiometry, pseudosymmetry, pseudoStoichiometry
+	 */
+	private static String[] getSymmetry(Structure pdb, int bioUnitNumber) {
+		
+		
+		if (pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber)==null || 
+			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms() == null || 
+			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms().size() == 0){
+			
+			LOGGER.warn("Could not load transformations for PDB biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
+			return new String[]{null,null,null,null};
+		}
+		
+		List<BiologicalAssemblyTransformation> transformations = 
+				pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms();
+
+		
+		BiologicalAssemblyBuilder builder = new BiologicalAssemblyBuilder();
+
+		Structure bioAssembly = builder.rebuildQuaternaryStructure(pdb, transformations);
+
+		QuatSymmetryParameters parameters = new QuatSymmetryParameters();
+        parameters.setOnTheFly(true);
+        parameters.setLocalSymmetry(false);
+		parameters.setVerbose(false);
+
+		QuatSymmetryDetector detector = new QuatSymmetryDetector(bioAssembly, parameters);
+
+		if (!detector.hasProteinSubunits()) {	
+			LOGGER.info("No protein chains in biounit {}, can't calculate symmetry. Will not assign a symmetry value to it.", bioUnitNumber);
+			return new String[]{null,null,null,null};
+		}		
+
+		List<QuatSymmetryResults> globalResults = detector.getGlobalSymmetry();
+		
+		if (globalResults.isEmpty()) {
+			LOGGER.warn("No global symmetry found for biounit {}. Will not assign a symmetry value to it.",  bioUnitNumber);
+			return new String[]{null, null, null, null};
+		}
+		
+		String symmetry = null;
+		String stoichiometry = null;
+		String pseudoSymmetry = null;
+		String pseudoStoichiometry = null;
+
+		
+		if (globalResults.size()>2) {
+			StringBuilder sb = new StringBuilder();
+			for (QuatSymmetryResults r:globalResults) {
+				sb.append(r.getSymmetry()+" ");
+			}
+			LOGGER.warn("More than 2 symmetry results found for biounit {}. The {} results are: {}", 
+					bioUnitNumber, globalResults.size(), sb.toString());
+		}
+		
+		for (QuatSymmetryResults r:globalResults) {
+			
+			if (r.getSubunits().isPseudoSymmetric()) {				
+				pseudoSymmetry = r.getSymmetry();
+				pseudoStoichiometry = r.getSubunits().getStoichiometry();
+				LOGGER.info("Pseudosymmetry {} (stoichiometry {}) found in biounit {}", 
+						pseudoSymmetry, pseudoStoichiometry, bioUnitNumber);
+			} else {
+				symmetry = r.getSymmetry();
+				stoichiometry = r.getSubunits().getStoichiometry();
+				LOGGER.info("Symmetry {} (stoichiometry {}) found in biounit {}", 
+						symmetry, stoichiometry, bioUnitNumber);
+			}
+			
+		}
+		// note: if there's no pseudosymmetry in the results then it remains null
+
+
+		if (symmetry==null) {
+			// this should not happen, will there ever be no global symmetry (non-pseudo) in the results?
+			LOGGER.warn("Could not find global symmetry for biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
+		} else if (stoichiometry==null){
+			LOGGER.warn("Symmetry found for biounit {}, but no stoichiometry value associated to it.", bioUnitNumber);
+		}
+		
+		if (pseudoSymmetry!=null && pseudoStoichiometry==null) {
+			LOGGER.warn("Pseudosymmetry found for biounit {}, but no stoichiometry value associated to it", bioUnitNumber);
+		}
+		
+		return new String[]{symmetry, stoichiometry, pseudoSymmetry, pseudoStoichiometry};
+		
 	}
 }

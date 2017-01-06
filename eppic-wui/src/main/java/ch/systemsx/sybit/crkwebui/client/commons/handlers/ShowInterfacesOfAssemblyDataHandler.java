@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.commons.handlers;
 
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
-import ch.systemsx.sybit.crkwebui.client.commons.events.ShowResultsDataEvent;
 
 import com.google.gwt.event.shared.EventHandler;
 

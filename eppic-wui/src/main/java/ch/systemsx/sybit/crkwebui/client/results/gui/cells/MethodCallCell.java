@@ -13,7 +13,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.client.Window;
 import com.sencha.gxt.data.shared.ListStore;
 
 import eppic.model.ScoringMethod;

@@ -1,11 +1,9 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowInterfacesOfAssemblyDataHandler;
-import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowResultsDataHandler;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import com.google.gwt.event.shared.GwtEvent;
-import com.google.gwt.user.client.Window;
 
 /**
  * Event fired when results data panel is to be displayed.
