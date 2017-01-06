@@ -593,6 +593,10 @@ public class MainController
 		{
 			displayFAQ();
 		}
+		else if((token != null) && (token.equals("advancedsearch") || token.equals("!advancedsearch")))
+		{
+			displayEppicExplorer();
+		}
 		else
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_input());
@@ -712,13 +716,13 @@ public class MainController
 	 * To make this work, just add an extra parameter to the IFramePanel to indicate if it is a 
 	 * relative url or not. Then in IFramePanel.java add the base url to the url depending on this parameter.
 	 */
-	/*public void displayEppicExplorer()
+	public void displayEppicExplorer()
 	{
-		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_faq());
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_advanced_search());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel faqPanel = new IFramePanel("http://www.eppic-explorer-url.com", false); //false indicates it is not a relative url
-		displayPanelInCentralPanel(faqPanel);
-	}*/
+		IFramePanel expolorerPanel = new IFramePanel(ApplicationContext.getSettings().getEppicExplorerUrl(), true); 
+		displayPanelInCentralPanel(expolorerPanel);
+	}
 	
 	
 	/**
