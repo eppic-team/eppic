@@ -666,7 +666,7 @@ public class MainController
 	{
 	    Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_help());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel helpPanel = new IFramePanel("help.html");
+		IFramePanel helpPanel = new IFramePanel("help.html", true);
 		displayPanelInCentralPanel(helpPanel);
 	}
 	
@@ -677,7 +677,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_downloads());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel downloadsPanel = new IFramePanel("downloads.html");
+		IFramePanel downloadsPanel = new IFramePanel("downloads.html", true);
 		displayPanelInCentralPanel(downloadsPanel);
 	}
 
@@ -688,7 +688,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_releases());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel releasesPanel = new IFramePanel("releases.html");
+		IFramePanel releasesPanel = new IFramePanel("releases.html", true);
 		displayPanelInCentralPanel(releasesPanel);
 	}
 	
@@ -699,7 +699,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_publications());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel publicationsPanel = new IFramePanel("publications.html");
+		IFramePanel publicationsPanel = new IFramePanel("publications.html", true);
 		displayPanelInCentralPanel(publicationsPanel);
 	}
 	
@@ -710,9 +710,23 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_faq());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel faqPanel = new IFramePanel("faq.html");
+		IFramePanel faqPanel = new IFramePanel("faq.html", true);
 		displayPanelInCentralPanel(faqPanel);
 	}
+	
+	/**
+	 * Test - integration of eppic explorer
+	 * To make this work, just add an extra parameter to the IFramePanel to indicate if it is a 
+	 * relative url or not. Then in IFramePanel.java add the base url to the url depending on this parameter.
+	 */
+	/*public void displayEppicExplorer()
+	{
+		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_faq());
+		ApplicationContext.setSelectedJobId("");
+		IFramePanel faqPanel = new IFramePanel("http://www.eppic-explorer-url.com", false); //false indicates it is not a relative url
+		displayPanelInCentralPanel(faqPanel);
+	}*/
+	
 	
 	/**
 	 * Displays statistics panel.
@@ -721,7 +735,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_statistics());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel faqPanel = new IFramePanel("statistics.html");
+		IFramePanel faqPanel = new IFramePanel("statistics.html" ,true);
 		displayPanelInCentralPanel(faqPanel);
 	}
 	
