@@ -33,9 +33,11 @@ public class NavigationPanel extends VBoxLayoutContainer
 	this.setBorders(false);
 
 	HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
-	linksContainer.setWidth(500);
+	linksContainer.setWidth(625);
+	
 
 	HTML homeLink = createHomeLink();
+	HTML advancedSearchLink = createAdvancedSearchLink();
 	HTML publicationsLink = createPublicationsLink();
 	HTML helpLink = createHelpLink();
 	// HTML changeViewerLink = createChangeViewerLink();
@@ -43,8 +45,9 @@ public class NavigationPanel extends VBoxLayoutContainer
 	HTML releasesLink = createReleasesLink();
 	HTML fAQLink = createFAQLink();
 	HTML statLink = createStatLink();
-
 	linksContainer.add(homeLink, new HorizontalLayoutData(-1,1));
+	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+	linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
 	linksContainer.add(downloadsLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
@@ -103,6 +106,25 @@ public class NavigationPanel extends VBoxLayoutContainer
 
 	return homeLink;
     }
+    
+    /**
+     * Creates link to the advanced search page.
+     * @return link to the advanced search page
+     */
+    private HTML createAdvancedSearchLink()
+    {
+	HTML advancedSearchLink = new EmptyLink(AppPropertiesManager.CONSTANTS.navigation_panel_advanced_search_link_label());
+	advancedSearchLink.addStyleName("eppic-horizontal-nav");
+	advancedSearchLink.addClickHandler(new ClickHandler() {	
+	    @Override
+	    public void onClick(ClickEvent event) {
+	    History.newItem("advancedsearch");
+	    }
+	});
+
+	return advancedSearchLink;
+    }    
+    
 
     /**
      * Creates link to publications.
