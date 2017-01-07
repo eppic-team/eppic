@@ -768,8 +768,8 @@ public class Main {
 	public void doCombinedScoring() throws EppicException {
 		if (interfaces.size()==0) return;
 		
+		// interface scoring
 		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
-
 		for (int i=0;i<iecList.size();i++) {
 			CombinedPredictor cp = 
 					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
@@ -777,23 +777,23 @@ public class Main {
 			cps.add(cp);
 		}
 		
+		// interface cluster scoring
 		List<CombinedClusterPredictor> ccps = new ArrayList<CombinedClusterPredictor>();		
-		int i = 0;
-		for (StructureInterfaceCluster ic:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
-			int clusterId = ic.getId();
-			CombinedClusterPredictor ccp = 
-					new CombinedClusterPredictor(ic,iecList,
-							gcps.get(i),
-							iecList.getEvolCoreRimClusterPredictor(clusterId),
-							iecList.getEvolCoreSurfaceClusterPredictor(clusterId));
+		for (StructureInterfaceCluster interfaceCluster:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
+			List<CombinedPredictor> ccpsForCluster = new ArrayList<CombinedPredictor>();
 			
+			for (int i=0;i<interfaces.size();i++) {
+				if ( interfaces.get(i+1).getCluster().getId()==interfaceCluster.getId()) {
+					ccpsForCluster.add(cps.get(i));
+				}
+			}
+			
+			CombinedClusterPredictor ccp = new CombinedClusterPredictor(ccpsForCluster);
+
 			ccp.computeScores();
 			ccps.add(ccp);
-			i++;
-			
-			iecList.setCombinedClusterPredictor(clusterId, ccp);
-		}
-				
+			iecList.setCombinedClusterPredictor(interfaceCluster.getId(), ccp);
+		}			
 
 		modelAdaptor.setCombinedPredictors(cps, ccps);
 

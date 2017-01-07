@@ -218,7 +218,7 @@ public class TextOutputWriter {
 		if (interfaceScoreFn==null) {
 			ps.printf("\t%7s\t%7s\t%7s","","","");
 		} else {
-			ps.printf("\t%7.0f\t%7.2f\t%7s",
+			ps.printf("\t%7.2f\t%7.2f\t%7s",
 					interfaceScoreFn.getScore(),
 					interfaceScoreFn.getConfidence(),
 					interfaceScoreFn.getCallName());			
@@ -283,7 +283,7 @@ public class TextOutputWriter {
 		if (interfaceScoreFn==null) {
 			ps.printf("\t%7s\t%7s\t%7s","","","");
 		} else {
-			ps.printf("\t%7.0f\t%7.2f\t%7s",
+			ps.printf("\t%7.2f\t%7.2f\t%7s",
 					interfaceScoreFn.getScore(),
 					interfaceScoreFn.getConfidence(),
 					interfaceScoreFn.getCallName());			
