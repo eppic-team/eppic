@@ -483,12 +483,13 @@ public class TextOutputWriter {
 		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.ASSEMBLIES_FILE_SUFFIX));
 		ps.println("# Topologically valid assemblies in "+(params.isInputAFile()?params.getInFile().getName():params.getPdbCode()));		
 		
-		ps.printf("%3s %20s %10s %15s %15s %15s\n",
+		ps.printf("%3s %20s %10s %15s %15s %10s %15s\n",
 				"id",
 				"Interf cluster ids",
 				"Size",
 				"Stoichiometry",
 				"Symmetry",
+				"Score",
 				"Predicted by");
 		
 		boolean hasTopInvalidAssemblies = false;
@@ -516,8 +517,9 @@ public class TextOutputWriter {
 	}
 	
 	private void printAssemblyInfo(PrintStream ps, AssemblyDB assembly) {
-		// first we gather the assembly predictions
+		// first we gather the assembly predictions and score
 		StringBuilder sb = new StringBuilder();
+		String scoreString = "";
 		for (int i=0;i<assembly.getAssemblyScores().size();i++) {
 			
 			if (assembly.getAssemblyScores().get(i).getCallName()!=null && 
@@ -526,6 +528,10 @@ public class TextOutputWriter {
 				if (sb.length()>0) sb.append(','); // only add comma if there's already another method before
 				
 				sb.append(assembly.getAssemblyScores().get(i).getMethod());
+			}
+			if (assembly.getAssemblyScores().get(i).getMethod().equals("eppic")) {
+				scoreString = String.format("%.2f", 
+						assembly.getAssemblyScores().get(i).getScore());
 			}
 			
 		}
@@ -539,12 +545,13 @@ public class TextOutputWriter {
 			stoString = DataModelAdaptor.getStoichiometryString(contents);
 			symString = DataModelAdaptor.getSymmetryString(contents);
 		}
-		ps.printf("%3d %20s %10s %15s %15s %15s\n",
+		ps.printf("%3d %20s %10s %15s %15s %10s %15s\n",
 				assembly.getId(),
 				assembly.getInterfaceClusterIds(),
 				mmSizeString,
 				stoString,
 				symString,
+				scoreString,
 				sb.toString());
 	}
 		
