@@ -978,20 +978,32 @@ public class Assembly {
 	 * the individual interface probabilities.
 	 */
 	public void calcScore() {
-
-		probability = 1;
 		
-		InterfaceEvolContextList iecl = getCrystalAssemblies().getInterfaceEvolContextList();
-		
-		// For each interface cluster include the probability
-		for (int i = 0; i < engagedSet.size(); i++) {
-			// p if it occurs, (1-p) if not
-			double p = iecl.getCombinedClusterPredictor(i+1).getScore();
-			if (engagedSet.isOff(i))
-				p = (1-p);
-			probability *= p;
+		// Construct a list of all the smaller powersets of this assembly that are equivalent
+		List<PowerSet> pss = new ArrayList<PowerSet>();
+		for (PowerSet ps : engagedSet.getOnPowerSet()) {
+			// Equivalent means that they have the same number of subassemblies
+			Assembly pa = new Assembly(crystalAssemblies, ps);
+			if (pa.getAssemblyGraph().getSubAssemblies().size() == 
+					this.getAssemblyGraph().getSubAssemblies().size())
+				pss.add(ps);
 		}
+		pss.add(engagedSet);
 		
+		// Calculate the probabilities for each possible set of interface clusters
+		probability = 0;
+		InterfaceEvolContextList iecl = getCrystalAssemblies().getInterfaceEvolContextList();
+					
+		for (PowerSet ps : pss) {
+			double prob = 1;
+			for (int i = 1; i < ps.size()+1; i++) {
+				double p = iecl.getCombinedClusterPredictor(i).getScore();
+				if (ps.isOff(i))
+					p = (1-p);
+				prob *= p;
+			}
+			probability += prob;
+		}
 	}
 	
 	/**
