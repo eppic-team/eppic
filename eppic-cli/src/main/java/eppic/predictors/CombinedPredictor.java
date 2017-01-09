@@ -13,18 +13,20 @@ import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 
 /**
- * The CombinedPredictor takes as input all other predictors (scores) and outputs
- * the probability of the interface being BIO, P(BIO|scores), calculated with a 
- * logistic regression classifier.
+ * The CombinedPredictor takes as input all other predictors (scores) and
+ * outputs the probability of the interface being BIO, P(BIO|scores), calculated
+ * with a logistic regression classifier.
  * <p>
- * The model is P(BIO|scores) = 1 / (1 + exp(-x)), where 
- * x = {@link EppicParams#LOGIT_INTERSECT} + 
+ * The model is P(BIO|scores) = 1 / (1 + exp(-x)), where x =
+ * {@link EppicParams#LOGIT_INTERSECT} +
  * {@link EppicParams#LOGIT_GM_COEFFICIENT} * gm +
  * {@link EppicParams#LOGIT_CS_COEFFICIENT} * cs
  * <p>
- * The NOPRED value (most uncertain score) for cs score is {@link EppicParams#CS_NOPRED}.
+ * The NOPRED value (most uncertain score) for cs score is
+ * {@link EppicParams#CS_NOPRED}.
  * <p>
- * The confidence is set to be the probability of the final call to be true (BIO or XTAL).
+ * The confidence is set to be the probability of the final call to be true (BIO
+ * or XTAL).
  * 
  * @author Jose Duarte
  * @author Aleix Lafita
@@ -113,12 +115,12 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		
 		// 1) BIO call
 		if (probability > 0.5) {
-			callReason = "P(BIO) = " + probability + " > 0.5";
+			callReason = String.format("P(BIO) = %.2f > 0.5", probability);
 			call = CallType.BIO;
 		} 
 		// 2) XTAL call
 		else if (probability <= 0.5) {
-			callReason = "P(BIO) = " + probability + " < 0.5";
+			callReason = String.format("P(BIO) = %.2f < 0.5", probability);
 			call = CallType.CRYSTAL;
 		}
 		
@@ -170,6 +172,10 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		return true; // for the moment there's no conditions to reject a score
 	}
 	
+	/**
+	 * The confidence of the call, as the probability that the call is the true one.
+	 * The same as the probability for BIO, 1-p for CRYSTAL.
+	 */
 	private void calcConfidence() {
 		
 		switch (call) {
@@ -204,6 +210,10 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		return counts;
 	}
 	
+	/**
+	 * Calculate the probability of the interface being BIO with the logisitic
+	 * function, and accounting for the NOPRED special cases.
+	 */
 	private double calcProbability() {
 		
 		if (ecsp.getCall() == CallType.NO_PREDICTION) {
