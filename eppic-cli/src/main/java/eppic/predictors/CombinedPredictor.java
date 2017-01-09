@@ -208,7 +208,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		
 		if (ecsp.getCall() == CallType.NO_PREDICTION) {
 			// The NOPRED is due to the lack of homologs
-			if (gp.getScore() < 1) {
+			if (gp.getScore() > 0) {
 				return 1 / (1 + Math.exp(-(EppicParams.LOGIT_INTERSECT + 
 						EppicParams.LOGIT_GM_COEFFICIENT * gp.getScore() + 
 						EppicParams.LOGIT_CS_COEFFICIENT * EppicParams.LOGIT_CS_NOPRED)));
