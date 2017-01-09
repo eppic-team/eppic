@@ -470,7 +470,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 		// 1 Do individual assemblies scoring
 		for (Assembly a:uniques) {
-			a.score();
+			a.calcScore();
 			a.setCall(CallType.CRYSTAL);
 		}
 		
@@ -488,9 +488,13 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			indx++;
 		}
 		for (Assembly a:uniques)
-			a.normalize(sumProbs);
+			a.normalizeScore(sumProbs);
 		
 		// 3 Assign the BIO call to the highest probability
 		uniques.get(maxIndx).setCall(CallType.BIO);
+		
+		// 4 Compute call confidence
+		for (Assembly a:uniques)
+			a.calcConfidence();
 	}
 }

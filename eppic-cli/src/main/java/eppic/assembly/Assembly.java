@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
 import eppic.CallType;
 import eppic.InterfaceEvolContextList;
 import eppic.commons.util.GeomTools;
+import eppic.predictors.InterfaceTypePredictor;
 
 /**
  * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
@@ -936,6 +937,10 @@ public class Assembly {
 		return probability;
 	}
 	
+	public double getConfidence() {
+		return confidence;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (! (other instanceof Assembly)) return false;
@@ -972,7 +977,7 @@ public class Assembly {
 	 * Compute an initial (non-normalized) probabilistic score from
 	 * the individual interface probabilities.
 	 */
-	public void score() {
+	public void calcScore() {
 
 		probability = 1;
 		
@@ -981,10 +986,10 @@ public class Assembly {
 		// For each interface cluster include the probability
 		for (int i = 0; i < engagedSet.size(); i++) {
 			// p if it occurs, (1-p) if not
-			double p = iecl.getCombinedClusterPredictor(i).getScore();
+			double p = iecl.getCombinedClusterPredictor(i+1).getScore();
 			if (engagedSet.isOff(i))
 				p = (1-p);
-			probability *= probability;
+			probability *= p;
 		}
 		
 	}
@@ -995,8 +1000,25 @@ public class Assembly {
 	 * of impossible interface combinations (assemblies).
 	 * @param sumProbs total sum of assembly probabilities in the crystal.
 	 */
-	public void normalize(double sumProbs) {
+	public void normalizeScore(double sumProbs) {
 		probability = probability / sumProbs;
+	}
+	
+	/**
+	 * Calculate the confidence of the call.
+	 */
+	public void calcConfidence() {
+		switch(call){
+		case BIO:
+			confidence = probability;
+			break;
+		case CRYSTAL:
+			confidence = 1 - probability;
+			break;
+		case NO_PREDICTION:
+			// should that be a global variable in eppic params?
+			confidence = InterfaceTypePredictor.CONFIDENCE_UNASSIGNED;
+		}
 	}
 	
 	/**
