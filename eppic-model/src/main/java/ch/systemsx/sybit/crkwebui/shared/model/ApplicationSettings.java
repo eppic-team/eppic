@@ -82,11 +82,6 @@ public class ApplicationSettings implements Serializable {
 	private String publicationLinkUrl;
 	
 	/**
-	 * Url to eppic explorer
-	 */
-	private String eppicExplorerUrl;
-	
-	/**
 	 * Flag pointing whether precompiled values stored in the db should be used.
 	 */
 	private boolean usePrecompiledResults;
@@ -396,14 +391,6 @@ public class ApplicationSettings implements Serializable {
 
 	public String getWikipediaLinkUrl() {
 		return wikipediaLinkUrl;
-	}
-	
-	public void setEppicExplorerUrl(String eppicExplorerUrl) {
-		this.eppicExplorerUrl = eppicExplorerUrl;
-	}
-
-	public String getEppicExplorerUrl() {
-		return eppicExplorerUrl;
 	}
 	
 	/**
