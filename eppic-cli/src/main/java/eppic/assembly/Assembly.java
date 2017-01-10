@@ -981,6 +981,7 @@ public class Assembly {
 		
 		// Construct a list of all the smaller powersets of this assembly that are equivalent
 		List<PowerSet> pss = new ArrayList<PowerSet>();
+		
 		for (PowerSet ps : engagedSet.getOnPowerSet()) {
 			// Equivalent means that they have the same number of subassemblies
 			Assembly pa = new Assembly(crystalAssemblies, ps);
@@ -998,7 +999,7 @@ public class Assembly {
 			double prob = 1;
 			for (int i = 1; i < ps.size()+1; i++) {
 				double p = iecl.getCombinedClusterPredictor(i).getScore();
-				if (ps.isOff(i))
+				if (ps.isOff(i-1))
 					p = (1-p);
 				prob *= p;
 			}
