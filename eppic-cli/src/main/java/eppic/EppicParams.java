@@ -1,6 +1,7 @@
 package eppic;
 
 import eppic.commons.sequence.AAAlphabet;
+import eppic.commons.util.IntervalSet;
 import gnu.getopt.Getopt;
 
 import java.io.File;
@@ -9,8 +10,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -669,6 +672,22 @@ public class EppicParams {
 	
 	public File getOutputFile(String suffix) {
 		return new File(outDir,baseName+suffix);
+	}
+	
+	/**
+	 * Gets the suffix of the json file for the wui js assembly diagram in the form <pre>{@value #ASSEMBLIES_DIAGRAM_FILES_SUFFIX}.&lt;interface interval&gt;.json</pre>
+	 * @param interfaceIds
+	 * @return
+	 */
+	public static String getJsonFilenameSuffix(Collection<Integer> interfaceIds) {
+		String interfaceIntervals;
+		if(interfaceIds == null || interfaceIds.isEmpty() ) {
+			interfaceIntervals = "*";
+		} else {
+			interfaceIntervals = new IntervalSet(new TreeSet<>(interfaceIds)).toSelectionString();
+		}
+		
+		return String.format("%s.%s.json", ASSEMBLIES_DIAGRAM_FILES_SUFFIX, interfaceIntervals);
 	}
 	
 	public String getPdbCode() {

@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -28,7 +27,6 @@ import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.assembly.layout.GraphLayout;
-import eppic.commons.util.IntervalSet;
 
 /**
  * Helper class to generate the LatticeGraph HTML
@@ -38,9 +36,9 @@ import eppic.commons.util.IntervalSet;
 public class AssemblyDiagramPageGenerator {
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramPageGenerator.class);
 	
+	// note that this template is in eppic-wui/src/main/resources
 	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL_LAZY = "AssemblyDiagramFullLazy.html.mustache";
-	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_JSON = LatticeGUIMustache.expandTemplatePath("AssemblyDiagramFull.json.mustache");
-
+	
 	/**
 	 * Generates html page containing the 3Dmol canvas.
 	 * 
@@ -67,7 +65,7 @@ public class AssemblyDiagramPageGenerator {
 			File auFile = LatticeGraphServlet.getAuFileName(directory, inputName, atomCachePath);
 			Structure auStruct = LatticeGraphPageGenerator.readStructure(auFile);
 
-			LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces);
+			LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces);
 
 			GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(auStruct);
 			gui.setLayout2D( layout2D );
@@ -87,7 +85,7 @@ public class AssemblyDiagramPageGenerator {
 				// Remove all trailing commas from lists (invalid JSON)
 				json = json.replaceAll(",(?=\\s*[}\\]])","");
 				logger.info("Caching Assembly JSON at {}",jsonFilename);
-				return json.toString();
+				return json;
 			}
 		};
 		FileCache cache = FileCache.getInstance();
@@ -97,13 +95,7 @@ public class AssemblyDiagramPageGenerator {
 	}
 
 	private static String getJsonFilename(File directory, String inputName, Collection<Integer> requestedIfaces) {
-		String interfaceIntervals;
-		if(requestedIfaces == null || requestedIfaces.isEmpty() ) {
-			interfaceIntervals = "*";
-		} else {
-			interfaceIntervals = new IntervalSet(new TreeSet<>(requestedIfaces)).toSelectionString();
-		}
-		String jsonFilename = new File(directory,String.format("%s%s.%s.json", inputName, EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX, interfaceIntervals)).toString();
+		String jsonFilename = new File(directory, inputName + EppicParams.getJsonFilenameSuffix(requestedIfaces)).toString();
 		return jsonFilename;
 	}
 	
