@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 
 import org.biojava.nbio.structure.StructureException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -97,6 +98,7 @@ public class TestSymmetryDetection {
 		}
 	}
 	
+	@Ignore // this test takes extra long to run, 19s currently on my laptop
 	@Test
 	public void test1auyIcosahedralAssembly() throws IOException, StructureException {
 		

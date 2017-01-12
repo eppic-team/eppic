@@ -441,7 +441,7 @@ public class TestLatticeGraph {
 		
 		CrystalBuilder cb = new CrystalBuilder(s);
 		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
-		interfaces.calcAsas();
+		interfaces.calcAsas(100,Runtime.getRuntime().availableProcessors(),0);
 		interfaces.removeInterfacesBelowArea();
 		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		
