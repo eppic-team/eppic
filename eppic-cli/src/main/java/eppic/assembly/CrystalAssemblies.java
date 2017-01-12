@@ -490,8 +490,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		// Warn if low probability density of valid assemblies
 		if (sumProbs < 0.5) {
-			logger.warn("The total probability of valid assemblies is only %.2f. "
-					+ "Assembly ennumeration may be incomplete.", sumProbs);
+			logger.warn("The total probability of valid assemblies is only {}. "
+					+ "Assembly ennumeration may be incomplete.", String.format("%.2f", sumProbs));
 		}
 		
 		// Do not normalize the score (easy to do afterwards though)

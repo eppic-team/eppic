@@ -998,7 +998,7 @@ public class Assembly {
 		
 		// If the number of engaged interfaces is high, warn and disengage
 		if (reducedSet.sizeOn() > MAX_NUM_ENGAGED_IFACES_SCORING) {
-			logger.warn("There are %d engaged interface clusters in assembly %d. "
+			logger.warn("There are {} engaged interface clusters in assembly {}. "
 					+ "They will be reduced to compute assembly scoring.", 
 					reducedSet.sizeOn(), id);
 			
@@ -1014,7 +1014,7 @@ public class Assembly {
 						probability = p;
 					}
 				}
-				logger.info("Disengaging interface cluster %d for assembly %d scoring",
+				logger.info("Disengaging interface cluster {} for assembly {} scoring",
 						index + 1, id);
 				reducedSet.switchOff(index);
 			}
