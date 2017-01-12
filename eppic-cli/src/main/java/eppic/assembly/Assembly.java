@@ -1016,6 +1016,14 @@ public class Assembly {
 				}
 				logger.info("Disengaging interface cluster {} for assembly {} scoring",
 						index + 1, id);
+				if (probability > 0.1) {
+					logger.warn("Disengaging interface cluster {} of assembly {} "
+							+ "scoring, with probability {} of being biologically "
+							+ "relevant. Significant probability density might be "
+							+ "missing for the score of this assembly.", index + 1,
+							id, String.format("%.2f", probability));
+				}
+				
 				reducedSet.switchOff(index);
 			}
 		}
