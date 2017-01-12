@@ -63,10 +63,13 @@ public class LatticeGUIMustache {
 	
 	// Some pre-defined templates for use with createLatticeGUIMustache
 	private static final String TEMPLATE_DIR = "mustache/eppic/assembly/gui/";
+	
 	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_FULL = TEMPLATE_DIR+"AssemblyDiagramFull.html.mustache";
-	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_THUMB = TEMPLATE_DIR+"AssemblyDiagramThumb.dot.mustache";
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_THUMB = expandTemplatePath("AssemblyDiagramThumb.dot.mustache");
 	public static final String TEMPLATE_3DMOL = LatticeGUIMustache3D.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUIMustache3D";
 	public static final String MUSTACHE_TEMPLATE_NGL = "mustache/eppic/assembly/gui/LatticeGUINgl.html.mustache";
+	
+	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_JSON = expandTemplatePath("AssemblyDiagramFull.json.mustache");
 
 
 

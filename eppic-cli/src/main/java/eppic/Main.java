@@ -9,6 +9,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -561,6 +564,8 @@ public class Main {
 			String fileFormat = "png";
 
 			for (Assembly a:validAssemblies) {
+				
+				// 1 generate the png with the assembly diagram via invoking the dot executable
 
 				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
@@ -569,8 +574,12 @@ public class Main {
 				// Filter down to this assembly
 				List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
 				Set<Integer> clusterIds = new HashSet<Integer>(clusters.size());
+				Set<Integer> interfaceIds = new TreeSet<Integer>();
 				for(StructureInterfaceCluster cluster : clusters) {
 					clusterIds.add(cluster.getId());
+					for (StructureInterface interf:cluster.getMembers()) {
+						interfaceIds.add(interf.getId());
+					}
 				}
 				latticeGraph.filterEngagedClusters(clusterIds);
 
@@ -592,13 +601,40 @@ public class Main {
 
 				// Generate thumbs via pipe
 				runner.generateFromDot(guiThumb, pngFile, fileFormat);
+				
+				
+				// 2 generate the json file for the dynamic js graph in the wui
+				
+				guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, latticeGraph);
+				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
+				String json;
+				// Hack to work around Mustache limitations which prevent generating valid JSON
+				try(StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						) {
+
+					// Construct page
+					guiThumb.execute(pw);
+
+					pw.flush();
+					sw.flush();
+					json = sw.toString();
+					// Remove all trailing commas from lists (invalid JSON)
+					json = json.replaceAll(",(?=\\s*[}\\]])","");
+											
+				}
+				File jsonAssemblyDiagramFile = params.getOutputFile(EppicParams.getJsonFilenameSuffix(interfaceIds));
+
+				PrintWriter pw = new PrintWriter(new FileWriter(jsonAssemblyDiagramFile));
+				pw.println(json);
+				pw.close();
 			}
 
 
 		} catch( IOException|StructureException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
 		}
-	}
+	}	
 
 	// TODO implement the HBplus stuff
 //	public void doHBPlus() throws EppicException {
