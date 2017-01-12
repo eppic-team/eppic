@@ -133,29 +133,36 @@ public class PowerSet {
 	}
 	
 	/**
-	 * Obtain the set of all PowerSets with a subset of the true positions of this PowerSet.
+	 * Obtain the set of all PowerSets with a subset of the true positions of this PowerSet,
+	 * with a minimum number of true values.
 	 * Equivalent to generating the parents? - Aleix
+	 * @param minOn minimum number of On values in the set
+	 * @return Set of PowerSet
 	 */
-	public Set<PowerSet> getOnPowerSet() {
+	public Set<PowerSet> getOnPowerSet(int minOn) {
 		
 		Set<PowerSet> sets = new HashSet<PowerSet>();
-        if (sizeOn() == 0) {
+        if (sizeOn() <= minOn) {
             return sets;
         }
         
-        // Generate all sets at distance 1
+        // Generate all sets at distance 1 and continue recursively
         for (int p=0; p<set.length; p++){
         	if (set[p]){
         		PowerSet cs = new PowerSet(this);
         		cs.switchOff(p);
         		sets.add(cs);
-        		sets.addAll(cs.getOnPowerSet());
+        		sets.addAll(cs.getOnPowerSet(minOn));
         	}
         }
         return sets;
 	}
 	
-	private int sizeOn() {
+	/**
+	 * Number of true values in this PowerSet.
+	 * @return number of {@link #isOn(int)} positions.
+	 */
+	public int sizeOn() {
 		int count = 0;
 		for (int p=0; p<set.length; p++){
 			if (set[p])
