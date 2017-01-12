@@ -474,7 +474,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			a.setCall(CallType.CRYSTAL);
 		}
 		
-		// 2 Compute the sum of probabilities and normalize
+		// 2 Compute the sum of probabilities
 		double sumProbs = 0;
 		double maxScore = 0;
 		int maxIndx = 0;
@@ -487,11 +487,20 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			}
 			indx++;
 		}
-		for (Assembly a:uniques)
-			a.normalizeScore(sumProbs);
+		
+		// Warn if low probability density of valid assemblies
+		if (sumProbs < 0.5) {
+			logger.warn("The total probability of valid assemblies is only %.2f. "
+					+ "Assembly ennumeration may be incomplete.", sumProbs);
+		}
+		
+		// Do not normalize the score (easy to do afterwards though)
+		//for (Assembly a:uniques)
+		//	a.normalizeScore(sumProbs);
 		
 		// 3 Assign the BIO call to the highest probability
-		uniques.get(maxIndx).setCall(CallType.BIO);
+		if (uniques.size() > 0)
+			uniques.get(maxIndx).setCall(CallType.BIO);
 		
 		// 4 Compute call confidence
 		for (Assembly a:uniques)
