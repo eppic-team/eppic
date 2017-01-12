@@ -21,7 +21,6 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
-import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
@@ -47,7 +46,6 @@ import eppic.assembly.CrystalAssemblies;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
-import eppic.commons.util.Goodies;
 import eppic.commons.util.StructureUtils;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
@@ -493,8 +491,6 @@ public class Main {
 	
 	public void doWriteCoordFiles() throws EppicException {
 
-		if (interfaces.size() == 0) return;
-		
 		if (!params.isGenerateOutputCoordFiles()) return;
 		
 		
@@ -549,7 +545,9 @@ public class Main {
 	}
 
 	public void doWriteAssemblyDiagrams() throws EppicException {
-		if (interfaces.size() == 0) return;
+
+		// should not happen, there should always be 1 assembly (the trivial no-interfaces engaged one)
+		if (validAssemblies.getUniqueAssemblies().size() == 0) return; 
 
 		if (!params.isGenerateDiagrams()) return;
 		
@@ -645,8 +643,6 @@ public class Main {
 		
 		if (!params.isGenerateThumbnails()) return;
 		
-		if (interfaces.size() == 0) return;
-		
 		params.getProgressLog().println("Writing PyMOL files");
 		writeStep("Generating Thumbnails and PyMOL Files");
 		LOGGER.info("Generating PyMOL files");
@@ -663,33 +659,6 @@ public class Main {
 				
 			}
 
-			if (params.isDoEvolScoring()) {
-				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
-					Chain chain = pdb.getChainByPDB(cec.getRepresentativeChainCode());
-					cec.setConservationScoresAsBfactors(chain);
-					File chainMmCifFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+EppicParams.MMCIF_FILE_EXTENSION);
-					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
-					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pml");
-					File chainIconPngFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".png");
-						
-					PrintStream pw = new PrintStream(new GZIPOutputStream(new FileOutputStream(chainMmCifFile)));
-					pw.print(chain.toMMCIF());
-					pw.close();
-					pr.generateChainPse(chain, interfaces, 
-							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
-							chainMmCifFile, 
-							chainPseFile, 
-							chainPmlFile,
-							chainIconPngFile,
-							EppicParams.COLOR_ENTROPIES_ICON_WIDTH,
-							EppicParams.COLOR_ENTROPIES_ICON_HEIGHT,
-							0,params.getMaxEntropy() );
-					
-					if (params.isGenerateModelSerializedFile()) chainPmlFile.deleteOnExit();
-				}
-				
-			}
-			
 			for (Assembly a:validAssemblies) {
 				File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
 
@@ -701,46 +670,10 @@ public class Main {
 			throw new EppicException(e, "Couldn't write thumbnails, PyMOL pse/pml files. "+e.getMessage(),true);
 		} catch (InterruptedException e) {
 			throw new EppicException(e, "Couldn't generate thumbnails, PyMOL pse/pml files, PyMOL thread interrupted: "+e.getMessage(),true);
-		} catch (StructureException e) {
-			throw new EppicException(e, "Couldn't find chain id in input structure, something is wrong! "+e.getMessage(), true);
 		}
 
 	}
 
-	public void doCompressFiles() throws EppicException {
-		
-		if (interfaces.size()==0) return;
-		
-		if (!params.isGenerateThumbnails()) return;
-		// from here only if in -l mode: compress interface pses and chain pses
-		
-		params.getProgressLog().println("Compressing files");
-		LOGGER.info("Compressing files");
-		
-		try {			
-			
-			if (params.isDoEvolScoring()) {
-				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
-					File pseFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
-					File gzipPseFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse.gz");
-
-					if (!pseFile.exists()) {
-						LOGGER.warn("Can't find PSE file {} to compress",pseFile);
-						continue;
-					} 
-					Goodies.gzipFile(pseFile, gzipPseFile);
-					pseFile.delete();
-
-				}
-			}
-		} catch (IOException e) {
-			throw new EppicException(e, "PSE files could not be gzipped. "+e.getMessage(),true);
-		}
-		
-	}
-	
 	public void doWriteFinalFiles() throws EppicException {
 		
 		if (params.isGenerateModelSerializedFile()) {
@@ -835,8 +768,8 @@ public class Main {
 	public void doCombinedScoring() throws EppicException {
 		if (interfaces.size()==0) return;
 		
+		// interface scoring
 		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
-
 		for (int i=0;i<iecList.size();i++) {
 			CombinedPredictor cp = 
 					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
@@ -844,23 +777,23 @@ public class Main {
 			cps.add(cp);
 		}
 		
+		// interface cluster scoring
 		List<CombinedClusterPredictor> ccps = new ArrayList<CombinedClusterPredictor>();		
-		int i = 0;
-		for (StructureInterfaceCluster ic:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
-			int clusterId = ic.getId();
-			CombinedClusterPredictor ccp = 
-					new CombinedClusterPredictor(ic,iecList,
-							gcps.get(i),
-							iecList.getEvolCoreRimClusterPredictor(clusterId),
-							iecList.getEvolCoreSurfaceClusterPredictor(clusterId));
+		for (StructureInterfaceCluster interfaceCluster:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
+			List<CombinedPredictor> ccpsForCluster = new ArrayList<CombinedPredictor>();
 			
+			for (int i=0;i<interfaces.size();i++) {
+				if ( interfaces.get(i+1).getCluster().getId()==interfaceCluster.getId()) {
+					ccpsForCluster.add(cps.get(i));
+				}
+			}
+			
+			CombinedClusterPredictor ccp = new CombinedClusterPredictor(ccpsForCluster);
+
 			ccp.computeScores();
 			ccps.add(ccp);
-			i++;
-			
-			iecList.setCombinedClusterPredictor(clusterId, ccp);
-		}
-				
+			iecList.setCombinedClusterPredictor(interfaceCluster.getId(), ccp);
+		}			
 
 		modelAdaptor.setCombinedPredictors(cps, ccps);
 
@@ -891,15 +824,39 @@ public class Main {
 		eppicMain.run(args);
 	}
 	
+	/**
+	 * Run the full eppic analysis given a parameters object
+	 * @param params
+	 */
+	protected void run(EppicParams params) {
+		this.params = params;
+		run(false);
+	}
+	
+	/**
+	 * Run the full eppic analysis given the command line arguments (which are then converted into an {@link EppicParams} object)
+	 * @param args
+	 */
 	public void run(String[] args) {
+		
+		try {
+			params.parseCommandLine(args);
+			
+		} catch (EppicException e) {
+			LOGGER.error(e.getMessage());
+			e.exitIfFatal(1);
+		}
+		
+		run(true);
+	}
+	
+	private void run(boolean loadConfigFile) {
 
-		
-		
+				
 		long start = System.nanoTime();
 
 		try {
-						
-			params.parseCommandLine(args);
+									
 
 			// this has to come after getting the command line args, since it reads the location and name of log file from those
 			setUpLogging();
@@ -908,7 +865,8 @@ public class Main {
 			LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
 			LOGGER.info("Build git SHA: {}", EppicParams.BUILD_GIT_SHA);
 			
-			loadConfigFile();
+			if (loadConfigFile)
+				loadConfigFile();
 			
 			try {
 				LOGGER.info("Running in host "+InetAddress.getLocalHost().getHostName());
@@ -960,10 +918,7 @@ public class Main {
 			// 10 writing pymol files (only if in -l)
 			doWritePymolFiles();
 			
-			// 11 compressing files (only if in -l)
-			doCompressFiles();
-			
-			// 12 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			// 11 writing out the model serialized file and "finish" file for web ui (only if in -w)
 			doWriteFinalFiles();
 
 			

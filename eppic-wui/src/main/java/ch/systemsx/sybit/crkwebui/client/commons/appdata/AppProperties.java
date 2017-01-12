@@ -23,6 +23,7 @@ public interface AppProperties extends Constants
 	String window_title_releases();
 	String window_title_publications();
 	String window_title_faq();
+	String window_title_advanced_search();
 	String window_title_statistics();
 	String window_title_processing();
 	String window_title_loading();
@@ -200,6 +201,7 @@ public interface AppProperties extends Constants
 	String interfaces_residues_legend_core_evol();
 	
 	String navigation_panel_home_link_label();
+	String navigation_panel_advanced_search_link_label();
 	String navigation_panel_help_link_label();
 	String navigation_panel_faq_link_label();
 	String navigation_panel_statistics_link_label();

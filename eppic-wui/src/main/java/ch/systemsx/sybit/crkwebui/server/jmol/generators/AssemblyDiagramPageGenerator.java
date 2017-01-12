@@ -10,11 +10,8 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.contact.StructureInterface;
-import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,15 +67,7 @@ public class AssemblyDiagramPageGenerator {
 			File auFile = LatticeGraphServlet.getAuFileName(directory, inputName, atomCachePath);
 			Structure auStruct = LatticeGraphPageGenerator.readStructure(auFile);
 
-			// Read spacegroup
-			PDBCrystallographicInfo crystInfo = auStruct
-					.getCrystallographicInfo();
-			SpaceGroup sg = crystInfo.getSpaceGroup();
-
-			// Convert `Interface` beans to full StructureInterface objects
-			List<StructureInterface> siList = LatticeGraphPageGenerator.createStructureInterfaces(interfaces, sg);
-
-			LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces, siList);
+			LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces);
 
 			GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(auStruct);
 			gui.setLayout2D( layout2D );
