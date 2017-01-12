@@ -80,7 +80,15 @@ import eppic.predictors.InterfaceTypePredictor;
 public class Assembly {
 	
 	private static final Logger logger = LoggerFactory.getLogger(Assembly.class);
-
+	
+	/**
+	 * Maximum number of engaged interfaces to consider in the scoring calculation.
+	 * If more interfaces are engaged, then a warning is thrown and the smaller
+	 * (lowest probability of biological) interfaces are removed from the 
+	 * calculation, in order to loose as little probability density as possible.
+	 */
+	private static final int MAX_NUM_ENGAGED_IFACES_SCORING = 10;
+	
 	/**
 	 * A numerical identifier for the assembly, from 1 to n
 	 */
@@ -974,26 +982,52 @@ public class Assembly {
 	}
 
 	/**
-	 * Compute an initial (non-normalized) probabilistic score from
-	 * the individual interface probabilities.
+	 * Compute a probabilistic score from the individual interface
+	 * probabilities.
 	 */
 	public void calcScore() {
+		
+		// Calculate the probabilities for each possible set of interface clusters
+		probability = 0;
+		InterfaceEvolContextList iecl = getCrystalAssemblies().getInterfaceEvolContextList();
 		
 		// Construct a list of all the smaller powersets of this assembly that are equivalent
 		List<PowerSet> pss = new ArrayList<PowerSet>();
 		
-		for (PowerSet ps : engagedSet.getOnPowerSet()) {
+		PowerSet reducedSet = new PowerSet(engagedSet);
+		
+		// If the number of engaged interfaces is high, warn and disengage
+		if (reducedSet.sizeOn() > MAX_NUM_ENGAGED_IFACES_SCORING) {
+			logger.warn("There are %d engaged interface clusters in assembly %d. "
+					+ "They will be reduced to compute assembly scoring.", 
+					reducedSet.sizeOn(), id);
+			
+			while (reducedSet.sizeOn() > MAX_NUM_ENGAGED_IFACES_SCORING) {
+				
+				// Find the lowest probability cluster
+				int index = 0;
+				double probability = 1;
+				for (int i = 1; i < reducedSet.size() + 1; i++) {
+					double p = iecl.getCombinedClusterPredictor(i).getScore();
+					if (p <= probability) {
+						index = i - 1;
+						probability = p;
+					}
+				}
+				logger.info("Disengaging interface cluster %d for assembly %d scoring",
+						index + 1, id);
+				reducedSet.switchOff(index);
+			}
+		}
+		
+		for (PowerSet ps : reducedSet.getOnPowerSet(1)) {
 			// Equivalent means that they have the same number of subassemblies
 			Assembly pa = new Assembly(crystalAssemblies, ps);
 			if (pa.getAssemblyGraph().getSubAssemblies().size() == 
 					this.getAssemblyGraph().getSubAssemblies().size())
 				pss.add(ps);
 		}
-		pss.add(engagedSet);
-		
-		// Calculate the probabilities for each possible set of interface clusters
-		probability = 0;
-		InterfaceEvolContextList iecl = getCrystalAssemblies().getInterfaceEvolContextList();
+		pss.add(reducedSet);
 					
 		for (PowerSet ps : pss) {
 			double prob = 1;
