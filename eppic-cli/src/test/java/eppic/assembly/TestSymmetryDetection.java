@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 
 import org.biojava.nbio.structure.StructureException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -93,6 +94,23 @@ public class TestSymmetryDetection {
 
 			if (a.toString().equals("{1,2,3}")) {
 				assertEquals("D4",a.getDescription().get(0).getSymmetry());
+			}
+		}
+	}
+	
+	@Ignore // this test takes extra long to run, 19s currently on my laptop
+	@Test
+	public void test1auyIcosahedralAssembly() throws IOException, StructureException {
+		
+		// 1auy is a viral capsid structure with ncs ops that we expand together with space group ops 
+		// to produce the full assembly. The largest assembly should be the full icosahedron
+		
+		CrystalAssemblies assemblies = TestLatticeGraph.getCrystalAssemblies("1auy");
+
+		for (Assembly a:assemblies) {
+
+			if (a.toString().equals("{2,3}")) {
+				assertEquals("I",a.getDescription().get(0).getSymmetry());
 			}
 		}
 	}

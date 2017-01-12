@@ -137,27 +137,15 @@ public class SubAssembly {
 		boolean nMultCycleExists = false;
 		boolean threeMultCycleExists = false;
 		boolean fourMultCycleExists = false;
-		boolean fiveMultCycleExists = false;
+		//boolean fiveMultCycleExists = false;
 		
 		for (int cycleMult:cycleSizes.values()) {
 			if (cycleMult==n) nMultCycleExists = true;
 			if (cycleMult==3) threeMultCycleExists = true;
 			if (cycleMult==4) fourMultCycleExists = true;
-			if (cycleMult==5) fiveMultCycleExists = true;
+			//if (cycleMult==5) fiveMultCycleExists = true;
 		}
 		
-//		boolean nMultExists = false;
-//		boolean threeMultExists = false;
-//		boolean fourMultExists = false;
-//		boolean fiveMultExists = false;
-//
-//		// this should work fine for both homomer and pseudo-homomer graph
-//		for (int mult:Assembly.getMultiplicities(g).values()) {
-//			if (mult==n) nMultExists = true;
-//			if (mult==3) threeMultExists = true;
-//			if (mult==4) fourMultExists = true;
-//			if (mult==5) fiveMultExists = true;
-//		}
 
 		if (nMultCycleExists) {
 			return new PointGroupSymmetry('C', n);
@@ -171,7 +159,10 @@ public class SubAssembly {
 			// octahedral
 			return new PointGroupSymmetry('O', 0);
 		}
-		if (n==60 && fiveMultCycleExists) {
+		// as a temporary solution for issue https://github.com/eppic-team/eppic/issues/142
+		// we'll just call any multiple of 60 icosahedral
+		//if (n==60 && fiveMultCycleExists) {
+		if (n%60==0) {
 			// icosahedral
 			return new PointGroupSymmetry('I', 0);
 		}

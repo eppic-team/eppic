@@ -593,10 +593,6 @@ public class MainController
 		{
 			displayFAQ();
 		}
-		else if((token != null) && (token.equals("advancedsearch") || token.equals("!advancedsearch")))
-		{
-			displayEppicExplorer();
-		}
 		else
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_input());
@@ -663,7 +659,7 @@ public class MainController
 	{
 	    Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_help());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel helpPanel = new IFramePanel("help.html", true);
+		IFramePanel helpPanel = new IFramePanel("help.html");
 		displayPanelInCentralPanel(helpPanel);
 	}
 	
@@ -674,7 +670,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_downloads());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel downloadsPanel = new IFramePanel("downloads.html", true);
+		IFramePanel downloadsPanel = new IFramePanel("downloads.html");
 		displayPanelInCentralPanel(downloadsPanel);
 	}
 
@@ -685,7 +681,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_releases());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel releasesPanel = new IFramePanel("releases.html", true);
+		IFramePanel releasesPanel = new IFramePanel("releases.html");
 		displayPanelInCentralPanel(releasesPanel);
 	}
 	
@@ -696,7 +692,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_publications());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel publicationsPanel = new IFramePanel("publications.html", true);
+		IFramePanel publicationsPanel = new IFramePanel("publications.html");
 		displayPanelInCentralPanel(publicationsPanel);
 	}
 	
@@ -707,23 +703,9 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_faq());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel faqPanel = new IFramePanel("faq.html", true);
+		IFramePanel faqPanel = new IFramePanel("faq.html");
 		displayPanelInCentralPanel(faqPanel);
 	}
-	
-	/**
-	 * Test - integration of eppic explorer
-	 * To make this work, just add an extra parameter to the IFramePanel to indicate if it is a 
-	 * relative url or not. Then in IFramePanel.java add the base url to the url depending on this parameter.
-	 */
-	public void displayEppicExplorer()
-	{
-		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_advanced_search());
-		ApplicationContext.setSelectedJobId("");
-		IFramePanel expolorerPanel = new IFramePanel(ApplicationContext.getSettings().getEppicExplorerUrl(), true); 
-		displayPanelInCentralPanel(expolorerPanel);
-	}
-	
 	
 	/**
 	 * Displays statistics panel.
@@ -732,7 +714,7 @@ public class MainController
 	{
 		Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_statistics());
 		ApplicationContext.setSelectedJobId("");
-		IFramePanel faqPanel = new IFramePanel("statistics.html" ,true);
+		IFramePanel faqPanel = new IFramePanel("statistics.html");
 		displayPanelInCentralPanel(faqPanel);
 	}
 	

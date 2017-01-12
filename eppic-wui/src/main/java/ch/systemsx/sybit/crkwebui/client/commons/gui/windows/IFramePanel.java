@@ -19,25 +19,14 @@ public class IFramePanel extends DisplayPanel {
 	SafeHtml getTemplate();
     }
 
-    public IFramePanel(String url, boolean isRelativeUrl) {
+    public IFramePanel(String url) {
 	this.addStyleName("eppic-text-panel");
 	this.setScrollMode(ScrollMode.NONE);
 
 	HtmlLayoutContainerTemplate templates = GWT.create(HtmlLayoutContainerTemplate.class);
 	HtmlLayoutContainer container = new HtmlLayoutContainer(templates.getTemplate());
 
-	//uncomment - test only
-	//Frame iframe = new Frame(GWT.getHostPageBaseURL() + url);
-	
-	//for eppic explorer integration
-	Frame iframe = null;
-	if (isRelativeUrl){
-		iframe = new Frame(url);
-	}else{
-		iframe = new Frame(GWT.getHostPageBaseURL() + url);
-	}
-	
-	
+	Frame iframe = new Frame(GWT.getHostPageBaseURL() + url);
 	iframe.removeStyleName("gwt-Frame");
 	iframe.addStyleName("eppic-ifram-content-main");
 	container.add(iframe, new HtmlData(".main"));
