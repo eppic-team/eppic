@@ -15,11 +15,13 @@ import org.slf4j.LoggerFactory;
 import eppic.CallType;
 
 /**
- * Each of the sub-assemblies corresponding to the connected component subgraphs of an Assembly
- * 
- * Each AssemblyGraph is composed by 1 or more SubAssemblies
+ * Each of the sub-assemblies corresponding to the connected component subgraphs of an Assembly.
+ * In the case of co-crystalization, the SubAssemblies can have different composition.
+ * <p>
+ * Each AssemblyGraph is composed by 1 or more SubAssemblies.
  * 
  * @author Jose Duarte
+ * @author Aleix Lafita
  *
  */
 public class SubAssembly {
@@ -175,7 +177,7 @@ public class SubAssembly {
 	 * Get a call (bio/xtal prediction) for this SubAssembly
 	 * @return
 	 */
-	public CallType score() {
+	private CallType score() {
 
 		// TODO note: the code here goes along the same lines of getSymmetry, we should try to unify them a bit and to reuse the common parts
 

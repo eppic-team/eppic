@@ -377,13 +377,10 @@ public class Main {
 
 		if (params.isDoEvolScoring()) {
 			validAssemblies.setInterfaceEvolContextList(iecList);
-
 			validAssemblies.score();
 		}
 
-
 		modelAdaptor.setAssemblies(validAssemblies);
-
 		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb);
 
 	}
