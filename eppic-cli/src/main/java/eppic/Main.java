@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -573,9 +572,9 @@ public class Main {
 				LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 					
 				// Filter down to this assembly
+				// TODO this is not going to work for contracted graphs: both clusterIds and interfaceids are wrong! see issue https://github.com/eppic-team/eppic/issues/148
 				SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
-				// TODO this is a placeholder, must fix interfaceIds to contain the right list!
-				Set<Integer> interfaceIds = new TreeSet<>();
+				Set<Integer> interfaceIds = GraphUtils.getDistinctInterfaces(a.getAssemblyGraph().getSubgraph());
 				latticeGraph.filterEngagedClusters(clusterIds);
 					
 				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
@@ -623,7 +622,7 @@ public class Main {
 				PrintWriter pw = new PrintWriter(new FileWriter(jsonAssemblyDiagramFile));
 				pw.println(json);
 				pw.close();
-				}
+			}
 
 		} catch( IOException|StructureException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
