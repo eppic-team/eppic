@@ -9,18 +9,21 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
-import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
@@ -47,7 +50,6 @@ import eppic.assembly.GraphUtils;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
-import eppic.commons.util.Goodies;
 import eppic.commons.util.StructureUtils;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
@@ -563,13 +565,17 @@ public class Main {
 			String fileFormat = "png";
 
 			for (Assembly a:validAssemblies) {
+				
+				// 1 generate the png with the assembly diagram via invoking the dot executable
 
 				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
 				LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
 					
 				// Filter down to this assembly
-				SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());					
+				SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
+				// TODO this is a placeholder, must fix interfaceIds to contain the right list!
+				Set<Integer> interfaceIds = new TreeSet<>();
 				latticeGraph.filterEngagedClusters(clusterIds);
 					
 				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
@@ -590,6 +596,33 @@ public class Main {
 
 				// Generate thumbs via pipe
 				runner.generateFromDot(guiThumb, pngFile, fileFormat);
+				
+				
+				// 2 generate the json file for the dynamic js graph in the wui
+				
+				guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, latticeGraph);
+				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
+				String json;
+				// Hack to work around Mustache limitations which prevent generating valid JSON
+				try(StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						) {
+
+					// Construct page
+					guiThumb.execute(pw);
+
+					pw.flush();
+					sw.flush();
+					json = sw.toString();
+					// Remove all trailing commas from lists (invalid JSON)
+					json = json.replaceAll(",(?=\\s*[}\\]])","");
+											
+				}
+				File jsonAssemblyDiagramFile = params.getOutputFile(EppicParams.getJsonFilenameSuffix(interfaceIds));
+
+				PrintWriter pw = new PrintWriter(new FileWriter(jsonAssemblyDiagramFile));
+				pw.println(json);
+				pw.close();
 				}
 
 		} catch( IOException|StructureException|InterruptedException e) {
@@ -656,35 +689,6 @@ public class Main {
 				
 			}
 
-			// at the moment we don't calculate evol scores if no interfaces found, 
-			// if we change that, we can get rid of the interfaces.size condition. See https://github.com/eppic-team/eppic/issues/121
-			if (interfaces.size()>0 && params.isDoEvolScoring()) {
-				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
-					Chain chain = pdb.getChainByPDB(cec.getRepresentativeChainCode());
-					cec.setConservationScoresAsBfactors(chain);
-					File chainMmCifFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+EppicParams.MMCIF_FILE_EXTENSION);
-					File chainPseFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
-					File chainPmlFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pml");
-					File chainIconPngFile = params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".png");
-						
-					PrintStream pw = new PrintStream(new GZIPOutputStream(new FileOutputStream(chainMmCifFile)));
-					pw.print(chain.toMMCIF());
-					pw.close();
-					pr.generateChainPse(chain, interfaces, 
-							params.getCAcutoffForGeom(), params.getCAcutoffForZscore(), params.getMinAsaForSurface(),
-							chainMmCifFile, 
-							chainPseFile, 
-							chainPmlFile,
-							chainIconPngFile,
-							EppicParams.COLOR_ENTROPIES_ICON_WIDTH,
-							EppicParams.COLOR_ENTROPIES_ICON_HEIGHT,
-							0,params.getMaxEntropy() );
-					
-					if (params.isGenerateModelSerializedFile()) chainPmlFile.deleteOnExit();
-				}
-				
-			}
-			
 			for (Assembly a:validAssemblies) {
 				File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
 
@@ -696,46 +700,10 @@ public class Main {
 			throw new EppicException(e, "Couldn't write thumbnails, PyMOL pse/pml files. "+e.getMessage(),true);
 		} catch (InterruptedException e) {
 			throw new EppicException(e, "Couldn't generate thumbnails, PyMOL pse/pml files, PyMOL thread interrupted: "+e.getMessage(),true);
-		} catch (StructureException e) {
-			throw new EppicException(e, "Couldn't find chain id in input structure, something is wrong! "+e.getMessage(), true);
 		}
 
 	}
 
-	public void doCompressFiles() throws EppicException {
-		
-		if (interfaces.size()==0) return;
-		
-		if (!params.isGenerateThumbnails()) return;
-		// from here only if in -l mode: compress chain pses
-		
-		params.getProgressLog().println("Compressing files");
-		LOGGER.info("Compressing files");
-		
-		try {			
-			
-			if (params.isDoEvolScoring()) {
-				for (ChainEvolContext cec:cecs.getAllChainEvolContext()) {
-					File pseFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse");
-					File gzipPseFile = 
-							params.getOutputFile("."+cec.getRepresentativeChainCode()+EppicParams.ENTROPIES_FILE_SUFFIX+".pse.gz");
-
-					if (!pseFile.exists()) {
-						LOGGER.warn("Can't find PSE file {} to compress",pseFile);
-						continue;
-					} 
-					Goodies.gzipFile(pseFile, gzipPseFile);
-					pseFile.delete();
-
-				}
-			}
-		} catch (IOException e) {
-			throw new EppicException(e, "PSE files could not be gzipped. "+e.getMessage(),true);
-		}
-		
-	}
-	
 	public void doWriteFinalFiles() throws EppicException {
 		
 		if (params.isGenerateModelSerializedFile()) {
@@ -830,8 +798,8 @@ public class Main {
 	public void doCombinedScoring() throws EppicException {
 		if (interfaces.size()==0) return;
 		
+		// interface scoring
 		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
-
 		for (int i=0;i<iecList.size();i++) {
 			CombinedPredictor cp = 
 					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
@@ -839,23 +807,23 @@ public class Main {
 			cps.add(cp);
 		}
 		
+		// interface cluster scoring
 		List<CombinedClusterPredictor> ccps = new ArrayList<CombinedClusterPredictor>();		
-		int i = 0;
-		for (StructureInterfaceCluster ic:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
-			int clusterId = ic.getId();
-			CombinedClusterPredictor ccp = 
-					new CombinedClusterPredictor(ic,iecList,
-							gcps.get(i),
-							iecList.getEvolCoreRimClusterPredictor(clusterId),
-							iecList.getEvolCoreSurfaceClusterPredictor(clusterId));
+		for (StructureInterfaceCluster interfaceCluster:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
+			List<CombinedPredictor> ccpsForCluster = new ArrayList<CombinedPredictor>();
 			
+			for (int i=0;i<interfaces.size();i++) {
+				if ( interfaces.get(i+1).getCluster().getId()==interfaceCluster.getId()) {
+					ccpsForCluster.add(cps.get(i));
+				}
+			}
+			
+			CombinedClusterPredictor ccp = new CombinedClusterPredictor(ccpsForCluster);
+
 			ccp.computeScores();
 			ccps.add(ccp);
-			i++;
-			
-			iecList.setCombinedClusterPredictor(clusterId, ccp);
-		}
-				
+			iecList.setCombinedClusterPredictor(interfaceCluster.getId(), ccp);
+		}			
 
 		modelAdaptor.setCombinedPredictors(cps, ccps);
 
@@ -980,10 +948,7 @@ public class Main {
 			// 10 writing pymol files (only if in -l)
 			doWritePymolFiles();
 			
-			// 11 compressing files (only if in -l)
-			doCompressFiles();
-			
-			// 12 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			// 11 writing out the model serialized file and "finish" file for web ui (only if in -w)
 			doWriteFinalFiles();
 
 			

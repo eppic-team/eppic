@@ -15,6 +15,7 @@ import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.sencha.gxt.data.shared.ListStore;
 
+import eppic.EppicParams;
 import eppic.model.ScoringMethod;
 
 /**
@@ -76,8 +77,7 @@ public class MethodCallCell extends AbstractCell<String> {
 
 		if(type.equals(ScoringMethod.EPPIC_FINAL)) {
 		    value = value.toUpperCase();
-		    // disabling this for 2.1.0 release, put back when confidence calculation implementation is better - JD 07.07.2014
-		    //value += addIcon(item.getConfidence());
+		    value += addIcon(item.getConfidence());
 		}
 
 		tooltipText = EscapedStringGenerator.generateEscapedString(tooltipText);
@@ -85,11 +85,10 @@ public class MethodCallCell extends AbstractCell<String> {
 		sb.appendHtmlConstant("<span style='color:" + color + ";' qtip='" + tooltipText + "'>"+ value +"</span>");
 	}
 
-	@SuppressWarnings("unused")
 	private String addIcon(double d) {
-	    if(d > .66)
+	    if(d > EppicParams.HIGH_PROB_CONFIDENCE)
 		return "<img src=\"resources/icons/excellent.png\" width=\"16\">";
-	    if(d > .33)
+	    if(d > EppicParams.LOW_PROB_CONFIDENCE)
 		return "</img><img src=\"resources/icons/good.png\" width=\"16\"></img>";
 	    return "";
 	}

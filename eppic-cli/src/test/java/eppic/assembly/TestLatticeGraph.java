@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.EppicParams;
+import eppic.commons.util.StructureUtils;
 
 public class TestLatticeGraph {
 
@@ -457,6 +458,9 @@ public class TestLatticeGraph {
 		StructureIO.setAtomCache(cache);
 		
 		Structure s =  StructureIO.getStructure(pdbId);
+		// we need to expand the ncs ops to be able to test properly entries with ncs ops
+		StructureUtils.expandNcsOps(s);
+		
 		return s;
 	}
 	
@@ -465,7 +469,7 @@ public class TestLatticeGraph {
 		
 		CrystalBuilder cb = new CrystalBuilder(s);
 		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
-		interfaces.calcAsas(StructureInterfaceList.DEFAULT_ASA_SPHERE_POINTS/4,
+		interfaces.calcAsas(StructureInterfaceList.DEFAULT_ASA_SPHERE_POINTS/10,
 				Runtime.getRuntime().availableProcessors(),
 				StructureInterfaceList.DEFAULT_MIN_COFACTOR_SIZE);
 		interfaces.removeInterfacesBelowArea();

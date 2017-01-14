@@ -173,7 +173,10 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			cores = iec.getInterface().getCoreResidues(bsaToAsaCutoff, minAsaForSurface).getSecond();
 		}
 		
-		int[] unrelRes = generateInterfaceWarnings(cores, molecId);		
+		// we don't do nopreds anymore for cases with unreliable residues, instead 
+		// we only warn (done in generateInterfaceWarnings)
+		// See issue https://github.com/eppic-team/eppic/issues/34
+		generateInterfaceWarnings(cores, molecId);		
 		
 		int numSurfResidues = iec.getNumSurfaceResidues(molecId, minAsaForSurface); 
 		
@@ -208,21 +211,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 		if (numSurfResidues<cores.size()*NUM_RESIDUES_IN_SURFACE_TOLERANCE) {
 			callReasonSides[molecId] = "Side "+memberSerial+" has not enough residues in protein surface, can't calculate "+scoreType+" score";
 			return false;
-		}
-		if (((double)unrelRes[0]/(double)cores.size())>EppicParams.MAX_ALLOWED_UNREL_RES) {
-			LOGGER.info("Interface "+interfaceId+", member "+memberSerial+
-					": there are not enough reliable core residues to calculate "+scoreType+" score ("+
-					unrelRes[0]+" unreliable residues out of "+cores.size()+" residues in core)");
-			callReasonSides[molecId] = "Side "+memberSerial+" has not enough reliable core residues: "+
-					unrelRes[0]+" unreliable out of "+cores.size()+" in core";
-			return false;
-		}
-		if (((double)unrelRes[1]/(double)numSurfResidues)>EppicParams.MAX_ALLOWED_UNREL_RES) {
-			callReasonSides[molecId] = "Side "+memberSerial+" has not enough reliable residues in protein surface: " +
-					unrelRes[1]+" unreliable residues out of "+
-					numSurfResidues+" residues in surface";			
-			return false;
-		}
+		}		
 		
 		return true;
 	}

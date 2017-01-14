@@ -15,11 +15,13 @@ import org.slf4j.LoggerFactory;
 import eppic.CallType;
 
 /**
- * Each of the sub-assemblies corresponding to the connected component subgraphs of an Assembly
- * 
- * Each AssemblyGraph is composed by 1 or more SubAssemblies
+ * Each of the sub-assemblies corresponding to the connected component subgraphs of an Assembly.
+ * In the case of co-crystalization, the SubAssemblies can have different composition.
+ * <p>
+ * Each AssemblyGraph is composed by 1 or more SubAssemblies.
  * 
  * @author Jose Duarte
+ * @author Aleix Lafita
  *
  */
 public class SubAssembly {
@@ -143,27 +145,15 @@ public class SubAssembly {
 		boolean nMultCycleExists = false;
 		boolean threeMultCycleExists = false;
 		boolean fourMultCycleExists = false;
-		boolean fiveMultCycleExists = false;
+		//boolean fiveMultCycleExists = false;
 		
 		for (int cycleMult:cycleSizes.values()) {
 			if (cycleMult==n) nMultCycleExists = true;
 			if (cycleMult==3) threeMultCycleExists = true;
 			if (cycleMult==4) fourMultCycleExists = true;
-			if (cycleMult==5) fiveMultCycleExists = true;
+			//if (cycleMult==5) fiveMultCycleExists = true;
 		}
 		
-//		boolean nMultExists = false;
-//		boolean threeMultExists = false;
-//		boolean fourMultExists = false;
-//		boolean fiveMultExists = false;
-//
-//		// this should work fine for both homomer and pseudo-homomer graph
-//		for (int mult:Assembly.getMultiplicities(g).values()) {
-//			if (mult==n) nMultExists = true;
-//			if (mult==3) threeMultExists = true;
-//			if (mult==4) fourMultExists = true;
-//			if (mult==5) fiveMultExists = true;
-//		}
 
 		if (nMultCycleExists) {
 			return new PointGroupSymmetry('C', n);
@@ -177,7 +167,10 @@ public class SubAssembly {
 			// octahedral
 			return new PointGroupSymmetry('O', 0);
 		}
-		if (n==60 && fiveMultCycleExists) {
+		// as a temporary solution for issue https://github.com/eppic-team/eppic/issues/142
+		// we'll just call any multiple of 60 icosahedral
+		//if (n==60 && fiveMultCycleExists) {
+		if (n%60==0) {
 			// icosahedral
 			return new PointGroupSymmetry('I', 0);
 		}
@@ -192,7 +185,7 @@ public class SubAssembly {
 	 * Get a call (bio/xtal prediction) for this SubAssembly
 	 * @return
 	 */
-	public CallType score() {
+	private CallType score() {
 
 		// TODO note: the code here goes along the same lines of getSymmetry, we should try to unify them a bit and to reuse the common parts
 

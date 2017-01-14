@@ -496,10 +496,10 @@ public class DataModelAdaptor {
 			if (validAssembly.getCall()==null) 
 				LOGGER.warn("Call is null for assembly {}", validAssembly.getId());
 			else 
-				as.setCallName(validAssembly.getCall().getName());			
+				as.setCallName(validAssembly.getCall().getName());
 			as.setCallReason(""); // what do we put in here?
-			as.setScore(SCORE_NOT_AVAILABLE);
-			as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
+			as.setScore(validAssembly.getScore());
+			as.setConfidence(validAssembly.getConfidence());
 			as.setPdbCode(pdbInfo.getPdbCode());
 			as.setAssembly(assembly);
 			assembly.addAssemblyScore(as);

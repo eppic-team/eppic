@@ -2,7 +2,9 @@ package eppic.assembly;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 
@@ -93,7 +95,7 @@ public class PowerSet {
 
 		for (int i=0;i<this.set.length;i++) {
 
-			if (!this.set[i]) {				
+			if (!this.set[i]) {
 				PowerSet a = new PowerSet(this);
 				a.switchOn(i);
 				// first we need to check that this is not a child of one of the invalidParents
@@ -128,5 +130,44 @@ public class PowerSet {
 	@Override
 	public String toString() {
 		return Arrays.toString(this.set);
+	}
+	
+	/**
+	 * Obtain the set of all PowerSets with a subset of the true positions of this PowerSet,
+	 * with a minimum number of true values.
+	 * Equivalent to generating the parents? - Aleix
+	 * @param minOn minimum number of On values in the set
+	 * @return Set of PowerSet
+	 */
+	public Set<PowerSet> getOnPowerSet(int minOn) {
+		
+		Set<PowerSet> sets = new HashSet<PowerSet>();
+        if (sizeOn() <= minOn) {
+            return sets;
+        }
+        
+        // Generate all sets at distance 1 and continue recursively
+        for (int p=0; p<set.length; p++){
+        	if (set[p]){
+        		PowerSet cs = new PowerSet(this);
+        		cs.switchOff(p);
+        		sets.add(cs);
+        		sets.addAll(cs.getOnPowerSet(minOn));
+        	}
+        }
+        return sets;
+	}
+	
+	/**
+	 * Number of true values in this PowerSet.
+	 * @return number of {@link #isOn(int)} positions.
+	 */
+	public int sizeOn() {
+		int count = 0;
+		for (int p=0; p<set.length; p++){
+			if (set[p])
+				count++;
+		}
+		return count;
 	}
 }
