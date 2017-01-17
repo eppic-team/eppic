@@ -2,6 +2,7 @@ package eppic.assembly;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -10,8 +11,19 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.junit.Test;
 
+import eppic.EppicParams;
+import eppic.Main;
+import eppic.Utils;
+import eppic.model.AssemblyDB;
+import eppic.model.PdbInfoDB;
+
+
+
 public class TestContractedAssemblyEnumeration {
 
+	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
+
+	
 	@Test
 	public void test4nwp() throws IOException, StructureException {
 		// 2 entities and a few assemblies, largest assembly is tetrahedral
@@ -114,6 +126,39 @@ public class TestContractedAssemblyEnumeration {
 			if (i!=a.getAssemblyGraph().getSubAssemblies().size()-1) sb.append(",");
 		}
 		return sb.toString();
+	}
+	
+	@Test
+	public void testIssue148() {
+		File outDir = new File(TMPDIR, "eppicTestContractedAssemblyEnumeration");
+		
+		outDir.mkdir();
+		
+		assertTrue(outDir.isDirectory());
+		
+		String pdbId = "4hnw";
+		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
+		params.setForceContractedAssemblyEnumeration(true);
+		
+		Main m = new Main();
+		
+		m.run(params);
+				
+		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		for (AssemblyDB a : pdbInfo.getAssemblies()) {
+			System.out.println("Assembly "+a.getId()+
+					" sto: "+a.getAssemblyContents().get(0).getStoichiometry()+
+					" sym: "+a.getAssemblyContents().get(0).getSymmetry());
+			
+			
+		}
+		
+		// TODO test the few problems reported in issue #148
+		// do we get the right symmetry and stoichiometry?
+		// do we get the right PDB biounit mapping?
+		// are the assembly diagram files correctly produced?
+		
+		outDir.delete();
 	}
 
 }

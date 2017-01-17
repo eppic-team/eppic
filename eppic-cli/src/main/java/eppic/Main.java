@@ -361,7 +361,7 @@ public class Main {
 	public void doFindAssemblies() throws StructureException { 
 		
 		params.getProgressLog().println("Calculating possible assemblies...");
-		validAssemblies = new CrystalAssemblies(pdb, interfaces); 
+		validAssemblies = new CrystalAssemblies(pdb, interfaces, params.isForceContractedAssemblyEnumeration()); 
 
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
@@ -857,7 +857,7 @@ public class Main {
 	 * Run the full eppic analysis given a parameters object
 	 * @param params
 	 */
-	protected void run(EppicParams params) {
+	public void run(EppicParams params) {
 		this.params = params;
 		run(false);
 	}
@@ -979,7 +979,7 @@ public class Main {
 		
 	}
 	
-	protected DataModelAdaptor getDataModelAdaptor() {
+	public DataModelAdaptor getDataModelAdaptor() {
 		return modelAdaptor;
 	}
 	

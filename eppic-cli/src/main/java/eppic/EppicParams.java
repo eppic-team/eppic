@@ -282,6 +282,9 @@ public class EppicParams {
 	
 	private boolean filterByDomain;
 	
+	// an internal-only parameter, useful for testing
+	private boolean forceContractedAssemblyEnumeration;
+	
 	// some other fields
 	private File inFile;
 	
@@ -371,6 +374,7 @@ public class EppicParams {
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
 		this.filterByDomain = false;
+		this.forceContractedAssemblyEnumeration = false; // should only be set to true for testing
 		
 	}
 	
@@ -1068,6 +1072,14 @@ public class EppicParams {
 	
 	public void setAlphabet(AAAlphabet alphabet) {
 		this.alphabet = alphabet;
+	}
+	
+	public boolean isForceContractedAssemblyEnumeration() {
+		return forceContractedAssemblyEnumeration;
+	}
+	
+	public void setForceContractedAssemblyEnumeration(boolean forceContractedAssemblyEnumeration) {
+		this.forceContractedAssemblyEnumeration = forceContractedAssemblyEnumeration;
 	}
 	
 }
