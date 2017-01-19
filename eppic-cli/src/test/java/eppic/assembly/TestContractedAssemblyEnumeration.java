@@ -14,7 +14,9 @@ import org.junit.Test;
 import eppic.EppicParams;
 import eppic.Main;
 import eppic.Utils;
+import eppic.model.AssemblyContentDB;
 import eppic.model.AssemblyDB;
+import eppic.model.AssemblyScoreDB;
 import eppic.model.PdbInfoDB;
 
 
@@ -145,18 +147,50 @@ public class TestContractedAssemblyEnumeration {
 		m.run(params);
 				
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
-		for (AssemblyDB a : pdbInfo.getAssemblies()) {
-			System.out.println("Assembly "+a.getId()+
-					" sto: "+a.getAssemblyContents().get(0).getStoichiometry()+
-					" sym: "+a.getAssemblyContents().get(0).getSymmetry());
-			
-			
-		}
 		
-		// TODO test the few problems reported in issue #148
-		// do we get the right symmetry and stoichiometry?
-		// do we get the right PDB biounit mapping?
-		// are the assembly diagram files correctly produced?
+		
+		for (AssemblyDB a : pdbInfo.getAssemblies()) {
+			System.out.print("Assembly "+a.getId()+ ", " + a.getInterfaceClusterIds() + ": ");
+			AssemblyContentDB ac = null;
+			if (a.getAssemblyContents()!=null) ac = a.getAssemblyContents().get(0);
+			System.out.println(" sto " + (ac==null?"null":ac.getStoichiometry()) + ", sym " + (ac==null?"null":ac.getSymmetry()));
+		}
+
+		
+		// there should be 3 assemblies: {} (trivial), {1} and {1,3} (in full graph notation, not in contracted graph notation)
+		assertEquals(3, pdbInfo.getAssemblies().size());
+
+		// first assembly: trivial assembly {} (in full graph notation). 2 separate monomers
+		AssemblyDB a1 = pdbInfo.getAssemblies().get(0);
+		assertEquals(2, a1.getAssemblyContents().size());
+		assertEquals("C1", a1.getAssemblyContents().get(0).getSymmetry());
+		assertEquals("A", a1.getAssemblyContents().get(0).getStoichiometry());		
+		assertEquals("C1", a1.getAssemblyContents().get(1).getSymmetry());
+		assertEquals("A", a1.getAssemblyContents().get(1).getStoichiometry());
+		
+		
+		// second assembly: heterodimer {1} (in full graph notation), this is the PDB biounit annotation (pdb1)
+		AssemblyDB a2 = pdbInfo.getAssemblies().get(1);
+		assertEquals(1, a2.getAssemblyContents().size());
+		assertEquals("C1", a2.getAssemblyContents().get(0).getSymmetry());
+		assertEquals("A B", a2.getAssemblyContents().get(0).getStoichiometry());		
+		boolean foundPdb1Annotation = false;
+		for (AssemblyScoreDB sc : a2.getAssemblyScores()) {
+			if (sc.getMethod().equals("pdb1")) {
+				foundPdb1Annotation = true;
+			}
+		}
+		assertTrue(foundPdb1Annotation);
+		
+		
+		// third assembly: C2 heterotetramer {1,3} (in full graph notation}
+		AssemblyDB a3 = pdbInfo.getAssemblies().get(2);
+		assertEquals(1, a3.getAssemblyContents().size());
+		assertEquals("C2", a3.getAssemblyContents().get(0).getSymmetry());
+		assertEquals("A(2) B(2)", a2.getAssemblyContents().get(0).getStoichiometry());		
+		
+		
+		// TODO test that assembly diagram files are correctly produced
 		
 		outDir.delete();
 	}
