@@ -89,7 +89,7 @@ public class DataModelAdaptor {
 	/**
 	 * The method name for PDB biounit annotations, suffixed with the biounit number, e.g. pdb1, pdb2, ...
 	 */
-	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pbd";	
+	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pdb";	
 	
 	public static final int INVALID_ASSEMBLY_ID = 0;
 	
