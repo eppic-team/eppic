@@ -499,7 +499,7 @@ public class Main {
 		
 		
 		try {
-			if (params.isDoEvolScoring()) {
+			if (params.isDoEvolScoring() && iecList!=null) { //iecList can be null if there are no interfaces (e.g. NMR monomers)
 				// we set the entropies as bfactors in case we are in evol scoring (-s)
 				// this will reset the bfactors in the Chain objects of the StructureInterface objects
 				// so both interfaces and assembly files will be written with reset bfactors
