@@ -344,6 +344,8 @@ public class DataModelAdaptor {
 				interfaceDB.setXtalTrans_z(interf.getTransforms().getSecond().getCrystalTranslation().z);
 				interfaceDB.setIsologous(interf.isIsologous());
 				
+				interfaceDB.setSelfContactOverlapScore(interf.getContactOverlapScore(interf, true));
+				
 				interfaceDB.setProt1(InterfaceEvolContext.isProtein(interf, InterfaceEvolContext.FIRST));
 				interfaceDB.setProt2(InterfaceEvolContext.isProtein(interf, InterfaceEvolContext.SECOND));
 				

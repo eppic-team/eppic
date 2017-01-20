@@ -362,6 +362,8 @@
 			<basic name="infinite"></basic>
 			<basic name="isologous"></basic>
 			
+			<basic name="selfContactOverlapScore"></basic>
+			
 			<basic name="prot1"></basic>
 			<basic name="prot2"></basic>
 			

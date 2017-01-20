@@ -21,9 +21,7 @@ import eppic.model.InterfaceWarningDB;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Interface implements Serializable, Comparable<Interface> 
 {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 
 	private int uid;
@@ -42,6 +40,8 @@ public class Interface implements Serializable, Comparable<Interface>
 	private boolean infinite;
 	
 	private boolean isologous;
+	
+	private double selfContactOverlapScore;
 	
 	private boolean prot1;
 	private boolean prot2;
@@ -237,6 +237,20 @@ public class Interface implements Serializable, Comparable<Interface>
 	}
 	
 	/**
+	 * @return the selfContactOverlapScore
+	 */
+	public double getSelfContactOverlapScore() {
+		return selfContactOverlapScore;
+	}
+
+	/**
+	 * @param selfContactOverlapScore the selfContactOverlapScore to set
+	 */
+	public void setSelfContactOverlapScore(double selfContactOverlapScore) {
+		this.selfContactOverlapScore = selfContactOverlapScore;
+	}
+	
+	/**
 	 * Converts DB model item into DTO one.
 	 * @param interfaceDB model item to convert
 	 * @return DTO representation of model item
@@ -262,6 +276,7 @@ public class Interface implements Serializable, Comparable<Interface>
 		interfaceItem.setXtalTrans_y(interfaceDB.getXtalTrans_y());
 		interfaceItem.setXtalTrans_z(interfaceDB.getXtalTrans_z());
 		interfaceItem.setGlobalInterfClusterId(interfaceDB.getGlobalInterfClusterId());
+		interfaceItem.setSelfContactOverlapScore(interfaceDB.getSelfContactOverlapScore());
 		
 		if(interfaceDB.getResidueBurials() != null)
 		{
@@ -313,4 +328,6 @@ public class Interface implements Serializable, Comparable<Interface>
 	{
 		return this.interfaceId - that.interfaceId;
 	}
+
+	
 }
