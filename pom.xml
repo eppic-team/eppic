@@ -26,12 +26,13 @@
 	<properties>
 		<java.version>1.8</java.version>
 		<gwt.version>2.7.0</gwt.version>
-		<slf4j.version>1.7.20</slf4j.version>
-		<log4j.version>2.5</log4j.version>		
+		<slf4j.version>1.7.22</slf4j.version>
+		<log4j.version>2.7</log4j.version>		
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hibernate.version>5.2.6.Final</hibernate.version>
 		<hibernate.validator.version>5.3.4.Final</hibernate.validator.version>
 		<mysql.connector.version>5.1.40</mysql.connector.version>
+		<jgrapht.version>1.0.1</jgrapht.version>
 	</properties>
 
 	<build>

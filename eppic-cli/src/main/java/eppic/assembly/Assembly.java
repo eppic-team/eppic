@@ -775,7 +775,7 @@ public class Assembly {
 				public void connectedComponentStarted(ConnectedComponentTraversalEvent e) {}
 
 				@Override
-				public void edgeTraversed(EdgeTraversalEvent<V, E> event) {
+				public void edgeTraversed(EdgeTraversalEvent<E> event) {
 					// TODO Auto-generated method stub
 					E edge = event.getEdge();
 					// Undirected edge, so source and target may be swapped
