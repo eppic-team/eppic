@@ -55,19 +55,32 @@ public class AssemblyGraph {
 		
 		// note that the subgraph will contain all vertices even if they are not connected to the rest by any interface
 		
-		Set<ChainVertex> vertexSet = assembly.getCrystalAssemblies().getLatticeGraph().getGraph().vertexSet();
+		// this will get the full graph (if in contracted case, the graph will be contracted)
+		UndirectedGraph<ChainVertex, InterfaceEdge> graph = assembly.getCrystalAssemblies().getLatticeGraph().getGraph();
+		
+		Set<ChainVertex> vertexSet = graph.vertexSet();
 		Set<InterfaceEdge> edgeSubset = new HashSet<InterfaceEdge>();
-		for(InterfaceEdge edge:assembly.getCrystalAssemblies().getLatticeGraph().getGraph().edgeSet()) {
-			for (int i=0;i<assembly.getEngagedSet().size();i++) {
-				if (assembly.getEngagedSet().isOn(i)  && edge.getClusterId()==i+1) {
-					edgeSubset.add(edge);
-				}
+		
+		List<Integer> distinctInterfClusterIds = new ArrayList<>(GraphUtils.getDistinctInterfaceClusters(graph));
+		
+		Set<Integer> interfClusterIdsToEngage = new HashSet<>();
+		for (int i=0;i<assembly.getEngagedSet().size();i++) {
+			if (assembly.getEngagedSet().isOn(i)) {
+				interfClusterIdsToEngage.add(distinctInterfClusterIds.get(i));
 			}
+		}
+		
+		for(InterfaceEdge edge:graph.edgeSet()) {
+			
+			if (interfClusterIdsToEngage.contains(edge.getClusterId())) {
+				edgeSubset.add(edge);
+			}
+			
 		}
 		
 		this.subgraph = 
 				new UndirectedSubgraph<ChainVertex, InterfaceEdge>(
-						assembly.getCrystalAssemblies().getLatticeGraph().getGraph(), vertexSet, edgeSubset);
+						graph, vertexSet, edgeSubset);
 		 
 
 		
@@ -77,7 +90,7 @@ public class AssemblyGraph {
 		List<Set<ChainVertex>> connectedSets = ci.connectedSets();
 		
 		logger.debug("Subgraph of assembly {} has {} vertices and {} edges, with {} connected components",
-				assembly.toString(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedSets.size());
+				assembly.getId(), subgraph.vertexSet().size(), subgraph.edgeSet().size(), connectedSets.size());
 		
 		StringBuilder sb = new StringBuilder();
 		for (Set<ChainVertex> cc:connectedSets) {
@@ -225,6 +238,21 @@ public class AssemblyGraph {
 		}
 		return false;
 	}
+	
+	/**
+	 * Checks that this AssemblyGraph is automorphic, which happens iff 
+	 * all its subassemblies are automorphic
+	 * @see {@link SubAssembly#isAutomorphic()}
+	 * @return
+	 */
+	public boolean isAutomorphic() {
+		for (SubAssembly s : subAssemblies) {
+			if (!s.isAutomorphic()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * Return true if all cycles in subgraph are closed, false otherwise.
@@ -270,11 +298,11 @@ public class AssemblyGraph {
 			logger.debug("Cycle of size {}: {}", cycle.size(),sb.toString());
 
 			if (isZeroTranslation(subgraph, cycle)) {
-				logger.debug("Closed cycle (0 translation)");
+				logger.debug("Closed cycle {} (0 translation)", cycle.toString());
 				// we continue to next cycle, if all cycles are translation 0, then we'll return true below
 			} else {
 				// one cycle has non-zero translation: we abort straight away: return false
-				logger.debug("Non-closed cycle (non-0 translation). Discarding assembly {}", assembly.toString());
+				logger.debug("Non-closed cycle {} (non-0 translation). Discarding assembly {}", cycle.toString(), assembly.toString());
 				return false;
 			}
 		}
@@ -328,6 +356,7 @@ public class AssemblyGraph {
 				}
 			}
 			
+			logger.debug("Edge {} between {},{}, translation {}", edge.toString(), s.toString(), t.toString(), trans);
 			p.add(trans);
 		}
 		
@@ -372,7 +401,7 @@ public class AssemblyGraph {
 			ChainVertex s = subgraph.getEdgeSource(e);
 			ChainVertex t = subgraph.getEdgeTarget(e);
 			
-			if (s.getEntity() != t.getEntity()) return true;
+			if (s.getEntityId() != t.getEntityId()) return true;
 		}
 		return false;
 	}

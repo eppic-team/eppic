@@ -45,6 +45,7 @@ import eppic.analysis.compare.SimpleInterface;
 import eppic.assembly.Assembly;
 import eppic.assembly.AssemblyDescription;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.GraphUtils;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
 import eppic.model.AssemblyContentDB;
@@ -88,7 +89,7 @@ public class DataModelAdaptor {
 	/**
 	 * The method name for PDB biounit annotations, suffixed with the biounit number, e.g. pdb1, pdb2, ...
 	 */
-	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pbd";	
+	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pdb";	
 	
 	public static final int INVALID_ASSEMBLY_ID = 0;
 	
@@ -462,8 +463,8 @@ public class DataModelAdaptor {
 			pdbInfo.addAssembly(assembly);
 			
 			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
-			for (StructureInterfaceCluster ic:validAssembly.getEngagedInterfaceClusters()) {
-				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(ic.getId());
+			for (int id: GraphUtils.getDistinctInterfaceClusters(validAssembly.getAssemblyGraph().getSubgraph())) {
+				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(id);
 				interfaceClusters.add(icDB);
 				icDB.addAssembly(assembly);
 			}
@@ -551,8 +552,6 @@ public class DataModelAdaptor {
 		}
 
 		
-		// since the move to Biojava, we have decided to take the first PDB-annotated biounit ONLY whatever its type
-
 		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);	
 		int[] matchingClusterIdsArray = new int[matchingClusterIds.size()];
 		Iterator<Integer> it = matchingClusterIds.iterator();

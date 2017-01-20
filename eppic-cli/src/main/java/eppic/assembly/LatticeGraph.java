@@ -2,8 +2,6 @@ package eppic.assembly;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,15 +43,15 @@ import eppic.commons.util.GeomTools;
 
 /**
  * Graph representation of the interfaces in a unit cell.
- * 
+ * <p/>
  * Nodes are {@link ChainVertex} objects, which are identified by a chain
  * (in the asymmetric unit) and a crystallographic operator giving the
  * transform to the unit cell.
- * 
+ * <p/>
  * Edges are {@link InterfaceEdge} objects, identified by an EPPIC interface
  * and associated with a vector indicating whether the edge connects to
  * adjacent cells.
- * 
+ * <p/>
  * The class is generic, allowing other properties to be associated with
  * nodes and edges through subclasses. For instance, {@link LatticeGraph3D}
  * includes information for visualizing the graph.
@@ -70,9 +68,15 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 	protected final Structure structure;
 
-	// full graph
+	/**
+	 * The full lattice graph
+	 */
 	protected final UndirectedGraph<V,E> graph;
-	// currently exposed graph
+	
+	/**
+	 * The currently exposed graph. Usually the subgraph resulting from engaging a set of interfaces.
+	 * Also used to store the contracted graph in heteromeric assemblies enumeration.
+	 */
 	private UndirectedGraph<V,E> subgraph;
 
 	private boolean globalReferencePoint;
@@ -111,8 +115,9 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 		initLatticeGraphTopologically(interfaces,vertexFactory,edgeFactory);
 
-		if(logger.isInfoEnabled())
-			logGraph();
+		logger.info("Found {} vertices and {} edges in unit cell\n{}", graph.vertexSet().size(), graph.edgeSet().size(),
+				GraphUtils.asString(graph));
+
 	}
 	
 
@@ -269,37 +274,6 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			}
 		}
 		return chainTransformations;
-	}
-
-
-
-	private void logGraph() {
-		logger.info("Found {} vertices and {} edges in unit cell", graph.vertexSet().size(), graph.edgeSet().size());
-
-		List<E> sortedEdges = new ArrayList<E>();
-		sortedEdges.addAll(graph.edgeSet());
-		Collections.sort(sortedEdges, new Comparator<E>() {
-			@Override
-			public int compare(E o1, E o2) {
-				return new Integer(o1.getInterfaceId()).compareTo(new Integer(o2.getInterfaceId()));
-			}			
-		});
-
-		for (E edge:sortedEdges) {
-			V first = graph.getEdgeSource(edge);
-			V second = graph.getEdgeTarget(edge);
-			Point3i xtalT = edge.getXtalTrans();
-			logger.info("Edge {} ({}) between {} ({}) - {} ({})"+
-					String.format(" [%2d,%2d,%2d]", xtalT.x,xtalT.y,xtalT.z), 
-					edge.getInterfaceId(),
-					edge.getClusterId(),
-					first.getChainId()+first.getOpId(), 
-					first.getEntity(),
-					second.getChainId()+second.getOpId(),
-					second.getEntity());
-
-		}
-
 	}
 
 	private void initLatticeGraphTopologically(List<StructureInterface> interfaces, VertexFactory<V> vertexFactory, EdgeFactory<V, E> edgeFactory) throws StructureException {		
@@ -480,6 +454,23 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		}
 
 	}
+	
+	/**
+	 * Contracts heteromeric edges in graph storing the result in subgraph, while keeping
+	 * the original graph unchanged.
+	 * @return the GraphContractor object
+	 */
+	public GraphContractor<V,E> contractGraph(Class<? extends E> edgeClass) {
+		
+		GraphContractor<V,E> contractor = new GraphContractor<>(getGraph());
+		this.subgraph = contractor.contract(edgeClass);
+		
+		logger.info("Graph after contraction: {} vertices and {} edges in unit cell\n{}", subgraph.vertexSet().size(), subgraph.edgeSet().size(),
+				GraphUtils.asString(subgraph));
+		
+		return contractor;
+
+	}
 
 	/**
 	 * Given a set of edges groups them into interface id groups
@@ -584,18 +575,6 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	}
 
 	/**
-	 * Get the number of unique interface clusters present in the graph
-	 * @return
-	 */
-	public int getNumInterfaceClusters() {
-		HashSet<Integer> uniqueInterfClusters = new HashSet<Integer>();
-		for (E e : graph.edgeSet()) {
-			uniqueInterfClusters.add(e.getClusterId());
-		}
-		return uniqueInterfClusters.size();		
-	}
-
-	/**
 	 * Filters a graph down to unique components.
 	 * 
 	 * Filtering occurs by calculating the stoichiometry of a connected component
@@ -604,13 +583,10 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param graph
 	 * @return
 	 */
-	public static <V extends ChainVertex,E extends InterfaceEdge>
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface>
 	UndirectedGraph<V,E> filterUniqueStoichiometries(UndirectedGraph<V,E> graph) {
 		// All entities for the graph
-		List<Integer> entityIds = graph.vertexSet().stream()
-				.map(v -> v.getChain().getCompound().getMolId())
-				.distinct()
-				.collect(Collectors.toList());
+		List<Integer> entityIds = new ArrayList<>(GraphUtils.getDistinctEntities(graph));
 
 		// Store vertices of subgraphs with unique stoich for filtering
 		Set<Stoichiometry<Integer>> entityStoich = new HashSet<>();
@@ -619,9 +595,9 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		ConnectivityInspector<V,E> ci = new ConnectivityInspector<>(graph);
 		for(Set<V> cc : ci.connectedSets()) {
 			List<Integer> nodeEntities = cc.stream()
-					.map(v -> v.getChain().getCompound().getMolId())
+					.map(v -> v.getEntityId())
 					.collect(Collectors.toList());
-			Stoichiometry<Integer> stoich = new Stoichiometry<Integer>(nodeEntities, entityIds);
+			Stoichiometry<Integer> stoich = new Stoichiometry<>(nodeEntities, entityIds);
 			if( !entityStoich.contains(stoich)) {
 				entityStoich.add(stoich);
 				uniqueVertices.addAll(cc);
@@ -647,6 +623,24 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	}
 	
 	/**
+	 * Get the number of distinct entities in the currently exposed graph. 
+	 * In contracted case this will return the number of unique entities in contracted graph.
+	 * @return
+	 */
+	public int getNumDistinctEntities() {
+		return GraphUtils.getNumDistinctEntities(subgraph);
+	}
+	
+	/**
+	 * Returns a sorted list of all distinct entity ids in currently exposed graph.
+	 * In contracted case this will return the set of entities in the contracted graph.
+	 * @return
+	 */
+	public List<Integer> getDistinctEntities() {
+		return new ArrayList<>(GraphUtils.getDistinctEntities(subgraph));
+	}
+	
+		/**
 	 * Return the CrystalCell for the given Structure. If the structure is not crystallographic
 	 * returns the trivial 1, 1, 1, 90, 90, 90 cell.
 	 * @param s

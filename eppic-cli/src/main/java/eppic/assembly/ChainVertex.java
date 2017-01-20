@@ -11,7 +11,7 @@ import org.biojava.nbio.structure.Chain;
  * @author spencer
  *
  */
-public class ChainVertex {
+public class ChainVertex implements ChainVertexInterface {
 	// Primary Key:
 	private int opId; // operator to generate this position within the unit cell
 	
@@ -38,16 +38,20 @@ public class ChainVertex {
 		this.c = vert.c;
 	}
 
+	@Override
 	public int getOpId() {
 		return opId;
 	}
+	
 	public void setOpId(int i) {
 		this.opId = i;
 	}
 	
+	@Override
 	public String getChainId() {
 		return c.getChainID();
 	}
+	
 	public Chain getChain() {
 		return c;
 	}
@@ -92,7 +96,8 @@ public class ChainVertex {
 		return true;
 	}
 
-	public int getEntity() {
+	@Override
+	public int getEntityId() {
 		return c.getCompound().getMolId();
 	}
 

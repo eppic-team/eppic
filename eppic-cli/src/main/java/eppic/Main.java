@@ -15,10 +15,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.SortedSet;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -46,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import eppic.assembly.Assembly;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.GraphUtils;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
@@ -361,7 +361,7 @@ public class Main {
 	public void doFindAssemblies() throws StructureException { 
 		
 		params.getProgressLog().println("Calculating possible assemblies...");
-		validAssemblies = new CrystalAssemblies(pdb, interfaces); 
+		validAssemblies = new CrystalAssemblies(pdb, interfaces, params.isForceContractedAssemblyEnumeration()); 
 
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
@@ -377,10 +377,13 @@ public class Main {
 
 		if (params.isDoEvolScoring()) {
 			validAssemblies.setInterfaceEvolContextList(iecList);
+
 			validAssemblies.score();
 		}
 
+
 		modelAdaptor.setAssemblies(validAssemblies);
+
 		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb);
 
 	}
@@ -567,19 +570,13 @@ public class Main {
 				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
 				LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
-
+					
 				// Filter down to this assembly
-				List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
-				Set<Integer> clusterIds = new HashSet<Integer>(clusters.size());
-				Set<Integer> interfaceIds = new TreeSet<Integer>();
-				for(StructureInterfaceCluster cluster : clusters) {
-					clusterIds.add(cluster.getId());
-					for (StructureInterface interf:cluster.getMembers()) {
-						interfaceIds.add(interf.getId());
-					}
-				}
+				// TODO this is not going to work for contracted graphs: both clusterIds and interfaceids are wrong! see issue https://github.com/eppic-team/eppic/issues/148
+				SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
+				Set<Integer> interfaceIds = GraphUtils.getDistinctInterfaces(a.getAssemblyGraph().getSubgraph());
 				latticeGraph.filterEngagedClusters(clusterIds);
-
+					
 				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
 				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
 				guiThumb.setTitle("Assembly "+a.getId());
@@ -627,11 +624,10 @@ public class Main {
 				pw.close();
 			}
 
-
 		} catch( IOException|StructureException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
 		}
-	}	
+	}
 
 	// TODO implement the HBplus stuff
 //	public void doHBPlus() throws EppicException {
@@ -861,7 +857,7 @@ public class Main {
 	 * Run the full eppic analysis given a parameters object
 	 * @param params
 	 */
-	protected void run(EppicParams params) {
+	public void run(EppicParams params) {
 		this.params = params;
 		run(false);
 	}
@@ -983,7 +979,7 @@ public class Main {
 		
 	}
 	
-	protected DataModelAdaptor getDataModelAdaptor() {
+	public DataModelAdaptor getDataModelAdaptor() {
 		return modelAdaptor;
 	}
 	

@@ -4,7 +4,7 @@ import java.io.File;
 
 public class Utils {
 	
-	protected static EppicParams generateEppicParams(String pdbId, File outDir) {
+	public static EppicParams generateEppicParams(String pdbId, File outDir) {
 		EppicParams params = new EppicParams();
 		params.setInputStr(pdbId);
 		params.setInput();

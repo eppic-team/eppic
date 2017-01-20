@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
 
@@ -138,17 +139,6 @@ public class Assembly {
 		return assemblyGraph;
 	}
 	
-	public List<StructureInterfaceCluster> getEngagedInterfaceClusters() {
-		TreeMap<Integer, StructureInterfaceCluster> map = new TreeMap<Integer, StructureInterfaceCluster>();
-		for (InterfaceEdge e : assemblyGraph.getSubgraph().edgeSet()) {
-			map.put ( e.getClusterId(), e.getInterfaceCluster());
-		}
-		
-		List<StructureInterfaceCluster> list = new ArrayList<StructureInterfaceCluster>();
-		list.addAll(map.values());
-		return list;
-	}
-	
 	public int getNumEngagedInterfaceClusters() {
 		int count=0;
 		for (int i=0;i<engagedSet.size();i++) {
@@ -158,7 +148,7 @@ public class Assembly {
 	}
 	
 	/**
-	 * Get the parent CrystalAssemly object containing references to all other Assemblies and to the original Structure
+	 * Get the parent CrystalAssemblies object containing references to all other Assemblies and to the original Structure
 	 * @return
 	 */
 	public CrystalAssemblies getCrystalAssemblies() {
@@ -245,6 +235,9 @@ public class Assembly {
 	 * if Assembly is heteromeric and stoichiometry is uneven returns false
 	 * </li>
 	 * <li>
+	 * if Assembly is not automorphic (i.e. all vertices of a kind must have the same kind and number of interface clusters) returns false
+	 * </li>
+	 * <li>
 	 * finally checks that all cycles are closed by enumerating cycles and checking the translations add up to 0
 	 * </li>
 	 * @return
@@ -258,7 +251,7 @@ public class Assembly {
 		}
 
 		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
-		if (getNumEngagedInterfaceClusters()==1) {
+		if (GraphUtils.getNumDistinctInterfaces(assemblyGraph.getSubgraph())==1) { 
 			if (assemblyGraph.containsIsologous()) {
 				logger.debug("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
 				return true;
@@ -269,6 +262,11 @@ public class Assembly {
 		// for heteromeric assemblies, uneven stoichiometries implies non-closed. We can discard uneven ones straight away
 		if (!assemblyGraph.isStoichiometryEven()) {
 			logger.debug("Uneven stoichiometry for assembly {}, can't be a closed symmetry. Discarding",toString());
+			return false;
+		}
+		
+		// graph automorphism is a necessary (but not sufficient) condition: all vertices of a certain entity must have the same kind and number of interfaces (interface cluster ids)
+		if (!assemblyGraph.isAutomorphic()) {
 			return false;
 		}
 	
@@ -967,15 +965,20 @@ public class Assembly {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		int numClusters = getNumEngagedInterfaceClusters();
+		
+		SortedSet<Integer> interfClusterIds = GraphUtils.getDistinctInterfaceClusters(assemblyGraph.getSubgraph());
+		int numClusters = interfClusterIds.size();
+		
 		sb.append("{");
-		int e = 0;
-		for (int i=0;i<engagedSet.size();i++) {
-			if (engagedSet.isOn(i)) {
-				sb.append(i+1);
-				e++;
-				if (e!=numClusters) sb.append(",");
-			}
+
+		int i = 0;
+		for (int interfClusterId : interfClusterIds) {
+
+			sb.append(interfClusterId);
+			
+			if (i!=numClusters-1) sb.append(",");
+
+			i++;
 		}
 		sb.append("}");
 		return sb.toString();

@@ -38,11 +38,9 @@ public class SubAssembly {
 		this.connectedGraph = connectedGraph;
 		this.crystalAssemblies = crystalAssemblies;
 		
-		List<Integer> entities = IntStream.range(0, crystalAssemblies.getNumEntitiesInStructure())
-				.mapToObj(i -> crystalAssemblies.getEntityId(i))
-				.collect(Collectors.toList());
+		List<Integer> entities = crystalAssemblies.getLatticeGraph().getDistinctEntities();
 		List<Integer> nodeEntities = connectedGraph.vertexSet().stream()
-				.map(v -> v.getChain().getCompound().getMolId())
+				.map(v -> v.getEntityId())
 				.collect(Collectors.toList());
 		this.sto = new Stoichiometry<>(nodeEntities,entities);
 	}
@@ -58,6 +56,16 @@ public class SubAssembly {
 	
 	public UndirectedGraph<ChainVertex, InterfaceEdge> getConnectedGraph() {
 		return connectedGraph;
+	}
+	
+	/**
+	 * Checks that this SubAssembly is automorphic in terms of entities and interface clusters. i.e. if every 
+	 * vertex of entity i has the same number and type of edges (interface cluster ids) that any other vertex
+	 * with entity i
+	 * @return
+	 */
+	public boolean isAutomorphic() {
+		return GraphUtils.isAutomorphic(connectedGraph);
 	}
 	
 	/**
@@ -86,12 +94,12 @@ public class SubAssembly {
 		
 		
 		UndirectedGraph<ChainVertex, InterfaceEdge> g = connectedGraph;
-		GraphContractor gctr = new GraphContractor(g);
+		GraphContractor<ChainVertex, InterfaceEdge> gctr = new GraphContractor<>(g);
 
 
 		if (heteromer) {
 			
-			g = gctr.contract();
+			g = gctr.contract(InterfaceEdge.class);
 			
 		}		
 		
@@ -104,7 +112,7 @@ public class SubAssembly {
 		// FINDING SYMMETRY:
 
 		// this should work fine for both homomer and pseudo-homomer graph
-		int numDistinctInterfaces = GraphUtils.getDistinctInterfaceCount(g);
+		int numDistinctInterfaces = GraphUtils.getNumDistinctInterfaces(g);
 		
 		// CASE A) n==1
 		
@@ -224,12 +232,12 @@ public class SubAssembly {
 		
 
 		UndirectedGraph<ChainVertex, InterfaceEdge> g = connectedGraph;
-		GraphContractor gctr = new GraphContractor(g);
+		GraphContractor<ChainVertex, InterfaceEdge> gctr = new GraphContractor<>(g);
 		
 		
 		if (heteromer) {
 
-			g = gctr.contract();
+			g = gctr.contract(InterfaceEdge.class);
 			
 			// TODO we should check the call of contracted interfaces and score properly based on 
 			// them and the relevant interfaces below
@@ -331,7 +339,7 @@ public class SubAssembly {
 			ChainVertex s = connectedGraph.getEdgeSource(e);
 			ChainVertex t = connectedGraph.getEdgeTarget(e);
 			
-			if (entities.contains(s.getEntity()) && entities.contains(t.getEntity())) {
+			if (entities.contains(s.getEntityId()) && entities.contains(t.getEntityId())) {
 				interfaceClusterIds.add(e.getClusterId());
 			}
 		}

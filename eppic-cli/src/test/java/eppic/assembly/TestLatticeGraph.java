@@ -78,12 +78,15 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		
 		// cluster 3: classic infinite A+A on screw axis
 		a = ab.generateAssembly(3);
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 	}
 	
@@ -98,6 +101,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 	}
 	
@@ -111,6 +115,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		
 		// cluster 3: isologous
@@ -130,7 +135,7 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
-		
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
 		
 		// cluster 2: isologous
 		a = ab.generateAssembly(2);		
@@ -141,11 +146,17 @@ public class TestLatticeGraph {
 		a = ab.generateAssembly(3);		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
+
 
 		// cluster 4: classic infinite
 		a = ab.generateAssembly(4);		
 		assertFalse(a.isValid());
 		assertFalse(a.isClosedSymmetry());
+		// the graph is automorphic (even though it is not valid)
+		assertTrue(a.getAssemblyGraph().getSubAssemblies().get(0).isAutomorphic());
+
 
 		// clusters 1+2: an open cycle
 		a = ab.generateAssembly(new int[]{1,2});		
@@ -425,9 +436,21 @@ public class TestLatticeGraph {
 	 * @throws StructureException
 	 */
 	public static CrystalAssemblies getCrystalAssemblies(String pdbId) throws IOException, StructureException {
+		return getCrystalAssemblies(pdbId, false);
+	}
+	
+	public static CrystalAssemblies getCrystalAssemblies(String pdbId, boolean forceContracted) throws IOException, StructureException {
 		
-		logger.info("Calculating interfaces for "+pdbId);
+		Structure s = getStructure(pdbId);
 		
+		StructureInterfaceList interfaces = getAllInterfaces(s);
+		
+		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, forceContracted);
+		
+		return crystalAssemblies; 
+	}
+	
+	public static Structure getStructure(String pdbId) throws IOException, StructureException {
 		AtomCache cache = new AtomCache();
 		FileParsingParameters params = new FileParsingParameters();
 		params.setAlignSeqRes(true); 
@@ -435,21 +458,23 @@ public class TestLatticeGraph {
 		StructureIO.setAtomCache(cache);
 		
 		Structure s =  StructureIO.getStructure(pdbId);
-		
 		// we need to expand the ncs ops to be able to test properly entries with ncs ops
 		StructureUtils.expandNcsOps(s);
 		
-		CrystalBuilder cb = new CrystalBuilder(s);
-		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
-		interfaces.calcAsas(100,Runtime.getRuntime().availableProcessors(),0);
-		interfaces.removeInterfacesBelowArea();
-		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
-		
-		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces);
-		
-		return crystalAssemblies; 
+		return s;
 	}
 	
-	
+	public static StructureInterfaceList getAllInterfaces(Structure s)  {
+		logger.info("Calculating interfaces for "+s.getIdentifier().toString());
+		
+		CrystalBuilder cb = new CrystalBuilder(s);
+		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
+		interfaces.calcAsas(StructureInterfaceList.DEFAULT_ASA_SPHERE_POINTS/10,
+				Runtime.getRuntime().availableProcessors(),
+				StructureInterfaceList.DEFAULT_MIN_COFACTOR_SIZE);
+		interfaces.removeInterfacesBelowArea();
+		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		return interfaces;
+	}
 	
 }

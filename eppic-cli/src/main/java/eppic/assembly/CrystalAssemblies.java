@@ -9,13 +9,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Compound;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ import eppic.InterfaceEvolContextList;
 /**
  * A representation of all valid assemblies in a crystal structure.
  * 
- * @author duarte_j
+ * @author Jose Duarte
  *
  */
 public class CrystalAssemblies implements Iterable<Assembly> {
@@ -66,7 +66,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	private Map<Integer,String> idx2ChainIds;
 		
 	private boolean largeNumAssemblies;
-	
+		
 	/**
 	 * 
 	 * @param structure
@@ -74,39 +74,64 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @throws StructureException
 	 */
 	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
-		
+		init(structure, interfaces, false);
+	}
+	
+	/**
+	 * 
+	 * @param structure
+	 * @param interfaces
+	 * @param forceContracted
+	 * @throws StructureException
+	 */
+	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) throws StructureException {
+		init(structure, interfaces, forceContracted);
+	}
+	
+	private void init(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) throws StructureException {
 		this.largeNumAssemblies = false;
 		
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
-		
+				
 		initEntityMaps();
 		
+		latticeGraph.removeDuplicateEdges();
+		
+		GraphContractor<ChainVertex, InterfaceEdge> graphContractor = null;
+
+		if (forceContracted) {
+			logger.info("Doing assemblies enumeration with graph contraction, since forceContracted is true");
+			graphContractor = latticeGraph.contractGraph(InterfaceEdge.class);			
+		} 
+
 		findValidAssemblies();
+
+		if (!forceContracted && largeNumAssemblies) {
+
+			logger.info("Structure has more than {} assemblies in full enumeration, will contract heteromeric interfaces to enumerate assemblies.", MAX_ALLOWED_ASSEMBLIES);
+
+			graphContractor = latticeGraph.contractGraph(InterfaceEdge.class);
+			
+			findValidAssemblies();
+			
+		}
 		
+		if (graphContractor!=null) { // i.e. if we did contracted enumeration above
+			
+			// after the enumeration with the simplified contracted graph, we need to go back and 
+			// express everything in terms of the full graph
+			convertToFullGraph(graphContractor);
+
+		}
+
 		initGroups();
-		
+
 		initClusters();
-		
-		
 	}
 	
 	public int size() {
 		return clusters.size();
-	}
-	
-	private void findValidAssemblies() {
-		
-		latticeGraph.removeDuplicateEdges();
-		
-		findValidAssembliesFull();
-		
-		if (largeNumAssemblies) {
-			
-			logger.error("Structures with heteromeric interfaces and large number of assemblies are not supported yet! Assembly list will be empty.");
-			// TODO implement! basically it is the same code, but using the contracted graph within Assembly...			
-			//findValidAssembliesContract();
-		}
 	}
 	
 	/**
@@ -127,11 +152,12 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * pruned top nodes.
 	 * @return
 	 */
-	private void findValidAssembliesFull() {
+	private void findValidAssemblies() {
 				
 		Set<Assembly> validAssemblies = new HashSet<Assembly>();
 		
-		int numInterfaceClusters = latticeGraph.getNumInterfaceClusters();
+		// in contracted case this will find the distinct interfaces for the contracted graph
+		int numInterfaceClusters = GraphUtils.getNumDistinctInterfaces(latticeGraph.getGraph());
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
 		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
@@ -273,6 +299,72 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	}
 	
 	/**
+	 * Converts the assemblies generated through contracted enumeration (referring to the contracted graph) 
+	 * to assemblies that refer to the full graph.
+	 * @param graphContractor
+	 */
+	private void convertToFullGraph(GraphContractor<ChainVertex, InterfaceEdge> graphContractor) {
+		// after the enumeration with the simplified contracted graph, we need to go back and 
+		// express everything in terms of the full graph
+
+		// this sets the exposed graph in lattice graph back to the full graph
+		latticeGraph.filterEngagedClusters(null); 
+		
+		// let's get the number of interfaces in the full graph
+		int numInterfaceClusters = GraphUtils.getNumDistinctInterfaces(latticeGraph.getGraph());
+		
+		
+		Set<Assembly> allFromContracted = new HashSet<>(all);
+		all = new HashSet<>();
+		// the contracted graph enumeration will never count the trivial assembly of no interfaces engaged,
+		// we need to add it now
+		all.add(new Assembly(this, new PowerSet(numInterfaceClusters)));
+		
+		for (Assembly a : allFromContracted) {
+			
+			// 0. Initialise a list of interface cluster ids that we are going to engage in the full graph
+			Set<Integer> interfClusterIdsToEngage = new HashSet<>();
+			
+			// 1. Add the edges in this assembly's contracted graph. Those are also valid edges in the full graph, we can simply add them directly			
+			for (InterfaceEdge e : a.getAssemblyGraph().getSubgraph().edgeSet()) {
+				interfClusterIdsToEngage.add(e.getClusterId());
+			}
+			
+			// 2. Get the entity ids involved in this assembly
+			SortedSet<Integer> entityIds = GraphUtils.getDistinctEntities(a.getAssemblyGraph().getSubgraph());
+			
+			// 3. Find out whether any of the contracted edges involved the found entity ids
+			// 4. If they do -> add contracted edge to interfClusterIdsToEngage
+			Set<Integer> contractedInterfClusterIds = graphContractor.getContractedInterfClusterIds();
+			for (int contractedInterfClusterId : contractedInterfClusterIds) {
+				// get the corresponding edge in the full graph and find the entities involved
+				for (InterfaceEdge e : latticeGraph.getGraph().edgeSet()) {
+					if (e.getClusterId() == contractedInterfClusterId) {
+						ChainVertex s = latticeGraph.getGraph().getEdgeSource(e);
+						ChainVertex t = latticeGraph.getGraph().getEdgeSource(e);
+						if (entityIds.contains(s.getEntityId()) || entityIds.contains(t.getEntityId())) {
+							interfClusterIdsToEngage.add(contractedInterfClusterId);
+						}
+						// we found the edge, no need to continue (all other edges with same cluster id will have same endpoints)
+						break;
+					}
+				}
+			}
+			
+			// 5. Create the new assembly with interfClusterIdsToEngage
+			Assembly aInFull = generateAssembly(interfClusterIdsToEngage);
+			
+			all.add(aInFull);
+			
+			
+			// TODO in some cases we might lose some induced interfaces in making the new assemblies here,
+			//      e.g. in 4nwp the tetrahedral assembly is {1,2,3,8} but we actually get {1,2,3} from this procedure, losing 
+			//      induced interface 8 (see test case in TestContractedAssemblyEnumeration)
+		}
+
+	}
+	
+	/**
 	 * Given an entity id returns the entity index as used by Stoichiometry arrays
 	 * @param entityId
 	 * @return
@@ -325,24 +417,6 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		return structure.getChains().size();
 	}
 	
-	/**
-	 * Get the number of entities in the Structure
-	 * @return
-	 */
-	public int getNumEntitiesInStructure() {
-		
-		int size = 0;
-		// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26, 4uo5
-		// we need to skip those to count the entities here
-		for (Compound comp: structure.getCompounds()) {
-			if (comp.getChains().isEmpty()) continue;
-			size++;
-		}
-					
-		return size;
-	}
-
-
 	@Override
 	public Iterator<Assembly> iterator() {
 		
@@ -397,16 +471,16 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				} 
 				
 				// if both of same size, we sort based on engaged interface cluster ids
-				List<StructureInterfaceCluster> interfClusters0 = arg0.getEngagedInterfaceClusters();
-				List<StructureInterfaceCluster> interfClusters1 = arg1.getEngagedInterfaceClusters();
-				if (interfClusters0.size()!=interfClusters1.size()) {
+				List<Integer> interfClusterIds0 = new ArrayList<>(GraphUtils.getDistinctInterfaceClusters(arg0.getAssemblyGraph().getSubgraph()));
+				List<Integer> interfClusterIds1 = new ArrayList<>(GraphUtils.getDistinctInterfaceClusters(arg1.getAssemblyGraph().getSubgraph()));
+				if (interfClusterIds0.size()!=interfClusterIds1.size()) {
 					// if different number of interface clusters we put the one with the most clusters first
-					return Integer.compare(interfClusters1.size(),interfClusters0.size());
+					return Integer.compare(interfClusterIds1.size(),interfClusterIds0.size());
 				}
 
-				for (int i=0;i<interfClusters0.size();i++) {
-					int id0 = interfClusters0.get(i).getId();
-					int id1 = interfClusters1.get(i).getId();
+				for (int i=0;i<interfClusterIds0.size();i++) {
+					int id0 = interfClusterIds0.get(i);
+					int id1 = interfClusterIds1.get(i);
 					
 					if (id0==id1) continue;
 					
@@ -439,7 +513,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public Assembly generateAssembly(int[] interfaceClusterIds) {
 		
-		PowerSet engagedSet = new PowerSet(latticeGraph.getNumInterfaceClusters());
+		PowerSet engagedSet = new PowerSet(GraphUtils.getNumDistinctInterfaces(latticeGraph.getGraph()));
 		
 		for (int clusterId:interfaceClusterIds) {
 			engagedSet.switchOn(clusterId-1);
@@ -448,6 +522,16 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		Assembly a = new Assembly(this, engagedSet);
 		
 		return a;
+	}
+	
+	public Assembly generateAssembly(Set<Integer> interfaceClusterIds) {
+		int[] icIds = new int[interfaceClusterIds.size()];
+		int i = 0;
+		for (int icId : interfaceClusterIds) {
+			icIds[i] = icId;
+			i++;
+		}
+		return generateAssembly(icIds);
 	}
 	
 	public InterfaceEvolContextList getInterfaceEvolContextList() {
