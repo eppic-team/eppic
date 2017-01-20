@@ -40,10 +40,16 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 	 * Access with {@link #getContractedVertex(ChainVertexInterface)}
 	 */
 	private Map<V,V> contractedVertices;
+	
+	/**
+	 * The set of contracted interface cluster ids
+	 */
+	private Set<Integer> contractedInterfClusterIds;
 
 	public GraphContractor(UndirectedGraph<V, E> g) {
 		this.g = g;
 		this.contractedVertices = new HashMap<V, V>();
+		this.contractedInterfClusterIds = new TreeSet<>();
 	}
 
 	/**
@@ -231,6 +237,9 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 
 
 			cg = contractInterfaceCluster(cg, interfClusterId, edgeClass);
+			
+			// we keep a list of every interf cluster id we contract
+			contractedInterfClusterIds.add(interfClusterId);
 
 			// we get the interfClusterId for next iteration
 			interfClusterId = GraphUtils.getLargestHeteroInterfaceCluster(cg);
@@ -291,6 +300,10 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 			set.add(v.getEntityId());
 		}
 		return set;
+	}
+	
+	public Set<Integer> getContractedInterfClusterIds() {
+		return contractedInterfClusterIds;
 	}
 
 	/**

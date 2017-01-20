@@ -64,7 +64,7 @@ public class TestContractedAssemblyEnumeration {
 			
 			System.out.println("assembly "+a.toString() + " -- " + getDescription(a));
 			
-			if (a.toString().equals("{1,2}")) {
+			if (a.toString().equals("{1,2,3}")) {
 				gotTetrahedralAssembly = true;
 				assertEquals("T", a.getDescription().iterator().next().getSymmetry());
 			}
@@ -107,11 +107,12 @@ public class TestContractedAssemblyEnumeration {
 			
 		}
 		
-		assertEquals(2, crystalAssembliesC.getAllAssemblies().size());
-		assertEquals(2, crystalAssembliesC.getUniqueAssemblies().size());
+		// we've got 2 assemblies plus 1 (the trivial assembly added after the contracted enumeration)
+		assertEquals(3, crystalAssembliesC.getAllAssemblies().size());
+		assertEquals(3, crystalAssembliesC.getUniqueAssemblies().size());
 		
-		assertEquals("C1", crystalAssembliesC.getUniqueAssemblies().get(0).getDescription().iterator().next().getSymmetry());
-		assertEquals("C2", crystalAssembliesC.getUniqueAssemblies().get(1).getDescription().iterator().next().getSymmetry());		
+		assertEquals("C1", crystalAssembliesC.getUniqueAssemblies().get(1).getDescription().iterator().next().getSymmetry());
+		assertEquals("C2", crystalAssembliesC.getUniqueAssemblies().get(2).getDescription().iterator().next().getSymmetry());		
 		
 
 		
@@ -174,6 +175,15 @@ public class TestContractedAssemblyEnumeration {
 		assertEquals(1, a2.getAssemblyContents().size());
 		assertEquals("C1", a2.getAssemblyContents().get(0).getSymmetry());
 		assertEquals("A B", a2.getAssemblyContents().get(0).getStoichiometry());		
+		
+		
+		// third assembly: C2 heterotetramer {1,3} (in full graph notation}
+		AssemblyDB a3 = pdbInfo.getAssemblies().get(2);
+		assertEquals(1, a3.getAssemblyContents().size());
+		assertEquals("C2", a3.getAssemblyContents().get(0).getSymmetry());
+		assertEquals("A(2) B(2)", a3.getAssemblyContents().get(0).getStoichiometry());		
+
+		// let's see if we mapped the pdb1 biounit correctly
 		boolean foundPdb1Annotation = false;
 		for (AssemblyScoreDB sc : a2.getAssemblyScores()) {
 			if (sc.getMethod().equals("pdb1")) {
@@ -181,14 +191,7 @@ public class TestContractedAssemblyEnumeration {
 			}
 		}
 		assertTrue(foundPdb1Annotation);
-		
-		
-		// third assembly: C2 heterotetramer {1,3} (in full graph notation}
-		AssemblyDB a3 = pdbInfo.getAssemblies().get(2);
-		assertEquals(1, a3.getAssemblyContents().size());
-		assertEquals("C2", a3.getAssemblyContents().get(0).getSymmetry());
-		assertEquals("A(2) B(2)", a2.getAssemblyContents().get(0).getStoichiometry());		
-		
+
 		
 		// TODO test that assembly diagram files are correctly produced
 		

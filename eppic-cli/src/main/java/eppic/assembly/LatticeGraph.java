@@ -458,14 +458,17 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	/**
 	 * Contracts heteromeric edges in graph storing the result in subgraph, while keeping
 	 * the original graph unchanged.
+	 * @return the GraphContractor object
 	 */
-	public void contractGraph(Class<? extends E> edgeClass) {
+	public GraphContractor<V,E> contractGraph(Class<? extends E> edgeClass) {
 		
 		GraphContractor<V,E> contractor = new GraphContractor<>(getGraph());
 		this.subgraph = contractor.contract(edgeClass);
 		
 		logger.info("Graph after contraction: {} vertices and {} edges in unit cell\n{}", subgraph.vertexSet().size(), subgraph.edgeSet().size(),
 				GraphUtils.asString(subgraph));
+		
+		return contractor;
 
 	}
 
