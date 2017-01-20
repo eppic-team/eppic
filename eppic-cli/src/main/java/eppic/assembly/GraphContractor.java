@@ -213,6 +213,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 	public UndirectedGraph<V, E> contract(Class<? extends E> edgeClass) {
 
 		// for first iteration
+		// TODO select the best scoring interface instead of largest (in most cases it will coincide with the largest anyway)
 		int interfClusterId = GraphUtils.getLargestHeteroInterfaceCluster(g);
 
 		cg = g;
@@ -242,6 +243,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 			contractedInterfClusterIds.add(interfClusterId);
 
 			// we get the interfClusterId for next iteration
+			// TODO select the best scoring interface instead of largest (in most cases it will coincide with the largest anyway)
 			interfClusterId = GraphUtils.getLargestHeteroInterfaceCluster(cg);
 
 			// if no more heteromeric interfaces we break: end of iteration

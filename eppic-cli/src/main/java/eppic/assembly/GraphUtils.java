@@ -238,7 +238,20 @@ public class GraphUtils {
 	 * @return the largest heteromeric interface cluster id, or -1 if none found
 	 */
 	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getLargestHeteroInterfaceCluster(UndirectedGraph<V, E> g) {
-		TreeSet<Integer> clusterIds = new TreeSet<Integer>();
+		SortedSet<Integer> clusterIds = getDistinctHeteromericInterfaceClusterIds(g);
+
+		if (clusterIds.isEmpty()) return -1;
+		
+		return clusterIds.first();
+	}
+	
+	/**
+	 * Get all distinct heteromeric interface cluster ids in the given graph.
+	 * @param g
+	 * @return the sorted set of all heteromeric interface cluster ids
+	 */
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> SortedSet<Integer> getDistinctHeteromericInterfaceClusterIds(UndirectedGraph<V, E> g) {
+		SortedSet<Integer> clusterIds = new TreeSet<Integer>();
 		for (E e:g.edgeSet()) {
 			
 			V s = g.getEdgeSource(e);
@@ -249,9 +262,7 @@ public class GraphUtils {
 			}
 		}
 		
-		if (clusterIds.isEmpty()) return -1;
-		
-		return clusterIds.first();
+		return clusterIds;
 	}
 	
 	

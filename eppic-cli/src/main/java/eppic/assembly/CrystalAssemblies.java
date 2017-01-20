@@ -356,6 +356,10 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			
 			all.add(aInFull);
 			
+			
+			// TODO in some cases we might lose some induced interfaces in making the new assemblies here,
+			//      e.g. in 4nwp the tetrahedral assembly is {1,2,3,8} but we actually get {1,2,3} from this procedure, losing 
+			//      induced interface 8 (see test case in TestContractedAssemblyEnumeration)
 		}
 
 	}

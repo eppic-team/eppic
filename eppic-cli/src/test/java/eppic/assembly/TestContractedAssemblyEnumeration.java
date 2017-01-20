@@ -64,6 +64,8 @@ public class TestContractedAssemblyEnumeration {
 			
 			System.out.println("assembly "+a.toString() + " -- " + getDescription(a));
 			
+			// in the assembly reconstruction from the contracted graph to the full graph (see CrystalAssemblies.convertToFullGraph() ), 
+			// we lose interface 8 (an induced interface). That's why the assembly here is 1,2,3
 			if (a.toString().equals("{1,2,3}")) {
 				gotTetrahedralAssembly = true;
 				assertEquals("T", a.getDescription().iterator().next().getSymmetry());
