@@ -95,7 +95,7 @@ public class AssemblyDiagramPageGenerator {
 	}
 
 	private static String getJsonFilename(File directory, String inputName, Collection<Integer> requestedIfaces) {
-		String jsonFilename = new File(directory, inputName + EppicParams.getJsonFilenameSuffix(requestedIfaces)).toString();
+		String jsonFilename = new File(directory, inputName + EppicParams.get2dDiagramJsonFilenameSuffix(requestedIfaces)).toString();
 		return jsonFilename;
 	}
 	

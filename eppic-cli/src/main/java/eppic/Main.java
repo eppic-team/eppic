@@ -43,6 +43,8 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 import eppic.assembly.Assembly;
 import eppic.assembly.CrystalAssemblies;
 import eppic.assembly.GraphUtils;
@@ -562,10 +564,13 @@ public class Main {
 			LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
 			GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
 			String fileFormat = "png";
+			
+			// the gson object needed in step 3 below
+			Gson gson = LatticeGraph3D.createGson();
 
 			for (Assembly a:validAssemblies) {
 				
-				// 1 generate the png with the assembly diagram via invoking the dot executable
+				// 1. Generate the png with the assembly diagram via invoking the dot executable
 
 				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
@@ -597,7 +602,7 @@ public class Main {
 				runner.generateFromDot(guiThumb, pngFile, fileFormat);
 				
 				
-				// 2 generate the json file for the dynamic js graph in the wui
+				// 2. Generate the json file for the dynamic js graph in the wui
 				
 				guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, latticeGraph);
 				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
@@ -617,11 +622,26 @@ public class Main {
 					json = json.replaceAll(",(?=\\s*[}\\]])","");
 											
 				}
-				File jsonAssemblyDiagramFile = params.getOutputFile(EppicParams.getJsonFilenameSuffix(interfaceIds));
+				File jsonAssemblyDiagramFile = params.getOutputFile(EppicParams.get2dDiagramJsonFilenameSuffix(interfaceIds));
 
 				PrintWriter pw = new PrintWriter(new FileWriter(jsonAssemblyDiagramFile));
 				pw.println(json);
 				pw.close();
+				
+				
+				// 3. Generate the json file for the 3d lattice graph in the wui (ngl based)
+								
+				latticeGraph.setHexColors();
+
+				json = gson.toJson(latticeGraph);
+
+				File jsonLatticeGraphFile = params.getOutputFile(EppicParams.get3dLatticeGraphJsonFilenameSuffix(interfaceIds));
+
+				pw = new PrintWriter(new FileWriter(jsonLatticeGraphFile));
+				pw.println(json);
+				pw.close();
+				
+				
 			}
 
 		} catch( IOException|StructureException|InterruptedException e) {
