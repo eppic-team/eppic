@@ -110,6 +110,9 @@ public class LatticeGraphPageGenerator {
 		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 
 		Callable<String> computeJson = () -> {
+			
+			logger.info("In computeJson");
+			
 			if( !strucFile.exists() ) {
 				// this shouldn't happen...
 				throw new IOException("Could not find input AU file "+ strucFile.toString());
@@ -145,7 +148,10 @@ public class LatticeGraphPageGenerator {
 	}
 	
 	private static String getJsonFilename(File directory, String inputName, Collection<Integer> requestedIfaces) {
-		String jsonFilename = new File(directory, inputName + EppicParams.get3dLatticeGraphJsonFilenameSuffix(requestedIfaces)).toString();		
+		File jsonFile = new File(directory, inputName + EppicParams.get3dLatticeGraphJsonFilenameSuffix(requestedIfaces));
+		
+		String jsonFilename = jsonFile.toString();
+		logger.info("The 3d lattice graph json file is {}. File exists={}", jsonFilename, jsonFile.exists());
 		return jsonFilename;
 	}
 
