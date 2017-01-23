@@ -54,6 +54,13 @@ public class PdbInfoDB implements Serializable {
 	 */
 	private boolean nonStandardCoordFrameConvention;
 	
+	/**
+	 * Whether the assemblies were exhaustively enumerated by finding ALL 
+	 * valid ones (true) or by reducing the search space heuristically via 
+	 * contraction of highest scoring heteromeric edges.
+	 */
+	private boolean exhaustiveAssemblyEnumeration;
+	
 	private RunParametersDB runParameters;
 	
 	private List<ChainClusterDB> chainClusters;
@@ -87,7 +94,8 @@ public class PdbInfoDB implements Serializable {
 						int crystalFormId,
 						RunParametersDB runParameters,						
 						boolean nonStandardSg,
-						boolean nonStandardCoordFrameConvention) {
+						boolean nonStandardCoordFrameConvention,
+						boolean exhaustiveAssemblyEnumeration) {
 		
 		chainClusters = new ArrayList<ChainClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
@@ -109,6 +117,7 @@ public class PdbInfoDB implements Serializable {
 		this.crystalFormId = crystalFormId;
 		this.nonStandardSg = nonStandardSg;
 		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
+		this.exhaustiveAssemblyEnumeration = exhaustiveAssemblyEnumeration;
 	}
 	
 	/**
@@ -292,6 +301,14 @@ public class PdbInfoDB implements Serializable {
 	
 	public void setNonStandardCoordFrameConvention(boolean nonStandardCoordFrameConvention) {
 		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
+	}
+
+	public boolean isExhaustiveAssemblyEnumeration() {
+		return exhaustiveAssemblyEnumeration;
+	}
+
+	public void setExhaustiveAssemblyEnumeration(boolean exhaustiveAssemblyEnumeration) {
+		this.exhaustiveAssemblyEnumeration = exhaustiveAssemblyEnumeration;
 	}
 
 	public double getCellA() {

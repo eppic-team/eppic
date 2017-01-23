@@ -451,6 +451,8 @@ public class DataModelAdaptor {
 	
 	public void setAssemblies(CrystalAssemblies validAssemblies) {
 		
+		pdbInfo.setExhaustiveAssemblyEnumeration(validAssemblies.isExhaustiveEnumeration());
+		
 		for (Assembly validAssembly:validAssemblies) {
 			AssemblyDB assembly = new AssemblyDB();
 			

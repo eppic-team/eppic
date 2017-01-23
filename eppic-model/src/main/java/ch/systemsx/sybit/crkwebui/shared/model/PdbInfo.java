@@ -30,7 +30,8 @@ import eppic.model.PdbInfoDB;
 @XmlType(propOrder = { "pdbCode", "title", "releaseDate", "expMethod",
 		"spaceGroup", "resolution", "rfreeValue", "numChainClusters",
 		"cellA","cellB","cellC","cellAlpha","cellBeta","cellGamma",
-		"crystalFormId", "ncsOpsPresent", "nonStandardSg", "nonStandardCoordFrameConvention",
+		"crystalFormId", "ncsOpsPresent", "nonStandardSg", "nonStandardCoordFrameConvention", 
+		"exhaustiveAssemblyEnumeration",
 		"chainClusters", "interfaceClusters",  "assemblies",
 "runParameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -74,6 +75,8 @@ public class PdbInfo implements Serializable, ProcessingData
 	
 	private boolean nonStandardSg;
 	private boolean nonStandardCoordFrameConvention;
+	
+	private boolean exhaustiveAssemblyEnumeration;
 
 	private RunParameters runParameters;
 
@@ -319,6 +322,14 @@ public class PdbInfo implements Serializable, ProcessingData
 		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
 	}
 
+	public boolean isExhaustiveAssemblyEnumeration() {
+		return exhaustiveAssemblyEnumeration;
+	}
+
+	public void setExhaustiveAssemblyEnumeration(boolean exhaustiveAssemblyEnumeration) {
+		this.exhaustiveAssemblyEnumeration = exhaustiveAssemblyEnumeration;
+	}
+
 	public void setRunParameters(RunParameters runParameters) {
 		this.runParameters = runParameters;
 	}
@@ -470,6 +481,7 @@ public class PdbInfo implements Serializable, ProcessingData
 		 pdbInfo.setNcsOpsPresent(pdbInfoDB.isNcsOpsPresent());
 		 pdbInfo.setNonStandardSg(pdbInfoDB.isNonStandardSg());
 		 pdbInfo.setNonStandardCoordFrameConvention(pdbInfoDB.isNonStandardCoordFrameConvention());
+		 pdbInfo.setExhaustiveAssemblyEnumeration(pdbInfoDB.isExhaustiveAssemblyEnumeration());
 		 
 		 return pdbInfo;
 	 }

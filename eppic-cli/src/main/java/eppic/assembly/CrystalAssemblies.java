@@ -66,6 +66,12 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	private Map<Integer,String> idx2ChainIds;
 		
 	private boolean largeNumAssemblies;
+	
+	/**
+	 * Whether the assembly enumeration was exhaustive or via 
+	 * heuristically contracting heteromeric edges.
+	 */
+	private boolean exhaustiveEnumeration;
 		
 	/**
 	 * 
@@ -91,6 +97,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	private void init(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) throws StructureException {
 		this.largeNumAssemblies = false;
 		
+		// for most cases we'll do the exhaustive enumeration, below we set to false when not
+		this.exhaustiveEnumeration = true;
+		
 		this.structure = structure;
 		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
 				
@@ -102,7 +111,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 		if (forceContracted) {
 			logger.info("Doing assemblies enumeration with graph contraction, since forceContracted is true");
-			graphContractor = latticeGraph.contractGraph(InterfaceEdge.class);			
+			graphContractor = latticeGraph.contractGraph(InterfaceEdge.class);
+			exhaustiveEnumeration = false;
 		} 
 
 		findValidAssemblies();
@@ -115,6 +125,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			
 			findValidAssemblies();
 			
+			exhaustiveEnumeration = false;
 		}
 		
 		if (graphContractor!=null) { // i.e. if we did contracted enumeration above
@@ -434,6 +445,10 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	public Structure getStructure() {
 		return structure;
+	}
+	
+	public boolean isExhaustiveEnumeration() {
+		return exhaustiveEnumeration;
 	}
 	
 	public LatticeGraph<ChainVertex, InterfaceEdge> getLatticeGraph() {

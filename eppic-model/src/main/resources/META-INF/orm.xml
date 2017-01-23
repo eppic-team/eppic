@@ -98,6 +98,8 @@
 			<basic name="nonStandardSg"></basic>
 			<basic name="nonStandardCoordFrameConvention"></basic>
 			
+			<basic name="exhaustiveAssemblyEnumeration"></basic>
+			
 			<basic name="crystalFormId"></basic>
 			
 			<basic name="numChainClusters"></basic>

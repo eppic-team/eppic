@@ -214,6 +214,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 
 		// for first iteration
 		// TODO select the best scoring interface instead of largest (in most cases it will coincide with the largest anyway)
+		// TODO we can only select here edges that are isomorphic in the whole graph, i.e. that happen between every pair of chains of the 2 entities
 		int interfClusterId = GraphUtils.getLargestHeteroInterfaceCluster(g);
 
 		cg = g;
