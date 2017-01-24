@@ -120,6 +120,7 @@ public class PdbInfo implements Serializable, ProcessingData
 			boolean ncsOpsPresent,
 			boolean nonStandardSg,
 			boolean nonStandardCoordFrameConvention,
+			boolean exhaustiveAssemblyEnumration,
 			RunParameters runParameters) 
 	{
 		this.interfaceClusters = new ArrayList<InterfaceCluster>();
@@ -143,6 +144,7 @@ public class PdbInfo implements Serializable, ProcessingData
 		this.ncsOpsPresent = ncsOpsPresent;
 		this.nonStandardSg = nonStandardSg;
 		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
+		this.exhaustiveAssemblyEnumeration = exhaustiveAssemblyEnumration;
 		this.runParameters = runParameters;
 	}
 
