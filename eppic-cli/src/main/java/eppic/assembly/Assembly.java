@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.zip.GZIPOutputStream;
 
@@ -58,8 +59,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.CallType;
+import eppic.InterfaceEvolContextList;
 import eppic.commons.util.GeomTools;
-
+import eppic.predictors.InterfaceTypePredictor;
 
 /**
  * An Assembly of molecules within a crystal, represented by a set of engaged interface clusters.
@@ -73,12 +75,21 @@ import eppic.commons.util.GeomTools;
  * </pre>
  * 
  * @author Jose Duarte
+ * @author Aleix Lafita
  *
  */
 public class Assembly {
 	
 	private static final Logger logger = LoggerFactory.getLogger(Assembly.class);
-
+	
+	/**
+	 * Maximum number of engaged interfaces to consider in the scoring calculation.
+	 * If more interfaces are engaged, then a warning is thrown and the smaller
+	 * (lowest probability of biological) interfaces are removed from the 
+	 * calculation, in order to loose as little probability density as possible.
+	 */
+	private static final int MAX_NUM_ENGAGED_IFACES_SCORING = 10;
+	
 	/**
 	 * A numerical identifier for the assembly, from 1 to n
 	 */
@@ -98,10 +109,19 @@ public class Assembly {
 	 * The AssemblyGraph object containing the subgraph and its connected components
 	 */
 	private AssemblyGraph assemblyGraph;
-		
+	
+	/** 
+	 * Probability of this assembly being the biologically relevant one.
+	 */
+	private double probability;
+	
+	/**
+	 * Confidence of the assembly call, as a value between 0 and 1.
+	 */
+	private double confidence;
+	
 	private CallType call;
 	
-
 	
 	public Assembly(CrystalAssemblies crystalAssemblies, PowerSet engagedSet) {
 		this.crystalAssemblies = crystalAssemblies;
@@ -119,17 +139,6 @@ public class Assembly {
 		return assemblyGraph;
 	}
 	
-	public List<StructureInterfaceCluster> getEngagedInterfaceClusters() {
-		TreeMap<Integer, StructureInterfaceCluster> map = new TreeMap<Integer, StructureInterfaceCluster>();
-		for (InterfaceEdge e : assemblyGraph.getSubgraph().edgeSet()) {
-			map.put ( e.getClusterId(), e.getInterfaceCluster());
-		}
-		
-		List<StructureInterfaceCluster> list = new ArrayList<StructureInterfaceCluster>();
-		list.addAll(map.values());
-		return list;
-	}
-	
 	public int getNumEngagedInterfaceClusters() {
 		int count=0;
 		for (int i=0;i<engagedSet.size();i++) {
@@ -139,7 +148,7 @@ public class Assembly {
 	}
 	
 	/**
-	 * Get the parent CrystalAssemly object containing references to all other Assemblies and to the original Structure
+	 * Get the parent CrystalAssemblies object containing references to all other Assemblies and to the original Structure
 	 * @return
 	 */
 	public CrystalAssemblies getCrystalAssemblies() {
@@ -226,6 +235,9 @@ public class Assembly {
 	 * if Assembly is heteromeric and stoichiometry is uneven returns false
 	 * </li>
 	 * <li>
+	 * if Assembly is not automorphic (i.e. all vertices of a kind must have the same kind and number of interface clusters) returns false
+	 * </li>
+	 * <li>
 	 * finally checks that all cycles are closed by enumerating cycles and checking the translations add up to 0
 	 * </li>
 	 * @return
@@ -239,7 +251,7 @@ public class Assembly {
 		}
 
 		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
-		if (getNumEngagedInterfaceClusters()==1) {
+		if (GraphUtils.getNumDistinctInterfaces(assemblyGraph.getSubgraph())==1) { 
 			if (assemblyGraph.containsIsologous()) {
 				logger.debug("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
 				return true;
@@ -250,6 +262,11 @@ public class Assembly {
 		// for heteromeric assemblies, uneven stoichiometries implies non-closed. We can discard uneven ones straight away
 		if (!assemblyGraph.isStoichiometryEven()) {
 			logger.debug("Uneven stoichiometry for assembly {}, can't be a closed symmetry. Discarding",toString());
+			return false;
+		}
+		
+		// graph automorphism is a necessary (but not sufficient) condition: all vertices of a certain entity must have the same kind and number of interfaces (interface cluster ids)
+		if (!assemblyGraph.isAutomorphic()) {
 			return false;
 		}
 	
@@ -758,7 +775,7 @@ public class Assembly {
 				public void connectedComponentStarted(ConnectedComponentTraversalEvent e) {}
 
 				@Override
-				public void edgeTraversed(EdgeTraversalEvent<V, E> event) {
+				public void edgeTraversed(EdgeTraversalEvent<E> event) {
 					// TODO Auto-generated method stub
 					E edge = event.getEdge();
 					// Undirected edge, so source and target may be swapped
@@ -922,6 +939,14 @@ public class Assembly {
 		return call;
 	}
 	
+	public double getScore() {
+		return probability;
+	}
+	
+	public double getConfidence() {
+		return confidence;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (! (other instanceof Assembly)) return false;
@@ -940,36 +965,118 @@ public class Assembly {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		int numClusters = getNumEngagedInterfaceClusters();
+		
+		SortedSet<Integer> interfClusterIds = GraphUtils.getDistinctInterfaceClusters(assemblyGraph.getSubgraph());
+		int numClusters = interfClusterIds.size();
+		
 		sb.append("{");
-		int e = 0;
-		for (int i=0;i<engagedSet.size();i++) {
-			if (engagedSet.isOn(i)) {
-				sb.append(i+1);
-				e++;
-				if (e!=numClusters) sb.append(",");
-			}
+
+		int i = 0;
+		for (int interfClusterId : interfClusterIds) {
+
+			sb.append(interfClusterId);
+			
+			if (i!=numClusters-1) sb.append(",");
+
+			i++;
 		}
 		sb.append("}");
 		return sb.toString();
 	}
 
 	/**
-	 * Assign a call to this Assembly, retrieve the call subsequently with {@link #getCall()}
+	 * Compute a probabilistic score from the individual interface
+	 * probabilities.
 	 */
-	public void score() {
-
-		// we won't support non-fully-covering stoichiometries for the moment
-		// TODO support them: most likely requires a more complex data model where we can have score/calls for each of the subcomponents of the assembly
-		if (!assemblyGraph.isFullyCovering()) {
-			logger.warn("Assembly {} does not cover all entities, assembly scoring will be done for first sub-assembly only", toString());
+	public void calcScore() {
+		
+		// Calculate the probabilities for each possible set of interface clusters
+		probability = 0;
+		InterfaceEvolContextList iecl = getCrystalAssemblies().getInterfaceEvolContextList();
+		
+		// Construct a list of all the smaller powersets of this assembly that are equivalent
+		List<PowerSet> pss = new ArrayList<PowerSet>();
+		
+		PowerSet reducedSet = new PowerSet(engagedSet);
+		
+		// If the number of engaged interfaces is high, warn and disengage
+		if (reducedSet.sizeOn() > MAX_NUM_ENGAGED_IFACES_SCORING) {
+			logger.warn("There are {} engaged interface clusters in assembly {}. "
+					+ "They will be reduced to compute assembly scoring.", 
+					reducedSet.sizeOn(), id);
+			
+			while (reducedSet.sizeOn() > MAX_NUM_ENGAGED_IFACES_SCORING) {
+				
+				// Find the lowest probability cluster
+				int index = 0;
+				double probability = 1;
+				for (int i = 1; i < reducedSet.size() + 1; i++) {
+					double p = iecl.getCombinedClusterPredictor(i).getScore();
+					if (p <= probability) {
+						index = i - 1;
+						probability = p;
+					}
+				}
+				logger.info("Disengaging interface cluster {} for assembly {} scoring",
+						index + 1, id);
+				if (probability > 0.1) {
+					logger.warn("Disengaging interface cluster {} of assembly {} "
+							+ "scoring, with probability {} of being biologically "
+							+ "relevant. Significant probability density might be "
+							+ "missing for the score of this assembly.", index + 1,
+							id, String.format("%.2f", probability));
+				}
+				
+				reducedSet.switchOff(index);
+			}
 		}
 		
-		
-		SubAssembly firstSubAssembly = assemblyGraph.getSubAssemblies().get(0);
-		
-		setCall(firstSubAssembly.score());
-				
+		for (PowerSet ps : reducedSet.getOnPowerSet(1)) {
+			// Equivalent means that they have the same number of subassemblies
+			Assembly pa = new Assembly(crystalAssemblies, ps);
+			if (pa.getAssemblyGraph().getSubAssemblies().size() == 
+					this.getAssemblyGraph().getSubAssemblies().size())
+				pss.add(ps);
+		}
+		pss.add(reducedSet);
+					
+		for (PowerSet ps : pss) {
+			double prob = 1;
+			for (int i = 1; i < ps.size()+1; i++) {
+				double p = iecl.getCombinedClusterPredictor(i).getScore();
+				if (ps.isOff(i-1))
+					p = (1-p);
+				prob *= p;
+			}
+			probability += prob;
+		}
+	}
+	
+	/**
+	 * Normalize the probabilistic score by the total sum of assembly
+	 * probabilities. This is needed to account for the 0 probability
+	 * of impossible interface combinations (assemblies).
+	 * @param sumProbs total sum of assembly probabilities in the crystal.
+	 */
+	public void normalizeScore(double sumProbs) {
+		probability = probability / sumProbs;
+	}
+	
+	/**
+	 * Calculate the confidence of the call.
+	 */
+	public void calcConfidence() {
+		switch(call){
+		case BIO:
+			confidence = probability;
+			break;
+		case CRYSTAL:
+			confidence = 1 - probability;
+			break;
+		case NO_PREDICTION:
+			// should that be a global variable in eppic params?
+			confidence = InterfaceTypePredictor.CONFIDENCE_UNASSIGNED;
+		}
 	}
 	
 	/**

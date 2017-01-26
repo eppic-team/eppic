@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
@@ -31,26 +30,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileCache;
-import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.ChainVertex3DJsonAdapter;
-import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.InterfaceEdge3DJsonAdapter;
-import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.InterfaceEdge3DSourcedJsonAdapter;
-import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.LatticeGraph3DJson;
-import ch.systemsx.sybit.crkwebui.server.jmol.generators.json.ParametricCircularArcJsonAdapter;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
-import eppic.assembly.ChainVertex3D;
-import eppic.assembly.InterfaceEdge3D;
+import eppic.EppicParams;
 import eppic.assembly.LatticeGraph3D;
-import eppic.assembly.ParametricCircularArc;
-import eppic.assembly.gui.InterfaceEdge3DSourced;
 import eppic.assembly.gui.LatticeGUIMustache;
-import eppic.commons.util.IntervalSet;
 
 /**
  * Helper class to generate the LatticeGraph HTML
@@ -60,7 +49,7 @@ import eppic.commons.util.IntervalSet;
 public class LatticeGraphPageGenerator {
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphPageGenerator.class);
 	
-	private static final Gson gson = createGson();
+	private static final Gson gson = LatticeGraph3D.createGson();
 	
 	public static final String TEMPLATE_LATTICE_GUI_NGL_LAZY = "LatticeGUINglLazy.html.mustache";
 
@@ -121,6 +110,9 @@ public class LatticeGraphPageGenerator {
 		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 
 		Callable<String> computeJson = () -> {
+			
+			logger.info("In computeJson");
+			
 			if( !strucFile.exists() ) {
 				// this shouldn't happen...
 				throw new IOException("Could not find input AU file "+ strucFile.toString());
@@ -154,14 +146,12 @@ public class LatticeGraphPageGenerator {
 		String json = cache.getString(jsonFilename, computeJson);
 		out.println(json);
 	}
+	
 	private static String getJsonFilename(File directory, String inputName, Collection<Integer> requestedIfaces) {
-		String interfaceIntervals;
-		if(requestedIfaces == null || requestedIfaces.isEmpty() ) {
-			interfaceIntervals = "*";
-		} else {
-			interfaceIntervals = new IntervalSet(new TreeSet<>(requestedIfaces)).toSelectionString();
-		}
-		String jsonFilename = new File(directory,String.format("%s.latticeGraph.%s.json", inputName, interfaceIntervals)).toString();
+		File jsonFile = new File(directory, inputName + EppicParams.get3dLatticeGraphJsonFilenameSuffix(requestedIfaces));
+		
+		String jsonFilename = jsonFile.toString();
+		logger.info("The 3d lattice graph json file is {}. File exists={}", jsonFilename, jsonFile.exists());
 		return jsonFilename;
 	}
 
@@ -173,6 +163,9 @@ public class LatticeGraphPageGenerator {
 	 */
 	public static List<StructureInterface> createStructureInterfaces(
 			List<Interface> interfaces, SpaceGroup sg) {
+		
+		// TODO note this is broken at the moment, see https://github.com/eppic-team/eppic/issues/159 - JD 2017-01-20
+		//      the functionality is still fine anyway because we produce the json files from CLI
 		List<StructureInterface> siList = new ArrayList<StructureInterface>(
 				interfaces.size());
 		for (Interface iface : interfaces) {
@@ -262,19 +255,6 @@ public class LatticeGraphPageGenerator {
 		return auStruct;
 	}
 
-	/**
-	 * Create a Gson object that can serialize LatticeGraph3D objects
-	 * @return
-	 */
-	private static Gson createGson() {
-		return new GsonBuilder()
-			.registerTypeAdapter(LatticeGraph3D.class, new LatticeGraph3DJson())
-			.registerTypeAdapter(ChainVertex3D.class, new ChainVertex3DJsonAdapter())
-			.registerTypeAdapter(InterfaceEdge3DSourced.class, new InterfaceEdge3DSourcedJsonAdapter())
-			.registerTypeAdapter(InterfaceEdge3D.class, new InterfaceEdge3DJsonAdapter())
-			.registerTypeAdapter(ParametricCircularArc.class, new ParametricCircularArcJsonAdapter())
-			.setPrettyPrinting()
-			.create();
-	}
+	
 
 }

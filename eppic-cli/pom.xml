@@ -9,7 +9,7 @@
 	<artifactId>eppic-cli</artifactId>
 
 	<properties>
-		<biojava.version>4.2.5</biojava.version>
+		<biojava.version>4.2.6-SNAPSHOT</biojava.version>
 	</properties>
 
 	<repositories>
@@ -102,14 +102,14 @@
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-core</artifactId>
-			<version>0.9.2</version>
+			<version>${jgrapht.version}</version>
 		</dependency>
 
 		<!-- 2D graph visualization -->
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-ext</artifactId>
-			<version>0.9.2</version>
+			<version>${jgrapht.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.tinyjee.jgraphx</groupId>
@@ -130,6 +130,13 @@
 			<version>2.2</version>
 		</dependency>
 
+		<!-- gson to generate 3d lattice graph json files -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${gson.version}</version>
+		</dependency>
+		
 		<!-- uniprot -->
 		<dependency>
 			<groupId>uk.ac.ebi.uniprot</groupId>
@@ -152,7 +159,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.14</version>
+			<version>${mysql.connector.version}</version>
 		</dependency>
 
 

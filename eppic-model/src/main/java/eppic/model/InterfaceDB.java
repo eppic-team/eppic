@@ -32,6 +32,11 @@ public class InterfaceDB implements Serializable {
 	private boolean isologous;
 	
 	/**
+	 * The contact overlap score of the interface with itself, used to call the interface isologous or heterologous.
+	 */
+	private double selfContactOverlapScore;
+	
+	/**
 	 * Whether first chain is a protein
 	 */
 	private boolean prot1;
@@ -264,5 +269,19 @@ public class InterfaceDB implements Serializable {
 
 	public int getUid() {
 		return uid;
+	}
+
+	/**
+	 * @return the selfContactOverlapScore
+	 */
+	public double getSelfContactOverlapScore() {
+		return selfContactOverlapScore;
+	}
+
+	/**
+	 * @param selfContactOverlapScore the selfContactOverlapScore to set
+	 */
+	public void setSelfContactOverlapScore(double selfContactOverlapScore) {
+		this.selfContactOverlapScore = selfContactOverlapScore;
 	}
 }

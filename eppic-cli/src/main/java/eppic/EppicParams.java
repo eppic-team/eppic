@@ -69,6 +69,7 @@ public class EppicParams {
 	protected static final String  ASSEMBLIES_FILE_SUFFIX = ".assemblies";
 	public static final String     ASSEMBLIES_COORD_FILES_SUFFIX = ".assembly";
 	public static final String     ASSEMBLIES_DIAGRAM_FILES_SUFFIX = ".diagram";
+	public static final String     ASSEMBLIES_3DGRAPH_FILES_SUFFIX = ".latticeGraph";
 	public static final String     INTERFACES_COORD_FILES_SUFFIX = ".interface";
 	public static final String     UNIT_CELL_COORD_FILES_SUFFIX = ".cell";
 
@@ -282,6 +283,9 @@ public class EppicParams {
 	
 	private boolean filterByDomain;
 	
+	// an internal-only parameter, useful for testing
+	private boolean forceContractedAssemblyEnumeration;
+	
 	// some other fields
 	private File inFile;
 	
@@ -371,6 +375,7 @@ public class EppicParams {
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
 		this.filterByDomain = false;
+		this.forceContractedAssemblyEnumeration = false; // should only be set to true for testing
 		
 	}
 	
@@ -679,7 +684,7 @@ public class EppicParams {
 	 * @param interfaceIds
 	 * @return
 	 */
-	public static String getJsonFilenameSuffix(Collection<Integer> interfaceIds) {
+	public static String get2dDiagramJsonFilenameSuffix(Collection<Integer> interfaceIds) {
 		String interfaceIntervals;
 		if(interfaceIds == null || interfaceIds.isEmpty() ) {
 			interfaceIntervals = "*";
@@ -688,6 +693,22 @@ public class EppicParams {
 		}
 		
 		return String.format("%s.%s.json", ASSEMBLIES_DIAGRAM_FILES_SUFFIX, interfaceIntervals);
+	}
+	
+	/**
+	 * Gets the suffix of the json file for the wui 3d lattice graph assembly diagram in the form <pre>{@value #ASSEMBLIES_3DGRAPH_FILES_SUFFIX}.&lt;interface interval&gt;.json</pre>
+	 * @param interfaceIds
+	 * @return
+	 */
+	public static String get3dLatticeGraphJsonFilenameSuffix(Collection<Integer> interfaceIds) {
+		String interfaceIntervals;
+		if(interfaceIds == null || interfaceIds.isEmpty() ) {
+			interfaceIntervals = "*";
+		} else {
+			interfaceIntervals = new IntervalSet(new TreeSet<>(interfaceIds)).toSelectionString();
+		}
+		
+		return String.format("%s.%s.json", ASSEMBLIES_3DGRAPH_FILES_SUFFIX, interfaceIntervals);
 	}
 	
 	public String getPdbCode() {
@@ -1068,6 +1089,14 @@ public class EppicParams {
 	
 	public void setAlphabet(AAAlphabet alphabet) {
 		this.alphabet = alphabet;
+	}
+	
+	public boolean isForceContractedAssemblyEnumeration() {
+		return forceContractedAssemblyEnumeration;
+	}
+	
+	public void setForceContractedAssemblyEnumeration(boolean forceContractedAssemblyEnumeration) {
+		this.forceContractedAssemblyEnumeration = forceContractedAssemblyEnumeration;
 	}
 	
 }

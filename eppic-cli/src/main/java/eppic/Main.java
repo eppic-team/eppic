@@ -15,10 +15,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.SortedSet;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -44,8 +43,11 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+
 import eppic.assembly.Assembly;
 import eppic.assembly.CrystalAssemblies;
+import eppic.assembly.GraphUtils;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
@@ -361,7 +363,7 @@ public class Main {
 	public void doFindAssemblies() throws StructureException { 
 		
 		params.getProgressLog().println("Calculating possible assemblies...");
-		validAssemblies = new CrystalAssemblies(pdb, interfaces); 
+		validAssemblies = new CrystalAssemblies(pdb, interfaces, params.isForceContractedAssemblyEnumeration()); 
 
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
@@ -499,7 +501,7 @@ public class Main {
 		
 		
 		try {
-			if (params.isDoEvolScoring()) {
+			if (params.isDoEvolScoring() && iecList!=null) { //iecList can be null if there are no interfaces (e.g. NMR monomers)
 				// we set the entropies as bfactors in case we are in evol scoring (-s)
 				// this will reset the bfactors in the Chain objects of the StructureInterface objects
 				// so both interfaces and assembly files will be written with reset bfactors
@@ -562,27 +564,24 @@ public class Main {
 			LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
 			GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
 			String fileFormat = "png";
+			
+			// the gson object needed in step 3 below
+			Gson gson = LatticeGraph3D.createGson();
 
 			for (Assembly a:validAssemblies) {
 				
-				// 1 generate the png with the assembly diagram via invoking the dot executable
+				// 1. Generate the png with the assembly diagram via invoking the dot executable
 
 				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
 				LOGGER.info("Writing diagram for assembly {} to {}",a.getId(),pngFile);
-
+					
 				// Filter down to this assembly
-				List<StructureInterfaceCluster> clusters = a.getEngagedInterfaceClusters();
-				Set<Integer> clusterIds = new HashSet<Integer>(clusters.size());
-				Set<Integer> interfaceIds = new TreeSet<Integer>();
-				for(StructureInterfaceCluster cluster : clusters) {
-					clusterIds.add(cluster.getId());
-					for (StructureInterface interf:cluster.getMembers()) {
-						interfaceIds.add(interf.getId());
-					}
-				}
+				// TODO this is not going to work for contracted graphs: both clusterIds and interfaceids are wrong! see issue https://github.com/eppic-team/eppic/issues/148
+				SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
+				Set<Integer> interfaceIds = GraphUtils.getDistinctInterfaces(a.getAssemblyGraph().getSubgraph());
 				latticeGraph.filterEngagedClusters(clusterIds);
-
+					
 				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
 				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
 				guiThumb.setTitle("Assembly "+a.getId());
@@ -603,7 +602,7 @@ public class Main {
 				runner.generateFromDot(guiThumb, pngFile, fileFormat);
 				
 				
-				// 2 generate the json file for the dynamic js graph in the wui
+				// 2. Generate the json file for the dynamic js graph in the wui
 				
 				guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, latticeGraph);
 				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
@@ -623,18 +622,32 @@ public class Main {
 					json = json.replaceAll(",(?=\\s*[}\\]])","");
 											
 				}
-				File jsonAssemblyDiagramFile = params.getOutputFile(EppicParams.getJsonFilenameSuffix(interfaceIds));
+				File jsonAssemblyDiagramFile = params.getOutputFile(EppicParams.get2dDiagramJsonFilenameSuffix(interfaceIds));
 
 				PrintWriter pw = new PrintWriter(new FileWriter(jsonAssemblyDiagramFile));
 				pw.println(json);
 				pw.close();
-			}
+				
+				
+				// 3. Generate the json file for the 3d lattice graph in the wui (ngl based)
+								
+				latticeGraph.setHexColors();
 
+				json = gson.toJson(latticeGraph);
+
+				File jsonLatticeGraphFile = params.getOutputFile(EppicParams.get3dLatticeGraphJsonFilenameSuffix(interfaceIds));
+
+				pw = new PrintWriter(new FileWriter(jsonLatticeGraphFile));
+				pw.println(json);
+				pw.close();
+				
+				
+			}
 
 		} catch( IOException|StructureException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
 		}
-	}	
+	}
 
 	// TODO implement the HBplus stuff
 //	public void doHBPlus() throws EppicException {
@@ -864,7 +877,7 @@ public class Main {
 	 * Run the full eppic analysis given a parameters object
 	 * @param params
 	 */
-	protected void run(EppicParams params) {
+	public void run(EppicParams params) {
 		this.params = params;
 		run(false);
 	}
@@ -986,7 +999,7 @@ public class Main {
 		
 	}
 	
-	protected DataModelAdaptor getDataModelAdaptor() {
+	public DataModelAdaptor getDataModelAdaptor() {
 		return modelAdaptor;
 	}
 	

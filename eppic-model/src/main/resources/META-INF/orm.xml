@@ -98,6 +98,8 @@
 			<basic name="nonStandardSg"></basic>
 			<basic name="nonStandardCoordFrameConvention"></basic>
 			
+			<basic name="exhaustiveAssemblyEnumeration"></basic>
+			
 			<basic name="crystalFormId"></basic>
 			
 			<basic name="numChainClusters"></basic>
@@ -361,6 +363,8 @@
 			</basic>
 			<basic name="infinite"></basic>
 			<basic name="isologous"></basic>
+			
+			<basic name="selfContactOverlapScore"></basic>
 			
 			<basic name="prot1"></basic>
 			<basic name="prot2"></basic>

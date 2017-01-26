@@ -1,41 +1,57 @@
 package eppic.assembly;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.vecmath.Point3i;
+
 import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
 import org.jgrapht.UndirectedGraph;
+import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class GraphContractor {
-	
+public class GraphContractor<V extends ChainVertexInterface, E extends InterfaceEdgeInterface> {
+
 	private static final Logger logger = LoggerFactory.getLogger(GraphContractor.class);
 
 	/**
 	 * The original graph
 	 */
-	private UndirectedGraph<ChainVertex, InterfaceEdge> g;
-	
+	private UndirectedGraph<V, E> g;
+
 	/**
 	 * The contracted graph
 	 */
-	private UndirectedGraph<ChainVertex, InterfaceEdge> cg;
+	private UndirectedGraph<V, E> cg;
+
+	/**
+	 * Encodes a tree with which nodes were merged.
+	 * Access with {@link #getContractedVertex(ChainVertexInterface)}
+	 */
+	private Map<V,V> contractedVertices;
 	
-	private Map<ChainVertex,ChainVertex> contractedVertices;
-	
-	public GraphContractor(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	/**
+	 * The set of contracted interface cluster ids
+	 */
+	private Set<Integer> contractedInterfClusterIds;
+
+	public GraphContractor(UndirectedGraph<V, E> g) {
 		this.g = g;
-		this.contractedVertices = new HashMap<ChainVertex, ChainVertex>();
+		this.contractedVertices = new HashMap<V, V>();
+		this.contractedInterfClusterIds = new TreeSet<>();
 	}
-	
+
 	/**
 	 * Contract all edges in given interfClusterId.
 	 * Only one of the 2 vertices of each removed edge is kept (always the one corresponding
@@ -43,229 +59,315 @@ public class GraphContractor {
 	 * then attached to the remaining vertex.
 	 * @param inputGraph
 	 * @param interfClusterId 
+	 * @param edgeClass
 	 * @return
 	 */
-	private UndirectedGraph<ChainVertex, InterfaceEdge> contractInterfaceCluster(
-			UndirectedGraph<ChainVertex, InterfaceEdge> inputGraph, int interfClusterId) {
-		
+	@SuppressWarnings("unchecked")
+	private UndirectedGraph<V, E> contractInterfaceCluster(
+			UndirectedGraph<V, E> inputGraph, int interfClusterId, Class<? extends E> edgeClass) {
+
+		//logger.debug("Pre-contraction graph:\n"+GraphUtils.toDot(inputGraph, "Precontraction"));
+
+		// shallow copying of the graph
+		UndirectedGraph<V, E> contGraph = new Pseudograph<>(edgeClass);
+		Graphs.addGraph(contGraph, inputGraph);
+
 		// let's first gather the edges to remove: all of them correspond to a single interface cluster and thus 
 		// source and target nodes will be always the same 2 entities
-		Set<InterfaceEdge> toRemove = getEdgesWithInterfClusterId(inputGraph, interfClusterId);
+		Set<E> toRemove = getEdgesWithInterfClusterId(inputGraph, interfClusterId);
 
-		UndirectedGraph<ChainVertex, InterfaceEdge> contGraph = GraphUtils.copyGraph(inputGraph);
-
+		// Choose which end of the edges to keep
 		int referenceEntityId = -1;
 
-		for (InterfaceEdge e:toRemove) {
+		// Remove each edge individually
+		for (E e:toRemove) {
 
-			logger.debug("Removing edge {}", e.toString());
 
-			ChainVertex s = inputGraph.getEdgeSource(e);			
-			ChainVertex t = inputGraph.getEdgeTarget(e);			
+			// Extract the following info from e with the convention ( vToKeep -> vToRemove )
+			V vToKeep,vToRemove;
+			Point3i xtalTrans;
 
-			if (s.getEntity()<0) logger.error("Entity id for vertex {} is negative!",s.getEntity());
+			{ // local variable scope
 
-			if (referenceEntityId<0) {
-				referenceEntityId = s.getEntity();
-				logger.debug("Chose reference entity id {}. Vertices that have this entity id will be kept.", referenceEntityId); 
+				logger.debug("Removing edge {}", e.toString());
+
+				V s = inputGraph.getEdgeSource(e);
+				V t = inputGraph.getEdgeTarget(e);
+
+				// Use the first edge to establish the reference direction
+				if (s.getEntityId()<0) logger.error("Entity id for vertex {} is negative!",s.getEntityId());
+				if (referenceEntityId<0) {
+					referenceEntityId = s.getEntityId();
+					logger.debug("Chose reference entity id {}. Vertices that have this entity id will be kept.", referenceEntityId); 
+				}
+
+				xtalTrans = e.getXtalTrans();
+
+				boolean keepSource = s.getEntityId() == referenceEntityId;
+				assert keepSource != (t.getEntityId() == referenceEntityId); // either the source or target should be the ref
+
+				if(keepSource) {
+					vToKeep = s;
+					vToRemove = t;
+				} else {
+					vToKeep = t;
+					vToRemove = s;
+					// need to negate translation to keep with the convention
+					xtalTrans.negate();
+				}
+
+				logger.debug("Graph has {} vertices and {} edges, before add edges loop", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 			}
-
-			// we will keep the vertices matching referenceEntityId
-			ChainVertex vToRemove = null;
-			ChainVertex vToKeep = null;
-			if (s.getEntity() == referenceEntityId) {
-				vToRemove = t;
-				vToKeep = s;
-			} else if (t.getEntity() == referenceEntityId) {
-				vToRemove = s;
-				vToKeep = t;
-			} else {
-				logger.warn("Neither vertex matched entity id {}. Something is wrong!",referenceEntityId);
-			}
-
-			logger.debug("Graph has {} vertices and {} edges, before removing anything", contGraph.vertexSet().size(), contGraph.edgeSet().size());
-
-			contGraph.removeVertex(vToRemove);
-			
-			contractedVertices.put(vToRemove, vToKeep);
-
-			logger.debug("Graph has {} vertices and {} edges, before add edges loop", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 
 			// we need to add to vToKeep all edges that were connecting vToRemove to any other vertex 
-			for (InterfaceEdge eToAdd : inputGraph.edgesOf(vToRemove)) {				
+			for (E eToAdd : contGraph.edgesOf(vToRemove)) {
 
 				if (eToAdd == e) {
-					logger.debug("Won't add the joining edge as a self-edge");
+					//Don't add the joining edges as a self-edge
 					continue;
 				}
 
-				boolean invert = false;
-				ChainVertex target = null;
-				if (vToRemove.equals(inputGraph.getEdgeSource(eToAdd))) {
-					target = inputGraph.getEdgeTarget(eToAdd);
-				} else if (vToRemove.equals(inputGraph.getEdgeTarget(eToAdd))) {
-					target = inputGraph.getEdgeSource(eToAdd);
-					invert = true;
-				} else {
-					logger.error("vToRemove is neither source nor target");
-					continue;
+				// extract similar info from eToAdd with the convention ( vToRemove -> vToLink )
+				V vToLink;
+				Point3i xtalTransLink;
+				
+				{ // local variable scope
+					V s = contGraph.getEdgeSource(eToAdd);
+					V t = contGraph.getEdgeTarget(eToAdd);
+	
+					xtalTransLink = eToAdd.getXtalTrans();
+					
+					if (vToRemove.equals(s)) {
+						vToLink = t;
+					} else {
+						assert vToRemove.equals(t); // should be one or the other
+						vToLink = s;
+						// preserve direction convention
+						xtalTransLink.negate();
+					}
+
+					if(vToLink == vToKeep) {
+						//Don't add the joining edges as a self-edge
+						continue;
+					}
+					// Now we have all the info to make a new edge ( vToKeep -> vToLink )
+					logger.debug("Adding edge {} between {} -> {}. Before it was {}->{}", 
+							eToAdd.toString(), vToKeep.toString(), vToLink.toString(), s.toString(), t.toString());
 				}
 
-				if (!contGraph.containsVertex(target)) {
-					logger.debug("Vertex {}, needed to add new edge {} is not in graph, replacing it by its contracted vertex {}", 
-							target, eToAdd, contractedVertices.get(target));
-					target = contractedVertices.get(target);
-				}
+				// we create a new edge so that we can keep the original edges from the original graph intact
+				InterfaceEdge newEdge = new InterfaceEdge();
 
-				// we make sure we put them back in the same direction as we encountered them
-				logger.debug("Adding edge {} between {} {} {}. Before it was {}-{}", 
-						eToAdd.toString(), vToKeep.toString(), ( invert?"<-":"->" ), target.toString(),vToRemove.toString(),target.toString());
-				if (!invert) 					
-					contGraph.addEdge(vToKeep, target, eToAdd);
-				else
-					contGraph.addEdge(target, vToKeep, eToAdd);
+				newEdge.setInterfaceId(eToAdd.getInterfaceId());
+				newEdge.setClusterId(eToAdd.getClusterId());
+				//TODO It can be that two non-infinite edges together are infinite. Does that matter here? -SB
+				newEdge.setIsInfinite(eToAdd.isInfinite() || e.isInfinite());
+				newEdge.setIsIsologous(eToAdd.isIsologous() || e.isIsologous());
 
+				// xtalTrans should have already been negated if necessary
+				Point3i newTrans = new Point3i(xtalTrans);
+				newTrans.add(xtalTransLink);
+				newEdge.setXtalTrans(newTrans);
 
+				// the casting should be safe
+				contGraph.addEdge(vToKeep, vToLink, (E) newEdge);
 
 				logger.debug("Graph has {} vertices and {} edges", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 			}
+
+			// Remove the vertex!
+			contGraph.removeVertex(vToRemove);
+			contractedVertices.put(vToRemove,vToKeep);
 		}
+
+		logger.debug("Post-contraction graph:\n"+GraphUtils.toDot(contGraph, "Postcontraction"));
 
 		// let's now remove duplicated edges
 		trim(contGraph);
 
+
 		// logging the entity counts
 		if (logger.isDebugEnabled()) {
-			
+
 			Map<Integer, Integer> counts = getEntityCounts(contGraph);
-			
+
 			logger.debug("Counts per entities of contracted graph:");
 			for (Entry<Integer, Integer> entry:counts.entrySet()) {
 				logger.debug("  entity {} -> {} vertices", entry.getKey(), entry.getValue());
 			}
-			
-			
+
+
 		}
-		
+
 		return contGraph;
 	}
-	
+
 	/**
 	 * Contract the graph iteratively using the largest heteromeric interface in each iteration,
 	 * in order to create a pseudo-homomeric graph.
 	 * Contracted vertices can be obtained subsequently with {@link #getContractedVertices()} and their 
-	 * replacements by {@link #getContractedVertex(ChainVertex)} 
-	 * @return
+	 * replacements by {@link #getContractedVertex(V)} 
+	 * @return the contracted graph, also accessible via {@link #getContractedGraph()}
+	 * @param edgeClass
 	 */
-	public UndirectedGraph<ChainVertex, InterfaceEdge> contract() {
-			
+	public UndirectedGraph<V, E> contract(Class<? extends E> edgeClass) {
+
 		// for first iteration
+		// TODO select the best scoring interface instead of largest (in most cases it will coincide with the largest anyway)
+		// TODO we can only select here edges that are isomorphic in the whole graph, i.e. that happen between every pair of chains of the 2 entities
 		int interfClusterId = GraphUtils.getLargestHeteroInterfaceCluster(g);
-		
+
 		cg = g;
 
 		int i = 0;
 		while (true) {
 			i++;
-			logger.debug("Round {} of contraction: contracting interface cluster {}",i,interfClusterId);
+			logger.info("Round {} of contraction: contracting interface cluster {}",i,interfClusterId);
 			logger.debug("Starting graph before contraction has {} vertices and {} edges",cg.vertexSet().size(),cg.edgeSet().size());
 			// logging the entity counts
 			if (logger.isDebugEnabled()) {
-				
+
 				Map<Integer, Integer> counts = getEntityCounts(cg);
-				
+
 				logger.debug("Counts per entities of starting graph:");
 				for (Entry<Integer, Integer> entry:counts.entrySet()) {
 					logger.debug("  entity {} -> {} vertices", entry.getKey(), entry.getValue());
 				}
-				
-				
+
+
 			}
 
+
+			cg = contractInterfaceCluster(cg, interfClusterId, edgeClass);
 			
-			cg = contractInterfaceCluster(cg, interfClusterId);
-			
+			// we keep a list of every interf cluster id we contract
+			contractedInterfClusterIds.add(interfClusterId);
+
 			// we get the interfClusterId for next iteration
+			// TODO select the best scoring interface instead of largest (in most cases it will coincide with the largest anyway)
 			interfClusterId = GraphUtils.getLargestHeteroInterfaceCluster(cg);
-			
+
 			// if no more heteromeric interfaces we break: end of iteration
 			if (interfClusterId == -1) break;
 		}
-		
+
+		logger.debug("Final contracted graph ({} vertices, {} edges):\n{}", cg.vertexSet().size(), cg.edgeSet().size(),
+				GraphUtils.asString(cg));
+
+
 		return cg;
 	}
 
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getOriginalGraph() {
+	public UndirectedGraph<V, E> getOriginalGraph() {
 		return g;
 	}
-	
-	public UndirectedGraph<ChainVertex, InterfaceEdge> getContractedGraph() {
+
+	public UndirectedGraph<V, E> getContractedGraph() {
 		return cg;
 	}
-	
+
 	/**
 	 * Returns the replacement vertex given a contracted vertex
 	 * @param v
-	 * @return
+	 * @return the replacement for v, or v if it was not contracted
 	 */
-	public ChainVertex getContractedVertex(ChainVertex v) {
-		return contractedVertices.get(v);
+	public V getContractedVertex(V v) {
+		if(!contractedVertices.containsKey(v)) {
+			return v; //replaced with itself
+		}
+		V replacement = contractedVertices.get(v);
+		// Check for additional replacements recursively
+		if( replacement != v) {
+			V replacement2 = getContractedVertex(replacement);
+			if( replacement != replacement2) {
+				// shorten search path for future searches
+				replacement = replacement2;
+				contractedVertices.put(v,replacement);
+			}
+		}
+		return replacement;
 	}
-	
+
 	/**
-	 * Returns the set of contracted vertices
+	 * Returns the set of removed vertices
 	 * @return
 	 */
-	public Set<ChainVertex> getContractedVertices() {
+	public Set<V> getContractedVertices() {
 		return contractedVertices.keySet();
 	}
-	
+
 	public Set<Integer> getContractedEntityIds() {
 		Set<Integer> set = new TreeSet<Integer>();
-		
-		for (ChainVertex v: contractedVertices.keySet()) {
-			set.add(v.getEntity());
+
+		for (V v: contractedVertices.keySet()) {
+			set.add(v.getEntityId());
 		}
 		return set;
 	}
 	
-	private static void trim(UndirectedGraph<ChainVertex, InterfaceEdge> contGraph) {
-		
-		Set<InterfaceEdge> toRemove = new HashSet<InterfaceEdge>();
+	public Set<Integer> getContractedInterfClusterIds() {
+		return contractedInterfClusterIds;
+	}
+
+	/**
+	 * Eliminates duplicate edges in the given graph: for any 2 nodes joined by more than 1 edge 
+	 * only 1 edge is kept. Also eliminates all loop edges (of a node to itself). 
+	 * 
+	 * @param contGraph
+	 */
+	private static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> void trim(UndirectedGraph<V, E> contGraph) {
+
+		Set<E> toRemove = new HashSet<E>();
 
 		int i = -1;
-		for (ChainVertex iVertex:contGraph.vertexSet()) {
+		for (V iVertex:contGraph.vertexSet()) {
 			i++;
 			int j = -1;
-			for (ChainVertex jVertex:contGraph.vertexSet()) {
+			for (V jVertex:contGraph.vertexSet()) {
 				j++;
 				if (j<i) continue; // i.e. we include i==j (to remove loop edges)
 
-				Set<InterfaceEdge> edges = contGraph.getAllEdges(iVertex, jVertex);
-				Map<Integer,Set<InterfaceEdge>> groups = GraphUtils.groupIntoTypes(edges, true);
+				// note edges contains all edges between iVertex and jVertex, BUT there source/targets can be either iVertex/jVertex or viceversa (see docs of getAllEdges)
+				Set<E> edges = contGraph.getAllEdges(iVertex, jVertex);
 
-				for (int interfaceId:groups.keySet()){
-					Set<InterfaceEdge> group = groups.get(interfaceId);
-
-					if (group.size()==0) {
-						continue;
-					} else if (group.size()==1 && i!=j) { 
-						continue;
-					} else if (group.size()==1 && i==j) {
-						// i!=j condition makes sure that loop edges are removed below (i==j case)
-						toRemove.add(group.iterator().next());
-						logger.debug("Removed loop edge with interface id {}",interfaceId);
-						continue;
+				if (i==j) {
+					// loop edges: we remove them all
+					for (E e : edges) {
+						toRemove.add(e);
+						logger.debug("Removed loop edge {} on vertex {} after contraction", e, iVertex);
 					}
-					// now we are in case 2 or more edges 
-					// we keep first and remove the rest
-					Iterator<InterfaceEdge> it = group.iterator();
-					it.next(); // first edge: we keep it
-					while (it.hasNext()) {						
-						InterfaceEdge edge = it.next();
-						toRemove.add(edge);
-						logger.debug("Removed edge with interface id {} between vertices {},{} ", 
-								interfaceId,iVertex.toString(),jVertex.toString());
+
+				} else {
+					SortedMap<Integer,Set<E>> groups = GraphUtils.groupIntoTypes(edges, true);
+
+					int k = -1;
+					for (Entry<Integer, Set<E>> entry : groups.entrySet()) {
+						k++;
+						// each group below contains all edges of one type
+						int clusterId = entry.getKey();
+						List<E> group = new ArrayList<>(entry.getValue());
+
+						if (k==0) { // only for first group
+
+							// we remove all but first
+							for (int l=1;l<group.size();l++) {
+								logger.debug("Removed (after contraction) duplicate edge {} between vertices {},{}", group.get(l), iVertex, jVertex); 
+								toRemove.add(group.get(l));
+							}
+
+
+						} else { // i.e. second group and beyond
+
+							// there's more than 1 group: we get rid of all edges beyond first group
+							// TODO check that this is the right thing to do, do we lose anything by removing all the edges except for one type?
+							// TODO or do we want to keep one edge per type?
+
+							toRemove.addAll(group);
+							logger.debug("Removed (after contraction) {} edges with cluster id {} between vertices {},{}", group.size(), clusterId, iVertex.toString(), jVertex.toString());
+							continue;
+						}
+
+
 					}
 
 				}
@@ -275,12 +377,12 @@ public class GraphContractor {
 
 		}
 		// now we do the removal
-		for (InterfaceEdge edge:toRemove) {
+		for (E edge:toRemove) {
 			contGraph.removeEdge(edge);
 		}
 
 	}
-	
+
 	/**
 	 * Gets all edges that have the given interfClusterId, giving a warning if the source/target entities
 	 * don't coincide for any of them.
@@ -288,57 +390,57 @@ public class GraphContractor {
 	 * @param interfClusterId
 	 * @return
 	 */
-	private static Set<InterfaceEdge> getEdgesWithInterfClusterId(Graph<ChainVertex, InterfaceEdge> g, int interfClusterId) {
+	private static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> Set<E> getEdgesWithInterfClusterId(Graph<V, E> g, int interfClusterId) {
 		// let's first gather the edges to remove
-		Set<InterfaceEdge> toRemove = new HashSet<InterfaceEdge>();
+		Set<E> toRemove = new HashSet<E>();
 
 		// the source and target entity ids should coincide for all edges
 		int sEntity = -1;
 		int tEntity = -1;
 
-		for (InterfaceEdge edge:g.edgeSet()) {
+		for (E edge:g.edgeSet()) {
 			if (edge.getClusterId() == interfClusterId) {
 
 				toRemove.add(edge);
 
 				// we double check that indeed the source and target chain ids are the same for all of them
-				ChainVertex s = g.getEdgeSource(edge);
-				ChainVertex t = g.getEdgeTarget(edge);
+				V s = g.getEdgeSource(edge);
+				V t = g.getEdgeTarget(edge);
 
-				if (s.getEntity() == t.getEntity()) 
+				if (s.getEntityId() == t.getEntityId()) 
 					logger.warn("This looks like a homomeric interface! We should not be contracting it, something is wrong!");
-				
+
 				if (sEntity>0 && tEntity>0) {
-					if ( !( sEntity == s.getEntity() && tEntity == t.getEntity() ) &&
-						 !( sEntity == t.getEntity() && tEntity == s.getEntity() )   ) {
+					if ( !( sEntity == s.getEntityId() && tEntity == t.getEntityId() ) &&
+							!( sEntity == t.getEntityId() && tEntity == s.getEntityId() )   ) {
 						logger.warn("The source and target entity ids for edge {} don't match the expected ones. Something is wrong!", edge.toString());
 					}
 				} else {
 					// we set source and target as the reference ones the first time
-					sEntity = s.getEntity();
-					tEntity = t.getEntity();
+					sEntity = s.getEntityId();
+					tEntity = t.getEntityId();
 				}
 			}
 		}
-		
+
 		return toRemove;
 	}
-	
+
 	/**
 	 * Gets a map of entity ids to counts of vertices of that entity for the given graph
 	 * @param g
 	 * @return
 	 */
-	private static Map<Integer,Integer> getEntityCounts(UndirectedGraph<ChainVertex, InterfaceEdge> g) {
+	private static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> Map<Integer,Integer> getEntityCounts(UndirectedGraph<V, E> g) {
 		Map<Integer, Integer> counts = new TreeMap<Integer,Integer>();
-		for (ChainVertex v:g.vertexSet()) {
-			int currentEntity = v.getEntity();
+		for (V v:g.vertexSet()) {
+			int currentEntity = v.getEntityId();
 			if (!counts.containsKey(currentEntity)) {
 				counts.put(currentEntity, 0);
 			} 
-			
+
 			counts.put(currentEntity, counts.get(currentEntity)+1);
-			
+
 		}
 		return counts;
 	}

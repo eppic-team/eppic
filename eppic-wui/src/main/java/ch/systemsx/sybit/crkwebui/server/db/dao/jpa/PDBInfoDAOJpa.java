@@ -63,7 +63,8 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 									  pdbScoreItemRoot.get(PdbInfoDB_.crystalFormId),
 									  pdbScoreItemRoot.get(PdbInfoDB_.runParameters),
 									  pdbScoreItemRoot.get(PdbInfoDB_.nonStandardSg),
-									  pdbScoreItemRoot.get(PdbInfoDB_.nonStandardCoordFrameConvention));
+									  pdbScoreItemRoot.get(PdbInfoDB_.nonStandardCoordFrameConvention),
+									  pdbScoreItemRoot.get(PdbInfoDB_.exhaustiveAssemblyEnumeration));
 			
 			TypedQuery<PdbInfoDB> query = entityManager.createQuery(criteriaQuery);
 			PdbInfoDB pdbScoreItemDB = query.getSingleResult();

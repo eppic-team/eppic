@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.jmol.generators.json;
+package eppic.assembly.json;
 
 import java.lang.reflect.Type;
 import java.util.Set;
