@@ -680,15 +680,19 @@ public class EppicParams {
 	}
 	
 	/**
-	 * Gets the suffix of the json file for the wui js assembly diagram in the form <pre>{@value #ASSEMBLIES_DIAGRAM_FILES_SUFFIX}.&lt;interface interval&gt;.json</pre>
-	 * @param interfaceIds
+	 * Gets the suffix of the json file for the wui js assembly diagram in the 
+	 * form <pre>{@value #ASSEMBLIES_DIAGRAM_FILES_SUFFIX}.&lt;interface interval&gt;.json</pre>
+	 * @param interfaceIds an empty collection will result in an "empty" interface interval suffix, 
+	 * whilst a null collection will result in a "*" interface interval suffix
 	 * @return
 	 */
 	public static String get2dDiagramJsonFilenameSuffix(Collection<Integer> interfaceIds) {
 		String interfaceIntervals;
-		if(interfaceIds == null || interfaceIds.isEmpty() ) {
+		if (interfaceIds == null) {
 			interfaceIntervals = "*";
-		} else {
+		} else if (interfaceIds.isEmpty() ) {
+			interfaceIntervals = "empty";
+		}else {
 			interfaceIntervals = new IntervalSet(new TreeSet<>(interfaceIds)).toSelectionString();
 		}
 		
@@ -696,14 +700,18 @@ public class EppicParams {
 	}
 	
 	/**
-	 * Gets the suffix of the json file for the wui 3d lattice graph assembly diagram in the form <pre>{@value #ASSEMBLIES_3DGRAPH_FILES_SUFFIX}.&lt;interface interval&gt;.json</pre>
-	 * @param interfaceIds
+	 * Gets the suffix of the json file for the wui 3d lattice graph assembly diagram in the
+	 * form <pre>{@value #ASSEMBLIES_3DGRAPH_FILES_SUFFIX}.&lt;interface interval&gt;.json</pre>
+	 * @param interfaceIds an empty collection will result in an "empty" interface interval suffix, 
+	 * whilst a null collection will result in a "*" interface interval suffix
 	 * @return
 	 */
 	public static String get3dLatticeGraphJsonFilenameSuffix(Collection<Integer> interfaceIds) {
 		String interfaceIntervals;
-		if(interfaceIds == null || interfaceIds.isEmpty() ) {
+		if (interfaceIds == null) {
 			interfaceIntervals = "*";
+		} else if (interfaceIds.isEmpty() ) {
+			interfaceIntervals = "empty";
 		} else {
 			interfaceIntervals = new IntervalSet(new TreeSet<>(interfaceIds)).toSelectionString();
 		}
