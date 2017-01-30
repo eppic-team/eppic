@@ -11,8 +11,8 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	private CallType call;
 	private String callReason;
 	
-	private double probability;
-	private double confidence;
+	private double probability = 0.5;
+	private double confidence = 0.5;
 	
 	
 	public CombinedClusterPredictor(List<CombinedPredictor> lcp) {
@@ -69,7 +69,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	}
 
 	@Override
-	public double getScore1() {		
+	public double getScore1() {
 		return SCORE_UNASSIGNED;
 	}
 
@@ -93,7 +93,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 			confidence = 1 - probability;
 			break;
 		case NO_PREDICTION: 
-			confidence = CONFIDENCE_UNASSIGNED;
+			confidence = 0.5;
 		
 		}
 		
