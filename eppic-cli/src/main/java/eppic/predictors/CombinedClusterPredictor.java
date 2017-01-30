@@ -11,8 +11,8 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	private CallType call;
 	private String callReason;
 	
-	private double probability;
-	private double confidence;
+	private double probability = 0.5;
+	private double confidence = 0.5;
 	
 	
 	public CombinedClusterPredictor(List<CombinedPredictor> lcp) {
@@ -35,12 +35,16 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 		
 		// 1) BIO call
 		if (probability > 0.5) {
-			callReason = String.format("P(BIO) = %.2f > 0.5", probability);
+			callReason = String.format(
+					"Probability of the interface being biologically relevant is %.2f.",
+					probability);
 			call = CallType.BIO;
-		} 
+		}
 		// 2) XTAL call
 		else if (probability <= 0.5) {
-			callReason = String.format("P(BIO) = %.2f < 0.5", probability);
+			callReason = String.format(
+					"Probability of the interface being biologically relevant is %.2f.",
+					probability);
 			call = CallType.CRYSTAL;
 		}
 		
@@ -69,7 +73,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	}
 
 	@Override
-	public double getScore1() {		
+	public double getScore1() {
 		return SCORE_UNASSIGNED;
 	}
 
@@ -93,7 +97,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 			confidence = 1 - probability;
 			break;
 		case NO_PREDICTION: 
-			confidence = CONFIDENCE_UNASSIGNED;
+			confidence = 0.5;
 		
 		}
 		

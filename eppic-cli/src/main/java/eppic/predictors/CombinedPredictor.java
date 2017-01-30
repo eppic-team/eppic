@@ -47,8 +47,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	
 	private CallType call;
 	
-	private double probability;
-	private double confidence;
+	private double probability = 0.5;
+	private double confidence = 0.5;
 	
 	public CombinedPredictor(InterfaceEvolContext iec, 
 			GeometryPredictor gp, EvolCoreRimPredictor ecrp, EvolCoreSurfacePredictor ecsp) {
@@ -106,7 +106,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			LOGGER.info("Interface {} is not protein in either side, can't score it",iec.getInterface().getId());
 			callReason = "Both sides are not protein, can't score";
 			call = CallType.NO_PREDICTION;
-			probability = -1;
+			probability = 0.5;
 			return;
 		}
 		
@@ -115,12 +115,16 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		
 		// 1) BIO call
 		if (probability > 0.5) {
-			callReason = String.format("P(BIO) = %.2f > 0.5", probability);
+			callReason = String.format(
+					"Probability of the interface being biologically relevant is %.2f.",
+					probability);
 			call = CallType.BIO;
 		} 
 		// 2) XTAL call
 		else if (probability <= 0.5) {
-			callReason = String.format("P(BIO) = %.2f < 0.5", probability);
+			callReason = String.format(
+					"Probability of the interface being biologically relevant is %.2f.",
+					probability);
 			call = CallType.CRYSTAL;
 		}
 		
@@ -186,7 +190,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			confidence = 1 - probability;
 			break;
 		case NO_PREDICTION:
-			confidence = CONFIDENCE_UNASSIGNED;
+			confidence = 0.5;
 		
 		}
 		

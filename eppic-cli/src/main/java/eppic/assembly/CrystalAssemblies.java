@@ -587,19 +587,36 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			indx++;
 		}
 		
+		// This is done when multiple assemblies are high scoring
+		indx = 0;
+		List<Integer> indices = new ArrayList<Integer>();
+		for (Assembly a:uniques) {
+			if (a.getScore() == maxScore){
+				indices.add(indx);
+			}
+			indx++;
+		}
+		
 		// Warn if low probability density of valid assemblies
 		if (sumProbs < 0.5) {
 			logger.warn("The total probability of valid assemblies is only {}. "
 					+ "Assembly ennumeration may be incomplete.", String.format("%.2f", sumProbs));
 		}
 		
-		// Do not normalize the score (easy to do afterwards though)
+		// Do not normalize the score (easy to do afterwards in the DB though)
 		//for (Assembly a:uniques)
 		//	a.normalizeScore(sumProbs);
 		
-		// 3 Assign the BIO call to the highest probability
-		if (uniques.size() > 0)
-			uniques.get(maxIndx).setCall(CallType.BIO);
+		// 3 Assign the BIO call to the highest probability, if unique assembly
+		if (uniques.size() > 0) {
+			if (indices.size() == 1) {
+				uniques.get(maxIndx).setCall(CallType.BIO);
+			} else {
+				for (Integer i:indices) {
+					uniques.get(i).setCall(CallType.NO_PREDICTION);
+				}
+			}
+		}
 		
 		// 4 Compute call confidence
 		for (Assembly a:uniques)
