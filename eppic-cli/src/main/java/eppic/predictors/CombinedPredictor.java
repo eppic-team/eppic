@@ -115,12 +115,16 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		
 		// 1) BIO call
 		if (probability > 0.5) {
-			callReason = String.format("P(BIO) = %.2f > 0.5", probability);
+			callReason = String.format(
+					"Probability of the interface being biologically relevant is %.2f.",
+					probability);
 			call = CallType.BIO;
 		} 
 		// 2) XTAL call
 		else if (probability <= 0.5) {
-			callReason = String.format("P(BIO) = %.2f < 0.5", probability);
+			callReason = String.format(
+					"Probability of the interface being biologically relevant is %.2f.",
+					probability);
 			call = CallType.CRYSTAL;
 		}
 		
