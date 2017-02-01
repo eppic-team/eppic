@@ -54,9 +54,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 	 */
 	public static final String SERVLET_NAME = "assemblyDiagram";
 
-	//public static final String NGL_URL = "https://cdn.rawgit.com/arose/ngl/v0.7.1a/js/build/ngl.embedded.min.js";
-	//public static final String VIS_JS_URL = "https://cdnjs.cloudflare.com/ajax/libs/vis/4.9.0/vis.min.js";
-
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramServlet.class);
 
 	//private String resultsLocation;

@@ -156,8 +156,7 @@ public class LatticeGraphServlet extends BaseServlet
 			} else {
 				String nglJsUrl = properties.getProperty("urlNglJs");
 				if (nglJsUrl == null || nglJsUrl.equals("")) {
-					logger.info("The URL for NGL js is not set in config file. Will use the js file inside the ewui war");
-					nglJsUrl = JmolViewerServlet.DEFAULT_NGL_URL; //we set it to the js file within the war, the leading '/' is important to point to the right path here
+					logger.warn("The URL for NGL js is not set in property 'urlNglJs' in config file! NGL won't work.");
 				}
 				// Request URL, with format=json
 				StringBuffer jsonURL = request.getRequestURL();

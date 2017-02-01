@@ -32,11 +32,7 @@ import eppic.model.ResidueBurialDB;
 public class JmolPageGenerator 
 {
 	private static final Logger logger = LoggerFactory.getLogger(JmolPageGenerator.class);
-
-	/**
-	 * Note that the leading '/' is important in order to point to the in-war location (without it, it points to ewui/)
-	 */
-	private static final String EPPIC_NGL_JS_FUNCTIONS = "/eppic_ngl.js";
+	private static final String EPPIC_NGL_JS_FUNCTIONS = "eppic_ngl.js";
 	private static final String TEMPLATE_NGL = "ngl.html.mustache";
 	
     /**
@@ -48,10 +44,11 @@ public class JmolPageGenerator
      * @param fileName name of the cif file
      * @param interfData 
      * @param nglJsUrl
+     * @param webappRoot
      * @return html page with jmol aplet
      */
 	public static void generatePage(String title, String size, String serverUrl, String resultsLocation,
-			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl, PrintWriter out)  {
+			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl, PrintWriter out, String webappRoot)  {
 		
 		
 		boolean isCif = true;
@@ -71,7 +68,7 @@ public class JmolPageGenerator
 		Map<String,Object> page = new HashMap<>();
 		page.put("title", title);
 		page.put("libURL", nglJsUrl);
-		page.put("jsURL", EPPIC_NGL_JS_FUNCTIONS);
+		page.put("jsURL", webappRoot + "/" + EPPIC_NGL_JS_FUNCTIONS);
 		page.put("fileURL", fileUrl);
 		page.put("jsVariables", jsVariables);
 		page.put("maxEntropy", String.format("%.4f",maxEntropy));
