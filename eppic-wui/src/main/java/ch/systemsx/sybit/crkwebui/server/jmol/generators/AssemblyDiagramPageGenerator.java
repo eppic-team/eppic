@@ -101,7 +101,7 @@ public class AssemblyDiagramPageGenerator {
 	
 	public static void generateHTMLPage(File directory, String inputName, String atomCachePath,
 			String title, String size, String jsonURL, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException {
+			Collection<Integer> requestedIfaces, PrintWriter out, String webappRoot) throws IOException, StructureException {
 		MustacheFactory mf = new DefaultMustacheFactory();
 		String template = LatticeGUIMustache.expandTemplatePath(TEMPLATE_ASSEMBLY_DIAGRAM_FULL_LAZY);
 		Mustache mustache = mf.compile(template);
@@ -109,6 +109,7 @@ public class AssemblyDiagramPageGenerator {
 		page.setSize(size);
 		page.setTitle(title);
 		page.setDataURL(jsonURL);
+		page.setWebappRoot(webappRoot);
 		try {
 			mustache.execute(out, page).flush();
 		} catch (IOException e) {

@@ -9,6 +9,7 @@ import eppic.assembly.gui.LatticeGUIMustache3D;
  *
  */
 public class LazyLatticeGUIMustache3D {
+	private String webappRoot; // the root of the webapp (ewui in our usual setup)
 	private String strucURL; //path to the structure
 	private String libURL; // path to the library (if any)
 	private String dataURL; // path to the json (or other) data file
@@ -52,5 +53,11 @@ public class LazyLatticeGUIMustache3D {
 	}
 	public void setDataURL(String dataURL) {
 		this.dataURL = dataURL;
+	}
+	public String getWebappRoot() {
+		return webappRoot;
+	}
+	public void setWebappRoot(String webappRoot) {
+		this.webappRoot = webappRoot;
 	}
 }

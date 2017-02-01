@@ -169,7 +169,8 @@ public class LatticeGraphServlet extends BaseServlet
 						.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
 						.collect(Collectors.joining("&"))
 						);
-				LatticeGraphPageGenerator.generateHTMLPage(dir,input, auFile, auURI, title, size, jsonURL.toString(), ifaceList, requestedIfaces, outputStream, nglJsUrl);
+				String webappRoot = request.getContextPath();
+				LatticeGraphPageGenerator.generateHTMLPage(dir,input, auFile, auURI, title, size, jsonURL.toString(), ifaceList, requestedIfaces, outputStream, nglJsUrl, webappRoot);
 				// TODO start generating JSON now, since we know that request is coming
 			}
 

@@ -132,7 +132,8 @@ public class AssemblyDiagramServlet extends BaseServlet
 						.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
 						.collect(Collectors.joining("&"))
 						);
-				AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream);
+				String webappRoot = request.getContextPath();
+				AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream, webappRoot);
 				// TODO start generating JSON now, since we know that request is coming
 			}
 
