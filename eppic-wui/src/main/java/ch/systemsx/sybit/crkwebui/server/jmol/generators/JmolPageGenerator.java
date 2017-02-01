@@ -63,7 +63,9 @@ public class JmolPageGenerator
 		// we assume that the alphabet is the default (since in wui there's no way that user can change it)
 		double maxEntropy = Math.log(EppicParams.DEF_ENTROPY_ALPHABET.getNumLetters()) / Math.log(2);
 
-		String fileUrl = serverUrl + "/" + resultsLocation + "/" + fileName;
+		if (!resultsLocation.startsWith("/"))
+			resultsLocation = "/" + resultsLocation;
+		String fileUrl = serverUrl + resultsLocation + "/" + fileName;
 
 		Map<String,Object> page = new HashMap<>();
 		page.put("title", title);
