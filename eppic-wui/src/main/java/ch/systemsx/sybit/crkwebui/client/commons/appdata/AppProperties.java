@@ -128,7 +128,6 @@ public interface AppProperties extends Constants
 	String homologs_panel_uniprot_hint();
 	String homologs_panel_uniprot_no_query_match_hint();
 	String homologs_panel_nrhomologs_hint();
-	String homologs_panel_entropiespse_hint();
 	String homologs_panel_query_warnings_title();
 	String homologs_panel_next_homologs_button();
 	String homologs_panel_prev_homologs_button();

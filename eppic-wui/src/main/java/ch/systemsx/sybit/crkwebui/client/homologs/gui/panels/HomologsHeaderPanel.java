@@ -4,7 +4,6 @@
 package ch.systemsx.sybit.crkwebui.client.homologs.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
@@ -18,7 +17,6 @@ import com.sencha.gxt.widget.core.client.container.SimpleContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 
-import eppic.EppicParams;
 
 /**
  * Panel containing information on the homogs info item
@@ -32,8 +30,6 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 	private HTML subtitleLabel;
 	
 	private VerticalLayoutContainer downloadContainer;
-	private SimpleContainer potatoContainer;
-	private ImageLinkWithTooltip potatoImage;
 	private ImageLinkWithTooltip downloadImage;
 	private ColorPalettePanel colorPanel;
 	
@@ -44,9 +40,7 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 		
 		infoContainer = createInfoContainer();
 		this.add(infoContainer, new HorizontalLayoutData(1,-1));
-		
-		potatoContainer = createPotatoContainer(chainCluster, jobId, pdbInfo);
-		this.add(potatoContainer, new HorizontalLayoutData(60,-1));
+	
 		
 		downloadContainer = createDownloadContainer();
 		this.add(downloadContainer, new HorizontalLayoutData(60,-1));
@@ -127,37 +121,6 @@ public class HomologsHeaderPanel extends HorizontalLayoutContainer{
 						"");
 		
 		vlc.add(downloadImage);
-		
-		return vlc;
-		
-	}
-	
-	/**
-	 * Creates the potato container
-	 * @return container
-	 */
-	private SimpleContainer createPotatoContainer(ChainCluster chainCluster, String jobId, PdbInfo pdbInfo) {
-		SimpleContainer vlc = new SimpleContainer();
-		
-		// from SequenceInfoPanel
-		String repChainId = chainCluster.getRepChain();
-		String pdbName = pdbInfo.getTruncatedInputName();
-		String downloadPseLink = GWT.getModuleBaseURL() + 
-				FileDownloadServlet.SERVLET_NAME + "?" +
-				FileDownloadServlet.PARAM_TYPE+"=" + FileDownloadServlet.TYPE_VALUE_ENTROPIESPSE+
-				"&"+FileDownloadServlet.PARAM_ID+"=" + jobId + 
-				"&"+FileDownloadServlet.PARAM_REP_CHAIN_ID+"=" + repChainId;
-		
-		String colorPseIconImgSrc = 
-				ApplicationContext.getSettings().getResultsLocationForJob(jobId) + "/" +
-				pdbName +"."+repChainId+EppicParams.ENTROPIES_FILE_SUFFIX+".png";
-
-		potatoImage = new ImageLinkWithTooltip(colorPseIconImgSrc, 
-						40, 40, 
-						AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
-						downloadPseLink);
-		
-		vlc.add(potatoImage);
 		
 		return vlc;
 		

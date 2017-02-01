@@ -26,7 +26,6 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowQueryWarningsHandl
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
-import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
@@ -36,7 +35,6 @@ import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
 
 
 
-import com.google.gwt.core.client.GWT;
 //import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -350,34 +348,8 @@ public class SequenceInfoPanel extends FieldSet
 			
 			
 		}
-		items.add(createPotatoImageLink(chainCluster, ApplicationContext.getPdbInfo().getJobId(), ApplicationContext.getPdbInfo()));
 
 		return items;
-	}
-	
-	private ImageLinkWithTooltip createPotatoImageLink(ChainCluster chainCluster, String jobId, PdbInfo pdbInfo) {
-		
-		String repChainId = chainCluster.getRepChain();
-		//String pdbName = pdbInfo.getTruncatedInputName();
-		String downloadPseLink = GWT.getModuleBaseURL() + 
-				FileDownloadServlet.SERVLET_NAME + "?" +
-				FileDownloadServlet.PARAM_TYPE+"=" + FileDownloadServlet.TYPE_VALUE_ENTROPIESPSE+
-				"&"+FileDownloadServlet.PARAM_ID+"=" + jobId + 
-				"&"+FileDownloadServlet.PARAM_REP_CHAIN_ID+"=" + repChainId;
-		
-		String colorPseIconImgSrc = "resources/icons/potato_14.png";
-
-		ImageLinkWithTooltip potatoImage = new ImageLinkWithTooltip(colorPseIconImgSrc, 
-						14, 14, 
-						AppPropertiesManager.CONSTANTS.homologs_panel_entropiespse_hint(), 
-						downloadPseLink);
-		String html = potatoImage.getHTML();
-		int insertat = html.indexOf("></a>");
-		if (insertat != -1)
-			html = html.substring(0,insertat) + " style='position:relative;top:3px'" + html.substring(insertat,html.length());
-		potatoImage.setHTML(html);
-		return potatoImage;
-		
 	}
 
 	private ImageLinkWithTooltip createSearchSimilarStructuresIcon(final ChainCluster chainCluster) {
