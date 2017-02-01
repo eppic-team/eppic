@@ -133,6 +133,8 @@ public class AssemblyDiagramServlet extends BaseServlet
 						.collect(Collectors.joining("&"))
 						);
 				String webappRoot = request.getContextPath();
+				String servletPath = request.getServletPath();
+				logger.debug("Context path: {}, servlet path: {}", webappRoot, servletPath);
 				AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream, webappRoot);
 				// TODO start generating JSON now, since we know that request is coming
 			}
