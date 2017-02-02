@@ -45,11 +45,8 @@ public class ViewerRunner
 	 */
 	private static void showJmolViewer(String interfaceId)
 	{
-		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
-		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
-		{
-			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
-		}
+		int size = Math.min(ApplicationContext.getWindowData().getWindowHeight(), 
+				ApplicationContext.getWindowData().getWindowWidth());
 		
 		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
 		
@@ -75,11 +72,8 @@ public class ViewerRunner
 	 */
 	private static void showJmolViewerAssembly(String assemblyId)
 	{
-		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
-		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
-		{
-			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
-		}
+		int size = Math.min(ApplicationContext.getWindowData().getWindowHeight(), 
+				ApplicationContext.getWindowData().getWindowWidth());
 		
 		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
 		
@@ -103,11 +97,8 @@ public class ViewerRunner
 	 */
 	private static void showJmolViewerAssemblyInNewTab(String assemblyId)
 	{
-		int size = ApplicationContext.getWindowData().getWindowHeight() - 60;
-		if(size > ApplicationContext.getWindowData().getWindowWidth() - 60)
-		{
-			size = ApplicationContext.getWindowData().getWindowWidth() - 60;
-		}
+		int size = Math.min(ApplicationContext.getWindowData().getWindowHeight(), 
+				ApplicationContext.getWindowData().getWindowWidth());
 		
 		int jmolAppletSize = size - PopupRunner.VIEWER_SIZE_OFFSET;
 		

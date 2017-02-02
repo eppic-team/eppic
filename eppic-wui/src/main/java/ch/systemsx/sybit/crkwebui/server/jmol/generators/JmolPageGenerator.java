@@ -34,6 +34,7 @@ public class JmolPageGenerator
 	private static final Logger logger = LoggerFactory.getLogger(JmolPageGenerator.class);
 	private static final String EPPIC_NGL_JS_FUNCTIONS = "resources/js/nglhelper.js";
 	private static final String TEMPLATE_NGL = "ngl.html.mustache";
+	private static final String CSSFILE = "eppic-static.css";
 	
     /**
      * Generates html page containing the 3D viewer.
@@ -70,7 +71,9 @@ public class JmolPageGenerator
 		Map<String,Object> page = new HashMap<>();
 		page.put("title", title);
 		page.put("libURL", nglJsUrl);
-		page.put("jsURL", webappRoot + "/" + EPPIC_NGL_JS_FUNCTIONS);
+		if (!webappRoot.endsWith("/")) webappRoot = webappRoot + "/"; 
+		page.put("jsURL", webappRoot + EPPIC_NGL_JS_FUNCTIONS);
+		page.put("cssUrl", webappRoot + CSSFILE);
 		page.put("fileURL", fileUrl);
 		page.put("jsVariables", jsVariables);
 		page.put("maxEntropy", String.format("%.4f",maxEntropy));

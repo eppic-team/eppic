@@ -6,6 +6,10 @@
 	<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
 	<script src="{{webappRoot}}/resources/js/nglhelper.js"></script>
 	<link rel="stylesheet" type="text/css" href="{{webappRoot}}/resources/css/spinner.css" />
+	<link rel="stylesheet" type="text/css" href="{{webappRoot}}/eppic-static.css">
+	<link
+	href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic'
+	rel='stylesheet' type='text/css'>
 </head>
 <body>
 	<script src="{{libURL}}"></script>
@@ -51,6 +55,9 @@
 		).then(function(jsonXHR,o) {
 			var json = jsonXHR[0]
 
+			// NOTE: from version v0.8 and later, the THREE data types are bundled with 
+			// ngl, when we upgrade we'd need to change THREE -> NGL
+			
 			// operators to create the unit cell
 			var operators = json.unitCellTransforms.map(function(x) {
 				return new THREE.Matrix4().set(
@@ -72,6 +79,9 @@
 				);
 			}
 			o.structure.biomolDict[ "LATTICEGRAPH_UNITCELL" ] = assembly;
+			
+			// NOTE: from version v0.8 or later THREE.FrontSide should be replaced by string "front"
+			
 			o.addRepresentation( "cartoon", { opacity: 0.5, side: THREE.FrontSide, assembly: "LATTICEGRAPH_UNITCELL" } );
 			o.centerView();
 
@@ -103,6 +113,9 @@
 
 			o.addBufferRepresentation( sphereBuffer );
 
+			// NOTE: from version v0.8 to v0.9.3 the TextBuffer constructor is not exposed to the NGL namespace anymore
+			//       This should be solved in next release after 0.9.3, see https://github.com/arose/ngl/issues/252
+			
 			////////  sphere labels ///////////////////////////////////////////////
 			var textBuffer = new NGL.TextBuffer(
 					spherePositions,
@@ -204,13 +217,19 @@
 
 	</script>
 
-	<div id="viewport" style="width:{{size}}px; height:{{size}}px;">
-		<div id="spinner">
-			<div>
-				<img width=120 height=120 src="{{webappRoot}}/resources/images/spinner_d1c5ka1.gif" />
-				<p>Loading...</p>
+	<div style="width:{{size}}px; height:{{size}}px;">
+		<div id="viewport" style="width:{{size}}px; height:{{size}}px;">
+			<div id="spinner">
+				<div>
+					<img width=120 height=120 src="{{webappRoot}}/resources/images/spinner_d1c5ka1.gif" />
+					<p>Loading...</p>
+				</div>
 			</div>
 		</div>
+		<div class="helpbox-3dviewer">
+			<h3>Press s, m, l or x for screenshots 1x, 2x, 3x or 4x the size of the window</h3>
+		</div>
+		
 	</div>
 
 </body>

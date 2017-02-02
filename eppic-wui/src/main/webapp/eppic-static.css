@@ -351,3 +351,43 @@ th.numeric {
 td.text {
 	text-align: left;
 }
+
+.helpbox-3dviewer {
+ background-color: rgba(0,0,0,0.65);
+ /*position: absolute;*/
+ height: 100px;
+ width: 70%;
+ font-family: 'Open Sans', sans-serif;
+ color: #FFF;
+ /*bottom: 20px;
+ left: 20px;*/
+ z-index: 1;
+ margin: auto;
+ text-align: center;
+ border-radius: 20px;
+ /*padding: 4px 4px 4px 4px;*/
+
+}
+
+.conservationLegend {
+  display: none;
+  margin: auto;
+  width: 70%;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.gradient {
+  height: 20px;
+  /*width: 40%;*/
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+  background: white; /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient(left, blue , #f4dc42); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(right, blue, #f4dc42); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(right, blue, #f4dc42); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(to right, blue , #f4dc42); /* Standard syntax (must be last) */
+  border-style: outset;
+  border-width: 2px;
+
+}

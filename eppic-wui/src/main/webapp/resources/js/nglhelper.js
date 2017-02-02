@@ -11,6 +11,7 @@ function default_keypress(stage, e) {
     if (e !== undefined && e.which == 112) { // 112 is p
     	console.log("p was pressed, toggling surface");
     	toggleSurface();
+    	toggleDiv("conservationLegend");
     }
     
     if (e !== undefined && e.which == 110) { // 110 is n
@@ -168,4 +169,19 @@ function hexToRGB(hex) {
 	var g = hexVal >> 8 & 0xFF;
 	var b = hexVal & 0xFF;
 	return [r/256.,g/256.,b/256.];
+}
+
+/**
+ * Toggle visibility of given div
+ * @param id
+ * @returns
+ */
+function toggleDiv(id) {
+    var div = document.getElementById(id);
+    if (div.style.display == "none" || div.style.display == "") {
+      div.style.display = "block";
+    } else {
+      div.style.display = "none";
+    }
+    //div.style.display = div.style.display == "none" ? "block" : "none";
 }
