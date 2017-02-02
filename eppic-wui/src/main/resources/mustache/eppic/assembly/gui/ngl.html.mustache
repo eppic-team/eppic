@@ -15,6 +15,8 @@ var maxEntropy = {{maxEntropy}};
 
 {{{jsVariables}}}
 
+document.onkeypress = function(e) { default_keypress(stage,e);};
+
 NGL.mainScriptFilePath = "{{libURL}}";
 
 document.addEventListener( "DOMContentLoaded", function() {
