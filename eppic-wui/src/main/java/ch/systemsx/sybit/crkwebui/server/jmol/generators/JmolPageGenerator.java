@@ -32,7 +32,7 @@ import eppic.model.ResidueBurialDB;
 public class JmolPageGenerator 
 {
 	private static final Logger logger = LoggerFactory.getLogger(JmolPageGenerator.class);
-	private static final String EPPIC_NGL_JS_FUNCTIONS = "eppic_ngl.js";
+	private static final String EPPIC_NGL_JS_FUNCTIONS = "resources/js/nglhelper.js";
 	private static final String TEMPLATE_NGL = "ngl.html.mustache";
 	
     /**
