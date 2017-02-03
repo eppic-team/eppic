@@ -22,7 +22,7 @@ import com.google.gwt.user.client.Window;
 public class PopupRunner
 {
 	
-	public static final int VIEWER_SIZE_OFFSET = 160;
+	public static final int VIEWER_SIZE_OFFSET = 200;
 	
 	/**
 	 * A constant to use for when all interfaces and not only those of a particular assembly should be shown.

@@ -31,7 +31,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.EppicParams;
 
 /**
- * Servlet used to open jmol.
+ * Servlet used to open the 3D viewer for interfaces and assemblies.
  * @author AS
  */
 public class JmolViewerServlet extends BaseServlet
