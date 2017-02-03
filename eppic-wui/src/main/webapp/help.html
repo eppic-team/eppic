@@ -40,7 +40,9 @@
 			<h4>EPPIC (Evolutionary Protein-Protein Interface Classifier)
 				aims at classifying the interfaces present in protein crystal
 				structures in order to determine whether they are biologically
-				relevant or not.</h4>
+				relevant or not. Since version 3 it can additionally enumerate 
+				all topologically valid assemblies in the crystal, providing 
+				a prediction of the most likely quaternary assembly.</h4>
 
 			<p>In addition to that, it provides information of general use
 				for a number of structural biology applications:</p>
@@ -48,8 +50,8 @@
 				<li>Precomputed Multiple Sequence Alignments (MSAs) of closely
 					related homologs (within 60% sequence identity)for every protein in
 					the PDB or for user-uploaded structures</li>
-				<li>Colored-by-sequence-entropy surface representation as PSE
-					files. Very useful for looking at features present at protein
+				<li>Colored-by-sequence-entropy surface representation using the
+					browser embedded NGL viewer. Very useful for looking at features present at protein
 					surfaces: interfaces, binding sites etc. (<a
 					href="#homologs-window">more</a>)
 				</li>
@@ -112,9 +114,16 @@
 				</p>
 			</div>
 		</div>
+		
+		<h2 id="assemblies-table">The assemblies table</h2>
+		<p>All the topologically valid assemblies detected in the crystal are 
+		listed. Valid assemblies are those exhibiting Point Group Symmetry and
+		isomorphous across the lattice graph that represents the crystal, i.e.
+		all molecules must be interacting in the same way throughout the lattice.
+		</p>
 
 		<!-- Main Interface table -->
-		<h2 id="interface-table">The main interface table</h2>
+		<h2 id="interface-table">The interfaces table</h2>
 		<p>EPPIC will provide a view of all the protein-protein interfaces
 			present in the crystal and assess their biological or crystal contact
 			nature based on a geometrical and on two evolutionary criteria:
@@ -261,7 +270,7 @@
 
 
 
-		<h2 id="3D">Viewing interfaces in 3D</h2>
+		<h2 id="3D">Viewing interfaces and assemblies in 3D</h2>
 		<div class="eppic-help-subtopic">
 			<div class="eppic-help-subtopic-left-small">
 				<img class="eppic-help-subtopic-image"
@@ -270,30 +279,26 @@
 			</div>
 
 			<div class="eppic-help-subtopic-right-big">
-				<p>The thumbnails in the Interface table give a visual cartoon
-					representation of the interfaces. By clicking on them one gets an
+				<p>The thumbnails in the Assembly and Interface tables give a visual cartoon
+					representation of the assemblies and interfaces. By clicking on them one gets an
 					interactive 3D view, depending on the selected mode: as browser
-					embedded Jmol viewer (no need for local viewer), as a PDB file
-					downloadable to a local molecular viewer, or as PyMOL session file
-					(.pse) to be opened in local PyMOL. In both Jmol and pse modes the
-					two protomers are represented as cartoons with interface residues
+					embedded NGL viewer (no need for local viewer) or as a mmCIF file
+					downloadable to a local molecular viewer. In the interface view
+					the two protomers are represented as cartoons with interface residues
 					also shown as sticks. Core residues from both protomers are shown
-					in two different shades of red.</p>
-				<p>The PSE mode is particularly useful as it is already prepared
-					with selections of the different parts of the interface and nicely
-					depicted. The entropy values for each residue are written as
-					b-factors in the .pdb and .pse files so one can use the PyMOL
-					"color by b-factor" functionality (spectrum command) to show the
-					selection pressure pattern mapped on the 3-dimensional structure:
+					in two different shades of red. The sequence entropy values for each residue 
+					are written as b-factors in the .cif file. </p>
+				<p>Once in the NGL window, by pressing "p" the user can get
+					a surface representation of the subunits with sequence conservation
+					values mapped onto it in a color code:
 					blue colors indicate low entropies and colors toward reds
-					correspond to increasingly higher entropies. The surface
-					representation is particularly helpful here in order to see surface
-					residues only.</p>
+					correspond to increasingly higher entropies. Pressing "n"
+					the surface representation toggles through the chains.</p>
 				<h3>Changing 3D-Viewing mode:</h3>
 				<p>The 3D-Viewer can be changed using the button "Change 3D
 					Viewer" on the top-left corner of the main interface table.
 					Clicking the button will open a drop-down menu where one
-					can select any one of the three modes described above.</p>
+					can select any one of the two modes described above.</p>
 			</div>
 		</div>
 
@@ -508,16 +513,6 @@
 		
 		<ul>
 			<li>
-			<b>MTRIXn records not used</b>: for some PDB entries, usually viral capsid proteins, extra 
-			operators are required for reconstructing the full Asymmetric Unit. At the moment
-			EPPIC does not take these operators into account. This results in missing interfaces for
-			those structures (e.g. 
-			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=1AUY" target="_blank">1auy</a>, 
-			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=3RA2" target="_blank">3ra2</a>). 
-			This applies also to a few non-capsid entries like 
-			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=1A37" target="_blank">1a37</a>.  
-			</li>
-			<li>
 			<b>MHC and antibody interfaces not correctly predicted</b>: due to the special nature 
 			of the MHC and antibodies sequences, the evolutionary criteria used by EPPIC do not hold 
 			for them. Thus the predictions for interfaces with at least one MHC or antibody molecule 
@@ -569,18 +564,6 @@
 			See the <a href="http://www.eppic-web.org/ewui/#downloads" onclick="reloadPage('http://www.eppic-web.org/ewui/#downloads');">Downloads page</a> for more information.
 		</p>
 
-		<h3 id="assembly-note">A note on assemblies</h3>
-		<p>
-			At the moment EPPIC classifies only pairwise interfaces in protein
-			crystals. It does not consider interfaces in the context of the full
-			biological assembly and does not group single interface calls into a
-			biological unit call. We intend to implement that in future versions
-			of the software. In the meantime please keep in mind that some
-			interfaces may be called <font color="red">XTAL</font> when they are
-			actually <font color="green">BIO</font> if considered in the context
-			of the assembly: they are "induced" by the topology or point-group
-			symmetry of the assembly.
-		</p>
 
 
 	</div>
