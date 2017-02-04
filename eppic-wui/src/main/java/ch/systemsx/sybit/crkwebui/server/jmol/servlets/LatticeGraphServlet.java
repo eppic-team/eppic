@@ -117,7 +117,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 			PdbInfo pdbInfo = getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
-			//String inputPrefix = pdbInfo.getTruncatedInputName();
+			String inputPrefix = pdbInfo.getTruncatedInputName();
 
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
@@ -152,7 +152,8 @@ public class LatticeGraphServlet extends BaseServlet
 			
 			
 			if(format != null && format.equalsIgnoreCase("json")) {
-				LatticeGraphPageGenerator.generateJSONPage(dir, input, auFile, ifaceList, requestedIfaces, outputStream);
+				// important: input (second param) here must be the truncated input name or otherwise user jobs don't work - JD 2017-02-04
+				LatticeGraphPageGenerator.generateJSONPage(dir, inputPrefix, auFile, ifaceList, requestedIfaces, outputStream);
 			} else {
 				String nglJsUrl = properties.getProperty("urlNglJs");
 				if (nglJsUrl == null || nglJsUrl.equals("")) {
@@ -169,7 +170,7 @@ public class LatticeGraphServlet extends BaseServlet
 						.collect(Collectors.joining("&"))
 						);
 				String webappRoot = request.getContextPath();
-				LatticeGraphPageGenerator.generateHTMLPage(dir,input, auFile, auURI, title, size, jsonURL.toString(), ifaceList, requestedIfaces, outputStream, nglJsUrl, webappRoot);
+				LatticeGraphPageGenerator.generateHTMLPage(dir,inputPrefix, auFile, auURI, title, size, jsonURL.toString(), ifaceList, requestedIfaces, outputStream, nglJsUrl, webappRoot);
 				// TODO start generating JSON now, since we know that request is coming
 			}
 

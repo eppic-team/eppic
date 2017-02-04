@@ -98,6 +98,7 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 			PdbInfo pdbInfo = LatticeGraphServlet.getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
+			String inputPrefix = pdbInfo.getTruncatedInputName();
 
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
@@ -117,7 +118,9 @@ public class AssemblyDiagramServlet extends BaseServlet
 			outputStream = new PrintWriter(response.getOutputStream());
 
 			if(format != null && format.equalsIgnoreCase("json")) {
-				AssemblyDiagramPageGenerator.generateJSONPage(dir,input, atomCachePath, ifaceList, requestedIfaces,outputStream);
+				File auFile = LatticeGraphServlet.getAuFileName(dir, input, atomCachePath);
+				// important: input (second param) here must be the truncated input name or otherwise user jobs don't work - JD 2017-02-04
+				AssemblyDiagramPageGenerator.generateJSONPage(dir,inputPrefix, auFile, ifaceList, requestedIfaces,outputStream);
 			} else {
 				// Request URL, with format=json
 				StringBuffer jsonURL = request.getRequestURL();
@@ -132,7 +135,7 @@ public class AssemblyDiagramServlet extends BaseServlet
 				String webappRoot = request.getContextPath();
 				String servletPath = request.getServletPath();
 				logger.debug("Context path: {}, servlet path: {}", webappRoot, servletPath);
-				AssemblyDiagramPageGenerator.generateHTMLPage(dir,input, atomCachePath, title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream, webappRoot);
+				AssemblyDiagramPageGenerator.generateHTMLPage(title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream, webappRoot);
 				// TODO start generating JSON now, since we know that request is coming
 			}
 

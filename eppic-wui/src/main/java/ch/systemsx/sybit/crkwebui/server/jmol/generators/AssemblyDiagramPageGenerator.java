@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileCache;
-import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -44,7 +43,7 @@ public class AssemblyDiagramPageGenerator {
 	 * 
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
-	 * @param atomCachePath the path for Biojava's AtomCache
+	 * @param auFile the structure file containing the AU
 	 * @param title Page title [default: structure name]
 	 * @param size the canvas size 
 	 * @param interfaces List of all interfaces to build the latticegraph
@@ -56,13 +55,12 @@ public class AssemblyDiagramPageGenerator {
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	public static void generateJSONPage(File directory, String inputName, String atomCachePath,
+	public static void generateJSONPage(File directory, String inputName, File auFile,
 			List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException, InterruptedException, ExecutionException {
 		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 		Callable<String> computeJson = () -> {
 
-			File auFile = LatticeGraphServlet.getAuFileName(directory, inputName, atomCachePath);
 			Structure auStruct = LatticeGraphPageGenerator.readStructure(auFile);
 
 			LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces);
@@ -99,7 +97,7 @@ public class AssemblyDiagramPageGenerator {
 		return jsonFilename;
 	}
 	
-	public static void generateHTMLPage(File directory, String inputName, String atomCachePath,
+	public static void generateHTMLPage(  
 			String title, String size, String jsonURL, List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out, String webappRoot) throws IOException, StructureException {
 		MustacheFactory mf = new DefaultMustacheFactory();
