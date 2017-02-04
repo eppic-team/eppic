@@ -526,17 +526,17 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 					model.setOperatorType(interfaceItem.getOperatorType());
 					model.setInfinite(interfaceItem.isInfinite());
 					model.setWarnings(interfaceItem.getInterfaceWarnings());
+					
+					String jobId = ApplicationContext.getPdbInfo().getJobId();
+					// not sure why we need lower casing here, perhaps if input is upper case? - JD 2017-02-04
+					// what's for sure is that if we lower case for user job ids then the urls are wrong - JD 2017-02-04
+					if(jobId.length() == 4) jobId = jobId.toLowerCase(); 
 					String thumbnailUrl = 
-							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
+							ApplicationContext.getSettings().getResultsLocationForJob(jobId) + 
 							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
 							EppicParams.INTERFACES_COORD_FILES_SUFFIX +
 							"." + interfaceItem.getInterfaceId() + ".75x75.png";
-					if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
-						thumbnailUrl =
-							ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
-							"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-							EppicParams.INTERFACES_COORD_FILES_SUFFIX + 
-							"." + interfaceItem.getInterfaceId() + ".75x75.png";
+					
 					model.setThumbnailUrl(thumbnailUrl);
 
 					data.add(model);
