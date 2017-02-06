@@ -91,7 +91,7 @@ A:hover {
 }
 
 /*
-The style for the list items in Release Log, apply it to enclosing ul element 
+The style for the list items in Release Log, apply it to enclosing ul element
 */
 .eppic-iframe-log-list li {
 	margin-top: 10px;
@@ -207,22 +207,22 @@ EPPIC HELP PAGE STYLES
 
 .eppic-help-subtopic-left-small {
 	float: left;
-	width: 30%;
+	width: 40%;
 }
 
 .eppic-help-subtopic-left-big {
 	float: left;
-	width: 70%;
+	width: 60%;
 }
 
 .eppic-help-subtopic-right-small {
 	float: right;
-	width: 30%;
+	width: 40%;
 }
 
 .eppic-help-subtopic-right-big {
 	float: right;
-	width: 70%;
+	width: 60%;
 }
 
 .eppic-help-subtopic-image {
@@ -232,11 +232,19 @@ EPPIC HELP PAGE STYLES
 	box-shadow: 2px -2px 10px 3px #888, inset 2px -2px 10px 3px #888;
 }
 
+
 .eppic-help-subtopic-image:hover {
 	width: 150%;
 	transition: all 0.3s;
 	-webkit-transition: all 0.3s;
 	box-shadow: 4px -4px 10px 3px #888, inset 4px -4px 10px 3px #888;
+}
+
+.eppic-help-subtopic-image-nozoom {
+	margin: 10px;
+	width: 85%;
+	position: relative;
+	box-shadow: 2px -2px 10px 3px #888, inset 2px -2px 10px 3px #888;
 }
 
 .eppic-help-subtopic-image-right {
@@ -255,8 +263,16 @@ EPPIC HELP PAGE STYLES
 	box-shadow: 4px -4px 10px 3px #888, inset 4px -4px 10px 3px #888;
 }
 
+.eppic-help-subtopic-image-right-nozoom {
+	float: right;
+	margin: 10px;
+	width: 85%;
+	position: relative;
+	box-shadow: 2px -2px 10px 3px #888, inset 2px -2px 10px 3px #888;
+}
+
 .eppic-help-subtopic-image-no-animation {
-	width: 95%;
+	width: 45%;
 	margin: 10px;
 	box-shadow: 2px -2px 10px 3px #888, inset 2px -2px 10px 3px #888;
 }
