@@ -120,6 +120,7 @@ public class Assembly {
 	 */
 	private double confidence;
 	
+	private String callReason;
 	private CallType call;
 	
 	
@@ -937,6 +938,14 @@ public class Assembly {
 	
 	public CallType getCall() {
 		return call;
+	}
+	
+	public void setCallReason(String callReason) {
+		this.callReason = callReason;
+	}
+	
+	public String getCallReason() {
+		return callReason;
 	}
 	
 	public double getScore() {
