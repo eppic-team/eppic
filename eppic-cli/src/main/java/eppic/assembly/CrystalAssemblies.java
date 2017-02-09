@@ -571,7 +571,6 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		for (Assembly a:uniques) {
 			a.calcScore();
 			a.setCall(CallType.CRYSTAL);
-			a.setCallReason("Another assembly in the crystal has a higher probability of being biologically relevant.");
 		}
 		
 		// 2 Compute the sum of probabilities
@@ -612,7 +611,6 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		if (uniques.size() > 0) {
 			if (indices.size() == 1) {
 				uniques.get(maxIndx).setCall(CallType.BIO);
-				uniques.get(maxIndx).setCallReason("Highest probability assembly of being biologically relevant found in the crystal.");
 			} else {
 				// if not a unique assembly
 				for (Integer i:indices) {

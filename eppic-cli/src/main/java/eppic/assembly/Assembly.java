@@ -1078,13 +1078,16 @@ public class Assembly {
 		switch(call){
 		case BIO:
 			confidence = probability;
+			callReason = "Highest probability assembly of being biologically relevant found in the crystal.";
 			break;
 		case CRYSTAL:
 			confidence = 1 - probability;
+			callReason = "Another assembly in the crystal has a higher probability of being biologically relevant.";
 			break;
 		case NO_PREDICTION:
 			// should that be a global variable in eppic params?
 			confidence = InterfaceTypePredictor.CONFIDENCE_UNASSIGNED;
+			callReason = "There is not enough data to classify this assembly.";
 		}
 	}
 	
