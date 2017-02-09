@@ -612,9 +612,12 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			if (indices.size() == 1) {
 				uniques.get(maxIndx).setCall(CallType.BIO);
 			} else {
-				// if not a unique assembly
+				// if not a unique assembly, choose the lowest stoichiometry
 				for (Integer i:indices) {
-					uniques.get(i).setCall(CallType.NO_PREDICTION);
+					if (i == Collections.min(indices))
+						uniques.get(i).setCall(CallType.BIO);
+					else
+						uniques.get(i).setCall(CallType.CRYSTAL);
 				}
 			}
 		}
