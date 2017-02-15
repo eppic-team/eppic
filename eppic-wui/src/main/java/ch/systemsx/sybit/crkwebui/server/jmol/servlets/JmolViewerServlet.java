@@ -31,7 +31,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.EppicParams;
 
 /**
- * Servlet used to open jmol.
+ * Servlet used to open the 3D viewer for interfaces and assemblies.
  * @author AS
  */
 public class JmolViewerServlet extends BaseServlet
@@ -46,14 +46,12 @@ public class JmolViewerServlet extends BaseServlet
 	
 	public static final String PARAM_INPUT = "input";
 	public static final String PARAM_SIZE = "size";
-	public static final String DEFAULT_NGL_URL = "/ngl.embedded.min.js";
 	
 	private static final Logger logger = LoggerFactory.getLogger(JmolViewerServlet.class);
 	
 	private String resultsLocation;
 	private String protocol;
-	//private String generalDestinationDirectoryName;
-	private String servletContPath;
+	
 
 	@Override
 	public void init(ServletConfig config) throws ServletException
@@ -70,7 +68,6 @@ public class JmolViewerServlet extends BaseServlet
 
 		//generalDestinationDirectoryName = properties.getProperty("destination_path");
 
-		servletContPath = getServletContext().getInitParameter("servletContPath");
 	}
 
 	@Override
@@ -92,12 +89,11 @@ public class JmolViewerServlet extends BaseServlet
 		String serverName = request.getServerName();
 		int serverPort = request.getServerPort();
 
-		String serverUrl = protocol + "://" + serverName + ":" + serverPort + "/" + servletContPath;
+		String serverUrl = protocol + "://" + serverName + ":" + serverPort;
 
 		String nglJsUrl = properties.getProperty("urlNglJs");
 		if (nglJsUrl == null || nglJsUrl.equals("")) {
-			logger.info("The URL for NGL js is not set in config file. Will use the js file inside the ewui war");
-			nglJsUrl = DEFAULT_NGL_URL; //we set it to the js file within the war, the leading '/' is important to point to the right path here
+			logger.warn("The URL for NGL js is not set in property 'urlNglJs' in config file! NGL won't work.");
 		}
 		
 		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size={}",jobId,input,interfaceId,size);
@@ -147,6 +143,7 @@ public class JmolViewerServlet extends BaseServlet
 				title = jobId + " - Interface " + interfaceId;
 			}
 
+			String webappRoot = request.getContextPath();
 			
 			JmolPageGenerator.generatePage(title, 
 					size, serverUrl,
@@ -154,7 +151,7 @@ public class JmolViewerServlet extends BaseServlet
 					fileName,   
 					interfData,
 					assemblyData,
-					nglJsUrl,outputStream);
+					nglJsUrl,outputStream, webappRoot);
 		}
 		catch(ValidationException e)
 		{

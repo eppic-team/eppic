@@ -67,12 +67,13 @@ public class LatticeGraphPageGenerator {
 	 * @param requestedIfaces subset of the interfaces to display
 	 * @param out Stream to output the HTML page
 	 * @param urlMolViewer path to the libURL
+	 * @param webappRoot
 	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
 	public static void generateHTMLPage(File directory, String inputName, File strucFile,
 			String strucURI, String title, String size, String jsonURL, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer) throws IOException, StructureException {
+			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer, String webappRoot) throws IOException, StructureException {
 		logger.info("JSON URL for {}: {}",inputName,jsonURL);
 		logger.info("Structure URL for {}: {}",inputName,strucURI);
 		MustacheFactory mf = new DefaultMustacheFactory();
@@ -84,6 +85,7 @@ public class LatticeGraphPageGenerator {
 		page.setDataURL(jsonURL);
 		page.setLibURL(urlMolViewer);
 		page.setStrucURL(strucURI);
+		page.setWebappRoot(webappRoot);
 		try {
 			mustache.execute(out, page)
 				.flush();

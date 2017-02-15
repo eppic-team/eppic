@@ -72,7 +72,8 @@ public class CrkCommandGenerator
 
 		command.add("-L");
 		command.add(destinationDirectoryName + File.separator + CrkWebServiceImpl.PROGRESS_LOG_FILE_NAME);
-		command.add("-l"); // for thumbnails, jmol, pdb and pse files
+		command.add("-l"); // for thumbnails and mmcif files
+		command.add("-P"); // for json files, assembly diagram thumbnails (requires dot)
 		command.add("-w"); // for webui.dat file
 
 		return command;

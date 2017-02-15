@@ -418,25 +418,27 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 						model.setPdb1Assembly(true);	
 					}					
 				}
+				
+				String jobId = ApplicationContext.getPdbInfo().getJobId();
+				// not sure why we need lower casing here, perhaps if input is upper case? - JD 2017-02-04
+				// what's for sure is that if we lower case for user job ids then the urls are wrong - JD 2017-02-04
+				if(jobId.length() == 4) jobId = jobId.toLowerCase(); 
+				String truncatedInputName = ApplicationContext.getPdbInfo().getTruncatedInputName();
 
 				String thumbnailUrl = 
-						ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId()) + 
-						"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+						ApplicationContext.getSettings().getResultsLocationForJob(jobId) + 
+						"/" + truncatedInputName +
 						EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX +
 						"." + assembly.getId() + ".75x75.png";
-				if(ApplicationContext.getPdbInfo().getJobId().length() == 4)
-					thumbnailUrl = 
-					ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
-					"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
-					EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + 
-					"." + assembly.getId() + ".75x75.png";
+				
 				model.setThumbnailUrl(thumbnailUrl);
 
 				String diagramUrl = 
-						ApplicationContext.getSettings().getResultsLocationForJob(ApplicationContext.getPdbInfo().getJobId().toLowerCase()) + 
-						"/" + ApplicationContext.getPdbInfo().getTruncatedInputName() +
+						ApplicationContext.getSettings().getResultsLocationForJob(jobId) + 
+						"/" + truncatedInputName +
 						EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX +
 						"." + assembly.getId() + ".75x75.png";
+				
 				model.setDiagramUrl(diagramUrl);
 
 				model.setMmSize(assembly.getMmSizeString());

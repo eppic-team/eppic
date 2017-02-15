@@ -22,7 +22,7 @@ import com.google.gwt.user.client.Window;
 public class PopupRunner
 {
 	
-	public static final int VIEWER_SIZE_OFFSET = 40;
+	public static final int VIEWER_SIZE_OFFSET = 200;
 	
 	/**
 	 * A constant to use for when all interfaces and not only those of a particular assembly should be shown.
@@ -141,8 +141,8 @@ public class PopupRunner
 	public static String getGraphViewerUrl(String servlet, String assemblyId){
 
 		// we use the same size approach as with the jmol viewer - JD 2016-01-06
-		int size = Math.min( ApplicationContext.getWindowData().getWindowHeight() - 60,
-				ApplicationContext.getWindowData().getWindowWidth() - 60);
+		int size = Math.min( ApplicationContext.getWindowData().getWindowHeight(),
+				ApplicationContext.getWindowData().getWindowWidth());
 
 		int canvasSize = size - VIEWER_SIZE_OFFSET;
 

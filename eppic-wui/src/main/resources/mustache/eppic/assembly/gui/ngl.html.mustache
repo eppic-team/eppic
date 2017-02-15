@@ -5,15 +5,21 @@
 <title>{{title}}</title>
 <script src="{{libURL}}"></script>
 <script src="{{jsURL}}"></script>
+<link rel="stylesheet" type="text/css" href="{{cssUrl}}">
+<link
+	href='http://fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,700italic'
+	rel='stylesheet' type='text/css'>
 </head>
 <body>
 	<script>
 
-// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
+// note that variable names must match those in file resources/js/nglhelper.js
 var inputFile = "{{fileURL}}";
 var maxEntropy = {{maxEntropy}};
 
 {{{jsVariables}}}
+
+document.onkeypress = function(e) { default_keypress(stage,e);};
 
 NGL.mainScriptFilePath = "{{libURL}}";
 
@@ -23,6 +29,23 @@ document.addEventListener( "DOMContentLoaded", function() {
 
 	</script>
 
-	<div id="viewport" style="width:{{size}}px; height:{{size}}px;"></div>
+	<div style="width:{{size}}px; height:{{size}}px;">
+		<div id="viewport" style="width:{{size}}px; height:{{size}}px;">
+		</div>
+		<div class="helpbox-3dviewer">
+					 <h4 style="padding-top: 5px;">Press "p" to toggle surface representation with color-coded sequence conservation. Then "n" to toggle through chains.</h4>
+					 <p style="padding-bottom: 10px;">Press s, m, l or x for screenshots 1x, 2x, 3x or 4x the size of the window</p>
+		</div>
+		<div id="conservationLegend" class="conservationLegend">
+			<div class="gradient">
+			</div>
+			<div style="width: 50%; float: left; height: 40px;"><p style="text-align: left; margin: 0px 0px 0px 0px;">More conserved</p> </div>
+
+			<div style="width: 50%; float: right; height: 40px;"><p style="text-align: right; margin: 0px 0px 0px 0px;">Less conserved</p> </div>
+
+		</div>
+		
+	</div>
+		
 </body>
 </html>

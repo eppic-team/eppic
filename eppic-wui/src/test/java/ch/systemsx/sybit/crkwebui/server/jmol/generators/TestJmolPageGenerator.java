@@ -86,7 +86,7 @@ public class TestJmolPageGenerator {
 		try( PrintWriter pw = new PrintWriter(out) ) {
 			JmolPageGenerator.generatePage("test title", "200", "http://myserver",
 					"../files", "1smt.cif", interfData, assemblyData,
-					"/ngl.embedded.min.js",pw);
+					"/ngl.embedded.min.js",pw, "/");
 		}
 		out.flush();
 		String thepage = out.toString();

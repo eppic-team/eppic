@@ -32,12 +32,9 @@ import eppic.model.ResidueBurialDB;
 public class JmolPageGenerator 
 {
 	private static final Logger logger = LoggerFactory.getLogger(JmolPageGenerator.class);
-
-	/**
-	 * Note that the leading '/' is important in order to point to the in-war location (without it, it points to ewui/)
-	 */
-	private static final String EPPIC_NGL_JS_FUNCTIONS = "/eppic_ngl.js";
+	private static final String EPPIC_NGL_JS_FUNCTIONS = "resources/js/nglhelper.js";
 	private static final String TEMPLATE_NGL = "ngl.html.mustache";
+	private static final String CSSFILE = "eppic-static.css";
 	
     /**
      * Generates html page containing the 3D viewer.
@@ -48,10 +45,11 @@ public class JmolPageGenerator
      * @param fileName name of the cif file
      * @param interfData 
      * @param nglJsUrl
+     * @param webappRoot
      * @return html page with jmol aplet
      */
 	public static void generatePage(String title, String size, String serverUrl, String resultsLocation,
-			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl, PrintWriter out)  {
+			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl, PrintWriter out, String webappRoot)  {
 		
 		
 		boolean isCif = true;
@@ -66,12 +64,16 @@ public class JmolPageGenerator
 		// we assume that the alphabet is the default (since in wui there's no way that user can change it)
 		double maxEntropy = Math.log(EppicParams.DEF_ENTROPY_ALPHABET.getNumLetters()) / Math.log(2);
 
-		String fileUrl = serverUrl + "/" + resultsLocation + "/" + fileName;
+		if (!resultsLocation.startsWith("/"))
+			resultsLocation = "/" + resultsLocation;
+		String fileUrl = serverUrl + resultsLocation + "/" + fileName;
 
 		Map<String,Object> page = new HashMap<>();
 		page.put("title", title);
 		page.put("libURL", nglJsUrl);
-		page.put("jsURL", EPPIC_NGL_JS_FUNCTIONS);
+		if (!webappRoot.endsWith("/")) webappRoot = webappRoot + "/"; 
+		page.put("jsURL", webappRoot + EPPIC_NGL_JS_FUNCTIONS);
+		page.put("cssUrl", webappRoot + CSSFILE);
 		page.put("fileURL", fileUrl);
 		page.put("jsVariables", jsVariables);
 		page.put("maxEntropy", String.format("%.4f",maxEntropy));

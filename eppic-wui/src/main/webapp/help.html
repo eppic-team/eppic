@@ -12,7 +12,7 @@
 			window.top.location=url;
 		}
 	</script>
-	
+
 	<div class="eppic-iframe-content">
 
 		<img class="eppic-iframe-top-img"
@@ -24,10 +24,11 @@
 				<div class="eppic-help-navigation-header">Navigation:</div>
 				<ul>
 					<li><a href="#input">Inputting data</a></li>
-					<li><a href="#interface-table">The main interface table</a></li>
-					<li><a href="#3D">Viewing interfaces in 3D</a></li>
-					<li><a href="#information-panel">Experimental and sequence
-							information</a></li>
+					<li><a href="#assemblies-table">The assemblies table</a></li>
+					<li><a href="#interfaces-table">The interfaces table</a></li>
+					<li><a href="#3D">Viewing interfaces and assemblies in 3D</a></li>
+					<li><a href="#lattice">The lattice graph</a></li>
+					<li><a href="#information-panel">Information panel</a></li>
 					<li><a href="#homologs-window">The homologs information
 							window</a></li>
 					<li><a href="#residue-details">The Details window</a></li>
@@ -38,9 +39,14 @@
 			</div>
 
 			<h4>EPPIC (Evolutionary Protein-Protein Interface Classifier)
-				aims at classifying the interfaces present in protein crystal
-				structures in order to determine whether they are biologically
-				relevant or not.</h4>
+				aims at predicting the quaternary structure of proteins from
+				crystal structures. It first classifies the interfaces present in a crystal
+				structure to determine whether they are biologically
+				relevant or not. Then it enumerates
+				all topologically valid assemblies in the crystal resulting from different
+				combinations of the interfaces. Finally it provides
+				a prediction of the most likely quaternary assembly based on the individual
+				interfaces' scores.</h4>
 
 			<p>In addition to that, it provides information of general use
 				for a number of structural biology applications:</p>
@@ -48,8 +54,8 @@
 				<li>Precomputed Multiple Sequence Alignments (MSAs) of closely
 					related homologs (within 60% sequence identity)for every protein in
 					the PDB or for user-uploaded structures</li>
-				<li>Colored-by-sequence-entropy surface representation as PSE
-					files. Very useful for looking at features present at protein
+				<li>Colored-by-sequence-entropy surface representation using the
+					browser embedded NGL viewer. Very useful for looking at features present at protein
 					surfaces: interfaces, binding sites etc. (<a
 					href="#homologs-window">more</a>)
 				</li>
@@ -66,7 +72,7 @@
 			</ul>
 		</div>
 
-		<!--------------------- 
+		<!---------------------
 		    Topics  start here
 		 ----------------------->
 
@@ -74,16 +80,18 @@
 		<h2 id="input">Inputting data</h2>
 		<div class="eppic-help-subtopic">
 			<div class="eppic-help-subtopic-right-small">
-				<img class="eppic-help-subtopic-image-right"
+				<img class="eppic-help-subtopic-image-right-nozoom"
 					src="resources/images/screenshots/input-parameters-upload-file.png"
 					title="Screenshot of the input panel with advanced options"></img>
 			</div>
 			<div class="eppic-help-subtopic-left-big">
-				<p>You can submit your protein structure by uploading a
-					PDB/mmCIF file or by typing a PDB code. We have precalculated
-					results PDB-wide using the default parameters. If you upload your own
-					file, this triggers a calculation that can take several minutes
-					depending on the structure.</p>
+				<p>The server has precomputed results PDB-wide, if you are interested
+					in a specific PDB id you can simply enter it and get results immediately.
+					You can also submit your own protein structure by uploading a
+					PDB/mmCIF file. If you upload your own
+					file, the calculation will be triggered and the results are produced within
+					a few minutes. Structures with many protein entities (unique sequences) will take
+					longer.</p>
 
 				<p>When you upload a file, the various input parameters can be changed via the Advanced
 					tab in the input page. You have the following options:</p>
@@ -113,33 +121,75 @@
 			</div>
 		</div>
 
+		<h2 id="assemblies-table">The assemblies table</h2>
+		<p>All the topologically valid assemblies detected in the crystal are
+		listed. Valid assemblies are those that exhibit Point Group Symmetry and
+		that are isomorphous across the unit cell, i.e.
+		all molecules are interacting in the same way throughout the lattice.
+		</p>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-left-small">
+				<img class="eppic-help-subtopic-image"
+					src="resources/images/screenshots/assemblies-table.png"
+					title="Screenshot of the assemblies table"></img>
+			</div>
+			<div class="eppic-help-subtopic-right-big">
+				<p>
+					Each assembly is represented by a thumbnail image in fat ribbon representation
+					with different subunits in different colors (1st column). Also a 2-dimensional
+					graph diagram of the assembly is shown, with nodes being the chains and edges the
+					interfaces between them (2nd column). Distinct molecular entities and distinct
+					interfaces are depicted with different colors. Next appear the macromolecular size,
+					stoichiometry (the successive letters represent different molecular entities, not chain ids)
+					and point group symmetry (Cn for cyclic symmetries, Dn for dihedral
+					symmetries, T for tetrahedral, O for octahedral and I for icosahedral). The prediction column
+					provides the predicted assembly (marked as <font color="green">BIO</font>), while
+					all others are marked as <font color="red">XTAL</font>. The predicted assembly
+					corresponds to that with the higuest calculated
+					probability, based on the scores of the interfaces that form it. For PDB deposited
+					entries, the assembly corresponding to the first PDB biounit assignment is marked with a small
+					<img src="resources/icons/pdb_biounit_annotation.png"></img> icon.
+					The last column shows how many interfaces compose the assembly, clicking on the link
+					the interfaces table is shown with only those interfaces belonging to the assembly.
+				</p>
+				<p>
+					One can switch over to the interfaces table by clicking on the
+					"<strong>View All Interfaces</strong>"
+					link provided on top of the table.
+				</p>
+			</div>
+		</div>
+
 		<!-- Main Interface table -->
-		<h2 id="interface-table">The main interface table</h2>
-		<p>EPPIC will provide a view of all the protein-protein interfaces
-			present in the crystal and assess their biological or crystal contact
-			nature based on a geometrical and on two evolutionary criteria:
+		<h2 id="interfaces-table">The interfaces table</h2>
+		<p>This table provides a view of all the pairwise protein-protein interfaces
+			present in the crystal. One can switch between this view and the assemblies table
+			view by clicking on the "<strong>View All Assemblies</strong>" link provided on top of the table.
+			An assessment of the biological relevance of each pairwise interface is provided,
+			based on a geometrical and on two evolutionary criteria:
+		</p>
 		<ul>
 			<li><b>geometry</b>: number of core residues (at <b>95%
 					burial</b>), indicating how good the packing in the interface is</li>
 			<li><b>core-rim score</b>: ratio of evolutionary signal
 				(sequence entropy) of core residues (at <b>70% burial</b>) versus
 				rim residues</li>
-			<li><b>core-surface score</b>: a score (z-score like) of
+			<li><b>core-surface score</b>: a z-score of
 				sequence entropy of core residues (at <b>70% burial</b>) versus
-				random samples of other surface residues</li>
+				random samples of all surface residues</li>
 		</ul>
 
 
 		<div class="eppic-help-subtopic">
 			<div class="eppic-help-subtopic-left-small">
 				<img class="eppic-help-subtopic-image"
-					src="resources/images/screenshots/interface-table.png"
+					src="resources/images/screenshots/interfaces-table.png"
 					title="Screenshot of the main interface table"></img>
 			</div>
 			<div class="eppic-help-subtopic-right-big">
 
-				<p>Each of these indicators casts a vote based on predefined
-					score thresholds. The possible calls are:</p>
+				<p>Each of these indicators have predefined
+					score thresholds to produce one of the calls:</p>
 
 				<ul>
 					<li><font color="green">BIO</font>, the interface is
@@ -164,11 +214,17 @@
 					clashes in the interface etc.
 				</p>
 				<p>
-					From the three votes a final decision is made ("Final" column). <font
-						color="green">BIO</font> will mean that a majority of the criteria
-					indicated a biological interface and likewise for <font color="red">XTAL</font>.
+					The three scores are used to calculate a final score and a probability
+					of the interface being biologically relevant (1 being certainly biological,
+					0 certainly crystal contact). The call and the probability appear in the
+					"Final" column.
+					<font	color="green">BIO</font> will mean that the probability is above 0.5
+					and <font color="red">XTAL</font> that the probability is below 0.5.
 					This is the final prediction column and what you need to look at
-					first.
+					first. An estimated confidence level for the prediction is depicted with stars,
+					golden star <img src="resources/icons/excellent.png" style="width: 20px; height: 20px"></img>
+					for high confidence, gray star <img src="resources/icons/good.png" style="width: 20px; height: 20px"></img>
+					for medium confidence, no star for low confidence.
 				</p>
 
 
@@ -229,9 +285,10 @@
 					copies of the same molecule (e.g. A+A). This happens for both the
 					pure translations and for any of the screw rotations and it is
 					generally a very strong indication of a crystal contact. In those
-					cases we color the operator icon in red. In any case our final call
-					ignores this at the moment but we might use that information in
-					future versions.</p>
+					cases we color the operator icon in red. The final call does note
+					take that information into account, but this is very important
+					for the enumeration of valid assemblies in the crystal shown in
+					the assemblies table.</p>
 			</div>
 		</div>
 
@@ -243,86 +300,140 @@
 
 				<p>Clusters of similar interfaces can be shown by checking the
 					"Group similar interfaces" box. This ensures that interfaces
-					within 2&#197; RMSD from each other will be clustered together. For
+					that share a certain amount of contact similarity are grouped together. For
 					each cluster, a header row displays a thumbnail representation of
 					all member interfaces, while a bottom row reports the number
 					of contributing interfaces and their average area. Additionally
 					for each of the scores an average is calculated and a call
 					produced based on these averaged scores. This should provide a better
-					prediction than individual interface scores, since the possible 
+					prediction than individual interface scores, since the possible
 					differences between the chains are averaged out.</p>
 			</div>
 			<div class="eppic-help-subtopic-right-small">
 				<img class="eppic-help-subtopic-image-right"
-					src="resources/images/screenshots/interface-table-with-clusters.png"
+					src="resources/images/screenshots/interfaces-table-with-clusters.png"
 					title="Screenshot of the main interface table with similar interfaces clustered together."></img>
 			</div>
 		</div>
 
 
 
-		<h2 id="3D">Viewing interfaces in 3D</h2>
+		<h2 id="3D">Viewing interfaces and assemblies in 3D</h2>
 		<div class="eppic-help-subtopic">
 			<div class="eppic-help-subtopic-left-small">
-				<img class="eppic-help-subtopic-image"
-					src="resources/images/pse-withsurface-verysmall.png"
-					title="3D view of interface as it would appear in PyMOL using the pse mode">
+				<img class="eppic-help-subtopic-image-nozoom"
+					src="resources/images/screenshots/interface-view-ngl.png"
+					title="3D view of an interface as displayed by the NGL viewer">
 			</div>
 
 			<div class="eppic-help-subtopic-right-big">
-				<p>The thumbnails in the Interface table give a visual cartoon
-					representation of the interfaces. By clicking on them one gets an
+				<p>The thumbnails in the Assembly and Interface tables give a visual cartoon
+					representation of the assemblies and interfaces. By clicking on them one gets an
 					interactive 3D view, depending on the selected mode: as browser
-					embedded Jmol viewer (no need for local viewer), as a PDB file
-					downloadable to a local molecular viewer, or as PyMOL session file
-					(.pse) to be opened in local PyMOL. In both Jmol and pse modes the
-					two protomers are represented as cartoons with interface residues
+					embedded NGL viewer (no need for local viewer) or as a mmCIF file
+					downloadable to a local molecular viewer. In the interface view
+					the two protomers are represented as cartoons with interface residues
 					also shown as sticks. Core residues from both protomers are shown
-					in two different shades of red.</p>
-				<p>The PSE mode is particularly useful as it is already prepared
-					with selections of the different parts of the interface and nicely
-					depicted. The entropy values for each residue are written as
-					b-factors in the .pdb and .pse files so one can use the PyMOL
-					"color by b-factor" functionality (spectrum command) to show the
-					selection pressure pattern mapped on the 3-dimensional structure:
-					blue colors indicate low entropies and colors toward reds
-					correspond to increasingly higher entropies. The surface
-					representation is particularly helpful here in order to see surface
-					residues only.</p>
+					in two different shades of red. The sequence entropy values for each residue
+					are written as b-factors in the .cif file. </p>
+				<p>Once in the NGL window, by pressing "p" the user can get
+					a surface representation of the subunits with sequence conservation
+					values from the Multiple Sequence Alignment mapped onto it in a color code:
+					blue colors indicate low entropies (high conservation) and colors toward yellow
+					correspond to increasingly higher entropies (lower conservation). Pressing "n"
+					the surface representation toggles through the chains.
+					This representation is particularly useful in order to get a visual impression of
+					the selection pressure patterns on the surface of a given
+					chain. Residues that
+					could not be aligned (for instance because they belong to an
+					engineered tag) appear in red.
+				</p>
 				<h3>Changing 3D-Viewing mode:</h3>
 				<p>The 3D-Viewer can be changed using the button "Change 3D
 					Viewer" on the top-left corner of the main interface table.
 					Clicking the button will open a drop-down menu where one
-					can select any one of the three modes described above.</p>
+					can select any one of the two modes described above.</p>
 			</div>
 		</div>
 
-		<h2 id="information-panel">Experimental and sequence information
+		<h2 id="lattice">The lattice graph</h2>
+		<div class="eppic-help-subtopic">
+			<div class="eppic-help-subtopic-right-small">
+				<img class="eppic-help-subtopic-image-right-nozoom"
+					src="resources/images/screenshots/lattice-graph-3d.png"
+					title="3D view of the lattice graph">
+			</div>
+
+			<div class="eppic-help-subtopic-left-big">
+				<p>
+					The assemblies are analysed through a graph representation of the chains
+					and interfaces. This lattice graph is a periodic graph, with chains being
+					the nodes and interfaces the edges. Visual tools to look at the graph are
+					provided. They can be useful in understanding the crystal packing and
+					the different possible assemblies that can be constructed with the
+					given connectivity.
+				</p>
+				<ul>
+					<li><strong>3D lattice graph view with NGL</strong>: the graph is shown in 3D overlayed
+						on top of the protein in semi-transparent cartoon represenatation.
+						The nodes are placed at the centroids of the chains. Different colors
+						are assigned to different molecular entities and to distinct interfaces.
+						The view can be obtained by clicking on the "<strong>View Unit Cell</strong>" or
+						"<strong>View Assembly in Unit Cell</strong>"
+						links in the information panel.
+					</li>
+					<li><strong>2D lattice graph view (visjs)</strong>: the graph is shown in a dynamic 2D layout.
+					Different colors
+					are assigned to different molecular entities and to distinct interfaces. This view can be
+					obtained by clicking on any of the assembly diagram thumbnails either on the assemblies
+					table or on the assembly subpanel on top.
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<h2 id="information-panel">Information panel
 		</h2>
 		<p>
-			The top panel is subdivided into two subpanels: <b>Experimental
-				Information</b> on the left and <b>Sequence Information</b> on the
-			right.
+			The top panel contains information about the assemblies and of the sequences and
+			alignment used for the evolutionary scores.
+			The information displayed depends on the context: in <strong>All Interfaces</strong>
+			and <strong>All Assemblies</strong> views only 2 subpanels are shown with assemblies
+			and sequence information (left screenshot below). The first subpanel on the left
+			shows the number of assemblies, interfaces and interface
+			clusters together with links to
+			show each of the views. The second subpanel shows sequence and alignment information.
+		</p>
+		<p>
+			In <strong>Single Assembly</strong> view, 3 subpanels are
+			shown (right screenshot below). The first subpanel on the left
+			contains information about the currently displayed assembly and its
+			topology, depicted with the 2D graph diagram. A link is also provided to
+			show the 3D lattice graph view.
+			 The third subpanel is again the
+			sequence/alignment information.
 		</p>
 		<img class="eppic-help-subtopic-image-no-animation"
-			src="resources/images/screenshots/information-panel.png"
+			src="resources/images/screenshots/info-panel1.png"
 			title="Screenshot of information panel"></img>
+			<img class="eppic-help-subtopic-image-no-animation"
+				src="resources/images/screenshots/info-panel2.png"
+				title="Screenshot of information panel"></img>
 		<p>
 			The <b>Sequence Information</b> panel contains information about the
 			sequences and their homologs. There is a line for each of the
 			distinct protein sequences present in the protein structure. If too
 			many chains are present, arrows will appear on the left of the panel
-			to navigate to other chains. Each line displays 4 items some of which
-			are followed by <img src="resources/icons/info_icon.png"></img> icon.
-			Clicking this icon reveals more information about the item adjacent
-			to it. The items are explained below:
+			to navigate to other chains. Each line displays some information about
+			the homologs and some icons that lead to some actions for the given sequence
+			entity:
 		</p>
 		<div class="eppic-help-subtopic">
 
 			<div class="eppic-help-subtopic-right-small">
-				<img class="eppic-help-subtopic-image-right"
+				<img class="eppic-help-subtopic-image-right-nozoom"
 					src="resources/images/pse-color-entropies.png"
-					title="Protein surface rendering with colors representing sequence entropies, as one would get by clicking on the colored entropies icon"></img>
+					title="Protein surface rendering with colors representing sequence entropies. This view can be obtained in the embedded NGL viewer by pressing p."></img>
 			</div>
 
 			<div class="eppic-help-subtopic-left-big">
@@ -332,8 +443,8 @@
 						identifier of the representative sequence. This letter can be
 						followed by other letters (in brackets). These are the chain
 						identifiers of other identical sequences in the structure. Click
-						on the <img src="resources/icons/info_icon.png"></img> icon next
-						to this item to see the alignment of the chain to its reference
+						on the <img src="resources/icons/sequence_14.png"></img> icon to see
+						the alignment of the chain to its reference
 						UniProt sequence (based on <a
 						href="http://www.ebi.ac.uk/pdbe/docs/sifts/" target="_blank">SIFTS</a>
 						mapping or found by blasting). Mismatching residues, normally
@@ -346,13 +457,14 @@
 						too small for a proper decision to be reached. The more sequences
 						in the alignment the more reliable the evolutionary predictions
 						will be, so looking at this number is important. Click on the <img
-						src="resources/icons/info_icon.png"></img> icon next to this item
+						src="resources/icons/homologs_14.png"></img> icon
 						for more information about the homologs (<a
 						href="#homologs-window">more</a>).</li>
-					<li><b>Similar structures in PDB</b>: click here to find
-						other PDB entries that contain chains similar in sequence (down to 30% 
-						sequence identity) to this one (<a href="#seq-clusters">more</a>). 
-						
+					<li><b>Similar structures in PDB</b>: click on the
+						<img src="resources/icons/related_14.png"></img> icon to find
+						other PDB entries that contain chains similar in sequence (down to 30%
+						sequence identity) to this one (<a href="#seq-clusters">more</a>).
+
 					</li>
 				</ol>
 			</div>
@@ -382,7 +494,7 @@
 		<h2 id="homologs-window">The Homolog Information window</h2>
 		<div class="eppic-help-subtopic">
 			<div class="eppic-help-subtopic-left-small">
-				<img class="eppic-help-subtopic-image"
+				<img class="eppic-help-subtopic-image-nozoom"
 					src="resources/images/screenshots/homologs-window.png"></img>
 			</div>
 			<div class="eppic-help-subtopic-right-big">
@@ -396,8 +508,8 @@
 					identity is also provided near the bar. The last two columns in the
 					table provide the taxonomy of the homolog. More details of the
 					sequence of a particular homolog can be found by clicking the
-					UniProt link in the first column of the table. Clicking on the 
-					links provided on the Genus names will open their corresponding 
+					UniProt link in the first column of the table. Clicking on the
+					links provided on the Genus names will open their corresponding
 					Wikipedia pages.
 				<p>
 				<p>
@@ -410,21 +522,8 @@
 					You will need an alignment viewer like <a
 						href="http://www.jalview.org/" target="_blank">Jalview</a> to have
 					it nicely displayed.
-					Additionally cliking on the icon with the colored molecule will download
-					a PyMOL session file (.pse file) where the molecule is shown in surface 
-					representation with the sequence entropy values from the MSA color-mapped 
-					onto it. This is particularly useful in order to get a visual impression of
-					the selection pressure patterns on the surface of a given
-					chain. The spectrum function of PyMOL is used to color the
-					residues: highest conservation is denoted by blue, transitioning
-					to yellow and orange for lower conservation values. Residues that
-					could not be aligned (for instance because they belong to an
-					engineered tag) appear in red. Magenta dots mark the
-					core residues of the largest interface in which the chain
-					participates. PyMOL selections are also available in the PSE file
-					to let one select interfaces other than the default (largest) one.
 				</p>
-				
+
 			</div>
 		</div>
 
@@ -447,8 +546,8 @@
 				<p>
 					Score details are shown on top of the two grids for each side of the
 					interface: number of core residues at 70% burial (i.e. the core
-					residues used for calculating the evolutionary scores), number of 
-					rim residues (i.e. all other interface residues), core-rim 
+					residues used for calculating the evolutionary scores), number of
+					rim residues (i.e. all other interface residues), core-rim
 					score and core-surface score.
 				</p>
 				<p>By default, the two residue tables show only interface residues. To
@@ -476,7 +575,7 @@
 				</p>
 			</div>
 		</div>
-		
+
 		<h2 id="seq-clusters">Searching similar structures (sequence clusters)</h2>
 		<div class="eppic-help-subtopic">
 			<div class="eppic-help-subtopic-left-small">
@@ -485,47 +584,37 @@
 			</div>
 			<div class="eppic-help-subtopic-right-big">
 				<p>You can search for PDB structures that contain sequences similar to
-				a given chain. Results are sorted from the structures with the most similar 
-				sequences (top) to structures containing more dissimilar sequences. The sequence 
+				a given chain. Results are sorted from the structures with the most similar
+				sequences (top) to structures containing more dissimilar sequences. The sequence
 				identity level given in the first column is color-coded to facilitates the search.
-				Crystallographic quality and crystal cell parameters are shown in separate columns. 
-				Structures can be sorted using any of these columns, which for instance can be useful 
-				to find the highest resolution structure within a set.  
+				Crystallographic quality and crystal cell parameters are shown in separate columns.
+				Structures can be sorted using any of these columns, which for instance can be useful
+				to find the highest resolution structure within a set.
 				<p>
 				<p>
-				Double clicking on a row or on the PDB code will open the analysis page 
+				Double clicking on a row or on the PDB code will open the analysis page
 				for that structure.
 				</p>
 				<p>
 				Note that we don't always recalculate the sequence clusters after every PDB update. Thus
-				it is possible that for some chains there will be no button available if the clusters are 
+				it is possible that for some chains there will be no button available if the clusters are
 				not calculated for the particular sequence yet.
 				</p>
 			</div>
 		</div>
-		
+
 		<h2 id="known-issues">Known issues</h2>
-		
+
 		<ul>
 			<li>
-			<b>MTRIXn records not used</b>: for some PDB entries, usually viral capsid proteins, extra 
-			operators are required for reconstructing the full Asymmetric Unit. At the moment
-			EPPIC does not take these operators into account. This results in missing interfaces for
-			those structures (e.g. 
-			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=1AUY" target="_blank">1auy</a>, 
-			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=3RA2" target="_blank">3ra2</a>). 
-			This applies also to a few non-capsid entries like 
-			<a href="http://www.pdb.org/pdb/explore/explore.do?structureId=1A37" target="_blank">1a37</a>.  
-			</li>
-			<li>
-			<b>MHC and antibody interfaces not correctly predicted</b>: due to the special nature 
-			of the MHC and antibodies sequences, the evolutionary criteria used by EPPIC do not hold 
-			for them. Thus the predictions for interfaces with at least one MHC or antibody molecule 
+			<b>MHC and antibody interfaces not correctly predicted</b>: due to the special nature
+			of the MHC and antibodies sequences, the evolutionary criteria used by EPPIC do not hold
+			for them. Thus the predictions for interfaces with at least one MHC or antibody molecule
 			will often be incorrect.
 			</li>
 		</ul>
-		
-		
+
+
 		<h2 id="misc">Miscellaneous</h2>
 
 		<h3 id="job-identifiers">Job identifiers</h3>
@@ -560,8 +649,8 @@
 
 
 		<h3 id="download-results">Downloading results in XML format</h3>
-		<p>By clicking the "Download XML" link below the main title in the 
-			Top Panel, one gets an XML file containing all the information 
+		<p>By clicking the "Download XML" link below the main title in the
+			Top Panel, one gets an XML file containing all the information
 			about interfaces and scoring (including the MSA) for the structure
 			being analyzed. This is useful for further data processing. XML
 			downloads of precomputed PDB entries can be scripted by using URLs like:
@@ -569,18 +658,6 @@
 			See the <a href="http://www.eppic-web.org/ewui/#downloads" onclick="reloadPage('http://www.eppic-web.org/ewui/#downloads');">Downloads page</a> for more information.
 		</p>
 
-		<h3 id="assembly-note">A note on assemblies</h3>
-		<p>
-			At the moment EPPIC classifies only pairwise interfaces in protein
-			crystals. It does not consider interfaces in the context of the full
-			biological assembly and does not group single interface calls into a
-			biological unit call. We intend to implement that in future versions
-			of the software. In the meantime please keep in mind that some
-			interfaces may be called <font color="red">XTAL</font> when they are
-			actually <font color="green">BIO</font> if considered in the context
-			of the assembly: they are "induced" by the topology or point-group
-			symmetry of the assembly.
-		</p>
 
 
 	</div>

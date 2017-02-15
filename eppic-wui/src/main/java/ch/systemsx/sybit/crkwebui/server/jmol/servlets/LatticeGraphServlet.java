@@ -117,7 +117,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 			PdbInfo pdbInfo = getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
-			//String inputPrefix = pdbInfo.getTruncatedInputName();
+			String inputPrefix = pdbInfo.getTruncatedInputName();
 
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
@@ -152,12 +152,12 @@ public class LatticeGraphServlet extends BaseServlet
 			
 			
 			if(format != null && format.equalsIgnoreCase("json")) {
-				LatticeGraphPageGenerator.generateJSONPage(dir, input, auFile, ifaceList, requestedIfaces, outputStream);
+				// important: input (second param) here must be the truncated input name or otherwise user jobs don't work - JD 2017-02-04
+				LatticeGraphPageGenerator.generateJSONPage(dir, inputPrefix, auFile, ifaceList, requestedIfaces, outputStream);
 			} else {
 				String nglJsUrl = properties.getProperty("urlNglJs");
 				if (nglJsUrl == null || nglJsUrl.equals("")) {
-					logger.info("The URL for NGL js is not set in config file. Will use the js file inside the ewui war");
-					nglJsUrl = JmolViewerServlet.DEFAULT_NGL_URL; //we set it to the js file within the war, the leading '/' is important to point to the right path here
+					logger.warn("The URL for NGL js is not set in property 'urlNglJs' in config file! NGL won't work.");
 				}
 				// Request URL, with format=json
 				StringBuffer jsonURL = request.getRequestURL();
@@ -169,7 +169,8 @@ public class LatticeGraphServlet extends BaseServlet
 						.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
 						.collect(Collectors.joining("&"))
 						);
-				LatticeGraphPageGenerator.generateHTMLPage(dir,input, auFile, auURI, title, size, jsonURL.toString(), ifaceList, requestedIfaces, outputStream, nglJsUrl);
+				String webappRoot = request.getContextPath();
+				LatticeGraphPageGenerator.generateHTMLPage(dir,inputPrefix, auFile, auURI, title, size, jsonURL.toString(), ifaceList, requestedIfaces, outputStream, nglJsUrl, webappRoot);
 				// TODO start generating JSON now, since we know that request is coming
 			}
 

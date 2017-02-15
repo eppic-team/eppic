@@ -643,7 +643,21 @@ public class Main {
 				
 				
 			}
+			
+			// additionally for the lattice graph 3d we need the full graph "*" file, i.e. all interfaces engaged
+			// used in "view unit cell"
+			
+			latticeGraph.filterEngagedClusters(null);
+			latticeGraph.setHexColors();
 
+			String json = gson.toJson(latticeGraph);
+
+			File jsonLatticeGraphFile = params.getOutputFile(EppicParams.get3dLatticeGraphJsonFilenameSuffix(null));
+
+			PrintWriter pw = new PrintWriter(new FileWriter(jsonLatticeGraphFile));
+			pw.println(json);
+			pw.close();
+			
 		} catch( IOException|StructureException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
 		}
