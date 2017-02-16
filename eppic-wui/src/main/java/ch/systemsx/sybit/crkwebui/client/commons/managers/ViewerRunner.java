@@ -131,7 +131,7 @@ public class ViewerRunner
 		//mmCIF CASE (was PDB)
 		else if(ApplicationContext.getSelectedViewer().equals(AppPropertiesManager.CONSTANTS.viewer_local()))
 		{
-			downloadAssemblyFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
+			downloadFileFromServer(FileDownloadServlet.TYPE_VALUE_ASSEMBLY, assemblyId, FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
 		}
 		else
 		{
@@ -148,41 +148,34 @@ public class ViewerRunner
 	}
 	
 	/**
-	 * Downloads file from the server.
-	 * @param type type of the file to download
-	 * @param interfaceId identifier of the interface
+	 * Downloads a coordinate file from the server (pdb or mmcif. Though at the moment the CLI only produces mmCIF).
+	 * @param type type of the file to download, either {@link FileDownloadServlet#TYPE_VALUE_INTERFACE}
+	 * or {@link FileDownloadServlet#TYPE_VALUE_ASSEMBLY}
+	 * @param id interface or assembly identifier, depending on type
 	 * @param format
 	 */
-	//an example file is
-	//http://pc11467.psi.ch:8081/ewui/fileDownload?type=interface&id=1smt&interfaceId=1&type=interface&coordsFormat=cif
-	private static void downloadFileFromServer(String type, String interfaceId, String format)
-	{
+	//examples:
+	//http://pc11467.psi.ch:8081/ewui/fileDownload?type=interface&id=1smt&interfaceId=1&coordsFormat=cif
+	//http://pc11467.psi.ch:8081/ewui/fileDownload?type=assembly&id=1smt&assemlyId=1&coordsFormat=cif
+	private static void downloadFileFromServer(String type, String id, String format) {
+		
+		// if input isn't valid, we'll use interface as default
+		String idTypeParam = FileDownloadServlet.PARAM_INTERFACE_ID;
+		
+		if (type.equals(FileDownloadServlet.TYPE_VALUE_INTERFACE)) {
+			idTypeParam = FileDownloadServlet.PARAM_INTERFACE_ID;
+		} else if (type.equals(FileDownloadServlet.TYPE_VALUE_ASSEMBLY)) {
+			idTypeParam = FileDownloadServlet.PARAM_ASSEMBLY_ID;
+		} 
+		
 		String fileDownloadServletUrl = GWT.getModuleBaseURL() + FileDownloadServlet.SERVLET_NAME;
 		fileDownloadServletUrl += 
 				"?"+FileDownloadServlet.PARAM_TYPE+"=" + type + 
 				"&"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
-				"&"+FileDownloadServlet.PARAM_INTERFACE_ID+"=" + interfaceId + 
+				"&"+idTypeParam+"=" + id + 
 				"&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + format;
 		
 		Window.open(fileDownloadServletUrl, "", "");
 	}
-	
-	/**
-	 * Downloads file from the server.
-	 * @param type type of the file to download
-	 * @param assemblyId identifier of the interface
-	 * @param format
-	 */
-	private static void downloadAssemblyFileFromServer(String type, String assemblyId, String format)
-	{
-		String fileDownloadServletUrl = GWT.getModuleBaseURL() + FileDownloadServlet.SERVLET_NAME;
-		fileDownloadServletUrl += 
-				"?"+FileDownloadServlet.PARAM_TYPE+"=" + type + 
-				"&"+FileDownloadServlet.PARAM_ID+"=" + ApplicationContext.getPdbInfo().getJobId() + 
-				"&"+FileDownloadServlet.PARAM_ASSEMBLY_ID+"=" + assemblyId + 
-				"&"+FileDownloadServlet.PARAM_COORDS_FORMAT+"=" + format;
-		
-		Window.open(fileDownloadServletUrl, "", "");
-	}	
-	
+
 }
