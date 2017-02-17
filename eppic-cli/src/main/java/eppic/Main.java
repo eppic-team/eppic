@@ -994,20 +994,15 @@ public class Main {
 			e.exitIfFatal(1);
 		} 
 		
-		// TODO must uncomment this code before the release!
-//		catch (Exception e) {
-//			//e.printStackTrace();
-//
-//			String stack = "";
-//			for (StackTraceElement el:e.getStackTrace()) {
-//				stack+="\tat "+el.toString()+"\n";				
-//			}
-//			LOGGER.error("Unexpected error. Stack trace:\n"+e+"\n"+stack+
-//					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
-//			System.exit(1);
-//		}
-		catch (StructureException e) {
-			LOGGER.error(e.getLocalizedMessage());
+		catch (Exception e) {
+
+			StringBuilder stack = new StringBuilder();
+			for (StackTraceElement el:e.getStackTrace()) {
+				stack.append("\tat ").append(el.toString()).append("\n");				
+			}
+			LOGGER.error("Unexpected error. Stack trace:\n"+e+"\n"+stack.toString()+
+					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
+			System.exit(1);
 		}
 		
 		
