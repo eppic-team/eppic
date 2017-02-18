@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,6 +37,7 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
@@ -120,6 +122,7 @@ public class Assembly {
 	 */
 	private double confidence;
 	
+	private String callReason;
 	private CallType call;
 	
 	
@@ -570,8 +573,11 @@ public class Assembly {
 		Character chain = 'A';
 
 		for (ChainVertex vert : vertices ){
-			Point3d centroid = GeomTools.getCentroid(vert.getChain());
-			caCoords.add(new Point3d[] {centroid});
+			Point3d[] coords = getDummyCoordinates(vert.getChain());
+			if (coords.length==0) {
+				logger.warn("0-length coordinate array. Can't calculate quaternary symmetry!");
+			}
+			caCoords.add(coords);
 
 			if (vertices.size() % fold == 0){
 				folds.add(fold); //the folds are the common denominators
@@ -598,6 +604,36 @@ public class Assembly {
 				QuatSymmetryDetector.calcQuatSymmetry(globalSubunits, param);
 
 		return gSymmetry;
+	}
+	
+	/**
+	 * Get some dummy coordinates for a chain. For computational efficiency,
+	 * we represent the subunit by just a couple points. The points returned
+	 * should be robust to minor subunit differences.
+	 * @param c
+	 * @return
+	 */
+	private static Point3d[] getDummyCoordinates(Chain c) {
+		// Using the centroid gave poor quality since it doesn't establish the orientation.
+
+		// Use the centroids of each third of the protein
+		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
+		if (ca.length==0) {
+			// in some cases we find no CAs or Ps, let's use all atoms then, see issue #167
+			ca = StructureTools.getAllAtomArray(c);
+		}
+		
+		if(ca.length<3) {
+			return Calc.atomsToPoints(ca);
+		}
+		Atom[] ca1 = Arrays.copyOfRange(ca, 0,ca.length/3);
+		Atom[] ca2 = Arrays.copyOfRange(ca, ca.length/3,2*ca.length/3);
+		Atom[] ca3 = Arrays.copyOfRange(ca, 2*ca.length/3,ca.length);
+		Atom[] dummy = new Atom[3];
+		dummy[0] = Calc.getCentroid(ca1);
+		dummy[1] = Calc.getCentroid(ca2);
+		dummy[2] = Calc.getCentroid(ca3);
+		return Calc.atomsToPoints(dummy);
 	}
 
 	/**
@@ -939,6 +975,14 @@ public class Assembly {
 		return call;
 	}
 	
+	public void setCallReason(String callReason) {
+		this.callReason = callReason;
+	}
+	
+	public String getCallReason() {
+		return callReason;
+	}
+	
 	public double getScore() {
 		return probability;
 	}
@@ -1069,13 +1113,16 @@ public class Assembly {
 		switch(call){
 		case BIO:
 			confidence = probability;
+			callReason = "Highest probability assembly of being biologically relevant found in the crystal.";
 			break;
 		case CRYSTAL:
 			confidence = 1 - probability;
+			callReason = "Another assembly in the crystal has a higher probability of being biologically relevant.";
 			break;
 		case NO_PREDICTION:
 			// should that be a global variable in eppic params?
 			confidence = InterfaceTypePredictor.CONFIDENCE_UNASSIGNED;
+			callReason = "There is not enough data to classify this assembly.";
 		}
 	}
 	

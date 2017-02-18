@@ -193,6 +193,10 @@ public class GeomTools {
 	 */
 	public static Point3d getCentroid(Chain c) {
 		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
+		if (ca.length==0) {
+			// if no representative atoms found let's try with all atoms, issue #167
+			ca = StructureTools.getAllAtomArray(c);
+		}
 		Atom centroidAtom = Calc.getCentroid(ca);
 		return new Point3d(centroidAtom.getCoords());
 	}

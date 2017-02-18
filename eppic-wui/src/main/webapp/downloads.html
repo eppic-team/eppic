@@ -14,22 +14,22 @@
 		<h2>Downloading data in XML format</h2>
 		<p>
 			From version 2.1.0 on, it is possible to download the results data in XML format
-			which can then be parsed and used for further analysis. 
+			which can then be parsed and used for further analysis.
 			Simply click on the "Download XML" link in any result page and you will get the XML data.
 			You will just need to use this kind of URL:
 		</p>
 		<p>
-			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=PDB_code</code>
+			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=&lt;PDB_code&gt;</code>
 		</p>
-		<p> 
+		<p>
 			for precomputed PDB entries. Several PDB codes (comma-separated) are also allowed for the id
-			parameter. For your own uploaded files you will have to use:			
+			parameter. For your own uploaded files you will have to use:
 		</p>
 		<p>
-			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=My_job_id</code>
+			<code>http://www.eppic-web.org/ewui/ewui/dataDownload?type=xml&amp;id=&lt;My_job_id&gt;</code>
 		</p>
 		<p>
-			where you need to give your long alphanumeric job id. 
+			where you need to give your long alphanumeric job id.
 			Individual interfaces can be requested by using an underscore after the PDB code, e.g.:
 		</p>
 		<p>
@@ -38,31 +38,47 @@
 		<p>
 			will give you interface 1 of PDB 1smt.
 		</p>
-		<p> 
-			Please note that we have download limits per IP. If you need to do bulk 
+		<p>
+			Please note that we have download limits per IP. If you need to do bulk
 			downloads, please contact us. We can then place an exception for you.
 		</p>
-		
-		<h2>Downloading PDB files of interfaces</h2>
+
+		<h2>Downloading mmCIF files of interfaces or assemblies</h2>
 		<p>
-			Downloads of individual PDB files per interface is also possible by using the following URL:
+			Downloads of individual mmCIF files per interface is also possible by using the following URL:
 		</p>
-		<p>			 
-			<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=PDB_code&amp;interface=Interface_id</code>
+		<p>
+			<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=&lt;PDB_code&gt;&amp;interfaceId=&lt;Interface_id&gt;&amp;coordsFormat=cif</code>
+		</p>
+		<p>
+			For assemblies mmCIF file the URL is:
+			<p>
+				<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=assembly&amp;id=&lt;PDB_code&gt;&amp;assemblyId=&lt;Assembly_id&gt;&amp;coordsFormat=cif</code>
+			</p>
 		</p>
 		<p>
 			Please note that the server uses gzip encoding. Thus if you use wget, you will need the following syntax:
 		</p>
 		<p>
-			<code>wget --header="accept-encoding: gzip" "http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=PDB_code&amp;interface=Interface_id" 
+			<code>wget --header="accept-encoding: gzip" "http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=&lt;PDB_code&gt;&amp;interfaceId=&lt;Interface_id&gt;&amp;coordsFormat=cif"
 			-O PDB_code_Interface_id.pdb.gz</code>
 		</p>
 		<p>
-			The interface ids are those calculated by EPPIC from largest (1) to smallest (n). 
-			Note that the downloaded PDB files contain both partners of the interface with the b-factors replaced
-			by the corresponding sequence entropy values per residue. If the interface happens between two 
-			symmetry-related chains with the same identifier (e.g. A + A), then the second chain is renamed to 
-			next letter in alphabet.
+			The interface ids are those calculated by EPPIC from largest (1) to smallest (n). The assembly ids
+			are sorted from lower stoichiometries to higher stoichiometries.
+			Note that the downloaded mmCIF files have the b-factors column replaced
+			by the corresponding sequence entropy values per residue. Chains that are transformed
+			with a rotation operator (symmetry partners) are named with &lt;original_chain_id&gt;_&lt;operator_id&gt;.
+		</p>
+
+		<h2>Downloading Multiple Sequence Alignments</h2>
+		<p>
+			It is also possible to download the precomputed PDB-wide Multiple Sequence Alignments on which the evolutionary calculations
+			are based. You will need to provide the PDB identifier and the chain identifier of the first chain in an entity (each of the unique
+			sequences in a PDB entry):
+		</p>
+		<p>
+			<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=msa&id=&lt;PDB_code&gt;&repChainId=&lt;Chain_Id&gt;</code>
 		</p>
 
 		<h2>Software and source code</h2>
@@ -79,13 +95,13 @@
 				href="http://www.clustal.org/omega/" target="_blank">Clustal
 				Omega</a> are required for it to work.
 		</p>
-		<p>			
-			You will need Java 7 (or newer) to be able to run the command-line EPPIC
-			program. The program also uses the  
+		<p>
+			You will need Java 8 (or newer) to be able to run the command-line EPPIC
+			program. The program also uses the
 			<a href="http://www.ebi.ac.uk/uniprot/remotingAPI/" target="_blank">UniProt	JAPI</a>,
 			which you will need to download separately.
 		</p>
-		<p>The source code is <a href="https://github.com/eppic-team/eppic" target="_blank">available</a> 
+		<p>The source code is <a href="https://github.com/eppic-team/eppic" target="_blank">available</a>
 			under the GPL license. You can get it with the following GIT command:</p>
 
 		<p>
@@ -94,15 +110,14 @@
 
 		<p>
 			EPPIC uses as well the open source <a
-				href="http://www.bioinformatics.org/owl" target="_blank">OWL
-				java library</a> for structural bioinformatics.
+				href="http://www.biojava.org" target="_blank">BioJava</a> library.
 		</p>
 
 		<p>
 			Please <a href="mailto:eppic@systemsx.ch">contact</a> us if you have
 			problems with it or if you want to send any kind of feedback.
 		</p>
-			
+
 		<h2>EPPIC Interface Loader plug-in for PyMOL</h2>
 
 		<p>
@@ -116,11 +131,11 @@
 			using the state navigation at the bottom right.
 		</p>
 		<p>
-			Interfaces are displayed by default with the two molecules in "lines" 
-			representation. One can otherwise choose to show the molecules in 
-			surface representation with sequence entropies color-coded onto it. 			 
+			Interfaces are displayed by default with the two molecules in "lines"
+			representation. One can otherwise choose to show the molecules in
+			surface representation with sequence entropies color-coded onto it.
 			The latest version of the plugin is available <a
-				href="../downloads/pymol_plugin.zip">here</a>. 			
+				href="../downloads/pymol_plugin.zip">here</a>.
 		</p>
 
 		<h2>Datasets</h2>
@@ -168,17 +183,17 @@
 				biological interfaces spanning the transmembrane region, from both
 				alpha and beta TMP subclasses</li>
 		</ul>
-		
+
 		<p>
-			We next automatically obtained two large-scale datasets of crystal and biological 
-			contacts, called XtalMany and BioMany, respectively 
+			We next automatically obtained two large-scale datasets of crystal and biological
+			contacts, called XtalMany and BioMany, respectively
 			(<a href="http://www.biomedcentral.com/1472-6807/14/22" target="_blank">Baskaran et al. 2014</a>),
 			which contain nearly 3000 entries each. XtalMany is based on the concept of operators
 			leading to infinite assemblies. BioMany is mainly based on the concept of shared interfaces
-			across crystal forms: it is a subset of <a href="http://dunbrack2.fccc.edu/protcid/" target="_blank">ProtCID</a> 
-			from the Dunbrack group with very stringent	parameters. 
+			across crystal forms: it is a subset of <a href="http://dunbrack2.fccc.edu/protcid/" target="_blank">ProtCID</a>
+			from the Dunbrack group with very stringent	parameters.
 			In addition it contains interfaces from dimeric structures that were solved both
-			by crystallography and NMR: here the idea is that an NMR dimer validates the dimeric biounit 
+			by crystallography and NMR: here the idea is that an NMR dimer validates the dimeric biounit
 			of the corresponding crystal structure.
 			XtalMany and BioMany can be downloaded as text files here:
 		</p>
@@ -191,27 +206,27 @@
 				dataset of biological interfaces</li>
 		</ul>
 
-		
+
 
 		<p>
-			Please note that the original publications also contain the datasets including 
+			Please note that the original publications also contain the datasets including
 			our full annotations. However we cannot update those if we find any mistakes.
 			The downloadable datasets here represent the most up-to-date and best
-			validated sets. Please use these ones preferentially to the ones available in the 
+			validated sets. Please use these ones preferentially to the ones available in the
 			original publications.
 		</p>
 		<p>
-			For completeness this is a full changelog of any mistakes that we have found 
+			For completeness this is a full changelog of any mistakes that we have found
 			since publication:
-			
+
 		</p>
 		<ul>
 			<li>
-			DCbio set: 3f3e was removed because it is a membrane protein and additionally the experimental evidence 
+			DCbio set: 3f3e was removed because it is a membrane protein and additionally the experimental evidence
 			was not sufficiently clear; 1ytq was removed because it has a clear domain swap
 			</li>
 			<li>
-			TMPbio set: the relevant interface for 2wsw is 2, as listed in the publication. The downloadable dataset  
+			TMPbio set: the relevant interface for 2wsw is 2, as listed in the publication. The downloadable dataset
 			file has been corrected accordingly
 			</li>
 		</ul>

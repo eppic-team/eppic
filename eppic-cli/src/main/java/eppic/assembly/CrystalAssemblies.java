@@ -607,13 +607,17 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		//for (Assembly a:uniques)
 		//	a.normalizeScore(sumProbs);
 		
-		// 3 Assign the BIO call to the highest probability, if unique assembly
+		// 3 Assign the BIO call to the highest probability
 		if (uniques.size() > 0) {
 			if (indices.size() == 1) {
 				uniques.get(maxIndx).setCall(CallType.BIO);
 			} else {
+				// if not a unique assembly, choose the lowest stoichiometry
 				for (Integer i:indices) {
-					uniques.get(i).setCall(CallType.NO_PREDICTION);
+					if (i == Collections.min(indices))
+						uniques.get(i).setCall(CallType.BIO);
+					else
+						uniques.get(i).setCall(CallType.CRYSTAL);
 				}
 			}
 		}
