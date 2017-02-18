@@ -9,7 +9,7 @@
 	<artifactId>eppic-cli</artifactId>
 
 	<properties>
-		<biojava.version>4.2.6-SNAPSHOT</biojava.version>
+		<biojava.version>4.2.6</biojava.version>
 	</properties>
 
 	<repositories>
