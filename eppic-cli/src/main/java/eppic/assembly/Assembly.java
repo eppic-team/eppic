@@ -573,7 +573,11 @@ public class Assembly {
 		Character chain = 'A';
 
 		for (ChainVertex vert : vertices ){
-			caCoords.add(getDummyCoordinates(vert.getChain()));
+			Point3d[] coords = getDummyCoordinates(vert.getChain());
+			if (coords.length==0) {
+				logger.warn("0-length coordinate array. Can't calculate quaternary symmetry!");
+			}
+			caCoords.add(coords);
 
 			if (vertices.size() % fold == 0){
 				folds.add(fold); //the folds are the common denominators
@@ -614,6 +618,11 @@ public class Assembly {
 
 		// Use the centroids of each third of the protein
 		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
+		if (ca.length==0) {
+			// in some cases we find no CAs or Ps, let's use all atoms then, see issue #167
+			ca = StructureTools.getAllAtomArray(c);
+		}
+		
 		if(ca.length<3) {
 			return Calc.atomsToPoints(ca);
 		}
