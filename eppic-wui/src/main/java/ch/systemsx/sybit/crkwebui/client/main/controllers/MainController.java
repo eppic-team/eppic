@@ -192,7 +192,6 @@ public class MainController
 				String unitCellViewUrl = PopupRunner.getGraphViewerUrl(LatticeGraphServlet.SERVLET_NAME, PopupRunner.ALL_INTERFACES);
 				
 				if(ApplicationContext.getSelectedViewType() == ResultsPanel.ASSEMBLIES_VIEW){					
-					Window.alert("in cond 1");
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW); //the new default view
 					PDBIdentifierPanel.informationLabel.setHTML("Assembly Analysis of: ");
 					//only show a link for precomputed jobs
@@ -207,11 +206,9 @@ public class MainController
 					setExperimentalInfo();	
 					AssemblyResultsGridPanel.viewerSelectorBox.setValue(ApplicationContext.getSelectedViewer());
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
-					Window.alert("in cond 2");
 					//unique case: check http://localhost:8081/ewui/#assembly/1smt - redirect to http://localhost:8081/ewui/#id/1smt
 					if((ApplicationContext.getSelectedAssemblyId() == -1 || ApplicationContext.getSelectedAssemblyId() == 0)
 							&& History.getToken().contains("assembly")){
-						Window.alert("rare case!");
 						displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW);
 						History.newItem("id/" + event.getPdbScoreItem().getJobId());
 					}
@@ -257,7 +254,6 @@ public class MainController
 						}
 					}else{
 						int assemblyID = ApplicationContext.getSelectedAssemblyId();
-						Window.alert("in cond 3: selected assemblyID: " + assemblyID);
 						PDBIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
 						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
 							PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getSelectedJobId()+"'>"+event.getPdbScoreItem().getInputName()+"</a>");
@@ -531,7 +527,6 @@ public class MainController
 		token = token.replaceAll(" ", "");
 		EventBusManager.EVENT_BUS.fireEvent(new HideAllWindowsEvent());
 		EventBusManager.EVENT_BUS.fireEvent(new ShowTopPanelSearchBoxEvent());
-		Window.alert("ApplicationContext.getSelectedAssemblyId(): " + ApplicationContext.getSelectedAssemblyId());
 		if ((token != null) && (token.length() > 3) && (token.startsWith("id")))
 				//|| (token.startsWith("assembly") && (ApplicationContext.getSelectedAssemblyId() == 0)))//main results screen - show list of assemblies
 		{
