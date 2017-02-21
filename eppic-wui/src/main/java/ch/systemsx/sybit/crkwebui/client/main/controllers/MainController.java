@@ -206,7 +206,7 @@ public class MainController
 					setExperimentalInfo();	
 					AssemblyResultsGridPanel.viewerSelectorBox.setValue(ApplicationContext.getSelectedViewer());
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
-					//unique case: check http://localhost:8081/ewui/#assembly/1smt - redirect to http://localhost:8081/ewui/#id/1smt
+					//unique case of no assemblyId in this url: check for example http://localhost:8081/ewui/#assembly/1smt - redirect to http://localhost:8081/ewui/#id/1smt
 					if((ApplicationContext.getSelectedAssemblyId() == -1 || ApplicationContext.getSelectedAssemblyId() == 0)
 							&& History.getToken().contains("assembly")){
 						displayResultView(event.getPdbScoreItem(), ResultsPanel.ASSEMBLIES_VIEW);
@@ -287,7 +287,6 @@ public class MainController
 						InformationPanel.assemblyInfoPanel.setHeadingHtml("Assembly " + assemblyID + " of " + assemblies.size());
 						ResultsPanel.informationPanel.addTopologyPanel(ApplicationContext.getPdbInfo());						
 						setExperimentalInfo();	
-						//ResultsGridPanel.selectTableRow(assemblyID-1);
 					}
 				}
 			}
@@ -804,6 +803,7 @@ public class MainController
 	 */
 	private void displayResultView(PdbInfo resultData, int viewType)
 	{		
+		Window.alert("in displayResultView");
 		ApplicationContext.setDoStatusPanelRefreshing(false);
 
 		ResultsPanel resultsPanel = null;
