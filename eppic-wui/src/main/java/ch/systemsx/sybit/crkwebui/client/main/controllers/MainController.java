@@ -188,7 +188,7 @@ public class MainController
 				for(InterfaceCluster ic : clusters){
 					num_interfaces += ic.getInterfaces().size();
 				}
-				
+								
 				String unitCellViewUrl = PopupRunner.getGraphViewerUrl(LatticeGraphServlet.SERVLET_NAME, PopupRunner.ALL_INTERFACES);
 				
 				if(ApplicationContext.getSelectedViewType() == ResultsPanel.ASSEMBLIES_VIEW){					
@@ -200,13 +200,13 @@ public class MainController
 					else if(ApplicationContext.getPdbInfo().getInputType() == InputType.FILE.getIndex()) //user uploaded jobs
 						PDBIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getInputName());						
 					InformationPanel.assemblyInfoPanel.setHeadingHtml("General Information");											
-					AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr><tr><td><a href='" + unitCellViewUrl + "' target='_blank'>View Unit Cell</a></td></tr></table>");	
+					//AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr><tr><td><a href='" + unitCellViewUrl + "' target='_blank'>View Unit Cell</a></td></tr></table>");	
+					AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr><tr><td><a href='" + unitCellViewUrl + "' target='_blank'>View Unit Cell</a></td></tr></table>");	
 					ResultsPanel.informationPanel.removeTopologyPanel(ApplicationContext.getPdbInfo());
 					setExperimentalInfo();	
 					AssemblyResultsGridPanel.viewerSelectorBox.setValue(ApplicationContext.getSelectedViewer());
 				}else if(ApplicationContext.getSelectedViewType() == ResultsPanel.INTERFACES_VIEW){
 					displayResultView(event.getPdbScoreItem(), ResultsPanel.INTERFACES_VIEW);
-					//if(ApplicationContext.getSelectedAssemblyId() == -1){
 					if(ApplicationContext.getSelectedAssemblyId() == -1 || ApplicationContext.getSelectedAssemblyId() == 0){
 						PDBIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
 						//only show a link for precomputed jobs
@@ -217,9 +217,11 @@ public class MainController
 						InformationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
 						if(History.getToken().contains("clusters")){
 							PDBIdentifierPanel.informationLabel.setHTML("Interface Clusters of: ");
-							AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr><tr><td><a href='" + unitCellViewUrl + "' target='_blank'>View Unit Cell</a></td></tr></table>");
+							//AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr><tr><td><a href='" + unitCellViewUrl + "' target='_blank'>View Unit Cell</a></td></tr></table>");
+							AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"'>" + num_interfaces + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr><tr><td><a href='" + unitCellViewUrl + "' target='_blank'>View Unit Cell</a></td></tr></table>");
 						}
-						if(History.getToken().contains("interfaces")){
+						//if(History.getToken().contains("interfaces")){
+						if(History.getToken().contains("assembly")){	
 							if(ApplicationContext.getSelectedAssemblyId() < 0){
 								AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'>" + num_interfaces + "</span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#clusters/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</a></span></td></tr><tr><td><a href='" + unitCellViewUrl + "' target='_blank'>View Unit Cell</a></td></tr></table>");
 							}
@@ -230,6 +232,14 @@ public class MainController
 						ResultsPanel.informationPanel.removeTopologyPanel(ApplicationContext.getPdbInfo());						
 						setExperimentalInfo();
 						ResultsGridPanel.viewerSelectorBox.setValue(ApplicationContext.getSelectedViewer());
+						int numberOfInterfaces = ApplicationContext.getNumberOfInterfaces();
+						int selectedInterface = ApplicationContext.getSelectedInterface();
+						if (selectedInterface > 0){
+							selectedInterface = selectedInterface - 1;
+						}
+						if(selectedInterface > 0 && selectedInterface < numberOfInterfaces){
+							ResultsGridPanel.selectTableRow(selectedInterface);							
+						}
 					}else{
 						PDBIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
 						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
@@ -265,6 +275,7 @@ public class MainController
 						InformationPanel.assemblyInfoPanel.setHeadingHtml("Assembly " + assemblyID + " of " + assemblies.size());
 						ResultsPanel.informationPanel.addTopologyPanel(ApplicationContext.getPdbInfo());						
 						setExperimentalInfo();	
+						//ResultsGridPanel.selectTableRow(assemblyID-1);
 					}
 				}
 			}
@@ -512,18 +523,21 @@ public class MainController
 			ApplicationContext.setSelectedAssemblyId(-1);
 			displayResults();
 		}
-		else if ((token != null) && (token.length() > 10) && (token.startsWith("interfaces"))) //show list of interfaces belonging to assembly x
+		//this is renamed!!!
+		//else if ((token != null) && (token.length() > 10) && (token.startsWith("interfaces"))) //show list of interfaces belonging to assembly x
+		else if ((token != null) && (token.length() > 8) && (token.startsWith("assembly"))) //show list of interfaces belonging to assembly x
 		{
 			ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
-			//ApplicationContext.setSelectedJobId(token.substring(11,15));
-			int to = token.indexOf("/",11);
+			//int to = token.indexOf("/",11);
+			int to = token.indexOf("/",9);
 			if(to != -1)
-				ApplicationContext.setSelectedJobId(token.substring(11,to));
+				//ApplicationContext.setSelectedJobId(token.substring(11,to));
+				ApplicationContext.setSelectedJobId(token.substring(9,to));
 			else
-				ApplicationContext.setSelectedJobId(token.substring(11));
+				//ApplicationContext.setSelectedJobId(token.substring(11));
+				ApplicationContext.setSelectedJobId(token.substring(9));
 			int assemblyId = -1;
-			//String idString = token.substring(16,token.length());
 			int from = token.lastIndexOf("/");
 			String idString = token.substring(from+1,token.length());
 			try {
@@ -536,6 +550,31 @@ public class MainController
 			ResultsGridPanel.clustersView.groupBy(null);
 			ResultsGridPanel.clusterIdColumn.setHidden(true);
 		}
+		//this is "new"!!!
+		else if ((token != null) && (token.length() > 11) && (token.startsWith("interfaces"))) //show list of interfaces belonging to assembly x
+		{
+			ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);
+			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
+			int to = token.indexOf("/",11);
+			if(to != -1)
+				ApplicationContext.setSelectedJobId(token.substring(11,to));
+			else
+				ApplicationContext.setSelectedJobId(token.substring(11));
+			//int assemblyId = -1;
+			int interfaceId = -1;
+			int from = token.lastIndexOf("/");
+			String idString = token.substring(from+1,token.length());
+			try {
+				interfaceId = Integer.parseInt(idString);
+			} catch (Exception e) {}
+			if(interfaceId > 0)
+				ApplicationContext.setSelectedInterface(interfaceId); //was setSelectedAssemblyId
+			displayResults();
+			ResultsGridPanel.clustersViewButton.setValue(false);
+			ResultsGridPanel.clustersView.groupBy(null);
+			ResultsGridPanel.clusterIdColumn.setHidden(true);
+		}
+		
 		else if ((token != null) && (token.length() > 8) && (token.startsWith("clusters"))) //show list of interfaces (clusters view) belonging to assembly x
 		{
 			ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);

@@ -102,7 +102,8 @@ public class ResultsPanel extends DisplayPanel
 		informationPanel.fillInfoPanel(resultsData);
 		
 		if(viewType == ASSEMBLIES_VIEW){
-			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
+			//AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
+			AssemblyResultsGridPanel.assemblies_toolbar_link.setHTML("<a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
 			mainContainer.remove(informationPanel);
 			mainContainer.add(informationPanel);
 			assemblyResultsGridContainer.fillResultsGrid(resultsData);

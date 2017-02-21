@@ -134,7 +134,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		assembliesToolBar.add(viewerSelectorBox);
 		assembliesToolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
 		
-		assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
+		//assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
+		assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
 		assembliesToolBar.add(assemblies_toolbar_link);
 		
 		return assembliesToolBar;
@@ -455,10 +456,11 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				if(assembly.getInterfaces().size() == 0)
 					model.setNumInterfaces("0 Interfaces");
 				else if(assembly.getInterfaces().size() == 1)
-					//model.setNumInterfaces("<a href='/ewui/#interfaces/1'>" + assembly.getInterfaces().size() + " Interface</a>");
-					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
+					//model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
+					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
 				else 
-					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
+					//model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
+					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
 
 				data.add(model);
 			}
