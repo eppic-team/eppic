@@ -803,7 +803,6 @@ public class MainController
 	 */
 	private void displayResultView(PdbInfo resultData, int viewType)
 	{		
-		Window.alert("in displayResultView");
 		ApplicationContext.setDoStatusPanelRefreshing(false);
 
 		ResultsPanel resultsPanel = null;
