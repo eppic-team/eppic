@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.top.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLink;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -37,7 +38,7 @@ public class NavigationPanel extends VBoxLayoutContainer
 	
 
 	HTML homeLink = createHomeLink();
-	HTML advancedSearchLink = createAdvancedSearchLink();
+	HTML advancedSearchLink = null;
 	HTML publicationsLink = createPublicationsLink();
 	HTML helpLink = createHelpLink();
 	// HTML changeViewerLink = createChangeViewerLink();
@@ -47,7 +48,13 @@ public class NavigationPanel extends VBoxLayoutContainer
 	HTML statLink = createStatLink();
 	linksContainer.add(homeLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
-	linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));
+	String eppicExplorerUrl = ApplicationContext.getSettings().getEppicExplorerUrl();
+	
+	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
+		advancedSearchLink = createAdvancedSearchLink();
+		linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));	
+	}
+	
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
 	linksContainer.add(downloadsLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
