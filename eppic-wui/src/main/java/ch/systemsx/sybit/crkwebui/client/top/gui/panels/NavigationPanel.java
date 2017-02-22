@@ -33,8 +33,16 @@ public class NavigationPanel extends VBoxLayoutContainer
 	this.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
 	this.setBorders(false);
 
+	int linksContWidth = 500;
+	
+	String eppicExplorerUrl = ApplicationContext.getSettings().getEppicExplorerUrl();
+	
+	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
+		linksContWidth = 625;
+	}
+	
 	HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
-	linksContainer.setWidth(625);
+	linksContainer.setWidth(linksContWidth);
 	
 
 	HTML homeLink = createHomeLink();
@@ -49,8 +57,6 @@ public class NavigationPanel extends VBoxLayoutContainer
 	linksContainer.add(homeLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
 
-	String eppicExplorerUrl = ApplicationContext.getSettings().getEppicExplorerUrl();
-	
 	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
 		advancedSearchLink = createAdvancedSearchLink();
 		linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));
