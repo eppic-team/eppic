@@ -48,14 +48,16 @@ public class NavigationPanel extends VBoxLayoutContainer
 	HTML statLink = createStatLink();
 	linksContainer.add(homeLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+
 	String eppicExplorerUrl = ApplicationContext.getSettings().getEppicExplorerUrl();
 	
 	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
 		advancedSearchLink = createAdvancedSearchLink();
-		linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));	
+		linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));
+		linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
 	}
 	
-	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+	
 	linksContainer.add(downloadsLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
 	// linksContainer.add(changeViewerLink, new HorizontalLayoutData(-1,1));
