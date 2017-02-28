@@ -26,6 +26,9 @@ public class AssemblyItemModel implements Serializable {
 	private String pdbCode;
 	private String numInterfaces;
 	private boolean pdb1Assembly;
+	//allie added on feb 28 2017
+	private String callReason = "";
+	
 	
 	public String getPdbCode() {
 		return pdbCode;
@@ -111,6 +114,14 @@ public class AssemblyItemModel implements Serializable {
 	
 	public void setPdb1Assembly(boolean pdb1Assembly) {
 		this.pdb1Assembly = pdb1Assembly;
+	}
+	
+	public String getCallReason(){
+		return callReason;
+	}
+	
+	public void setCallReason(String callReason){
+		this.callReason = callReason;
 	}
 	
 }

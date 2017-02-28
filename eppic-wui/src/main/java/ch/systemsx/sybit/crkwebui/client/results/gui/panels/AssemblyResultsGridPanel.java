@@ -47,6 +47,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
@@ -419,6 +420,14 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 						model.setPdb1Assembly(true);	
 					}					
 				}
+				
+				for (AssemblyScore as : assembly.getAssemblyScores()) {
+					// if pdb1 is present (with bio) then we set the field in model (see issue #100)
+					if (as.getMethod()!=null && as.getMethod().equals("eppic") ) {
+						model.setCallReason(as.getCallReason());
+					}					
+				}
+				
 				
 				String jobId = ApplicationContext.getPdbInfo().getJobId();
 				// not sure why we need lower casing here, perhaps if input is upper case? - JD 2017-02-04

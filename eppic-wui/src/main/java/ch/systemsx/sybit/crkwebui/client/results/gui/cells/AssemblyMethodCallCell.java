@@ -33,6 +33,9 @@ public class AssemblyMethodCallCell extends AbstractCell<String> {
 		int row = context.getIndex();
 		AssemblyItemModel item = itemsStore.get(row);
 
+		//get the callReason here! and put it into the tooltip.
+		tooltipText = item.getCallReason();
+		
 		String color = "black";
 
 		if (value.equalsIgnoreCase("bio")) 
@@ -48,7 +51,7 @@ public class AssemblyMethodCallCell extends AbstractCell<String> {
 		
 		value += addIcon(item.isPdb1Assembly());
 		
-		tooltipText = "";
+		//tooltipText = "test!!!";
 		sb.appendHtmlConstant("<span style='color:" + color + ";' qtip='" + tooltipText + "'>"+ value +"</span>");
 	}
 
