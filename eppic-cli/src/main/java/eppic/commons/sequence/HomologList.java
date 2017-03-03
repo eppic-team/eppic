@@ -147,7 +147,9 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 		
 		this.uniprotVer = readUniprotVer(blastDbDir);
 		
-		if (cacheFile!=null && cacheFile.exists()) {
+		// note we also check for size in case empty cache files are around (can happen often because
+		// of the way we create the files from blast redirecting to stdout)
+		if (cacheFile!=null && cacheFile.exists() && cacheFile.length()>0L) {
 
 			outBlast = cacheFile;
 			fromCache = true;
