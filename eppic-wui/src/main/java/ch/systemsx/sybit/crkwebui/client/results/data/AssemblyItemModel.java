@@ -28,8 +28,15 @@ public class AssemblyItemModel implements Serializable {
 	private boolean pdb1Assembly;
 	//allie added on feb 28 2017
 	private String callReason = "";
+	private double confidence;
 	
 	
+	public double getConfidence() {
+		return confidence;
+	}
+	public void setConfidence(double confidence) {
+		this.confidence = confidence;
+	}
 	public String getPdbCode() {
 		return pdbCode;
 	}

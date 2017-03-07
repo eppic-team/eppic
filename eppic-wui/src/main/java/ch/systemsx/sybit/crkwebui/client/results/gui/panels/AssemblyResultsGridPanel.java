@@ -425,6 +425,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					// if pdb1 is present (with bio) then we set the field in model (see issue #100)
 					if (as.getMethod()!=null && as.getMethod().equals("eppic") ) {
 						model.setCallReason(as.getCallReason());
+						model.setConfidence(as.getConfidence());
 					}					
 				}
 				
