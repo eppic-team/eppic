@@ -134,7 +134,14 @@ public class MySQLConnection {
 		loadMySQLDriver();
 		readConnectionFile(null);
 		String connStr="jdbc:mysql://"+host+":"+port+"/"+dbname;
-
+		conn = DriverManager.getConnection(connStr, user, password);
+	}
+	
+	public MySQLConnection(String dbname) throws SQLException {
+		loadMySQLDriver();
+		readConnectionFile(null);
+		String connStr="jdbc:mysql://"+host+":"+port+"/"+dbname;
+		System.out.println("new connStr is " + connStr);
 		conn = DriverManager.getConnection(connStr, user, password);
 	}
 	
