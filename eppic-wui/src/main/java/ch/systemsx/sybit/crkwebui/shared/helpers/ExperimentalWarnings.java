@@ -115,43 +115,50 @@ public class ExperimentalWarnings {
 		
 		if (this.isEmWarning()) {
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title(), warningTooltip);
+			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title(), warningTooltip);
+			warningLabel = createWarningLabel("Warning", warningTooltip);
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_EM_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_EM_text() + "<br>";
 		}
 		if(this.isResolutionWarning()) {
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_LowRes_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title(), warningTooltip);	
+			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title(), warningTooltip);
+			warningLabel = createWarningLabel("Warning", warningTooltip);
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_LowRes_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_LowRes_text() + "<br>";
 		}
 		if(this.isRfreeWarning()){
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_HighRfree_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title(), warningTooltip);
+			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title(), warningTooltip);
+			warningLabel = createWarningLabel("Warning", warningTooltip);
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_HighRfree_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_HighRfree_text() + "<br>";
 		}
 		if(this.isNoRfreeWarning()){
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NoRfree_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);	
+			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);
+			warningLabel = createWarningLabel("Warning", warningTooltip);
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NoRfree_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NoRfree_text() + "<br>";
 		}
 		if(this.isSpaceGroupWarning()){
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title(), warningTooltip);	
+			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title(), warningTooltip);	
+			warningLabel = createWarningLabel("Warning", warningTooltip);
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text() + "<br>";
 		}
 		if(this.nonStandardSg){
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title(), warningTooltip);
+			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title(), warningTooltip);
+			warningLabel = createWarningLabel("Warning", warningTooltip);
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text() + "<br>";
 		}
 		if(this.nonStandardCoordFrameConvention){
 			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title(), warningTooltip);
+			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title(), warningTooltip);
+			warningLabel = createWarningLabel("Warning", warningTooltip);
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text() + "<br>";
 		}

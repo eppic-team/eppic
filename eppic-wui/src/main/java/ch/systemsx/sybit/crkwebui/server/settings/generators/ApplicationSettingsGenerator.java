@@ -61,6 +61,7 @@ public class ApplicationSettingsGenerator
 		boolean usePrecompiledResults = Boolean.parseBoolean(globalProperties.getProperty("use_precompiled","true"));
 		String uniprotVersion = globalProperties.getProperty("uniprot_version");
 		String examplePdb = globalProperties.getProperty("example_pdb");
+		String eppicExplorerUrl = globalProperties.getProperty("eppic_explorer_url");
 		double resolutionCutOff;
 		if(globalProperties.getProperty("resolution_cutoff")!=null)
 			resolutionCutOff = Double.parseDouble(globalProperties.getProperty("resolution_cutoff"));
@@ -99,6 +100,7 @@ public class ApplicationSettingsGenerator
 		settings.setUseCaptcha(useCaptcha);
 		settings.setNrOfAllowedSubmissionsWithoutCaptcha(nrOfAllowedSubmissionsWithoutCaptcha);
 		settings.setPdbLinkUrl(pdbLinkUrl);
+		settings.setEppicExplorerUrl(eppicExplorerUrl);
 		settings.setUniparcLinkUrl(uniparcLinkUrl);
 		settings.setUniprotLinkUrl(uniprotLinkUrl);
 		settings.setWikipediaUrl(wikipediaLinkUrl);

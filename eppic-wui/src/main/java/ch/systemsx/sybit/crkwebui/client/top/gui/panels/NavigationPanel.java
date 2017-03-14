@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.top.gui.panels;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
+import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.EmptyLink;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -32,10 +33,20 @@ public class NavigationPanel extends VBoxLayoutContainer
 	this.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
 	this.setBorders(false);
 
+	int linksContWidth = 500;
+	
+	String eppicExplorerUrl = ApplicationContext.getSettings().getEppicExplorerUrl();
+	
+	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
+		linksContWidth = 625;
+	}
+	
 	HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
-	linksContainer.setWidth(500);
+	linksContainer.setWidth(linksContWidth);
+	
 
 	HTML homeLink = createHomeLink();
+	HTML advancedSearchLink = null;
 	HTML publicationsLink = createPublicationsLink();
 	HTML helpLink = createHelpLink();
 	// HTML changeViewerLink = createChangeViewerLink();
@@ -43,9 +54,16 @@ public class NavigationPanel extends VBoxLayoutContainer
 	HTML releasesLink = createReleasesLink();
 	HTML fAQLink = createFAQLink();
 	HTML statLink = createStatLink();
-
 	linksContainer.add(homeLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+
+	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
+		advancedSearchLink = createAdvancedSearchLink();
+		linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));
+		linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+	}
+	
+	
 	linksContainer.add(downloadsLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
 	// linksContainer.add(changeViewerLink, new HorizontalLayoutData(-1,1));
@@ -103,6 +121,25 @@ public class NavigationPanel extends VBoxLayoutContainer
 
 	return homeLink;
     }
+    
+    /**
+     * Creates link to the advanced search page.
+     * @return link to the advanced search page
+     */
+    private HTML createAdvancedSearchLink()
+    {
+	HTML advancedSearchLink = new EmptyLink(AppPropertiesManager.CONSTANTS.navigation_panel_advanced_search_link_label());
+	advancedSearchLink.addStyleName("eppic-horizontal-nav");
+	advancedSearchLink.addClickHandler(new ClickHandler() {	
+	    @Override
+	    public void onClick(ClickEvent event) {
+	    History.newItem("advancedsearch");
+	    }
+	});
+
+	return advancedSearchLink;
+    }    
+    
 
     /**
      * Creates link to publications.

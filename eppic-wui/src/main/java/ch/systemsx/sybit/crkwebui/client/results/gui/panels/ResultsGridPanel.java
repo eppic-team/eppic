@@ -44,6 +44,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.shared.model.InputType;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -89,7 +90,7 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 	
 	private ListStore<InterfaceItemModel> resultsStore;
 	private ColumnModel<InterfaceItemModel> resultsColumnModel;
-	private Grid<InterfaceItemModel> resultsGrid; 
+	private static Grid<InterfaceItemModel> resultsGrid; 
 	public static ClustersGridView clustersView; //temp static
 	
 	public static CheckBox clustersViewButton;
@@ -133,6 +134,8 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		resultsGrid = createResultsGrid();		
 		panelContainer.add(createSelectorToolBar(), new VerticalLayoutData(1,-1));
 		panelContainer.add(resultsGrid, new VerticalLayoutData(-1,-1));
+		
+		
 		
 		this.add(panelContainer, new VerticalLayoutData(1,-1));
 		
@@ -572,6 +575,9 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 
 		resultsGrid.reconfigure(resultsStore, resultsColumnModel); 
 		
+		//here is how to select a row!
+		//resultsGrid.getSelectionModel().select(1,true);
+		
 		if(resizeGrid)
 		{
 			resizeContent(panelWidth);
@@ -597,10 +603,15 @@ public class ResultsGridPanel extends VerticalLayoutContainer
 		}
 	}
 	
+	public static void selectTableRow(int index){
+		resultsGrid.getSelectionModel().select(index,true);
+	}
+	
 	private void onClustersRadioValueChange(boolean value){
 		if (value) { //check clusters event
 			clustersView.groupBy(clusterIdColumn);
 			AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getNumberOfInterfaces() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
+			//AssemblyInfoPanel.assembly_info.setHTML("<table cellpadding=0 cellspacing=0><tr><td width='150px'><span class='eppic-general-info-label-new'>Assemblies</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#id/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getPdbInfo().getAssemblies().size() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interfaces</span></td><td><span class='eppic-general-info-label-value-new'><a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"'>" + ApplicationContext.getNumberOfInterfaces() + "</a></span></td></tr><tr><td><span class='eppic-general-info-label-new'>Interface clusters</span></td><td><span class='eppic-general-info-label-value-new'>" + ApplicationContext.getPdbInfo().getInterfaceClusters().size()+"</span></td></tr></table>");
 			if(ApplicationContext.getSelectedAssemblyId() > 0)
 				History.newItem("clusters/" + ApplicationContext.getSelectedJobId() + "/" + ApplicationContext.getSelectedAssemblyId());
 			else

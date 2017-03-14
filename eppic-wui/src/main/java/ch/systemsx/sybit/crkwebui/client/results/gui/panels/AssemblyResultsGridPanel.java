@@ -47,6 +47,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
@@ -135,6 +136,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		assembliesToolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
 		
 		assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
+		//assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
 		assembliesToolBar.add(assemblies_toolbar_link);
 		
 		return assembliesToolBar;
@@ -419,6 +421,15 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					}					
 				}
 				
+				for (AssemblyScore as : assembly.getAssemblyScores()) {
+					// if pdb1 is present (with bio) then we set the field in model (see issue #100)
+					if (as.getMethod()!=null && as.getMethod().equals("eppic") ) {
+						model.setCallReason(as.getCallReason());
+						model.setConfidence(as.getConfidence());
+					}					
+				}
+				
+				
 				String jobId = ApplicationContext.getPdbInfo().getJobId();
 				// not sure why we need lower casing here, perhaps if input is upper case? - JD 2017-02-04
 				// what's for sure is that if we lower case for user job ids then the urls are wrong - JD 2017-02-04
@@ -455,10 +466,11 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				if(assembly.getInterfaces().size() == 0)
 					model.setNumInterfaces("0 Interfaces");
 				else if(assembly.getInterfaces().size() == 1)
-					//model.setNumInterfaces("<a href='/ewui/#interfaces/1'>" + assembly.getInterfaces().size() + " Interface</a>");
-					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
+					//model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
+					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interface</a>");
 				else 
-					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
+					//model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
+					model.setNumInterfaces("<a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"/"+assembly.getId() +"'>"+ assembly.getInterfaces().size() + " Interfaces</a>");
 
 				data.add(model);
 			}
