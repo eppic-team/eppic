@@ -1078,11 +1078,11 @@ public class Assembly {
 		switch(call){
 		case BIO:
 			confidence = probability;
-			callReason = "Highest probability assembly of being biologically relevant found in the crystal.";
+			callReason = String.format("Highest biological probability assembly in the crystal (%.2f)", probability);
 			break;
 		case CRYSTAL:
 			confidence = 1 - probability;
-			callReason = "Another assembly in the crystal has a higher probability of being biologically relevant.";
+			callReason = String.format("Another assembly in the crystal has a higher biologically probability (%.2f).", probability);
 			break;
 		case NO_PREDICTION:
 			// should that be a global variable in eppic params?
