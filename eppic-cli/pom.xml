@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.eppic-web</groupId>
 		<artifactId>eppic</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>eppic-cli</artifactId>
 
