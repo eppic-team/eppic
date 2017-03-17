@@ -304,7 +304,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		if (properties.getProperty("server_name")!=null && !properties.getProperty("server_name").equals("")) {
 			serverName = properties.getProperty("server_name");
 		} else {
-			logger.warn("The server_name property was not set in file '{}'. The URL sent in emails will be wrong!");
+			logger.warn("The server_name property was not set in file '{}'. The URL sent in emails will be wrong!",SERVER_PROPERTIES_FILE );
 		}
 		
 		resultsPathUrl = protocol + "://" + serverName;
