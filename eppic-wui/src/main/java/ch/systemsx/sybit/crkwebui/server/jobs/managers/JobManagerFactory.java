@@ -2,6 +2,9 @@ package ch.systemsx.sybit.crkwebui.server.jobs.managers;
 
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.drmaa.DrmaaJobManager;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
@@ -12,6 +15,7 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
  */
 public class JobManagerFactory
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(JobManagerFactory.class);
 	/**
 	 * Retrieves instance of job manager by name.
 	 * @param queuingSystemName name of the queuing system
@@ -30,6 +34,8 @@ public class JobManagerFactory
 		{
 			if(queuingSystemName.equals("sge"))
 			{
+			
+				LOGGER.info("Initialising DrmaaJobManager for queuing system {} with jobsDirectory {}", queuingSystemName, jobsDirectory);
 				jobManager = new DrmaaJobManager(queuingSystemName, 
 												 queuingSystemProperties,
 												 jobsDirectory);

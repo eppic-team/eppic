@@ -290,8 +290,13 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			logger.warn("The LOCAL_CIF_DIR path is either not set or not pointing to a readable directory.");	
 		}
 
-		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE))
+		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE) ||
+			properties.get(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
+		
 			initializeJobManager(queuingSystem);
+		} else {
+			logger.warn("development_mode is set to true in config file. There will be no queuing system available!");
+		}
 
 		//String serverName = getServletContext().getInitParameter("serverName");
 
@@ -299,7 +304,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		if (properties.getProperty("server_name")!=null && !properties.getProperty("server_name").equals("")) {
 			serverName = properties.getProperty("server_name");
 		} else {
-			logger.warn("The server_name property was not set in file '{}'. The URL sent in emails will be wrong!");
+			logger.warn("The server_name property was not set in file '{}'. The URL sent in emails will be wrong!",SERVER_PROPERTIES_FILE );
 		}
 		
 		resultsPathUrl = protocol + "://" + serverName;
@@ -395,12 +400,14 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 
 	private void initializeJobManager(String queuingSystem) throws ServletException {
+		logger.info("Proceeding to initialise job manager for queuing system {}", queuingSystem);
 		String queueingSystemConfigFile = CONFIG_FILES_LOCATION+"/" + queuingSystem + QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX;		
 		
 		Properties queuingSystemProperties = new Properties();
 		try {
 			InputStream queuingSystemPropertiesStream = new FileInputStream(new File(queueingSystemConfigFile));
 			queuingSystemProperties.load(queuingSystemPropertiesStream);
+			logger.info("Read queuing system properties from file {}", queueingSystemConfigFile);
 		} catch (IOException e) {
 			throw new ServletException("Properties file '"+queueingSystemConfigFile+"' for " + queuingSystem + " can not be read. Error: "+e.getMessage());
 		}
@@ -508,6 +515,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			}
 			catch(Throwable e)
 			{
+				logger.error("Something went wrong during job submission. Error: " + e.getMessage(), e);
+				
 				LogHandler.writeToLogFile(logFile, e.getMessage());
 
 				submissionStatus = StatusOfJob.ERROR;
