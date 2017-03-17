@@ -290,8 +290,13 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			logger.warn("The LOCAL_CIF_DIR path is either not set or not pointing to a readable directory.");	
 		}
 
-		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE))
+		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE) ||
+			properties.get(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
+		
 			initializeJobManager(queuingSystem);
+		} else {
+			logger.warn("development_mode is set to true in config file. There will be no queuing system available!");
+		}
 
 		//String serverName = getServletContext().getInitParameter("serverName");
 
@@ -395,6 +400,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	}
 
 	private void initializeJobManager(String queuingSystem) throws ServletException {
+		logger.info("Proceeding to initialise job manager for queuing system {}", queuingSystem);
 		String queueingSystemConfigFile = CONFIG_FILES_LOCATION+"/" + queuingSystem + QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX;		
 		
 		Properties queuingSystemProperties = new Properties();
