@@ -401,6 +401,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		try {
 			InputStream queuingSystemPropertiesStream = new FileInputStream(new File(queueingSystemConfigFile));
 			queuingSystemProperties.load(queuingSystemPropertiesStream);
+			logger.info("Read queuing system properties from file {}", queueingSystemConfigFile);
 		} catch (IOException e) {
 			throw new ServletException("Properties file '"+queueingSystemConfigFile+"' for " + queuingSystem + " can not be read. Error: "+e.getMessage());
 		}

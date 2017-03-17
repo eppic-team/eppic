@@ -75,6 +75,10 @@ public class CrkRunner
 		}
 		log.info("Running user job: "+sb.toString());
 		
+		if (jobManager==null) {
+			log.error("jobManager is null! A NPE will follow!");
+		}
+		
 	    return jobManager.startJob(javaVMExec,
 	    		                   runJobData.getJobId(), 
 	    						   crkCommand, 
