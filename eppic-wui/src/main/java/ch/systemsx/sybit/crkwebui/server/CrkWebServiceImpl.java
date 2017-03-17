@@ -508,6 +508,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			}
 			catch(Throwable e)
 			{
+				logger.error("Something went wrong during job submission. Error: " + e.getMessage(), e);
+				
 				LogHandler.writeToLogFile(logFile, e.getMessage());
 
 				submissionStatus = StatusOfJob.ERROR;
