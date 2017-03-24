@@ -57,6 +57,8 @@ import com.sencha.gxt.core.client.util.KeyNav;
 import com.sencha.gxt.data.shared.LabelProvider;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
+import com.sencha.gxt.data.shared.SortDir;
+import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.form.ComboBox;
@@ -113,6 +115,10 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		gridPanel.setWidget(panelContainer);
 		
 		resultsStore = new ListStore<AssemblyItemModel>(props.key());
+		
+		//sortingresultsStore.addSortInfo(sortInfo); //setDefaultSort("assemblyScore", SortDir.DESC);
+		resultsStore.addSortInfo(0, new StoreSortInfo<AssemblyItemModel>(props.assemblyScore(), SortDir.DESC));
+		
 		List<ColumnConfig<AssemblyItemModel, ?>> resultsConfigs = createColumnConfig();
 		resultsColumnModel = new ColumnModel<AssemblyItemModel>(resultsConfigs);
 		
@@ -161,6 +167,7 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		configs.add(getMmSizeColumn());
 		configs.add(getStoichiometryColumn());
 		configs.add(getSymmetryColumn());
+		configs.add(getAssemblyScoreColumn());
 		configs.add(getPredictionColumn());
 		configs.add(getNumInterfacesColumn());
 		//configs.add(getDetailsColumn());
@@ -225,9 +232,18 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return idColumn;
 	}
 	
-	private ColumnConfig<AssemblyItemModel, String> getIdentifierColumn() {
+
+	
+	/*private ColumnConfig<AssemblyItemModel, String> getIdentifierColumn() {
 		ColumnConfig<AssemblyItemModel, String> identifierColumn = 
 				new ColumnConfig<AssemblyItemModel, String>(props.identifier());
+		fillColumnSettings(identifierColumn, "identifier");
+		return identifierColumn;
+	}*/
+	
+	private ColumnConfig<AssemblyItemModel, Integer> getIdentifierColumn() {
+		ColumnConfig<AssemblyItemModel, Integer> identifierColumn = 
+				new ColumnConfig<AssemblyItemModel, Integer>(props.identifier());
 		fillColumnSettings(identifierColumn, "identifier");
 		return identifierColumn;
 	}
@@ -283,6 +299,20 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		//predictionColumn.setColumnTextClassName("eppic-results-final-call");
 		return stioColumn;
 	}
+	
+	private SummaryColumnConfig<AssemblyItemModel, Double> getAssemblyScoreColumn() {
+	SummaryColumnConfig<AssemblyItemModel, Double> assemblyScoreColumn = 
+			new SummaryColumnConfig<AssemblyItemModel, Double>(props.assemblyScore());
+	fillColumnSettings(assemblyScoreColumn, "score");
+	return assemblyScoreColumn;
+	}
+	
+	/*private SummaryColumnConfig<AssemblyItemModel, String> getAssemblyScoreColumn() {
+		SummaryColumnConfig<AssemblyItemModel, String> assemblyScoreColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, String>(props.assemblyScore());
+		fillColumnSettings(assemblyScoreColumn, "score");
+		return assemblyScoreColumn;
+	}*/
 	
 	private SummaryColumnConfig<AssemblyItemModel, String> getPredictionColumn() {
 		SummaryColumnConfig<AssemblyItemModel, String> predictionColumn = 
@@ -410,7 +440,8 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 
 				AssemblyItemModel model = new AssemblyItemModel();
 				model.setAssemblyId(assembly.getId()); //not actually visible
-				model.setIdentifier(assembly.getIdentifierString());
+				//model.setIdentifier(assembly.getIdentifierString());
+				model.setIdentifier(assembly.getId());
 				model.setPdbCode(resultsData.getPdbCode());
 				model.setPdb1Assembly(false);
 				for (AssemblyScore as : assembly.getAssemblyScores()) {
@@ -426,9 +457,10 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 					if (as.getMethod()!=null && as.getMethod().equals("eppic") ) {
 						model.setCallReason(as.getCallReason());
 						model.setConfidence(as.getConfidence());
+						//model.setAssemblyScore(as.getScore()+""); 
+						model.setAssemblyScore(as.getScore());
 					}					
 				}
-				
 				
 				String jobId = ApplicationContext.getPdbInfo().getJobId();
 				// not sure why we need lower casing here, perhaps if input is upper case? - JD 2017-02-04

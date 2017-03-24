@@ -13,9 +13,13 @@ public interface AssemblyItemModelProperties extends PropertyAccess<AssemblyItem
 	 
 	  ValueProvider<AssemblyItemModel, Integer> assemblyId();
 	  
+	  ValueProvider<AssemblyItemModel, Double> assemblyScore();
+	  //ValueProvider<AssemblyItemModel, String> assemblyScore();
+	  
 	  ValueProvider<AssemblyItemModel, String> numInterfaces();
 	  
-	  ValueProvider<AssemblyItemModel, String> identifier();
+	  //ValueProvider<AssemblyItemModel, String> identifier();
+	  ValueProvider<AssemblyItemModel, Integer> identifier();
 	  
 	  ValueProvider<AssemblyItemModel, String> composition();
 	  

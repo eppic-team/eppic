@@ -208,6 +208,15 @@ public class Assembly implements Serializable  {
 		return sb.toString();
 	}
 	
+	public String getScoreString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i=0;i<getAssemblyContents().size();i++	) {
+			sb.append(getAssemblyContents().get(i).getScore());
+			if (i!=getAssemblyContents().size()-1) sb.append(",");
+		}
+		return sb.toString();
+	}
+	
 	//Not needed yet
 	public String getCompositionString() {
 		return "TODO Composition";
