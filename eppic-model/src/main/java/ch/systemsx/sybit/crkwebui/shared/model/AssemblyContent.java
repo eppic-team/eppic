@@ -17,24 +17,7 @@ public class AssemblyContent implements Serializable {
 	private String stoichiometry;
 	private String composition;
 	private String compositionRepChainIds;
-	private double assemblyScore;
-	//private String assemblyScore;
 	
-	public double getAssemblyScore() {
-		return assemblyScore;
-	}
-
-	public void setAssemblyScore(double assemblyScore) {
-		this.assemblyScore = assemblyScore;
-	}
-	
-	/*public String getAssemblyScore() {
-		return assemblyScore;
-	}
-
-	public void setScore(String assemblyScore) {
-		this.assemblyScore = assemblyScore;
-	}*/
 	
 	
 
