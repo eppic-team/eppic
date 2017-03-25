@@ -34,15 +34,21 @@
 		<table name="Job">
 			<!-- Whenever a job is invoked, the table has to be searched for jobIds, this index is very important! -->
 			<index name="jobId_idx" column-list="jobId" unique="true"></index>
+			<!-- The JobStatusUpdater polls jobs with certain status every few seconds to add any finished jobs -->
+			<index name="status_idx" column-list="status" unique="false"></index>
 		</table>
 		<attributes>
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
 			<basic name="jobId"></basic>
-			<basic name="status"></basic>
+			<basic name="status">
+				<column length="15" />
+			</basic>
 			<basic name="email"></basic>
-			<basic name="ip"></basic>
+			<basic name="ip">
+				<column length="20" />
+			</basic>
 			<basic name="inputName"></basic>
 			<basic name="submissionDate">
 				<temporal>TIMESTAMP</temporal>

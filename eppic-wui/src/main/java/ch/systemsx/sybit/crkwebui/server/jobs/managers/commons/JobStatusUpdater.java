@@ -27,6 +27,11 @@ import eppic.model.PdbInfoDB;
  */
 public class JobStatusUpdater implements Runnable
 {
+	/**
+	 * The polling interval in milliseconds
+	 */
+	public static final int POLLING_INTERVAL = 2000;
+	
 	private volatile boolean running;
 	private volatile boolean isUpdating;
 	private JobManager jobManager;
@@ -112,7 +117,7 @@ public class JobStatusUpdater implements Runnable
 					}
 				}
 				
-				Thread.sleep(2000);
+				Thread.sleep(POLLING_INTERVAL);
 			}
 			catch (Throwable t)
 			{
