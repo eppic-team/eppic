@@ -606,7 +606,7 @@
 				<column length="10" />
 			</basic>
 			<basic name="eppicVersion">
-				<column length="15" />
+				<column length="35" />
 			</basic>
 			<basic name="eppicBuild">
 				<!-- Setting it to 50 after looking at some examples with length just over 40 - JD 2016-11-27 -->
