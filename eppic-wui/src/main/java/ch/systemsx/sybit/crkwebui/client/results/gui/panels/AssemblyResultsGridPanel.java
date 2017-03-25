@@ -14,6 +14,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowDiagramViewerEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowInterfacesOfAssemblyDataEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowThumbnailEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
+import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SelectAssemblyResultsRowHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssembliesHandler;
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAssemblyViewerHandler;
@@ -300,18 +301,13 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 	}
 	
 	private SummaryColumnConfig<AssemblyItemModel, Double> getAssemblyScoreColumn() {
-	SummaryColumnConfig<AssemblyItemModel, Double> assemblyScoreColumn = 
-			new SummaryColumnConfig<AssemblyItemModel, Double>(props.assemblyScore());
-	fillColumnSettings(assemblyScoreColumn, "score");
-	return assemblyScoreColumn;
-	}
-	
-	/*private SummaryColumnConfig<AssemblyItemModel, String> getAssemblyScoreColumn() {
-		SummaryColumnConfig<AssemblyItemModel, String> assemblyScoreColumn = 
-				new SummaryColumnConfig<AssemblyItemModel, String>(props.assemblyScore());
+		SummaryColumnConfig<AssemblyItemModel, Double> assemblyScoreColumn = 
+				new SummaryColumnConfig<AssemblyItemModel, Double>(props.assemblyScore());
 		fillColumnSettings(assemblyScoreColumn, "score");
+		// to render the score with 2 decimals
+		assemblyScoreColumn.setCell(new TwoDecimalDoubleCell());
 		return assemblyScoreColumn;
-	}*/
+	}
 	
 	private SummaryColumnConfig<AssemblyItemModel, String> getPredictionColumn() {
 		SummaryColumnConfig<AssemblyItemModel, String> predictionColumn = 
