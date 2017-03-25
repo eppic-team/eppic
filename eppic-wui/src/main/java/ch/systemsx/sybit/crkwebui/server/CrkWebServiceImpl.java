@@ -295,7 +295,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		
 			initializeJobManager(queuingSystem);
 		} else {
-			logger.warn("development_mode is set to true in config file. There will be no queuing system available!");
+			logger.warn("{} is set to true in config file. There will be no queuing system available!",ApplicationSettingsGenerator.DEVELOPMENT_MODE);
 		}
 
 		//String serverName = getServletContext().getInitParameter("serverName");
@@ -380,7 +380,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				nrOfThreadForSubmission,
 				assignedMemory,
 				javaVMExec);
-		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE)) {
+		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE) ||
+			properties.get(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
+			
+			logger.info("Proceeding to spawn the job status updater daemon");
 			jobStatusUpdater = new JobStatusUpdater(jobManager,
 					new JobDAOJpa(),
 					resultsPathUrl,
@@ -389,6 +392,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 					generalDestinationDirectoryName);
 			jobDaemon = new Thread(jobStatusUpdater);
 			jobDaemon.start();
+		} else {
+			logger.warn("{} is set to true in config file. No job status updater daemon will run.",ApplicationSettingsGenerator.DEVELOPMENT_MODE);
 		}
 
 		// checking that dbSettings are initialised
