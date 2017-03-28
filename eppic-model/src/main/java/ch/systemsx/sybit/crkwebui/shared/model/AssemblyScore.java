@@ -76,7 +76,6 @@ public class AssemblyScore implements Serializable {
 		assemblyScore.setScore(assemblyScoreDB.getScore());
 		assemblyScore.setCallName(assemblyScoreDB.getCallName());
 		assemblyScore.setCallReason(assemblyScoreDB.getCallReason());
-		//assemblyScore.setScore("0.88"); //test only - allie
 		return assemblyScore;
 	}
 }
