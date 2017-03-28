@@ -14,7 +14,6 @@ public class AssemblyItemModel implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private int assemblyId; //assemblyId and identifier have the same value (different type)
-	//private String identifier; 
 	private int identifier;
 	private String composition;
 	private String mmSize;
@@ -27,11 +26,9 @@ public class AssemblyItemModel implements Serializable {
 	private String pdbCode;
 	private String numInterfaces;
 	private boolean pdb1Assembly;
-	//allie added on feb 28 2017
 	private String callReason = "";
 	private double confidence;
 	private double assemblyScore;
-	//private String assemblyScore;
 	
 	public double getAssemblyScore() {
 		return assemblyScore;
@@ -39,13 +36,6 @@ public class AssemblyItemModel implements Serializable {
 	public void setAssemblyScore(double assemblyScore) {
 		this.assemblyScore = assemblyScore;
 	}
-	
-	/*public String getAssemblyScore() {
-		return assemblyScore;
-	}
-	public void setAssemblyScore(String assemblyScore) {
-		this.assemblyScore = assemblyScore;
-	}*/
 	
 	public double getConfidence() {
 		return confidence;
@@ -95,12 +85,6 @@ public class AssemblyItemModel implements Serializable {
 	public void setStoichiometry(String stoichiometry) {
 		this.stoichiometry = stoichiometry;
 	}
-	/*public String getIdentifier() {
-		return identifier;
-	}
-	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
-	}*/
 	
 	public int getIdentifier() {
 		return identifier;
