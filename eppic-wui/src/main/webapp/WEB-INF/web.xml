@@ -114,6 +114,27 @@
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.AssemblyDiagramServlet</servlet-class>
 	</servlet>
 
+	<servlet>
+	    <servlet-name>SiteMapMainService</servlet-name>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.sitemap.servlets.SiteMapMainServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>SiteMapMainService</servlet-name>
+		<url-pattern>/sitemap/index.xml</url-pattern>
+	</servlet-mapping>
+	
+	
+	<servlet>
+	    <servlet-name>SiteMapLeafService</servlet-name>
+	    <servlet-class>ch.systemsx.sybit.crkwebui.server.sitemap.servlets.SiteMapLeafServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>SiteMapLeafService</servlet-name>
+		<url-pattern>/sitemap/sitemap.xml</url-pattern>
+	</servlet-mapping>
+
 	<servlet-mapping>
 		<servlet-name>CrkService</servlet-name>
 		<url-pattern>/ewui/crk</url-pattern>
