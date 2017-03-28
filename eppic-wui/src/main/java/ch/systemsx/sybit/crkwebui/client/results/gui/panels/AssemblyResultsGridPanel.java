@@ -142,7 +142,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		assembliesToolBar.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"));
 		
 		assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#interfaces/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
-		//assemblies_toolbar_link = new HTML("<a href='" + GWT.getHostPageBaseURL() + "#assembly/"+ApplicationContext.getSelectedJobId()+"'>View All Interfaces</a>");
 		assembliesToolBar.add(assemblies_toolbar_link);
 		
 		return assembliesToolBar;
@@ -170,7 +169,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		configs.add(getAssemblyScoreColumn());
 		configs.add(getPredictionColumn());
 		configs.add(getNumInterfacesColumn());
-		//configs.add(getDetailsColumn());
 
 		return configs;
 	}
@@ -232,15 +230,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		return idColumn;
 	}
 	
-
-	
-	/*private ColumnConfig<AssemblyItemModel, String> getIdentifierColumn() {
-		ColumnConfig<AssemblyItemModel, String> identifierColumn = 
-				new ColumnConfig<AssemblyItemModel, String>(props.identifier());
-		fillColumnSettings(identifierColumn, "identifier");
-		return identifierColumn;
-	}*/
-	
 	private ColumnConfig<AssemblyItemModel, Integer> getIdentifierColumn() {
 		ColumnConfig<AssemblyItemModel, Integer> identifierColumn = 
 				new ColumnConfig<AssemblyItemModel, Integer>(props.identifier());
@@ -281,13 +270,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 		fillColumnSettings(symmetryColumn, "symmetry");
 		return symmetryColumn;
 	}
-	
-	/*private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
-		SummaryColumnConfig<AssemblyItemModel, String> stioColumn = 
-				new SummaryColumnConfig<AssemblyItemModel, String>(props.stoichiometry());
-		fillColumnSettings(stioColumn, "stoichiometry");
-		return stioColumn;
-	}*/
 	
 	private SummaryColumnConfig<AssemblyItemModel, String> getStoichiometryColumn() {
 		SummaryColumnConfig<AssemblyItemModel, String> stioColumn = 
@@ -435,7 +417,6 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 
 				AssemblyItemModel model = new AssemblyItemModel();
 				model.setAssemblyId(assembly.getId()); //not actually visible
-				//model.setIdentifier(assembly.getIdentifierString());
 				model.setIdentifier(assembly.getId());
 				model.setPdbCode(resultsData.getPdbCode());
 				model.setPdb1Assembly(false);
