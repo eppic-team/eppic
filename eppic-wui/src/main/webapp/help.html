@@ -55,7 +55,7 @@
 					related homologs (within 60% sequence identity)for every protein in
 					the PDB or for user-uploaded structures</li>
 				<li>Colored-by-sequence-entropy surface representation using the
-					browser embedded NGL viewer. Very useful for looking at features present at protein
+					browser embedded <a href="https://github.com/arose/ngl">NGL</a> viewer. Very useful for looking at features present at protein
 					surfaces: interfaces, binding sites etc. (<a
 					href="#homologs-window">more</a>)
 				</li>
@@ -142,11 +142,22 @@
 					interfaces are depicted with different colors. Next appear the macromolecular size,
 					stoichiometry (the successive letters represent different molecular entities, not chain ids)
 					and point group symmetry (Cn for cyclic symmetries, Dn for dihedral
-					symmetries, T for tetrahedral, O for octahedral and I for icosahedral). The prediction column
+					symmetries, T for tetrahedral, O for octahedral and I for icosahedral).
+				</p>
+				<p>
+					The prediction column
 					provides the predicted assembly (marked as <font color="green">BIO</font>), while
 					all others are marked as <font color="red">XTAL</font>. The predicted assembly
 					corresponds to that with the higuest calculated
-					probability, based on the scores of the interfaces that form it. For PDB deposited
+					probability, based on the scores of the interfaces that form it. The probability values
+					for each assembly appear in their own column too. An estimation of the
+					prediction confidence is provided with star icons: golden star
+					<img src="resources/icons/excellent.png" style="width: 20px; height: 20px"></img>
+					for high confidence, gray star <img src="resources/icons/good.png" style="width: 20px; height: 20px"></img>
+					for medium confidence, no star for low confidence.
+				</p>
+				<p>
+					For PDB deposited
 					entries, the assembly corresponding to the first PDB biounit assignment is marked with a small
 					<img src="resources/icons/pdb_biounit_annotation.png"></img> icon.
 					The last column shows how many interfaces compose the assembly, clicking on the link
@@ -330,7 +341,7 @@
 				<p>The thumbnails in the Assembly and Interface tables give a visual cartoon
 					representation of the assemblies and interfaces. By clicking on them one gets an
 					interactive 3D view, depending on the selected mode: as browser
-					embedded NGL viewer (no need for local viewer) or as a mmCIF file
+					embedded <a href="https://github.com/arose/ngl">NGL</a> viewer (no need for local viewer) or as a mmCIF file
 					downloadable to a local molecular viewer. In the interface view
 					the two protomers are represented as cartoons with interface residues
 					also shown as sticks. Core residues from both protomers are shown
@@ -374,7 +385,8 @@
 					given connectivity.
 				</p>
 				<ul>
-					<li><strong>3D lattice graph view with NGL</strong>: the graph is shown in 3D overlayed
+					<li><strong>3D lattice graph view with <a href="https://github.com/arose/ngl">NGL</a></strong>:
+						the graph is shown in 3D overlayed
 						on top of the protein in semi-transparent cartoon represenatation.
 						The nodes are placed at the centroids of the chains. Different colors
 						are assigned to different molecular entities and to distinct interfaces.
@@ -443,7 +455,7 @@
 						identifier of the representative sequence. This letter can be
 						followed by other letters (in brackets). These are the chain
 						identifiers of other identical sequences in the structure. Click
-						on the <img src="resources/icons/sequence_14.png"></img> icon to see
+						on the <img class="eppic-iframe-optype-img" src="resources/icons/sequence_14.png"></img> icon to see
 						the alignment of the chain to its reference
 						UniProt sequence (based on <a
 						href="http://www.ebi.ac.uk/pdbe/docs/sifts/" target="_blank">SIFTS</a>
@@ -457,11 +469,11 @@
 						too small for a proper decision to be reached. The more sequences
 						in the alignment the more reliable the evolutionary predictions
 						will be, so looking at this number is important. Click on the <img
-						src="resources/icons/homologs_14.png"></img> icon
+						class="eppic-iframe-optype-img" src="resources/icons/homologs_14.png"></img> icon
 						for more information about the homologs (<a
 						href="#homologs-window">more</a>).</li>
 					<li><b>Similar structures in PDB</b>: click on the
-						<img src="resources/icons/related_14.png"></img> icon to find
+						<img class="eppic-iframe-optype-img" src="resources/icons/related_14.png"></img> icon to find
 						other PDB entries that contain chains similar in sequence (down to 30%
 						sequence identity) to this one (<a href="#seq-clusters">more</a>).
 
