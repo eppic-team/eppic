@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.biojava.nbio.structure.Chain;
@@ -341,28 +340,11 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				interfClusterIdsToEngage.add(e.getClusterId());
 			}
 			
-			// 2. Get the entity ids involved in this assembly
-			SortedSet<Integer> entityIds = GraphUtils.getDistinctEntities(a.getAssemblyGraph().getSubgraph());
-			
-			// 3. Find out whether any of the contracted edges involved the found entity ids
-			// 4. If they do -> add contracted edge to interfClusterIdsToEngage
+			// 2. Now simply add the contracted edges
 			Set<Integer> contractedInterfClusterIds = graphContractor.getContractedInterfClusterIds();
-			for (int contractedInterfClusterId : contractedInterfClusterIds) {
-				// get the corresponding edge in the full graph and find the entities involved
-				for (InterfaceEdge e : latticeGraph.getGraph().edgeSet()) {
-					if (e.getClusterId() == contractedInterfClusterId) {
-						ChainVertex s = latticeGraph.getGraph().getEdgeSource(e);
-						ChainVertex t = latticeGraph.getGraph().getEdgeSource(e);
-						if (entityIds.contains(s.getEntityId()) || entityIds.contains(t.getEntityId())) {
-							interfClusterIdsToEngage.add(contractedInterfClusterId);
-						}
-						// we found the edge, no need to continue (all other edges with same cluster id will have same endpoints)
-						break;
-					}
-				}
-			}
+			interfClusterIdsToEngage.addAll(contractedInterfClusterIds);
 			
-			// 5. Create the new assembly with interfClusterIdsToEngage
+			// 3. Create the new assembly with interfClusterIdsToEngage
 			Assembly aInFull = generateAssembly(interfClusterIdsToEngage);
 			
 			all.add(aInFull);

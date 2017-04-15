@@ -199,66 +199,6 @@ public class TestContractedAssemblyEnumeration {
 		
 		outDir.delete();
 	}
-
-	@Test
-	public void testIssue148_2() throws IOException, StructureException {
-
-		// 5eu0 is a nice test case: 2 entities, fairly small, 2 chains in AU
-		String pdbId = "5EU0";
-		Structure s = TestLatticeGraph.getStructure(pdbId);
-		
-		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
-		
-		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, false);
-		
-		CrystalAssemblies crystalAssembliesC = new CrystalAssemblies(s, interfaces, true);
-		
-		
-		System.out.printf("%d assemblies found using full graph: \n", crystalAssemblies.size());
-		
-		for (Assembly a : crystalAssemblies) {
-			System.out.println("assembly "+a.toString());
-		}
-
-		assertEquals(11, crystalAssemblies.getUniqueAssemblies().size());
-		
-		
-		System.out.printf("%d assemblies found using contracted graph: \n", crystalAssembliesC.size());
-		
-		for (Assembly a : crystalAssembliesC) {
-			System.out.println("assembly "+a.toString());
-			
-		}
-		
-		
-
-		File outDir = new File(TMPDIR, "eppicTestContractedAssemblyEnumeration");
-		
-		outDir.mkdir();
-		
-		assertTrue(outDir.isDirectory());
-		
-		
-		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
-		params.setForceContractedAssemblyEnumeration(true);
-		
-		Main m = new Main();
-		
-		m.run(params);
-				
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
-		
-		
-		for (AssemblyDB a : pdbInfo.getAssemblies()) {
-			System.out.print("Assembly "+a.getId()+ ", " + a.getInterfaceClusterIds() + ": ");
-			AssemblyContentDB ac = null;
-			if (a.getAssemblyContents()!=null) ac = a.getAssemblyContents().get(0);
-			System.out.println(" sto " + (ac==null?"null":ac.getStoichiometry()) + ", sym " + (ac==null?"null":ac.getSymmetry()));
-		}
-		
-		outDir.delete();
-		
-	}
 	
 	@Test
 	public void testIssue148_3() throws IOException, StructureException {
@@ -285,11 +225,18 @@ public class TestContractedAssemblyEnumeration {
 		
 		System.out.printf("%d assemblies found using contracted graph: \n", crystalAssembliesC.size());
 		
+		// in this case edges 1, 2 are contracted
+		// at the minimum we need {}, {1,2,3}
+		boolean gotTrimerAssembly = false;
 		for (Assembly a : crystalAssembliesC) {
 			System.out.println("assembly "+a.toString());
 			
+			if (a.toString().equals("{1,2,3}")) {
+				gotTrimerAssembly = true;
+			}
 		}
 		
+		assertTrue(gotTrimerAssembly);
 				
 		
 	}
