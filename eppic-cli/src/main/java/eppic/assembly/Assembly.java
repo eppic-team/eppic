@@ -1061,7 +1061,8 @@ public class Assembly {
 						probability = p;
 					}
 				}
-				logger.info("Disengaging interface cluster {} for assembly {} scoring",
+				// in cases like 3unb, this log line can fill gigabytes of logs... making it debug
+				logger.debug("Disengaging interface cluster {} for assembly {} scoring",
 						index + 1, id);
 				if (probability > 0.1) {
 					logger.warn("Disengaging interface cluster {} of assembly {} "
