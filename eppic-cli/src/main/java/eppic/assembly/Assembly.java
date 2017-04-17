@@ -1055,14 +1055,14 @@ public class Assembly {
 				int index = 0;
 				double probability = 1;
 				for (int i = 1; i < reducedSet.size() + 1; i++) {
+					if (reducedSet.isOff(i-1)) continue; // we want to loop only over the engaged interfaces
 					double p = iecl.getCombinedClusterPredictor(i).getScore();
 					if (p <= probability) {
 						index = i - 1;
 						probability = p;
 					}
 				}
-				// in cases like 3unb, this log line can fill gigabytes of logs... making it debug
-				logger.debug("Disengaging interface cluster {} for assembly {} scoring",
+				logger.info("Disengaging interface cluster {} for assembly {} scoring",
 						index + 1, id);
 				if (probability > 0.1) {
 					logger.warn("Disengaging interface cluster {} of assembly {} "
