@@ -126,12 +126,15 @@ public class TestAssembly {
 					+ "They will be reduced to compute assembly scoring.", 
 					reducedSet.sizeOn(), id);
 			
+			int numIterations = 0;
+			
 			while (reducedSet.sizeOn() > MAX_NUM_ENGAGED_IFACES_SCORING) {
 				
 				// Find the lowest probability cluster
 				int index = 0;
 				double probability = 1;
 				for (int i = 1; i < reducedSet.size() + 1; i++) {
+					if (reducedSet.isOff(i-1)) continue; // we want to loop only over the engaged interfaces
 					double p = probs[i-1];
 					if (p <= probability) {
 						index = i - 1;
@@ -150,6 +153,9 @@ public class TestAssembly {
 				}
 				
 				reducedSet.switchOff(index);
+				numIterations++;
+				// this test case is to catch a problem with an infinite loop
+				assertTrue(numIterations<1000);
 			}
 		}
 	}
