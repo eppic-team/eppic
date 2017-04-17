@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestAssembly {
+	
+	private static final Logger logger = LoggerFactory.getLogger(TestAssembly.class);
 
 	@Test
 	public void testIsChild() {
@@ -84,6 +88,69 @@ public class TestAssembly {
 			prevLevel = new HashSet<PowerSet>(nextLevel);
 			
 
+		}
+	}
+	
+	@Test
+	public void testInfiniteLoopIssue() {
+		// This test case corresponds to assembly scoring of 1y1w, assembly 2: {1,2,3,4,5,6,7,8,9,12,15,17,20,27}
+		// There are 41 interface clusters in total
+		int MAX_NUM_ENGAGED_IFACES_SCORING = 10;
+		int id = 2;
+		// values of the probabilities for all interface clusters extracted from db
+		double[] probs = 
+			{1,	0.999207829709885, 0.99917914246944, 0.999591174239929,
+				0.985298570766897, 0.977379187494439, 0.542933939208556,
+				0.999962547627599, 0.993578709814513, 0.0369461982241252,
+				0.945557605607499, 0.605003437421438, 0.448653155359492,
+				0.11484403384865, 0.162465062580696, 0.162465062580696,
+				0.209159365213063, 0.329598840191131, 0.0226783427611989,
+				0, 0.279286511563528, 0,
+				0.5, 0.209159365213063,	0,
+				0, 0.5, 0.162465062580696,
+				0, 0, 0,
+				0.162465062580696, 0, 0,
+				0, 0, 0,
+				0, 0, 0,
+				0
+		};
+		assertEquals(41, probs.length);
+		PowerSet reducedSet = new PowerSet(41);
+		int[] engagedInterfClusters = {1,2,3,4,5,6,7,8,9,12,15,17,20,27};
+		for (int toEngage : engagedInterfClusters) {
+			reducedSet.switchOn(toEngage-1);
+		}
+		
+		if (reducedSet.sizeOn() > MAX_NUM_ENGAGED_IFACES_SCORING) {
+			logger.warn("There are {} engaged interface clusters in assembly {}. "
+					+ "They will be reduced to compute assembly scoring.", 
+					reducedSet.sizeOn(), id);
+			
+			while (reducedSet.sizeOn() > MAX_NUM_ENGAGED_IFACES_SCORING) {
+				
+				// Find the lowest probability cluster
+				int index = 0;
+				double probability = 1;
+				for (int i = 1; i < reducedSet.size() + 1; i++) {
+					double p = probs[i-1];
+					if (p <= probability) {
+						index = i - 1;
+						probability = p;
+					}
+				}
+				// in cases like 3unb, this log line can fill gigabytes of logs... making it debug
+				logger.info("Disengaging interface cluster {} for assembly {} scoring",
+						index + 1, id);
+				if (probability > 0.1) {
+					logger.warn("Disengaging interface cluster {} of assembly {} "
+							+ "scoring, with probability {} of being biologically "
+							+ "relevant. Significant probability density might be "
+							+ "missing for the score of this assembly.", index + 1,
+							id, String.format("%.2f", probability));
+				}
+				
+				reducedSet.switchOff(index);
+			}
 		}
 	}
 }
