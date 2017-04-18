@@ -207,7 +207,10 @@ public class TestContractedAssemblyEnumeration {
 		String pdbId = "5J11";
 		Structure s = TestLatticeGraph.getStructure(pdbId);
 		
-		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
+		// unfortunately interfaces 3 and 4 are very close in area, so we need to 
+		// do the slow area calculation or otherwise the areas differ from the default eppic params
+		// and the labels 3 and 4 are swapped, making debugging this very confusing
+		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s, false);
 		
 		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, false);
 		

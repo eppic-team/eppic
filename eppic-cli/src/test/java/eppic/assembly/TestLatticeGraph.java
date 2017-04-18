@@ -465,16 +465,21 @@ public class TestLatticeGraph {
 	}
 	
 	public static StructureInterfaceList getAllInterfaces(Structure s)  {
+		return getAllInterfaces(s, true);
+	}
+	
+	public static StructureInterfaceList getAllInterfaces(Structure s, boolean fast)  {
 		logger.info("Calculating interfaces for "+s.getIdentifier().toString());
 		
 		CrystalBuilder cb = new CrystalBuilder(s);
 		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
-		interfaces.calcAsas(StructureInterfaceList.DEFAULT_ASA_SPHERE_POINTS/10,
+		int spherePoints = StructureInterfaceList.DEFAULT_ASA_SPHERE_POINTS;
+		if (fast) spherePoints = spherePoints / 10;
+		interfaces.calcAsas(spherePoints,
 				Runtime.getRuntime().availableProcessors(),
 				StructureInterfaceList.DEFAULT_MIN_COFACTOR_SIZE);
 		interfaces.removeInterfacesBelowArea();
 		interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
 		return interfaces;
 	}
-	
 }
