@@ -42,11 +42,6 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 	private Map<V,V> contractedVertices;
 	
 	/**
-	 * The set of edges that were contracted.
-	 */
-	private Set<E> contractedEdges;
-	
-	/**
 	 * The set of contracted interface cluster ids
 	 */
 	private Set<Integer> contractedInterfClusterIds;
@@ -55,7 +50,6 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 		this.g = g;
 		this.contractedVertices = new HashMap<V, V>();
 		this.contractedInterfClusterIds = new TreeSet<>();
-		this.contractedEdges = new HashSet<E>();
 	}
 
 	/**
@@ -124,8 +118,6 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 
 				logger.debug("Graph has {} vertices and {} edges, before add edges loop", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 			}
-			
-			contractedEdges.add(e);
 
 			// we need to add to vToKeep all edges that were connecting vToRemove to any other vertex 
 			for (E eToAdd : contGraph.edgesOf(vToRemove)) {
@@ -134,15 +126,7 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 					//Don't add the joining edges as a self-edge
 					continue;
 				}
-				
-				if (contGraph.getEdgeSource(eToAdd).equals(vToKeep) || contGraph.getEdgeTarget(eToAdd).equals(vToKeep)) {
-					// don't add any other extra joining edges as a self-edge
-					logger.debug("An extra edge ({}), different than edge being removed ({}), exists between vToKeep ({}) and vToRemove ({}). Adding it to the list of contracted edges.", 
-							eToAdd, e, vToKeep, vToRemove);
-					contractedEdges.add(eToAdd);
-					continue;
-				}
-				
+
 				// extract similar info from eToAdd with the convention ( vToRemove -> vToLink )
 				V vToLink;
 				Point3i xtalTransLink;
@@ -198,7 +182,9 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 
 		logger.debug("Post-contraction graph:\n"+GraphUtils.toDot(contGraph, "Postcontraction"));
 
-		
+		// let's now remove duplicated edges
+		trim(contGraph);
+
 
 		// logging the entity counts
 		if (logger.isDebugEnabled()) {
@@ -254,6 +240,8 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 
 			cg = contractInterfaceCluster(cg, interfClusterId, edgeClass);
 			
+			// we keep a list of every interf cluster id we contract
+			contractedInterfClusterIds.add(interfClusterId);
 
 			// we get the interfClusterId for next iteration
 			// TODO select the best scoring interface instead of largest (in most cases it will coincide with the largest anyway)
@@ -262,17 +250,6 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 			// if no more heteromeric interfaces we break: end of iteration
 			if (interfClusterId == -1) break;
 		}
-		
-		// gathering list of contracted interface clusters
-		Set<Integer> remainingClusters = GraphUtils.getDistinctInterfaceClusters(cg);
-		for (E e : contractedEdges) {
-			if (!remainingClusters.contains(e.getClusterId())) {
-				contractedInterfClusterIds.add(e.getClusterId());
-			}
-		}
-		
-		// finally we trim in case we still have duplicate edges
-		trim(cg);
 
 		logger.debug("Final contracted graph ({} vertices, {} edges):\n{}", cg.vertexSet().size(), cg.edgeSet().size(),
 				GraphUtils.asString(cg));
