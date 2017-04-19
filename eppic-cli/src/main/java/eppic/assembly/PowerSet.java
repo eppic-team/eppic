@@ -86,7 +86,7 @@ public class PowerSet {
 	/**
 	 * Gets all sets that are children of this set, not adding those that are also
 	 * children of other invalidParents
-	 * @param invalidParents
+	 * @param invalidParents the list of invalid parents, if null all children will be added
 	 * @return
 	 */
 	public List<PowerSet> getChildren(List<PowerSet> invalidParents) {
@@ -99,7 +99,7 @@ public class PowerSet {
 				PowerSet a = new PowerSet(this);
 				a.switchOn(i);
 				// first we need to check that this is not a child of one of the invalidParents
-				if (a.isChild(invalidParents)) continue;
+				if (invalidParents!=null && a.isChild(invalidParents)) continue;
 				
 				children.add(a);
 			}
@@ -170,4 +170,24 @@ public class PowerSet {
 		}
 		return count;
 	}
+	
+	/**
+	 * Given a child of this PowerSet, get the index that is switched on and that is off in this PowerSet.
+	 * @param child
+	 * @return the index or -1 if it can't be found
+	 * @throws IllegalArgumentException if the provided PowerSet is not a child of this PowerSet
+	 */
+	public int getDiff(PowerSet child) {
+		if (!isChild(this)) {
+			throw new IllegalArgumentException("The provided PowerSet isn't a child of this PowerSet");
+		}
+		
+		for (int i=0;i<child.size();i++) {
+			if (child.isOn(i) && this.isOff(i)) {
+				return i;
+			}
+		}
+		return -1;
+	}
 }
+ 
