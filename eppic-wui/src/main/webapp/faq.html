@@ -209,6 +209,17 @@
 				available options are: browser embedded <a href="https://github.com/arose/ngl">NGL</a> viewer (no need for
 				local viewer) or a mmCIF file downloadable to a local molecular viewer,
 				e.g. PyMOL.</p>
+			<h4>Some assemblies have comma separated lists for size, symmetry and stoichiometry. What does that mean?</h4>
+			<p>Those are disjoint assemblies where different components of the crystal
+				form independent "disjoint" assemblies. E.g. in a crystal containing 2
+				protein entities, there is always a disjoint assembly formed by 2 independent
+				monomers, one for each protein entity. The description for it would be:
+				<ul class="eppic-iframe-log-list">
+				<li>size: 1,1</li>
+				<li>symmetry: C1,C1</li>
+				<li>stoichiometry: A,A</li>
+				</ul>
+			</p>
 
 			<h4>Does EPPIC work on membrane proteins?</h4>
 			<p>
