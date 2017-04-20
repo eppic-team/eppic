@@ -1055,6 +1055,7 @@ public class Assembly {
 				int index = 0;
 				double probability = 1;
 				for (int i = 1; i < reducedSet.size() + 1; i++) {
+					if (reducedSet.isOff(i-1)) continue; // we want to loop only over the engaged interfaces
 					double p = iecl.getCombinedClusterPredictor(i).getScore();
 					if (p <= probability) {
 						index = i - 1;

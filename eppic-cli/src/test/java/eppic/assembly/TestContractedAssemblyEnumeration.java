@@ -199,5 +199,48 @@ public class TestContractedAssemblyEnumeration {
 		
 		outDir.delete();
 	}
+	
+	@Test
+	public void testIssue148_3() throws IOException, StructureException {
 
+		// 5J11: 3 entities, fairly small, 3 chains in AU
+		String pdbId = "5J11";
+		Structure s = TestLatticeGraph.getStructure(pdbId);
+		
+		// unfortunately interfaces 3 and 4 are very close in area, so we need to 
+		// do the slow area calculation or otherwise the areas differ from the default eppic params
+		// and the labels 3 and 4 are swapped, making debugging this very confusing
+		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s, false);
+		
+		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, false);
+		
+		CrystalAssemblies crystalAssembliesC = new CrystalAssemblies(s, interfaces, true);
+		
+		
+		System.out.printf("%d assemblies found using full graph: \n", crystalAssemblies.size());
+		
+		for (Assembly a : crystalAssemblies) {
+			System.out.println("assembly "+a.toString());
+		}
+
+		//assertEquals(11, crystalAssemblies.getUniqueAssemblies().size());
+		
+		
+		System.out.printf("%d assemblies found using contracted graph: \n", crystalAssembliesC.size());
+		
+		// in this case edges 1, 2 are contracted
+		// at the minimum we need {}, {1,2,3}
+		boolean gotTrimerAssembly = false;
+		for (Assembly a : crystalAssembliesC) {
+			System.out.println("assembly "+a.toString());
+			
+			if (a.toString().equals("{1,2,3}")) {
+				gotTrimerAssembly = true;
+			}
+		}
+		
+		assertTrue(gotTrimerAssembly);
+				
+		
+	}
 }
