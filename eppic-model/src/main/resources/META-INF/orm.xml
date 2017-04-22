@@ -80,7 +80,7 @@
 				<column length="4" />
 			</basic>
 			<basic name="title">
-				<column column-definition="text" />
+				<column length="10000" />
 			</basic>
 			<basic name="releaseDate"></basic>
 			<basic name="spaceGroup">
@@ -161,7 +161,7 @@
 
 			<!-- Entries like ribosomes can have very long list of interfaces here, we need text -->
 			<basic name="interfaceClusterIds">
-				<column column-definition="text" />
+				<column length="20000" />
 			</basic>
 
 			<many-to-one name="pdbInfo">
@@ -209,16 +209,16 @@
 			<basic name="composition">
 			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
 			     very long list of chains in their assemblies, we need text here -->
-				<column column-definition="text" />
+				<column length="20000" />
 			</basic>
 			<basic name="compositionRepChainIds">
-				<column column-definition="text" />
+				<column length="20000" />
 			</basic>
 			<basic name="stoichiometry"></basic>
 			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
 			     very long list of chains in their assemblies, we need text here -->
 			<basic name="chainIds">
-				<column column-definition="text" />
+				<column length="20000" />
 			</basic>
 						
 			<many-to-one name="assembly">
@@ -331,7 +331,7 @@
 				<column length="6" />
 			</basic>
 			<basic name="callReason">
-				<column column-definition="text" />
+				<column length="10000" />
 			</basic>
 			<basic name="confidence"></basic>			
 
@@ -566,7 +566,7 @@
 				<column length="6" />
 			</basic>
 			<basic name="callReason">
-				<column column-definition="text" />
+				<column length="10000" />
 			</basic>
 			<basic name="confidence"></basic>
 
@@ -582,7 +582,7 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 			<basic name="text">
-				<column column-definition="text" />
+				<column length="10000" />
 			</basic>
 
 			<many-to-one name="interfaceItem">
@@ -793,7 +793,7 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 			<basic name="text">
-				<column column-definition="text" />
+				<column length="10000" />
 			</basic>
 
 			<many-to-one name="chainCluster">
