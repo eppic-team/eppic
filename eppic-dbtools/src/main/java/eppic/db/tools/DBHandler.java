@@ -108,7 +108,7 @@ public class DBHandler {
 		}
 	}
 
-	protected EntityManager getEntityManager(){
+	public EntityManager getEntityManager(){
 		//if (em==null)
 		//	em = this.emf.createEntityManager();
 		
@@ -439,6 +439,17 @@ public class DBHandler {
 	 */
 	public PdbInfoDB deserializePdb(String pdbCode) {
 		EntityManager em = this.getEntityManager();
+		
+		return deserializePdb(em, pdbCode);
+	}
+	
+	/**
+	 * Deserialize a PdbInfoDB object given its pdbCode and and EntityManager
+	 * @param em
+	 * @param pdbCode
+	 * @return
+	 */
+	public PdbInfoDB deserializePdb(EntityManager em, String pdbCode) {
 		CriteriaBuilder cbPDB = em.getCriteriaBuilder();
 
 		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
@@ -452,8 +463,8 @@ public class DBHandler {
 			return null;
 		}
 
-		// the em can't be close here: because of LAZY fetching there can be later requests to db, should it be closed elsewhere? 
-		//em.close();
+		// the em can't be closed here: because of LAZY fetching there can be later requests to db, should it be closed elsewhere? 
+		// em.close();
 		
 		return queryPDBList.get(0);
 	}
@@ -470,10 +481,15 @@ public class DBHandler {
 
 		for (String pdbCode:pdbCodes) {
 			
-			PdbInfoDB pdbInfo = deserializePdb(pdbCode);
+			// as of 3.0.1, only 20 calls to deserializePdb(pdbCode) worked, then hanging forever
+			// now using one em per call to see if it solves the problem - JD 2017-06-18
+			EntityManager em = this.getEntityManager();
+			
+			PdbInfoDB pdbInfo = deserializePdb(em, pdbCode);
 			if (pdbInfo!=null) {
 				list.add(pdbInfo);
 			}
+			em.close();
 		}
 		
 		return list;
