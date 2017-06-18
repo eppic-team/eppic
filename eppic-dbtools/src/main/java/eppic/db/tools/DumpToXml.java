@@ -121,7 +121,7 @@ public class DumpToXml {
 		while ( (line=br.readLine())!=null ) {
 			if (line.startsWith("#")) continue;
 			if (line.trim().isEmpty()) continue;
-			list.add(line.trim());
+			list.add(line.trim().toLowerCase());
 			
 		}
 		br.close();
