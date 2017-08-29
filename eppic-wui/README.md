@@ -7,3 +7,9 @@ The web user interface for EPPIC. Based on the GXT and GWT frameworks. Visit the
 Running the client code on the java debugger should be possible by using GWT's superdev mode, but we haven't managed to make it work so far. 
 
 Regarding the server side code, running it on the debugger is possible by simply using the [jetty eclipse plugin](http://eclipse-jetty.github.io/) (available from eclipse marketplace). Beware that at the moment the plugin comes bundled with jetty 8, which doesn't support java 8. One needs to point the jetty launcher to a 9.2+ jetty installation. This can be set in the Options tab in the jetty run configurations dialog.
+
+Below the configuration for an Ubuntu system with the jetty9 package installed:
+
+![alt text](https://github.com/eppic-team/eppic/raw/master/eppic-wui/docs/images/jetty-plugin-config1.png "Jetty Plugin configuration, webapp tab")
+
+![alt text](https://github.com/eppic-team/eppic/raw/master/eppic-wui/docs/images/jetty-plugin-config2.png "Jetty Plugin configuration, options tab")
