@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
 
 import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.PDBCrystallographicInfo;
+//import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.AtomContactSet;
@@ -126,13 +126,20 @@ public class LatticeGraphPageGenerator {
 			Structure struc = readStructure(strucFile);
 
 			// Read spacegroup
-			PDBCrystallographicInfo crystInfo = struc
-					.getCrystallographicInfo();
-			SpaceGroup sg = crystInfo.getSpaceGroup();
+			//PDBCrystallographicInfo crystInfo = struc
+			//		.getCrystallographicInfo();
+			//SpaceGroup sg = crystInfo.getSpaceGroup();
 
-			List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
+			//List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
 
-			LatticeGraph3D graph = new LatticeGraph3D(struc,siList);
+			// Because of issue #159 we have to pass null for the interfaces here so that they are recalculated from 
+			// the passed struc, which makes this quite slow the first time it is called for a certain combination
+			// of interfaces - JD 2017-08-29
+			// This is ok since the json files for all valid assemblies are precalculated in CLI,
+			// this can only be called if a non-valid combination of interfaces is requested by crafting a URL
+			// TODO it'd be good to have a better solution by implementing a LatticeGraph constructor that
+			// takes Interface bean objects as input instead of converting the beans to full StructureInterface objects.
+			LatticeGraph3D graph = new LatticeGraph3D(struc, null);
 			if( requestedIfaces != null ) {
 				logger.info("Filtering LatticeGraph3D to edges {}",requestedIfaces);
 				graph.filterEngagedInterfaces(requestedIfaces);
@@ -171,7 +178,6 @@ public class LatticeGraphPageGenerator {
 		List<StructureInterface> siList = new ArrayList<StructureInterface>(
 				interfaces.size());
 		for (Interface iface : interfaces) {
-			// TODO
 			Atom[] firstMolecule = new Atom[0];
 			Atom[] secondMolecule = new Atom[0];
 			String firstMoleculeId = iface.getChain1();
@@ -187,6 +193,10 @@ public class LatticeGraphPageGenerator {
 			CrystalTransform secondTransf = new CrystalTransform(sg,
 					opId);
 			secondTransf.setMatTransform(SpaceGroup.getMatrixFromAlgebraic(iface.getOperator()));
+			
+			// TODO The problem with issue #159 is that here we can't set the isologous property in StructureInterface.
+			// Later when isIsologous is called it results in a NPE because the code attempts to calculate it 
+			// from contact overlap scores which is not possible because the residue information is missing - JD 2017-08-29
 			
 			StructureInterface siface = new StructureInterface(
 					firstMolecule, secondMolecule, firstMoleculeId,
