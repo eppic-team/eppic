@@ -260,8 +260,9 @@ public class InterfaceDAOJpa implements InterfaceDAO
 				result.add(iface);
 			}
 
-			if (result.isEmpty()) 
-				throw new DaoException("Could not find any interfaces for pdbInfo uid "+pdbInfoUid);
+			// no interfaces is a valid situation (e.g.NMR monomers). See #164
+			//if (result.isEmpty()) 
+			//	throw new DaoException("Could not find any interfaces for pdbInfo uid "+pdbInfoUid);
 
 			return result;
 		}
