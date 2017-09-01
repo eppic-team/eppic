@@ -3,9 +3,11 @@ package ch.systemsx.sybit.crkwebui.server.email.managers;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 
+import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -41,16 +43,29 @@ public class EmailSender
 	 */
 	public void send(String recipient,
 					 String subject,
-					 String text) throws MessagingException
-	{
+					 String text) throws MessagingException {
+		
 		if ((recipient != null)
-				&& (!recipient.equals("")))
-		{
+				&& (!recipient.equals(""))) {
+			
 			Properties properties = new Properties();
 			properties.put("mail.smtp.host", emailData.getHost());
 			properties.put("mail.smtp.port", emailData.getPort());
+			// this seems to be needed for google's smtp server - JD 2017-09-01
+			properties.put("mail.smtp.auth", "true");
+			properties.put("mail.smtp.socketFactory.port", emailData.getPort());
+			properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+			properties.put("mail.smtp.socketFactory.fallback", "false");
+			properties.put("mail.smtp.starttls.enable", "true");
 
-			Session session = Session.getDefaultInstance(properties);
+
+			Session session = Session.getDefaultInstance(properties, new Authenticator() {
+				// this seems to be needed for google's smtp server - JD 2017-09-01
+                @Override                
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(emailData.getEmailSender(), emailData.getEmailSenderPassword());
+                }
+            });
 			Message simpleMessage = new MimeMessage(session);
 
 			InternetAddress fromAddress = null;
@@ -71,8 +86,7 @@ public class EmailSender
 			transport.sendMessage(simpleMessage,
 					simpleMessage.getAllRecipients());
 			transport.close();
-
-			//	Transport.send(simpleMessage);
+			
 		}
 	}
 	
