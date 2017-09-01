@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.mail.MessagingException;
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -543,9 +544,13 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 					submissionStatus,
 					submissionId);
 
-			emailSender.send(runJobData.getEmailAddress(),
-					emailTitle,
-					emailMessage);
+			try {
+				emailSender.send(runJobData.getEmailAddress(),
+						emailTitle,
+						emailMessage);
+			} catch (MessagingException e) {
+				logger.error("Could not send email for job {}. Email title was: {}. Error: {}", runJobData.getJobId(), emailTitle, e.getMessage());
+			}
 
 			return runJobData.getJobId();
 		}

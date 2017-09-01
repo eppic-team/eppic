@@ -7,7 +7,6 @@ import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -32,10 +31,11 @@ public class EmailSender
 	 * @param recipient email recipient
 	 * @param subject subject of the email
 	 * @param text content of the email
+	 * @throws MessagingException 
 	 */
 	public void send(String recipient,
 					 String subject,
-					 String text)
+					 String text) throws MessagingException
 	{
 		if ((recipient != null)
 				&& (!recipient.equals("")))
@@ -50,37 +50,23 @@ public class EmailSender
 			InternetAddress fromAddress = null;
 			InternetAddress toAddress = null;
 
-			try
-			{
-				fromAddress = new InternetAddress(emailData.getEmailSender());
-				toAddress = new InternetAddress(recipient);
-			}
-			catch (AddressException e)
-			{
-				e.printStackTrace();
-			}
+			fromAddress = new InternetAddress(emailData.getEmailSender());
+			toAddress = new InternetAddress(recipient);
 
-			try
-			{
-				simpleMessage.setFrom(fromAddress);
-				simpleMessage.setRecipient(RecipientType.TO, toAddress);
-				simpleMessage.setSubject(subject);
-				simpleMessage.setText(text);
-				simpleMessage.saveChanges();
+			simpleMessage.setFrom(fromAddress);
+			simpleMessage.setRecipient(RecipientType.TO, toAddress);
+			simpleMessage.setSubject(subject);
+			simpleMessage.setText(text);
+			simpleMessage.saveChanges();
 
-				Transport transport = session.getTransport("smtp");
-				transport.connect(properties.getProperty("mail.smtp.host"),
-						emailData.getEmailSender(), "");
-				transport.sendMessage(simpleMessage,
-						simpleMessage.getAllRecipients());
-				transport.close();
+			Transport transport = session.getTransport("smtp");
+			transport.connect(properties.getProperty("mail.smtp.host"),
+					emailData.getEmailSender(), "");
+			transport.sendMessage(simpleMessage,
+					simpleMessage.getAllRecipients());
+			transport.close();
 
-//				Transport.send(simpleMessage);
-			}
-			catch (MessagingException e)
-			{
-				e.printStackTrace();
-			}
+			//	Transport.send(simpleMessage);
 		}
 	}
 }
