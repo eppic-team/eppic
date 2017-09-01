@@ -88,6 +88,8 @@ public class EmailSender
 					simpleMessage.getAllRecipients());
 			transport.close();
 			
+			logger.info("Successfully sent email for recipient {} with subject '{}'", recipient, subject);
+			
 		}
 	}
 	
