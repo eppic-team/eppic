@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.email.managers;
 
 import java.util.Properties;
+import java.util.concurrent.Executors;
 
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
@@ -9,6 +10,9 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
 
@@ -19,6 +23,8 @@ import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
  */
 public class EmailSender
 {
+	private static final Logger logger = LoggerFactory.getLogger(EmailSender.class);
+	
 	private EmailData emailData;
 
 	public EmailSender(EmailData emailData)
@@ -68,5 +74,25 @@ public class EmailSender
 
 			//	Transport.send(simpleMessage);
 		}
+	}
+	
+	/**
+	 * Sends email in an independent thread so that the server doesn't get blocked
+	 * if something goes wrong in the sending.
+	 * @param recipient
+	 * @param subject
+	 * @param text
+	 */
+	public void sendInSeparateThread(String recipient, String subject, String text) {
+		Executors.newSingleThreadExecutor().execute(new Runnable() {
+		    @Override
+		    public void run() {
+		    	try {
+		    		send(recipient, subject, text);
+		    	} catch (MessagingException e) {
+					logger.error("Could not send email for recipient {}. Email title was: {}. Error: {}", recipient, subject, e.getMessage());
+				}
+		    }
+		});
 	}
 }

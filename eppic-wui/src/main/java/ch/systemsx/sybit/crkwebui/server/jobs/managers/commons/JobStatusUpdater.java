@@ -5,10 +5,8 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.List;
 
-import javax.mail.MessagingException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
@@ -32,7 +30,7 @@ import eppic.model.PdbInfoDB;
  */
 public class JobStatusUpdater implements Runnable
 {
-	private static final Logger logger = LoggerFactory.getLogger(JobStatusUpdater.class);
+	//private static final Logger logger = LoggerFactory.getLogger(JobStatusUpdater.class);
 	
 	/**
 	 * The polling interval in milliseconds
@@ -166,13 +164,9 @@ public class JobStatusUpdater implements Runnable
 		emailMessage = emailMessage.replaceFirst("%s", resultsPathUrl);
 		emailMessage = emailMessage.replaceFirst("%s", jobStatusDetails.getJobId());
 
-		try {
-			emailSender.send(jobStatusDetails.getEmailAddress(),
+		emailSender.sendInSeparateThread(jobStatusDetails.getEmailAddress(),
 						 emailTitle,
 						 emailMessage);
-		} catch (MessagingException e) {
-			logger.error("Could not send email for job {}. Email title was: {}. Error: {}", jobStatusDetails.getJobId(), emailTitle, e.getMessage());
-		}
 	}
 
 	/**
@@ -215,13 +209,9 @@ public class JobStatusUpdater implements Runnable
 		emailMessage = emailMessage.replaceFirst("%s", resultsPathUrl);
 		emailMessage = emailMessage.replaceFirst("%s", jobStatusDetails.getJobId());
 		
-		try {
-			emailSender.send(jobStatusDetails.getEmailAddress(),
+		emailSender.sendInSeparateThread(jobStatusDetails.getEmailAddress(),
 						 emailTitle,
 						 emailMessage);
-		} catch (MessagingException e) {
-			logger.error("Could not send email for job {}. Email title was: {}. Error: {}", jobStatusDetails.getJobId(), emailTitle, e.getMessage());
-		}
 	}
 
 	/**
