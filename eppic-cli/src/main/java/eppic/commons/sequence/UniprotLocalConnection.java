@@ -31,9 +31,7 @@ import eppic.commons.util.MySQLConnection;
  * 
  * 2) a NEWT UniProt taxonomy database as downloaded from http://www.uniprot.org/taxonomy
  * 
- * The local database must be named like uniprot_yyyy_mm or for the older style versions (e.g. 15.3)
- * the name convention must be uniprot_xx_y. The tables of the database must be named "uniprot", 
- * "uniprot_clusters" and "taxonomy"
+ * The tables of the database must be named {@value #DATA_TABLE}, {@value #CLUSTERS_TABLE} and {@value #TAX_TABLE}
  * 
  * @see UniProtConnection
  * @see UnirefXMLParser
@@ -73,15 +71,10 @@ public class UniprotLocalConnection {
 		
 		this.dbName = dbName;
 		
-		if (!dbName.startsWith("uniprot_")) {
-			throw new IllegalArgumentException("The local UniProt db name must start with 'uniprot_'");
-		}
-		
-		this.uniprotVer = dbName.substring(dbName.indexOf('_')+1, dbName.length());
-		if (this.uniprotVer.length()<7) { // for old style (pre 2010) version numbers
-			// version numbers are 7 characters (2010_01) but older style uniprot version numbers (15.3) are only 3 to 4 chars
-			this.uniprotVer = uniprotVer.replace("_", "."); 
-		}
+		// TODO we need to write the uniprot version in a table in the db so that we can get it here - JD 2017-09-01
+		//      Before we'd get the version from the db name, but that's not practical anymore in a cloud environment
+		//      with automated deployment.
+		this.uniprotVer = "UNKNOWN";
 		
 	}
 	
