@@ -22,7 +22,7 @@ public class EmailData implements Serializable
 	/**
 	 * Sender address.
 	 */
-	private String emailSender;
+	private String emailSenderUserName;
 	
 	/**
 	 * Sender password.
@@ -38,6 +38,11 @@ public class EmailData implements Serializable
 	 * SMTP host.
 	 */
 	private String host;
+	
+	/**
+	 * The "from" address for sending emails.
+	 */
+	private String fromAdress;
 
 	/**
 	 * Retrieves SMTP port.
@@ -88,23 +93,23 @@ public class EmailData implements Serializable
 	}
 
 	/**
-	 * Retrieves email sender address.
+	 * Retrieves email sender user name for smtp authentication
 	 * @return email sender address
 	 */
-	public String getEmailSender() {
-		return emailSender;
+	public String getEmailSenderUserName() {
+		return emailSenderUserName;
 	}
 
 	/**
-	 * Sets email sender address
+	 * Sets email sender user name for smtp authentication
 	 * @param emailSender address of the email used to send emails
 	 */
-	public void setEmailSender(String emailSender) {
-		this.emailSender = emailSender;
+	public void setEmailSenderUserName(String emailSender) {
+		this.emailSenderUserName = emailSender;
 	}
 
 	/**
-	 * Retrieves password used to send emails.
+	 * Retrieves password used for smtp authentication
 	 * @return password used to send emails
 	 */
 	public String getEmailSenderPassword() {
@@ -112,11 +117,25 @@ public class EmailData implements Serializable
 	}
 
 	/**
-	 * Sets password used to send emails.
+	 * Sets password used for smtp authentication
 	 * @param emailSenderPassword password used to send emails
 	 */
 	public void setEmailSenderPassword(String emailSenderPassword) {
 		this.emailSenderPassword = emailSenderPassword;
+	}
+
+	/**
+	 * @return the fromAdress
+	 */
+	public String getFromAdress() {
+		return fromAdress;
+	}
+
+	/**
+	 * @param fromAdress the fromAdress to set
+	 */
+	public void setFromAdress(String fromAdress) {
+		this.fromAdress = fromAdress;
 	}
 
 }

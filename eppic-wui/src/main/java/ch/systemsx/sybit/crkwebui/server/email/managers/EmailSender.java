@@ -63,7 +63,7 @@ public class EmailSender
 				// this seems to be needed for google's smtp server - JD 2017-09-01
                 @Override                
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(emailData.getEmailSender(), emailData.getEmailSenderPassword());
+                    return new PasswordAuthentication(emailData.getEmailSenderUserName(), emailData.getEmailSenderPassword());
                 }
             });
 			Message simpleMessage = new MimeMessage(session);
@@ -71,7 +71,7 @@ public class EmailSender
 			InternetAddress fromAddress = null;
 			InternetAddress toAddress = null;
 
-			fromAddress = new InternetAddress(emailData.getEmailSender());
+			fromAddress = new InternetAddress(emailData.getFromAdress());
 			toAddress = new InternetAddress(recipient);
 
 			simpleMessage.setFrom(fromAddress);
@@ -81,8 +81,9 @@ public class EmailSender
 			simpleMessage.saveChanges();
 
 			Transport transport = session.getTransport("smtp");
+			// apparently the password is not needed here, don't know why -JD 2017-09-01
 			transport.connect(properties.getProperty("mail.smtp.host"),
-					emailData.getEmailSender(), "");
+					emailData.getEmailSenderUserName(), "");
 			transport.sendMessage(simpleMessage,
 					simpleMessage.getAllRecipients());
 			transport.close();

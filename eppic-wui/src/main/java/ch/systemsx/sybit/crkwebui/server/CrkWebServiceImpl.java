@@ -322,8 +322,9 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		logger.info("Initialised URL suffix for email messages to {}",resultsPathUrl);
 
 		EmailData emailData = new EmailData();
-		emailData.setEmailSender(properties.getProperty("email_username", ""));
+		emailData.setEmailSenderUserName(properties.getProperty("email_username", ""));
 		emailData.setEmailSenderPassword(properties.getProperty("email_password", ""));
+		emailData.setFromAdress(properties.getProperty("email_from_address", ""));
 		emailData.setHost(properties.getProperty("email_host"));
 		emailData.setPort(properties.getProperty("email_port"));
 		emailSender = new EmailSender(emailData);
