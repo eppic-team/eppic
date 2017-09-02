@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.email.managers;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 
+import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
@@ -68,13 +69,10 @@ public class EmailSender
             });
 			Message simpleMessage = new MimeMessage(session);
 
-			InternetAddress fromAddress = null;
-			InternetAddress toAddress = null;
+			InternetAddress toAddress = new InternetAddress(recipient);
+			Address[] replyTos = {new InternetAddress(emailData.getReplyToAddress())};
 
-			fromAddress = new InternetAddress(emailData.getFromAdress());
-			toAddress = new InternetAddress(recipient);
-
-			simpleMessage.setFrom(fromAddress);
+			simpleMessage.setReplyTo(replyTos);
 			simpleMessage.setRecipient(RecipientType.TO, toAddress);
 			simpleMessage.setSubject(subject);
 			simpleMessage.setText(text);

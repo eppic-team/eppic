@@ -40,9 +40,9 @@ public class EmailData implements Serializable
 	private String host;
 	
 	/**
-	 * The "from" address for sending emails.
+	 * The reply-to address for sending emails.
 	 */
-	private String fromAdress;
+	private String replyToAddress;
 
 	/**
 	 * Retrieves SMTP port.
@@ -124,18 +124,13 @@ public class EmailData implements Serializable
 		this.emailSenderPassword = emailSenderPassword;
 	}
 
-	/**
-	 * @return the fromAdress
-	 */
-	public String getFromAdress() {
-		return fromAdress;
+	public String getReplyToAddress() {
+		return replyToAddress;
 	}
 
-	/**
-	 * @param fromAdress the fromAdress to set
-	 */
-	public void setFromAdress(String fromAdress) {
-		this.fromAdress = fromAdress;
+	public void setReplyToAddress(String replyToAddress) {
+		this.replyToAddress = replyToAddress;
 	}
 
+	
 }
