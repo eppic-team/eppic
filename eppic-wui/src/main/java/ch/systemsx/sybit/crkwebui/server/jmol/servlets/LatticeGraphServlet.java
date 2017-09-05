@@ -104,6 +104,10 @@ public class LatticeGraphServlet extends BaseServlet
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
 		String format = request.getParameter(PARAM_FORMAT);
+		
+		// setting a default size if not specified, #191
+		if (size == null || size.trim().isEmpty()) 
+			size = JmolViewerServlet.DEFAULT_SIZE;
 
 
 		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={},format={}",

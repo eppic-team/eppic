@@ -87,6 +87,10 @@ public class AssemblyDiagramServlet extends BaseServlet
 		String requestedClusterStr = request.getParameter(LatticeGraphServlet.PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
 		String format = request.getParameter(LatticeGraphServlet.PARAM_FORMAT);
+		
+		// setting a default size if not specified, #191
+		if (size == null || size.trim().isEmpty()) 
+			size = JmolViewerServlet.DEFAULT_SIZE;
 
 		logger.info("Requested assemblyDiagram page for jobId={},interfaces={},clusters={},format={}",jobId,requestedIfacesStr,requestedClusterStr,format);
 
