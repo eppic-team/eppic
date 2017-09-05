@@ -47,6 +47,8 @@ public class JmolViewerServlet extends BaseServlet
 	public static final String PARAM_INPUT = "input";
 	public static final String PARAM_SIZE = "size";
 	
+	public static final String DEFAULT_SIZE = "700";
+	
 	private static final Logger logger = LoggerFactory.getLogger(JmolViewerServlet.class);
 	
 	private String resultsLocation;
@@ -85,6 +87,11 @@ public class JmolViewerServlet extends BaseServlet
 		String format = request.getParameter(FileDownloadServlet.PARAM_COORDS_FORMAT);
 		String input = request.getParameter(PARAM_INPUT);
 		String size = request.getParameter(PARAM_SIZE);
+		
+		// setting a default size if not specified, #191
+		if (size == null || size.trim().isEmpty()) 
+			size = JmolViewerServlet.DEFAULT_SIZE;
+
 
 		String serverName = request.getServerName();
 		int serverPort = request.getServerPort();
