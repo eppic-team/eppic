@@ -3,7 +3,7 @@
 
 	<groupId>org.eppic-web</groupId>
 	<artifactId>eppic</artifactId>
-	<version>3.0.2</version>
+	<version>3.0.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -20,7 +20,7 @@
 	<scm>
 		<url>https://github.com/eppic-team/eppic</url>
 		<connection>scm:git:https://github.com/eppic-team/eppic.git</connection>
-	  <tag>v3.0.2</tag>
+	  <tag>v3.0.3-SNAPSHOT</tag>
   </scm>
 
 	<properties>
