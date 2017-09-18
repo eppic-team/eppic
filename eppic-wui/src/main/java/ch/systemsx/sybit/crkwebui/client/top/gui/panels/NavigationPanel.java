@@ -30,57 +30,59 @@ public class NavigationPanel extends VBoxLayoutContainer
      */
     private void createLinksPanel()
     {
-	this.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
-	this.setBorders(false);
+    	this.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
+    	this.setBorders(false);
 
-	int linksContWidth = 500;
-	
-	String eppicExplorerUrl = ApplicationContext.getSettings().getEppicExplorerUrl();
-	
-	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
-		linksContWidth = 625;
-	}
-	
-	HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
-	linksContainer.setWidth(linksContWidth);
-	
+    	// before removing the statistics links this was 500, now subtracting 40 to fit better
+    	int linksContWidth = 500 - 40;
 
-	HTML homeLink = createHomeLink();
-	HTML advancedSearchLink = null;
-	HTML publicationsLink = createPublicationsLink();
-	HTML helpLink = createHelpLink();
-	// HTML changeViewerLink = createChangeViewerLink();
-	HTML downloadsLink = createDownloadsLink();
-	HTML releasesLink = createReleasesLink();
-	HTML fAQLink = createFAQLink();
-	// TODO commenting out statistics for now since we can't update them in the way we used to anymore (because the war file is not exploded anymore). 
-	// TODO The page needs to be redone by providing the needed data in a REST service and consuming it from the html/js. - JD 2017-09-18
-	//HTML statLink = createStatLink();
-	linksContainer.add(homeLink, new HorizontalLayoutData(-1,1));
-	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+    	String eppicExplorerUrl = ApplicationContext.getSettings().getEppicExplorerUrl();
 
-	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
-		advancedSearchLink = createAdvancedSearchLink();
-		linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));
-		linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
-	}
-	
-	
-	linksContainer.add(downloadsLink, new HorizontalLayoutData(-1,1));
-	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
-	// linksContainer.add(changeViewerLink, new HorizontalLayoutData(-1,1));
-	// linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
-	linksContainer.add(helpLink, new HorizontalLayoutData(-1,1));
-	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
-	linksContainer.add(fAQLink, new HorizontalLayoutData(-1,1));
-	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
-	linksContainer.add(releasesLink, new HorizontalLayoutData(-1,1));
-	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));        
-	//linksContainer.add(statLink, new HorizontalLayoutData(-1,1));  
-	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));  
-	linksContainer.add(publicationsLink, new HorizontalLayoutData(-1,1));
+    	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
+        	// before removing the statistics links this was 500, now subtracting 40 to fit better
+    		linksContWidth = 625 - 40;
+    	}
 
-	this.add(linksContainer);
+    	HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
+    	linksContainer.setWidth(linksContWidth);
+
+
+    	HTML homeLink = createHomeLink();
+    	HTML advancedSearchLink = null;
+    	HTML publicationsLink = createPublicationsLink();
+    	HTML helpLink = createHelpLink();
+    	// HTML changeViewerLink = createChangeViewerLink();
+    	HTML downloadsLink = createDownloadsLink();
+    	HTML releasesLink = createReleasesLink();
+    	HTML fAQLink = createFAQLink();
+    	// TODO commenting out statistics for now since we can't update them in the way we used to anymore (because the war file is not exploded anymore). 
+    	// TODO The page needs to be redone by providing the needed data in a REST service and consuming it from the html/js. - JD 2017-09-18
+    	//HTML statLink = createStatLink();
+    	linksContainer.add(homeLink, new HorizontalLayoutData(-1,1));
+    	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+
+    	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
+    		advancedSearchLink = createAdvancedSearchLink();
+    		linksContainer.add(advancedSearchLink, new HorizontalLayoutData(-1,1));
+    		linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+    	}
+
+
+    	linksContainer.add(downloadsLink, new HorizontalLayoutData(-1,1));
+    	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+    	// linksContainer.add(changeViewerLink, new HorizontalLayoutData(-1,1));
+    	// linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+    	linksContainer.add(helpLink, new HorizontalLayoutData(-1,1));
+    	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+    	linksContainer.add(fAQLink, new HorizontalLayoutData(-1,1));
+    	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
+    	linksContainer.add(releasesLink, new HorizontalLayoutData(-1,1));
+    	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));        
+    	//linksContainer.add(statLink, new HorizontalLayoutData(-1,1));  
+    	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));  
+    	linksContainer.add(publicationsLink, new HorizontalLayoutData(-1,1));
+
+    	this.add(linksContainer);
     }
 
     /*
