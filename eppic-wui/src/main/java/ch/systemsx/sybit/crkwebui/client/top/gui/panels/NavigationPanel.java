@@ -53,7 +53,9 @@ public class NavigationPanel extends VBoxLayoutContainer
 	HTML downloadsLink = createDownloadsLink();
 	HTML releasesLink = createReleasesLink();
 	HTML fAQLink = createFAQLink();
-	HTML statLink = createStatLink();
+	// TODO commenting out statistics for now since we can't update them in the way we used to anymore (because the war file is not exploded anymore). 
+	// TODO The page needs to be redone by providing the needed data in a REST service and consuming it from the html/js. - JD 2017-09-18
+	//HTML statLink = createStatLink();
 	linksContainer.add(homeLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
 
@@ -74,13 +76,14 @@ public class NavigationPanel extends VBoxLayoutContainer
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));
 	linksContainer.add(releasesLink, new HorizontalLayoutData(-1,1));
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));        
-	linksContainer.add(statLink, new HorizontalLayoutData(-1,1));  
+	//linksContainer.add(statLink, new HorizontalLayoutData(-1,1));  
 	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));  
 	linksContainer.add(publicationsLink, new HorizontalLayoutData(-1,1));
 
 	this.add(linksContainer);
     }
 
+    /*
     private HTML createStatLink() {
 	HTML statLink = new EmptyLink(AppPropertiesManager.CONSTANTS.navigation_panel_statistics_link_label());
 	statLink.addStyleName("eppic-horizontal-nav");
@@ -94,6 +97,7 @@ public class NavigationPanel extends VBoxLayoutContainer
 
 	return statLink;
     }
+    */
 
     private HTML createBreakLabel()
     {
