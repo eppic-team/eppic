@@ -33,14 +33,14 @@ public class NavigationPanel extends VBoxLayoutContainer
     	this.setVBoxLayoutAlign(VBoxLayoutAlign.RIGHT);
     	this.setBorders(false);
 
-    	// before removing the statistics links this was 500, now subtracting 40 to fit better
-    	int linksContWidth = 500 - 40;
+    	// before removing the statistics links this was 500, now subtracting 50 to fit better
+    	int linksContWidth = 500 - 50;
 
     	String eppicExplorerUrl = ApplicationContext.getSettings().getEppicExplorerUrl();
 
     	if (eppicExplorerUrl != null && !eppicExplorerUrl.trim().isEmpty()) {
-        	// before removing the statistics links this was 500, now subtracting 40 to fit better
-    		linksContWidth = 625 - 40;
+        	// before removing the statistics links this was 500, now subtracting 50 to fit better
+    		linksContWidth = 625 - 50;
     	}
 
     	HorizontalLayoutContainer linksContainer = new HorizontalLayoutContainer();
@@ -79,7 +79,7 @@ public class NavigationPanel extends VBoxLayoutContainer
     	linksContainer.add(releasesLink, new HorizontalLayoutData(-1,1));
     	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));        
     	//linksContainer.add(statLink, new HorizontalLayoutData(-1,1));  
-    	linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));  
+    	//linksContainer.add(createBreakLabel(), new HorizontalLayoutData(-1,1));  
     	linksContainer.add(publicationsLink, new HorizontalLayoutData(-1,1));
 
     	this.add(linksContainer);
@@ -103,10 +103,10 @@ public class NavigationPanel extends VBoxLayoutContainer
 
     private HTML createBreakLabel()
     {
-	HTML breakLabel = new HTML("&nbsp;|&nbsp;");
-	breakLabel.addStyleName("eppic-default-left-margin");
-	breakLabel.addStyleName("eppic-horizontal-nav");
-	return breakLabel;
+    	HTML breakLabel = new HTML("&nbsp;|&nbsp;");
+    	breakLabel.addStyleName("eppic-default-left-margin");
+    	breakLabel.addStyleName("eppic-horizontal-nav");
+    	return breakLabel;
     }
 
 
