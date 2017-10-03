@@ -618,14 +618,17 @@ public class Assembly {
 
 		// Use the centroids of each third of the protein
 		Atom[] ca = StructureTools.getRepresentativeAtomArray(c);
-		if (ca.length==0) {
+		if (ca.length<3) {
 			// in some cases we find no CAs or Ps, let's use all atoms then, see issue #167
+			// see also issue #195. For chains with fewer than 1 or 2 representative atoms we need to resort to all atoms too, e.g. 5VVV chain B 
+			logger.info("Fewer than 3 representative atoms in chain {}. Resorting to all atoms for calculating symmetry to pack structure.", c.getChainID());
 			ca = StructureTools.getAllAtomArray(c);
 		}
-		
 		if(ca.length<3) {
+			logger.warn("Fewer than 3 atoms in chain {} even after resorting to all atoms. Problems might happen in symmetry calculation to pack structure.", c.getChainID());
 			return Calc.atomsToPoints(ca);
-		}
+		}	
+		
 		Atom[] ca1 = Arrays.copyOfRange(ca, 0,ca.length/3);
 		Atom[] ca2 = Arrays.copyOfRange(ca, ca.length/3,2*ca.length/3);
 		Atom[] ca3 = Arrays.copyOfRange(ca, 2*ca.length/3,ca.length);
