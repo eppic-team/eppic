@@ -474,7 +474,8 @@ public class Assembly {
 		AxisAligner aligner = AxisAligner.getInstance(symm);
 
 		Matrix4d transformation;
-		if(pointgroup.getOrder() < 1) {
+		// pointgroup==null condition is to solve #155
+		if(pointgroup==null || pointgroup.getOrder() < 1) {
 			// Failed?
 			logger.warn("Error finding point group for complex containing {}",cc.vertexSet().iterator().next());
 			
@@ -624,7 +625,7 @@ public class Assembly {
 			logger.info("Fewer than 3 representative atoms in chain {}. Resorting to all atoms for calculating symmetry to pack structure.", c.getChainID());
 			ca = StructureTools.getAllAtomArray(c);
 		}
-		if(ca.length<3) {
+		if (ca.length<3) {
 			logger.warn("Fewer than 3 atoms in chain {} even after resorting to all atoms. Problems might happen in symmetry calculation to pack structure.", c.getChainID());
 			return Calc.atomsToPoints(ca);
 		}	

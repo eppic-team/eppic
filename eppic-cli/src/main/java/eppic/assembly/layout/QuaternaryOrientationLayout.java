@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E> {
-	private static Logger logger = LoggerFactory.getLogger(QuaternaryOrientationLayout.class);
+	private static final Logger logger = LoggerFactory.getLogger(QuaternaryOrientationLayout.class);
 
 	public QuaternaryOrientationLayout(VertexPositioner<V> vertexPositioner) {
 		super(vertexPositioner);
@@ -49,8 +49,24 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 			AxisAligner aligner = AxisAligner.getInstance(gSymmetry);
 			Point3d center = aligner.getGeometricCenter();
 
-			Rotation rotation = pointgroup.getRotation(pointgroup.getHigherOrderRotationAxis());
-			AxisAngle4d axis = rotation.getAxisAngle();
+			AxisAngle4d axis = null;
+			if (pointgroup==null) {
+				// pointgroup is null for 1y4m 
+				// that's because Helical symmetry is detected, let's check
+				if (gSymmetry.getSymmetry().equals("H")) {
+					// I've no clue which helical symmetry to get, I'll go for lowest angle - JD 2017-10-02
+					logger.info("Connected Component containing {} has helical symmetry", connected.iterator().next());
+					axis = gSymmetry.getHelixLayers().getByLowestAngle().getAxisAngle();
+				} else {
+					logger.warn("Point group is null and Connected Component does not have helical symmetry. "
+							+ "Setting axis to 0,0,0 "
+							+ "for Connected Component containing {}", connected.iterator().next());
+					axis = new AxisAngle4d();
+				}
+			} else {
+				Rotation rotation = pointgroup.getRotation(pointgroup.getHigherOrderRotationAxis());
+				axis = rotation.getAxisAngle();
+			}
 			Point3d zenith = new Point3d(axis.x,axis.y,axis.z);
 			zenith.add(center);
 
