@@ -119,64 +119,71 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 				logger.debug("Graph has {} vertices and {} edges, before add edges loop", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 			}
 
-			// we need to add to vToKeep all edges that were connecting vToRemove to any other vertex 
-			for (E eToAdd : contGraph.edgesOf(vToRemove)) {
+			// In some cases (e.g. 1kbu, 5xnl), the vToRemove doesn't exist in contGraph. That's because we are getting 
+			// vToRemove from the inputGraph whilst contGraph might already have no such vertex at this point in the removal process. 
+			// This check avoids the IllegalArgumentException that would happen otherwise, see issue #196
+			if (!contGraph.containsVertex(vToRemove)) {
+				logger.info("The vertex to be removed {} does not exist in contracted graph", vToRemove.toString());
+			} else {
+				// we need to add to vToKeep all edges that were connecting vToRemove to any other vertex 
+				for (E eToAdd : contGraph.edgesOf(vToRemove)) {
 
-				if (eToAdd == e) {
-					//Don't add the joining edges as a self-edge
-					continue;
-				}
-
-				// extract similar info from eToAdd with the convention ( vToRemove -> vToLink )
-				V vToLink;
-				Point3i xtalTransLink;
-				
-				{ // local variable scope
-					V s = contGraph.getEdgeSource(eToAdd);
-					V t = contGraph.getEdgeTarget(eToAdd);
-	
-					xtalTransLink = eToAdd.getXtalTrans();
-					
-					if (vToRemove.equals(s)) {
-						vToLink = t;
-					} else {
-						assert vToRemove.equals(t); // should be one or the other
-						vToLink = s;
-						// preserve direction convention
-						xtalTransLink.negate();
-					}
-
-					if(vToLink == vToKeep) {
+					if (eToAdd == e) {
 						//Don't add the joining edges as a self-edge
 						continue;
 					}
-					// Now we have all the info to make a new edge ( vToKeep -> vToLink )
-					logger.debug("Adding edge {} between {} -> {}. Before it was {}->{}", 
-							eToAdd.toString(), vToKeep.toString(), vToLink.toString(), s.toString(), t.toString());
+
+					// extract similar info from eToAdd with the convention ( vToRemove -> vToLink )
+					V vToLink;
+					Point3i xtalTransLink;
+
+					{ // local variable scope
+						V s = contGraph.getEdgeSource(eToAdd);
+						V t = contGraph.getEdgeTarget(eToAdd);
+
+						xtalTransLink = eToAdd.getXtalTrans();
+
+						if (vToRemove.equals(s)) {
+							vToLink = t;
+						} else {
+							assert vToRemove.equals(t); // should be one or the other
+							vToLink = s;
+							// preserve direction convention
+							xtalTransLink.negate();
+						}
+
+						if(vToLink == vToKeep) {
+							//Don't add the joining edges as a self-edge
+							continue;
+						}
+						// Now we have all the info to make a new edge ( vToKeep -> vToLink )
+						logger.debug("Adding edge {} between {} -> {}. Before it was {}->{}", 
+								eToAdd.toString(), vToKeep.toString(), vToLink.toString(), s.toString(), t.toString());
+					}
+
+					// we create a new edge so that we can keep the original edges from the original graph intact
+					InterfaceEdge newEdge = new InterfaceEdge();
+
+					newEdge.setInterfaceId(eToAdd.getInterfaceId());
+					newEdge.setClusterId(eToAdd.getClusterId());
+					//TODO It can be that two non-infinite edges together are infinite. Does that matter here? -SB
+					newEdge.setIsInfinite(eToAdd.isInfinite() || e.isInfinite());
+					newEdge.setIsIsologous(eToAdd.isIsologous() || e.isIsologous());
+
+					// xtalTrans should have already been negated if necessary
+					Point3i newTrans = new Point3i(xtalTrans);
+					newTrans.add(xtalTransLink);
+					newEdge.setXtalTrans(newTrans);
+
+					// the casting should be safe
+					contGraph.addEdge(vToKeep, vToLink, (E) newEdge);
+
+					logger.debug("Graph has {} vertices and {} edges", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 				}
 
-				// we create a new edge so that we can keep the original edges from the original graph intact
-				InterfaceEdge newEdge = new InterfaceEdge();
-
-				newEdge.setInterfaceId(eToAdd.getInterfaceId());
-				newEdge.setClusterId(eToAdd.getClusterId());
-				//TODO It can be that two non-infinite edges together are infinite. Does that matter here? -SB
-				newEdge.setIsInfinite(eToAdd.isInfinite() || e.isInfinite());
-				newEdge.setIsIsologous(eToAdd.isIsologous() || e.isIsologous());
-
-				// xtalTrans should have already been negated if necessary
-				Point3i newTrans = new Point3i(xtalTrans);
-				newTrans.add(xtalTransLink);
-				newEdge.setXtalTrans(newTrans);
-
-				// the casting should be safe
-				contGraph.addEdge(vToKeep, vToLink, (E) newEdge);
-
-				logger.debug("Graph has {} vertices and {} edges", contGraph.vertexSet().size(), contGraph.edgeSet().size());
+				// Remove the vertex!
+				contGraph.removeVertex(vToRemove);
 			}
-
-			// Remove the vertex!
-			contGraph.removeVertex(vToRemove);
 			contractedVertices.put(vToRemove,vToKeep);
 		}
 
