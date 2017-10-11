@@ -175,9 +175,13 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 					newTrans.add(xtalTransLink);
 					newEdge.setXtalTrans(newTrans);
 
-					// the casting should be safe
-					contGraph.addEdge(vToKeep, vToLink, (E) newEdge);
-
+					if (!contGraph.containsVertex(vToKeep) || !contGraph.containsVertex(vToLink)) {
+						logger.warn("Either vertex to link to {} or vertex to keep {} don't exist in contracted graph."
+								+ " Edge {} won't be added! Something is wrong!", vToLink, vToKeep, newEdge);
+					} else {
+						// the casting should be safe
+						contGraph.addEdge(vToKeep, vToLink, (E) newEdge);
+					}
 					logger.debug("Graph has {} vertices and {} edges", contGraph.vertexSet().size(), contGraph.edgeSet().size());
 				}
 
@@ -450,5 +454,35 @@ public class GraphContractor<V extends ChainVertexInterface, E extends Interface
 
 		}
 		return counts;
+	}
+	
+	public static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> boolean checkInterfClusterIsAutomorphicForEntities(
+			UndirectedGraph<V, E> g, int interfClusterId) {
+		int sourceEntityId = -1;
+		int targetEntityId = -1;
+		for (E e : g.edgeSet()) {
+			if (e.getClusterId() == interfClusterId) {
+				V s = g.getEdgeSource(e);
+				V t = g.getEdgeTarget(e);
+				sourceEntityId = s.getEntityId();
+				targetEntityId = t.getEntityId();
+				break;
+			}
+		}
+		if (sourceEntityId!=-1) {
+			if (!GraphUtils.isAutomorphicForEntityAndEdgeType(g, sourceEntityId, interfClusterId)) {
+				logger.warn("Graph is not automorphic with respect to entity id {} and interface cluster id {}", sourceEntityId, interfClusterId);
+				return false;
+			}
+		}
+		if (targetEntityId!=-1) {
+			if (!GraphUtils.isAutomorphicForEntityAndEdgeType(g, targetEntityId, interfClusterId)) {
+				logger.warn("Graph is not automorphic with respect to entity id {} and interface cluster id {}", targetEntityId, interfClusterId);
+				return false;
+			}
+		}
+		
+		return true;
+		
 	}
 }
