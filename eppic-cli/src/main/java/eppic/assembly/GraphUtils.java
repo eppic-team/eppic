@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -233,7 +234,8 @@ public class GraphUtils {
 	}
 	
 	/**
-	 * Get the interface cluster id corresponding to the largest interface cluster present in given graph
+	 * Get the interface cluster id corresponding to the largest interface cluster present in given graph,
+	 * skipping those interface clusters that are not isomorphic throughout graph with respect to its endpoint entities.
 	 * @param g
 	 * @return the largest heteromeric interface cluster id, or -1 if none found
 	 */
@@ -242,7 +244,20 @@ public class GraphUtils {
 
 		if (clusterIds.isEmpty()) return -1;
 		
-		return clusterIds.first();
+		int interfClusterId = -1;
+		Iterator<Integer> it = clusterIds.iterator();
+		while (it.hasNext()) {
+			interfClusterId = it.next();
+			if (!isInterfClusterIsomorphicForEntities(g, interfClusterId)) {
+				logger.info("Interface cluster id {} is not isomorphic with respect to the 2 entities it connects. "
+						+ "Won't select it for contraction", interfClusterId );
+				continue;
+			} else {
+				break;
+			}
+		}
+		
+		return interfClusterId;
 	}
 	
 	/**
@@ -309,6 +324,72 @@ public class GraphUtils {
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Finds out whether the given graph is isomorphic for the given entity (entityId) and interface type (interfClusterId),
+	 * i.e. if all nodes with the given entityId have an edge of the given interfClusterId
+	 * @param g
+	 * @param entityId
+	 * @param interfClusterId
+	 * @return
+	 */
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> boolean isIsomorphicForEntityAndEdgeType(
+			UndirectedGraph<V, E> g, int entityId, int interfClusterId) {
+		for (V v : g.vertexSet()) {
+			if (v.getEntityId() == entityId) {
+				boolean hasEdgeWithGivenInterfClusterId = false;
+				for (E e : g.edgesOf(v)) {
+					if (e.getClusterId() == interfClusterId) {
+						hasEdgeWithGivenInterfClusterId = true;
+						break;
+					}
+				}
+				if (!hasEdgeWithGivenInterfClusterId) {
+					// one vertex doesn't have an edge of the required type: the entity isn't isomorphic with 
+					// respect to that interfClusterId
+					return false;
+				}
+			}
+		}
+		// all vertices of the given entityId have an edge of the given interfClusterId, the entity is isomorphic 
+		// with respect to the given interfClusterId
+		return true;
+	}
+	
+	/**
+	 * Checks if given interface cluster is isomorphic throughout the graph with respect to the
+	 * 2 entities it joins, i.e. if every node of the 2 entities has such an edge.
+	 * @param g
+	 * @param interfClusterId
+	 * @return
+	 */
+	public static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> boolean isInterfClusterIsomorphicForEntities(
+			UndirectedGraph<V, E> g, int interfClusterId) {
+		int sourceEntityId = -1;
+		int targetEntityId = -1;
+		for (E e : g.edgeSet()) {
+			if (e.getClusterId() == interfClusterId) {
+				V s = g.getEdgeSource(e);
+				V t = g.getEdgeTarget(e);
+				sourceEntityId = s.getEntityId();
+				targetEntityId = t.getEntityId();
+				break;
+			}
+		}
+		if (sourceEntityId!=-1) {
+			if (!GraphUtils.isIsomorphicForEntityAndEdgeType(g, sourceEntityId, interfClusterId)) {
+				return false;
+			}
+		}
+		if (targetEntityId!=-1) {
+			if (!GraphUtils.isIsomorphicForEntityAndEdgeType(g, targetEntityId, interfClusterId)) {
+				return false;
+			}
+		}
+		
+		return true;
+		
 	}
 	
 	private static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> Map<Integer,Integer> getInterfaceClusterIdsForVertex(UndirectedGraph<V, E> g, V v) {

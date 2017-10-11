@@ -243,4 +243,36 @@ public class TestContractedAssemblyEnumeration {
 				
 		
 	}
+	
+	/**
+	 * See issue #197. 2ian wasn't enumerated correctly with contraction 
+	 * because some non-isomorphic heteromeric edges were chosen for contraction.
+	 */
+	@Test
+	public void test2ian() throws Exception {
+		Structure s = TestLatticeGraph.getStructure("2ian");
+		
+		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
+		
+		CrystalAssemblies crystalAssembliesC = new CrystalAssemblies(s, interfaces, true);
+		
+		
+		System.out.printf("%d assemblies found using contracted graph: \n", crystalAssembliesC.size());
+		
+		for (Assembly a : crystalAssembliesC) {
+			System.out.println("assembly "+a.toString());
+			
+		}
+		
+		// we've got 2 assemblies 
+		assertEquals(2, crystalAssembliesC.getAllAssemblies().size());
+		assertEquals(2, crystalAssembliesC.getUniqueAssemblies().size());
+		
+		assertEquals("C1", crystalAssembliesC.getUniqueAssemblies().get(0).getDescription().iterator().next().getSymmetry());
+		assertEquals("C1", crystalAssembliesC.getUniqueAssemblies().get(1).getDescription().iterator().next().getSymmetry());	
+		
+		assertEquals(5, crystalAssembliesC.getUniqueAssemblies().get(1).getDescription().iterator().next().getSize());
+		
+
+	}
 }
