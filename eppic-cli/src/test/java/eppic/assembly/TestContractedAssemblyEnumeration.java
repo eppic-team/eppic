@@ -275,4 +275,33 @@ public class TestContractedAssemblyEnumeration {
 		
 
 	}
+	
+	/**
+	 * See issue #197. Homomeric interfaces are selected wrongly for contraction.
+	 * All entries with this problem have many many entities
+	 * e.g. 5are
+	 */
+	@Test
+	public void test5are() throws Exception {
+		Structure s = TestLatticeGraph.getStructure("5are");
+		
+		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
+		
+		CrystalAssemblies crystalAssembliesC = new CrystalAssemblies(s, interfaces, true);
+		
+		
+		System.out.printf("%d assemblies found using contracted graph: \n", crystalAssembliesC.size());
+		
+		for (Assembly a : crystalAssembliesC) {
+			System.out.println("assembly "+a.toString());
+			
+		}
+		
+		// we've got 2 assemblies 
+		assertEquals(2, crystalAssembliesC.getAllAssemblies().size());
+		assertEquals(2, crystalAssembliesC.getUniqueAssemblies().size());
+		
+		// TODO what to assert here?
+
+	}
 }

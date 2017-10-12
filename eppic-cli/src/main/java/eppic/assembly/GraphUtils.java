@@ -267,6 +267,7 @@ public class GraphUtils {
 	 */
 	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> SortedSet<Integer> getDistinctHeteromericInterfaceClusterIds(UndirectedGraph<V, E> g) {
 		SortedSet<Integer> clusterIds = new TreeSet<Integer>();
+		SortedSet<Integer> homoClusterIds = new TreeSet<>();
 		for (E e:g.edgeSet()) {
 			
 			V s = g.getEdgeSource(e);
@@ -274,9 +275,18 @@ public class GraphUtils {
 			
 			if (s.getEntityId() != t.getEntityId()) { // i.e. heteromeric
 				clusterIds.add(e.getClusterId());
+			} else {
+				homoClusterIds.add(e.getClusterId());
+			}
+		}
+		for (int cid : clusterIds) {
+			if (homoClusterIds.contains(cid)) {
+				logger.warn("Interface cluster id {} seems to have a mix of homomeric edges and heteromeric edges. "
+						+ "Will not consider it heteromeric", cid);
 			}
 		}
 		
+		clusterIds.removeAll(homoClusterIds);
 		return clusterIds;
 	}
 	
