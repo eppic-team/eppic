@@ -338,6 +338,35 @@ public class TestLatticeGraph {
 
 	}
 	
+	/**
+	 * See issue #175
+	 */
+	@Test
+	public void testCycleDetection5t89() throws IOException, StructureException {
+		// see issue https://github.com/eppic-team/eppic/issues/175
+		CrystalAssemblies ab = getCrystalAssemblies("5t89");
+
+		Assembly a = ab.generateAssembly(1);		
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+
+		a = ab.generateAssembly(3);		
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+
+		// interface clusters 1 and 3 are both isologous (and homomeric) but in different connected components in graph
+		int[] set1 = {1, 3};
+		a = ab.generateAssembly(set1);		
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+		
+		int[] set2 = {1, 3, 5, 6};
+		a = ab.generateAssembly(set2);		
+		assertTrue(a.isValid());
+		assertTrue(a.isClosedSymmetry());
+
+	}
+	
 	@Test
 	public void testIsomorphicDetection1a99() throws IOException, StructureException {
 
