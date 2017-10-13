@@ -340,6 +340,8 @@ public class TestLatticeGraph {
 	
 	/**
 	 * See issue #175
+	 * 5t89 has 2 entities. Assembly {1,3} has 2 isologous interfaces (disconnected, one for each entity) that
+	 * must be detected as valid.
 	 */
 	@Test
 	public void testCycleDetection5t89() throws IOException, StructureException {
@@ -349,21 +351,25 @@ public class TestLatticeGraph {
 		Assembly a = ab.generateAssembly(1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.isIsomorphic());
 
 		a = ab.generateAssembly(3);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.isIsomorphic());
 
 		// interface clusters 1 and 3 are both isologous (and homomeric) but in different connected components in graph
 		int[] set1 = {1, 3};
 		a = ab.generateAssembly(set1);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.isIsomorphic());
 		
 		int[] set2 = {1, 3, 5, 6};
 		a = ab.generateAssembly(set2);		
 		assertTrue(a.isValid());
 		assertTrue(a.isClosedSymmetry());
+		assertTrue(a.isIsomorphic());
 
 	}
 	

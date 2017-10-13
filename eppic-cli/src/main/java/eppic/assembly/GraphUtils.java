@@ -466,4 +466,18 @@ public class GraphUtils {
 		str.append(String.format("}%n"));
 		return str.toString();
 	}
+	
+	/**
+	 * Returns true if all edges in graph are isologous or if no edges exist at all. False otherwise.
+	 * @param g
+	 * @return
+	 */
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> boolean areAllIsologous(UndirectedGraph<V, E> g) {
+		if (g.edgeSet().size()==0) return true;
+		
+		for(E e : g.edgeSet()) {
+			if (!e.isIsologous()) return false;
+		}
+		return true;
+	}
 }
