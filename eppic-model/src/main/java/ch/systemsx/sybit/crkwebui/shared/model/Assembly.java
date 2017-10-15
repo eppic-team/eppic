@@ -235,11 +235,20 @@ public class Assembly implements Serializable  {
 		
 	}
 	
+	/**
+	 * Return a comma separated list of all chain ids present in the assembly.
+	 * A single list is returned, whether assembly is disjoint or not.
+	 * @return
+	 */
 	public String getChainIdsString() {
-		// TODO this returns the first only, we should consider what to do with the others
 		
 		if (assemblyContents.size()==0) return null;
-		return assemblyContents.get(0).getChainIds();
+		StringBuilder sb = new StringBuilder();
+		for (int i=0; i<assemblyContents.size();i++) {
+			if (i!=0) sb.append(",");
+			sb.append(assemblyContents.get(i).getChainIds());
+		}
+		return sb.toString();
 	}
 	
 	public String getIdentifierString(){
