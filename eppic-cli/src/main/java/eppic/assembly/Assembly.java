@@ -252,15 +252,6 @@ public class Assembly {
 			logger.debug("Discarding assembly {} because it contains infinite interfaces", toString());
 			return false;
 		}
-
-		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
-		if (GraphUtils.getNumDistinctInterfaces(assemblyGraph.getSubgraph())==1) { 
-			if (assemblyGraph.containsIsologous()) {
-				logger.debug("Assembly {} contains just 1 isologous interface cluster: closed symmetry, won't check cycles",toString());
-				return true;
-			}
-			
-		}
 		
 		// for heteromeric assemblies, uneven stoichiometries implies non-closed. We can discard uneven ones straight away
 		if (!assemblyGraph.isStoichiometryEven()) {

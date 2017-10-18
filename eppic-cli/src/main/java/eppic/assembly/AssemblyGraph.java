@@ -259,6 +259,26 @@ public class AssemblyGraph {
 	 * @return
 	 */
 	public boolean areAllCyclesClosed () {
+
+		// pre-check for assemblies with 1 engaged interface that is isologous: the cycle detection doesn't work for isologous
+		// we need to go over all connected components, e.g. for cases like 5t89 assembly {1,3}
+		boolean allCcHaveJust1Isologous = true;
+		boolean allCcOfSize1 = true;
+		for (SubAssembly s : subAssemblies) {
+			int numDistinctInterfaces = GraphUtils.getNumDistinctInterfaces(s.getConnectedGraph());
+			if (numDistinctInterfaces <= 1) { 
+				if (!GraphUtils.areAllIsologous(s.getConnectedGraph())) {
+					allCcHaveJust1Isologous = false;
+				}
+			} else {
+				allCcOfSize1 = false;
+			}
+		}
+		if (allCcOfSize1 && allCcHaveJust1Isologous) {
+			logger.debug("All connected components of assembly {} have just 1 isologous interface cluster: closed symmetry, won't check cycles", assembly.toString());
+			return true;
+		}
+
 		// we check the cycles in the graph and whether they stay in same cell
 
 		// The PatonCycle detection does not work for multigraphs, e.g. in 1pfc engaging interfaces 1,5 it goes in an infinite loop
