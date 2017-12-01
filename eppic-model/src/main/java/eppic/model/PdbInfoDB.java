@@ -61,6 +61,11 @@ public class PdbInfoDB implements Serializable {
 	 */
 	private boolean exhaustiveAssemblyEnumeration;
 	
+	/**
+	 * The maximum number of clashes in any interface. Used for warnings in UI.
+	 */
+	private int maxNumClashesAnyInterface;
+	
 	private RunParametersDB runParameters;
 	
 	private List<ChainClusterDB> chainClusters;
@@ -309,6 +314,20 @@ public class PdbInfoDB implements Serializable {
 
 	public void setExhaustiveAssemblyEnumeration(boolean exhaustiveAssemblyEnumeration) {
 		this.exhaustiveAssemblyEnumeration = exhaustiveAssemblyEnumeration;
+	}
+
+	/**
+	 * @return the maxNumClashesAnyInterface
+	 */
+	public int getMaxNumClashesAnyInterface() {
+		return maxNumClashesAnyInterface;
+	}
+
+	/**
+	 * @param maxNumClashesAnyInterface the maxNumClashesAnyInterface to set
+	 */
+	public void setMaxNumClashesAnyInterface(int maxNumClashesAnyInterface) {
+		this.maxNumClashesAnyInterface = maxNumClashesAnyInterface;
 	}
 
 	public double getCellA() {

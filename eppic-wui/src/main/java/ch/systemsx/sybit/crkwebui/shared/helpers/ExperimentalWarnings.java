@@ -24,6 +24,7 @@ public class ExperimentalWarnings {
 	//public static LabelWithTooltip staticWarningsLabel = null;
 	private boolean nonStandardSg;
 	private boolean nonStandardCoordFrameConvention;
+	private int maxNumClashesAnyInterface;
 	
 	private static final String[] spaceGroups = {"P 1", "P 2", "P 21", "P 1 2 1", "P 1 21 1", "C 2", "C 1 2 1", "P 2 2 2", "P 2 2 21", "P 21 21 2",
 									"P 21 21 21", "C 2 2 2", "C 2 2 21", "F 2 2 2", "I 2 2 2", "I 21 21 21", "P 4", "P 41", "P 42",
@@ -43,8 +44,9 @@ public class ExperimentalWarnings {
 	   double resolution,
 	   double rFree, 
 	   boolean nonStandardSg,
-	   boolean nonStandardCoordFrameConvention){
-		// TODO we should try to set a constant "alw//ays-low-res exp method=ELECTRON MICROSCOPY". 
+	   boolean nonStandardCoordFrameConvention,
+	   int maxNumClashesAnyInterface){
+		// TODO we should try to set a constant "always-low-res exp method=ELECTRON MICROSCOPY". 
 		// It's not ideal that the name is hard-coded
 		emWarning = (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY") && (resolution <=0 || resolution>=99));
 		resolutionWarning = (ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
@@ -55,6 +57,7 @@ public class ExperimentalWarnings {
 		spaceGroupWarning = (expMethod!=null && expMethod.equals("X-RAY DIFFRACTION") && spaceGroup!=null && !spaceGroupsSet.contains(spaceGroup));
 		this.nonStandardSg = nonStandardSg;
 		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
+		this.maxNumClashesAnyInterface = maxNumClashesAnyInterface;
 	}
 
 	public boolean isEmWarning() {
@@ -112,6 +115,20 @@ public class ExperimentalWarnings {
 		return warningLabel;
 	} */
 	
+	/**
+	 * @return the maxNumClashesAnyInterface
+	 */
+	public int getMaxNumClashesAnyInterface() {
+		return maxNumClashesAnyInterface;
+	}
+
+	/**
+	 * @param maxNumClashesAnyInterface the maxNumClashesAnyInterface to set
+	 */
+	public void setMaxNumClashesAnyInterface(int maxNumClashesAnyInterface) {
+		this.maxNumClashesAnyInterface = maxNumClashesAnyInterface;
+	}
+
 	//for single and multiple warnings
 	public LabelWithTooltip getWarningLabel(){
 		LabelWithTooltip warningLabel = null;

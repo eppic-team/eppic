@@ -91,6 +91,7 @@ public class ResultsPanel extends DisplayPanel
 							  	 	resultsData.getRfreeValue(),
 							  	 	resultsData.isNonStandardSg(),
 							  	 	resultsData.isNonStandardCoordFrameConvention(),
+							  	 	resultsData.getMaxNumClashesAnyInterface(),
 							  	 	resultsData.getInputType());
 		
 		headerPanel.setEppicLogoPanel(resultsData.getRunParameters().getEppicVersion());

@@ -64,7 +64,8 @@ public class GeneralInfoPanel extends FieldSet {
 				pdbInfo.getResolution(), 
 				pdbInfo.getRfreeValue(),
 				pdbInfo.isNonStandardSg(),
-				pdbInfo.isNonStandardCoordFrameConvention());
+				pdbInfo.isNonStandardCoordFrameConvention(),
+				pdbInfo.getMaxNumClashesAnyInterface());
 	}
 
 	/**
@@ -75,7 +76,8 @@ public class GeneralInfoPanel extends FieldSet {
 			double resolution,
 			double rFree,
 			boolean nonStandardSg,
-			boolean nonStandardCoordFrameConvention){
+			boolean nonStandardCoordFrameConvention,
+			int maxNumClashesAnyInterface){
 
 		panelTable.clear();
 
@@ -98,7 +100,7 @@ public class GeneralInfoPanel extends FieldSet {
 
 		}
 
-		fillWarnings(new ExperimentalWarnings(spaceGroup, expMethod, resolution, rFree, nonStandardSg, nonStandardCoordFrameConvention));
+		fillWarnings(new ExperimentalWarnings(spaceGroup, expMethod, resolution, rFree, nonStandardSg, nonStandardCoordFrameConvention, maxNumClashesAnyInterface));
 
 	}
 
@@ -145,7 +147,7 @@ public class GeneralInfoPanel extends FieldSet {
 	}
 
 	/**
-	 * Returns the warning image with it's tooltip
+	 * Returns the warning image with its tooltip
 	 * @param tooltipText
 	 * @return
 	 */
