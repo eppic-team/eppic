@@ -351,7 +351,15 @@ public class Main {
 				} else {
 					excptionMsg = "Too many clashes in at least one interface, most likely there is an error in this structure. "+msg; 
 				}
-				throw new EppicException(null, excptionMsg, true);				
+				// New from 3.0.4 : when generating data for WUI, we won't stop when too many clashes.
+				// Like this, too many clashes don't look like an error for the precalculation pipeline and for user jobs.
+				// For WUI, a warning on top (plus warnings per interface) should replace the effect of this.
+				if (!params.isGenerateModelSerializedFile()) {
+					throw new EppicException(null, excptionMsg, true);	
+				} else {
+					LOGGER.warn(excptionMsg);
+				}
+								
 			} else { 
 				LOGGER.warn(msg);
 			}
