@@ -82,20 +82,22 @@ public class EppicParams {
 	// area distributions for the whole PDB (in Oct 2013): it peaks at ~15, then has a small shoulder 
 	// until 35 and decays monotonically after that
 	public static final double     MIN_INTERFACE_AREA_TO_KEEP = 35;
-	// if any interface has this number of clashes we'll abort with an error
+	/** If any interface has this number of clashes we'll abort with an error, unless in -w then we only warn (with a special warning in WUI) */
 	public static final int		   NUM_CLASHES_FOR_ERROR = 30;
-	// shorter chains will be considered peptides
+	/** Shorter chains will be considered peptides */
 	public static final int	       PEPTIDE_LENGTH_CUTOFF = 20; 
-	// 10% maximum allowed unreliable residues for calling nopred
+	/** Maximum allowed ratio of unreliable residues for calling nopred */
 	public static final double     MAX_ALLOWED_UNREL_RES = 0.1; 
-	// minimum number of core residues per interface member to calculate evol score (if fewer 
-	// we don't calculate anything because it would be too unreliable statistically)
+	/** 
+	 * Minimum number of core residues per interface member to calculate evol score (if fewer 
+	 * we don't calculate anything because it would be too unreliable statistically) 
+	 */
 	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 2;
-	// value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases
+	/** Value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases */
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
-	// for sequences (strictly) below this length value no blast will be performed
+	/** For sequences (strictly) below this length value no blast will be performed */
 	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 10;
-	// the maximum length of an engineered insertion when a single chain maps to multiple segments with a single UniProt reference
+	/** The maximum length of an engineered insertion when a single chain maps to multiple segments with a single UniProt reference */
 	public static final int		   NUM_GAP_RES_FOR_CHIMERIC_FUSION = 10;
 	// the hard limits aka "duarte" limits: areas above/below which it is very unlikely to have xtal/bio interfaces
 	// max limit based on 1pre (bio with 2290 and 0+2 cores) and 2vg5 interface 2 (xtal with 2070 and 0+0 cores) 
@@ -118,11 +120,13 @@ public class EppicParams {
 	public static final double 	   DISULFIDE_BRIDGE_DIST = 2.05;
 	public static final double     DISULFIDE_BRIDGE_DIST_SIGMA = 0.1;
 	
-	// the PDB biounit that we take as the PDB biounit annotation: since introduction of Biojava 
-	// we have decided to use biounit 1 (whatever its type) and ignore the rest
+	/** 
+	 * The PDB biounit that we take as the PDB biounit annotation: since introduction of Biojava 
+	 * we have decided to use biounit 1 (whatever its type) and ignore the rest
+	 */
 	public static final int		   PDB_BIOUNIT_TO_USE = 1;
 	
-	// the size of the thumbnails for wui
+	/** The size of the thumbnails for wui */
 	public static final int       THUMBNAILS_SIZE = 75;
 
 		
