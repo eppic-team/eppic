@@ -7,6 +7,7 @@ import java.util.Set;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
+import eppic.EppicParams;
 
 /**
  * Class to determine the warnings on methods, resolution and rfree for a pdb
@@ -183,6 +184,14 @@ public class ExperimentalWarnings {
 			warningLabel = createWarningLabel("Warning", warningTooltip);
 			warningCount++;
 			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text() + "<br>";
+		}
+		if(this.maxNumClashesAnyInterface>EppicParams.NUM_CLASHES_FOR_ERROR){
+			warningTooltip = AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text();
+			warningLabel = createWarningLabel("Warning", warningTooltip);
+			warningCount++;
+			multiWarningTooltip += "&bull; " + 
+			AppPropertiesManager.CONSTANTS.warning_TooManyClashes_title().replace("Warning: ", "").replace("%s", Integer.toString(maxNumClashesAnyInterface)) + 
+			"<br>" + AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text() + "<br>";
 		}
 		if(warningCount > 1){
 			warningLabel = createWarningLabel(warningCount + " Warnings", multiWarningTooltip);

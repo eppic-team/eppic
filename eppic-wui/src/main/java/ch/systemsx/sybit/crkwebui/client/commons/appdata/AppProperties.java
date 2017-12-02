@@ -124,6 +124,8 @@ public interface AppProperties extends Constants
 	String warning_NonStandardSg_title();
 	String warning_NonStandardCoordFrameConvention_text();
 	String warning_NonStandardCoordFrameConvention_title();
+	String warning_TooManyClashes_text();
+	String warning_TooManyClashes_title();
 
 	String homologs_panel_chains_hint();
 	String homologs_panel_uniprot_hint();
