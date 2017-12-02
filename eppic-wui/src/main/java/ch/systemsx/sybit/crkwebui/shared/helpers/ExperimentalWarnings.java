@@ -117,7 +117,6 @@ public class ExperimentalWarnings {
 	 * @return
 	 */
 	public LabelWithTooltip getWarningLabel(){
-		LabelWithTooltip warningLabel = null;
 		
 		List<String> titles = new ArrayList<>();
 		List<String> texts = new ArrayList<>();
@@ -155,12 +154,15 @@ public class ExperimentalWarnings {
 			titles.add(title);
 			texts.add(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text());
 		}
-		
-		String tooltipText = generateWarningsTemplate(titles, texts);
-		if(titles.size() > 1){
-			warningLabel = createWarningLabel(titles.size() + " Warnings", tooltipText);
-		} else {
-			warningLabel = createWarningLabel("Warning", tooltipText);
+
+		LabelWithTooltip warningLabel = null;
+		if (titles.size()>0) {
+			String tooltipText = generateWarningsTemplate(titles, texts);
+			if(titles.size() > 1){
+				warningLabel = createWarningLabel(titles.size() + " Warnings", tooltipText);
+			} else {
+				warningLabel = createWarningLabel("Warning", tooltipText);
+			}
 		}
 		return warningLabel;
 	} 
