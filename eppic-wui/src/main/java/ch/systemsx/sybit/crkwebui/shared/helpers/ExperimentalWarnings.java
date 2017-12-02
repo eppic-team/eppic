@@ -151,7 +151,8 @@ public class ExperimentalWarnings {
 			texts.add(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text());
 		}
 		if(this.maxNumClashesAnyInterface>EppicParams.NUM_CLASHES_FOR_ERROR){
-			titles.add(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_title().replace("{}", Integer.toString(maxNumClashesAnyInterface)));
+			String title = AppPropertiesManager.CONSTANTS.warning_TooManyClashes_title().replace("{}", Integer.toString(maxNumClashesAnyInterface));
+			titles.add(title);
 			texts.add(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text());
 		}
 		
