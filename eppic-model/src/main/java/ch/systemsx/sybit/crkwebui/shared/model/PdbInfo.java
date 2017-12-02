@@ -31,7 +31,7 @@ import eppic.model.PdbInfoDB;
 		"spaceGroup", "resolution", "rfreeValue", "numChainClusters",
 		"cellA","cellB","cellC","cellAlpha","cellBeta","cellGamma",
 		"crystalFormId", "ncsOpsPresent", "nonStandardSg", "nonStandardCoordFrameConvention", 
-		"exhaustiveAssemblyEnumeration",
+		"exhaustiveAssemblyEnumeration", "maxNumClashesAnyInterface",
 		"chainClusters", "interfaceClusters",  "assemblies",
 "runParameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
