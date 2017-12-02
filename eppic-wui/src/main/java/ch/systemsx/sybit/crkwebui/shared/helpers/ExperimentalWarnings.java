@@ -1,12 +1,15 @@
 package ch.systemsx.sybit.crkwebui.shared.helpers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import eppic.EppicParams;
 
 /**
@@ -21,8 +24,6 @@ public class ExperimentalWarnings {
 	private boolean rfreeWarning;
 	private boolean noRfreeWarning;
 	private boolean spaceGroupWarning;
-	private String warningTooltip;
-	//public static LabelWithTooltip staticWarningsLabel = null;
 	private boolean nonStandardSg;
 	private boolean nonStandardCoordFrameConvention;
 	private int maxNumClashesAnyInterface;
@@ -133,68 +134,48 @@ public class ExperimentalWarnings {
 	//for single and multiple warnings
 	public LabelWithTooltip getWarningLabel(){
 		LabelWithTooltip warningLabel = null;
-		int warningCount = 0;
-		String multiWarningTooltip = "WARNINGS<br>";
+		
+		List<String> titles = new ArrayList<>();
+		List<String> texts = new ArrayList<>();
 		
 		if (this.isEmWarning()) {
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_EM_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_EM_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_EM_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_EM_text());
 		}
 		if(this.isResolutionWarning()) {
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_LowRes_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_LowRes_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_LowRes_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_LowRes_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_LowRes_text());
 		}
 		if(this.isRfreeWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_HighRfree_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_HighRfree_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_HighRfree_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_HighRfree_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_HighRfree_text());
 		}
 		if(this.isNoRfreeWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NoRfree_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NoRfree_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NoRfree_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_NoRfree_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_NoRfree_text());
 		}
 		if(this.isSpaceGroupWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title(), warningTooltip);	
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text());			
 		}
 		if(this.nonStandardSg){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text());			
 		}
 		if(this.nonStandardCoordFrameConvention){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text());
 		}
 		if(this.maxNumClashesAnyInterface>EppicParams.NUM_CLASHES_FOR_ERROR){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text();
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + 
-			AppPropertiesManager.CONSTANTS.warning_TooManyClashes_title().replace("Warning: ", "").replace("%s", Integer.toString(maxNumClashesAnyInterface)) + 
-			"<br>" + AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text());
 		}
-		if(warningCount > 1){
-			warningLabel = createWarningLabel(warningCount + " Warnings", multiWarningTooltip);
+		
+		String tooltipText = generateWarningsTemplate(titles, texts);
+		if(titles.size() > 1){
+			warningLabel = createWarningLabel(titles.size() + " Warnings", tooltipText);
+		} else {
+			warningLabel = createWarningLabel("Warning", tooltipText);
 		}
 		return warningLabel;
 	} 
@@ -203,9 +184,29 @@ public class ExperimentalWarnings {
 		LabelWithTooltip label = new LabelWithTooltip("<img src='resources/icons/warning_icon_xl.png' style='height:17px' />&nbsp;*"+text+"*", tooltipText);
 		label.addStyleName("eppic-header-warning");
 		label.addStyleName("eppic-pdb-identifier-label");
-		//this.staticWarningsLabel = label;
 		return label;
 	}
 	
+	private String generateWarningsTemplate(List<String> titles, List<String> texts) {
+		if (titles.size()!=texts.size()) return "";
+		
+		StringBuilder warningsList = new StringBuilder("<div><ul class=\"eppic-default-font eppic-results-grid-tooltip eppic-tooltip-list\">");
+		
+		for(int i=0; i<titles.size();i++) {
+			if(!titles.get(i).equals("")) {
+				warningsList.append("<li>");
+				warningsList.append("<strong>");
+				warningsList.append(EscapedStringGenerator.generateSanitizedString(titles.get(i)));
+				warningsList.append("</strong>");
+				warningsList.append("<br>");
+				warningsList.append(EscapedStringGenerator.generateSanitizedString(texts.get(i)));
+				warningsList.append("</li>");
+			}
+		}
+			
+		warningsList.append("</ul></div>");
+		
+		return warningsList.toString();
+	}
 	
 }
