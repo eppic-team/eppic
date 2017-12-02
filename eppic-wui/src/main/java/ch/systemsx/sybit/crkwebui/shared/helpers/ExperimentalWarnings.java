@@ -98,25 +98,6 @@ public class ExperimentalWarnings {
 		this.spaceGroupWarning = spaceGroupWarning;
 	}
 	
-	//for single warnings only
-	/*public LabelWithTooltip getWarningLabel(){
-		LabelWithTooltip warningLabel = null;
-		if (this.isEmWarning()) {
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title(), warningTooltip);	
-		}else if(this.isResolutionWarning()) {	
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_LowRes_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title(), warningTooltip);	
-		}else if(this.isRfreeWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_HighRfree_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title(), warningTooltip);
-		}else if(this.isNoRfreeWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NoRfree_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);	
-		}
-		return warningLabel;
-	} */
-	
 	/**
 	 * @return the maxNumClashesAnyInterface
 	 */
@@ -131,7 +112,10 @@ public class ExperimentalWarnings {
 		this.maxNumClashesAnyInterface = maxNumClashesAnyInterface;
 	}
 
-	//for single and multiple warnings
+	/**
+	 * Generates the warning label with tooltip based on experimental data in this class
+	 * @return
+	 */
 	public LabelWithTooltip getWarningLabel(){
 		LabelWithTooltip warningLabel = null;
 		
@@ -167,7 +151,7 @@ public class ExperimentalWarnings {
 			texts.add(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text());
 		}
 		if(this.maxNumClashesAnyInterface>EppicParams.NUM_CLASHES_FOR_ERROR){
-			titles.add(String.format(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_title(), maxNumClashesAnyInterface));
+			titles.add(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_title().replace("{}", Integer.toString(maxNumClashesAnyInterface)));
 			texts.add(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text());
 		}
 		
@@ -190,23 +174,25 @@ public class ExperimentalWarnings {
 	private String generateWarningsTemplate(List<String> titles, List<String> texts) {
 		if (titles.size()!=texts.size()) return "";
 		
-		StringBuilder warningsList = new StringBuilder("<div><ul class=\"eppic-default-font eppic-results-grid-tooltip eppic-tooltip-list\">");
+		StringBuilder html = new StringBuilder();
+		
+		html.append("<div><ul class=\"eppic-default-font eppic-results-grid-tooltip eppic-tooltip-list\">");
 		
 		for(int i=0; i<titles.size();i++) {
 			if(!titles.get(i).equals("")) {
-				warningsList.append("<li>");
-				warningsList.append("<strong>");
-				warningsList.append(EscapedStringGenerator.generateSanitizedString(titles.get(i)));
-				warningsList.append("</strong>");
-				warningsList.append("<br>");
-				warningsList.append(EscapedStringGenerator.generateSanitizedString(texts.get(i)));
-				warningsList.append("</li>");
+				html.append("<li>");
+				html.append("<strong>");
+				html.append(EscapedStringGenerator.generateSanitizedString(titles.get(i)));
+				html.append("</strong>");
+				html.append("<br>");
+				html.append(EscapedStringGenerator.generateSanitizedString(texts.get(i)));
+				html.append("</li>");
 			}
 		}
 			
-		warningsList.append("</ul></div>");
+		html.append("</ul></div>");
 		
-		return warningsList.toString();
+		return html.toString();
 	}
 	
 }
