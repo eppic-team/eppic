@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.CallType;
+import eppic.EppicParams;
 import eppic.InterfaceEvolContextList;
 
 /**
@@ -615,14 +616,14 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		}
 		
 		// Warn if low probability density of valid assemblies
-		if (sumProbs < 0.5) {
+		if (sumProbs < EppicParams.MIN_TOTAL_ASSEMBLY_SCORE) {
 			logger.warn("The total probability of valid assemblies is only {}. "
 					+ "Assembly ennumeration may be incomplete.", String.format("%.2f", sumProbs));
+		} else {
+			// Normalize the scores so that they sum up to the total of 1
+			for (Assembly a:uniques)
+				a.normalizeScore(sumProbs);
 		}
-		
-		// Do not normalize the score (easy to do afterwards in the DB though)
-		//for (Assembly a:uniques)
-		//	a.normalizeScore(sumProbs);
 		
 		// 3 Assign the BIO call to the highest probability
 		if (uniques.size() > 0) {
