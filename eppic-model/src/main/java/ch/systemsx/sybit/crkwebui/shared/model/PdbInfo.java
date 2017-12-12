@@ -31,7 +31,7 @@ import eppic.model.PdbInfoDB;
 		"spaceGroup", "resolution", "rfreeValue", "numChainClusters",
 		"cellA","cellB","cellC","cellAlpha","cellBeta","cellGamma",
 		"crystalFormId", "ncsOpsPresent", "nonStandardSg", "nonStandardCoordFrameConvention", 
-		"exhaustiveAssemblyEnumeration",
+		"exhaustiveAssemblyEnumeration", "maxNumClashesAnyInterface",
 		"chainClusters", "interfaceClusters",  "assemblies",
 "runParameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -77,6 +77,8 @@ public class PdbInfo implements Serializable, ProcessingData
 	private boolean nonStandardCoordFrameConvention;
 	
 	private boolean exhaustiveAssemblyEnumeration;
+	
+	private int maxNumClashesAnyInterface;
 
 	private RunParameters runParameters;
 
@@ -121,6 +123,7 @@ public class PdbInfo implements Serializable, ProcessingData
 			boolean nonStandardSg,
 			boolean nonStandardCoordFrameConvention,
 			boolean exhaustiveAssemblyEnumration,
+			int maxNumClashesAnyInterface,
 			RunParameters runParameters) 
 	{
 		this.interfaceClusters = new ArrayList<InterfaceCluster>();
@@ -145,6 +148,7 @@ public class PdbInfo implements Serializable, ProcessingData
 		this.nonStandardSg = nonStandardSg;
 		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
 		this.exhaustiveAssemblyEnumeration = exhaustiveAssemblyEnumration;
+		this.maxNumClashesAnyInterface = maxNumClashesAnyInterface;
 		this.runParameters = runParameters;
 	}
 
@@ -332,6 +336,20 @@ public class PdbInfo implements Serializable, ProcessingData
 		this.exhaustiveAssemblyEnumeration = exhaustiveAssemblyEnumeration;
 	}
 
+	/**
+	 * @return the maxNumClashesAnyInterface
+	 */
+	public int getMaxNumClashesAnyInterface() {
+		return maxNumClashesAnyInterface;
+	}
+
+	/**
+	 * @param maxNumClashesAnyInterface the maxNumClashesAnyInterface to set
+	 */
+	public void setMaxNumClashesAnyInterface(int maxNumClashesAnyInterface) {
+		this.maxNumClashesAnyInterface = maxNumClashesAnyInterface;
+	}
+
 	public void setRunParameters(RunParameters runParameters) {
 		this.runParameters = runParameters;
 	}
@@ -484,6 +502,7 @@ public class PdbInfo implements Serializable, ProcessingData
 		 pdbInfo.setNonStandardSg(pdbInfoDB.isNonStandardSg());
 		 pdbInfo.setNonStandardCoordFrameConvention(pdbInfoDB.isNonStandardCoordFrameConvention());
 		 pdbInfo.setExhaustiveAssemblyEnumeration(pdbInfoDB.isExhaustiveAssemblyEnumeration());
+		 pdbInfo.setMaxNumClashesAnyInterface(pdbInfoDB.getMaxNumClashesAnyInterface());
 		 
 		 return pdbInfo;
 	 }

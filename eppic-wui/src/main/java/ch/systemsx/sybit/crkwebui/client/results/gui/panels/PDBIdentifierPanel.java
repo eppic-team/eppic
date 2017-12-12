@@ -49,6 +49,10 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 	 * @param spaceGroup space group
 	 * @param expMethod method
 	 * @param resolution resolution
+	 * @param rfreeValue
+	 * @param nonStandardSg
+	 * @param nonStandardCoordFrameConvention
+	 * @param maxNumClashesAnyInterface
 	 * @param inputType type of the input - this information is used to determine whether link to pdb description should be added
 	 */
 	public void setPDBText(String inputName,
@@ -58,13 +62,14 @@ public class PDBIdentifierPanel extends HorizontalLayoutContainer
 			  			   double rfreeValue,
 			  			   boolean nonStandardSg,
 			  			   boolean nonStandardCoordFrameConvention,
+			  			   int maxNumClashesAnyInterface,
 			  			   int inputType)
 	{
 		
 		pdbNameLabel = new HTML(inputName);
 		
 		//Check for warnings
-		ExperimentalWarnings warnings = new ExperimentalWarnings(spaceGroup, expMethod, resolution, rfreeValue, nonStandardSg, nonStandardCoordFrameConvention);
+		ExperimentalWarnings warnings = new ExperimentalWarnings(spaceGroup, expMethod, resolution, rfreeValue, nonStandardSg, nonStandardCoordFrameConvention, maxNumClashesAnyInterface);
 		warningLabel = warnings.getWarningLabel();
 		
 		pdbNameLabel.addStyleName("eppic-pdb-identifier-label");

@@ -131,9 +131,9 @@ public class IdentifierHeaderPanel extends HorizontalLayoutContainer
     }
     
     public void setPDBText(String inputName, String spaceGroup, String expMethod, double resolution, double rfreeValue, boolean nonStandardSg,
-			   boolean nonStandardCoordFrameConvention,int inputType)
+			   boolean nonStandardCoordFrameConvention, int maxNumClashesAnyInterface, int inputType)
     {
-    	pdbIdentifierPanel.setPDBText(inputName, spaceGroup, expMethod, resolution, rfreeValue, nonStandardSg, nonStandardCoordFrameConvention, inputType);
+    	pdbIdentifierPanel.setPDBText(inputName, spaceGroup, expMethod, resolution, rfreeValue, nonStandardSg, nonStandardCoordFrameConvention, maxNumClashesAnyInterface, inputType);
     }
 
     public void setPDBIdentifierSubtitle(String subtitle)

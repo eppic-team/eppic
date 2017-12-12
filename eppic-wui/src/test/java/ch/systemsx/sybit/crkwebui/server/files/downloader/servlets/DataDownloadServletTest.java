@@ -77,6 +77,7 @@ public class DataDownloadServletTest {
 		pdbInfo.setCellGamma(90);
 		pdbInfo.setCrystalFormId(1);
 		pdbInfo.setAssemblies(getAssemblies());
+		pdbInfo.setMaxNumClashesAnyInterface(10); 
 		return Arrays.asList(pdbInfo);
 	}
 

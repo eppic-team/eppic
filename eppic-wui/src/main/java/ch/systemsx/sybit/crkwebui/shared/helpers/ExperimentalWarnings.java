@@ -1,12 +1,16 @@
 package ch.systemsx.sybit.crkwebui.shared.helpers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
+import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
+import eppic.EppicParams;
 
 /**
  * Class to determine the warnings on methods, resolution and rfree for a pdb
@@ -20,10 +24,9 @@ public class ExperimentalWarnings {
 	private boolean rfreeWarning;
 	private boolean noRfreeWarning;
 	private boolean spaceGroupWarning;
-	private String warningTooltip;
-	//public static LabelWithTooltip staticWarningsLabel = null;
 	private boolean nonStandardSg;
 	private boolean nonStandardCoordFrameConvention;
+	private int maxNumClashesAnyInterface;
 	
 	private static final String[] spaceGroups = {"P 1", "P 2", "P 21", "P 1 2 1", "P 1 21 1", "C 2", "C 1 2 1", "P 2 2 2", "P 2 2 21", "P 21 21 2",
 									"P 21 21 21", "C 2 2 2", "C 2 2 21", "F 2 2 2", "I 2 2 2", "I 21 21 21", "P 4", "P 41", "P 42",
@@ -43,8 +46,9 @@ public class ExperimentalWarnings {
 	   double resolution,
 	   double rFree, 
 	   boolean nonStandardSg,
-	   boolean nonStandardCoordFrameConvention){
-		// TODO we should try to set a constant "alw//ays-low-res exp method=ELECTRON MICROSCOPY". 
+	   boolean nonStandardCoordFrameConvention,
+	   int maxNumClashesAnyInterface){
+		// TODO we should try to set a constant "always-low-res exp method=ELECTRON MICROSCOPY". 
 		// It's not ideal that the name is hard-coded
 		emWarning = (expMethod!=null && expMethod.equals("ELECTRON MICROSCOPY") && (resolution <=0 || resolution>=99));
 		resolutionWarning = (ApplicationContext.getSettings().getResolutionCutOff() > 0 && 
@@ -55,6 +59,7 @@ public class ExperimentalWarnings {
 		spaceGroupWarning = (expMethod!=null && expMethod.equals("X-RAY DIFFRACTION") && spaceGroup!=null && !spaceGroupsSet.contains(spaceGroup));
 		this.nonStandardSg = nonStandardSg;
 		this.nonStandardCoordFrameConvention = nonStandardCoordFrameConvention;
+		this.maxNumClashesAnyInterface = maxNumClashesAnyInterface;
 	}
 
 	public boolean isEmWarning() {
@@ -93,82 +98,71 @@ public class ExperimentalWarnings {
 		this.spaceGroupWarning = spaceGroupWarning;
 	}
 	
-	//for single warnings only
-	/*public LabelWithTooltip getWarningLabel(){
-		LabelWithTooltip warningLabel = null;
-		if (this.isEmWarning()) {
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title(), warningTooltip);	
-		}else if(this.isResolutionWarning()) {	
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_LowRes_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title(), warningTooltip);	
-		}else if(this.isRfreeWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_HighRfree_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title(), warningTooltip);
-		}else if(this.isNoRfreeWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NoRfree_text();
-			warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);	
-		}
-		return warningLabel;
-	} */
-	
-	//for single and multiple warnings
+	/**
+	 * @return the maxNumClashesAnyInterface
+	 */
+	public int getMaxNumClashesAnyInterface() {
+		return maxNumClashesAnyInterface;
+	}
+
+	/**
+	 * @param maxNumClashesAnyInterface the maxNumClashesAnyInterface to set
+	 */
+	public void setMaxNumClashesAnyInterface(int maxNumClashesAnyInterface) {
+		this.maxNumClashesAnyInterface = maxNumClashesAnyInterface;
+	}
+
+	/**
+	 * Generates the warning label with tooltip based on experimental data in this class
+	 * @return
+	 */
 	public LabelWithTooltip getWarningLabel(){
-		LabelWithTooltip warningLabel = null;
-		int warningCount = 0;
-		String multiWarningTooltip = "WARNINGS<br>";
+		
+		List<String> titles = new ArrayList<>();
+		List<String> texts = new ArrayList<>();
 		
 		if (this.isEmWarning()) {
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_EM_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_EM_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_EM_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_EM_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_EM_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_EM_text());
 		}
 		if(this.isResolutionWarning()) {
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_LowRes_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_LowRes_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_LowRes_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_LowRes_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_LowRes_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_LowRes_text());
 		}
 		if(this.isRfreeWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_HighRfree_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_HighRfree_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_HighRfree_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_HighRfree_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_HighRfree_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_HighRfree_text());
 		}
 		if(this.isNoRfreeWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NoRfree_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NoRfree_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NoRfree_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NoRfree_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_NoRfree_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_NoRfree_text());
 		}
 		if(this.isSpaceGroupWarning()){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title(), warningTooltip);	
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_SpaceGroup_text());			
 		}
 		if(this.nonStandardSg){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_NonStandardSg_text());			
 		}
 		if(this.nonStandardCoordFrameConvention){
-			warningTooltip = AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text();
-			//warningLabel = createWarningLabel(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title(), warningTooltip);
-			warningLabel = createWarningLabel("Warning", warningTooltip);
-			warningCount++;
-			multiWarningTooltip += "&bull; " + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title().replace("Warning: ", "") + "<br>" + AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text() + "<br>";
+			titles.add(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_title());
+			texts.add(AppPropertiesManager.CONSTANTS.warning_NonStandardCoordFrameConvention_text());
 		}
-		if(warningCount > 1){
-			warningLabel = createWarningLabel(warningCount + " Warnings", multiWarningTooltip);
+		if(this.maxNumClashesAnyInterface>EppicParams.NUM_CLASHES_FOR_ERROR){
+			String title = AppPropertiesManager.CONSTANTS.warning_TooManyClashes_title().replace("{}", Integer.toString(maxNumClashesAnyInterface));
+			titles.add(title);
+			texts.add(AppPropertiesManager.CONSTANTS.warning_TooManyClashes_text());
+		}
+
+		LabelWithTooltip warningLabel = null;
+		if (titles.size()>0) {
+			String tooltipText = generateWarningsTemplate(titles, texts);
+			if(titles.size() > 1){
+				warningLabel = createWarningLabel(titles.size() + " Warnings", tooltipText);
+			} else {
+				warningLabel = createWarningLabel("Warning", tooltipText);
+			}
 		}
 		return warningLabel;
 	} 
@@ -177,9 +171,31 @@ public class ExperimentalWarnings {
 		LabelWithTooltip label = new LabelWithTooltip("<img src='resources/icons/warning_icon_xl.png' style='height:17px' />&nbsp;*"+text+"*", tooltipText);
 		label.addStyleName("eppic-header-warning");
 		label.addStyleName("eppic-pdb-identifier-label");
-		//this.staticWarningsLabel = label;
 		return label;
 	}
 	
+	private String generateWarningsTemplate(List<String> titles, List<String> texts) {
+		if (titles.size()!=texts.size()) return "";
+		
+		StringBuilder html = new StringBuilder();
+		
+		html.append("<div><ul class=\"eppic-default-font eppic-results-grid-tooltip eppic-tooltip-list\">");
+		
+		for(int i=0; i<titles.size();i++) {
+			if(!titles.get(i).equals("")) {
+				html.append("<li>");
+				html.append("<strong>");
+				html.append(EscapedStringGenerator.generateSanitizedString(titles.get(i)));
+				html.append("</strong>");
+				html.append("<br>");
+				html.append(EscapedStringGenerator.generateSanitizedString(texts.get(i)));
+				html.append("</li>");
+			}
+		}
+			
+		html.append("</ul></div>");
+		
+		return html.toString();
+	}
 	
 }

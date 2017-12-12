@@ -106,6 +106,8 @@
 			
 			<basic name="exhaustiveAssemblyEnumeration"></basic>
 			
+			<basic name="maxNumClashesAnyInterface"></basic>
+			
 			<basic name="crystalFormId"></basic>
 			
 			<basic name="numChainClusters"></basic>

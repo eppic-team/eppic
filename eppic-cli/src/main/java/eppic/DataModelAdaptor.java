@@ -188,7 +188,7 @@ public class DataModelAdaptor {
 		}
 		pdbInfo.setNumChainClusters(chainClusterDBs.size());
 		pdbInfo.setChainClusters(chainClusterDBs);
-		
+				
 		initAsymIds2chainIdsMap(pdb);
 	}
 	
@@ -442,10 +442,17 @@ public class DataModelAdaptor {
 				icDB.setIsologous(false);
 			}
 			
-		}
-		
+		}			
 		
 		pdbInfo.setInterfaceClusters(icDBs);
+		
+		// the max number of clashes, used for general warnings on top (there's additional warnings per interface)
+		List<Integer> numClashesPerInterface = new ArrayList<>(interfaces.size());
+		for (StructureInterface interf:interfaces) {
+			numClashesPerInterface.add(interf.getContacts().getContactsWithinDistance(EppicParams.CLASH_DISTANCE).size());
+		}
+
+		pdbInfo.setMaxNumClashesAnyInterface(Collections.max(numClashesPerInterface));
 		
 	}
 	
