@@ -119,6 +119,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 			if (clashes.size()>EppicParams.MAX_NUM_CLASHES_TO_REPORT_WUI) {
 				warning.append(clashes.size() + " clashes found");
 			} else {
+				warning.append("Clashes found between: ");
 				for (int i=0;i<clashes.size();i++) {
 					AtomContact pair = clashes.get(i);
 					warning.append(getPairInteractionString(pair));
@@ -126,7 +127,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 				}
 			}
 			
-			warnings.add("Clashes found between: "+warning.toString());
+			warnings.add(warning.toString());
 			LOGGER.warn("Interface "+interf.getId()+" has "+clashes.size()+" clashes: "+warning.toString());
 		} 
 		// if no clashes then we report on any other kind of short distances
