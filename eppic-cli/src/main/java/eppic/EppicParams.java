@@ -83,9 +83,11 @@ public class EppicParams {
 	// until 35 and decays monotonically after that
 	public static final double     MIN_INTERFACE_AREA_TO_KEEP = 35;
 	/** If any interface has this number of clashes we'll abort with an error, unless in -w then we only warn (with a special warning in WUI) */
-	public static final int		   NUM_CLASHES_FOR_ERROR = 30;
+	public static final int		  NUM_CLASHES_FOR_ERROR = 30;
+	/** If more clashes than this in an interface, the warning message will not be detailed */
+	public static final int		  MAX_NUM_CLASHES_TO_REPORT_WUI = 20;
 	/** Shorter chains will be considered peptides */
-	public static final int	       PEPTIDE_LENGTH_CUTOFF = 20; 
+	public static final int	      PEPTIDE_LENGTH_CUTOFF = 20; 
 	/** Maximum allowed ratio of unreliable residues for calling nopred */
 	public static final double     MAX_ALLOWED_UNREL_RES = 0.1; 
 	/** 
@@ -110,7 +112,7 @@ public class EppicParams {
 	// see https://github.com/eppic-team/eppic/issues/41
 	public static final double	   CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF = 0.3;
 	
-	// the distance for two atoms between chains to be considered a clashing pair
+	/** The distance for two atoms between chains to be considered a clashing pair */
 	public static final double 	   CLASH_DISTANCE = 1.5;
 	// a generic low distance for a close interaction (electrostatic, salt bridge, semi-covalent, covalent) for 2 atoms between chains
 	// see review Harding MM, Acta Crystallographica 2006 - 
@@ -941,7 +943,7 @@ public class EppicParams {
 			}
 			
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
-			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", new Boolean(DEF_USE_SIFTS).toString()));
+			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", Boolean.valueOf(DEF_USE_SIFTS).toString()));
 			
 			blastclustBin   = new File(p.getProperty("BLASTCLUST_BIN", DEF_BLASTCLUST_BIN.toString()));
 			
@@ -958,32 +960,32 @@ public class EppicParams {
 			
 			hbplusExe       = new File(p.getProperty("HBPLUS_EXE", DEF_HBPLUS_EXE.toString()));
 			
-			nSpherePointsASAcalc = Integer.parseInt(p.getProperty("NSPHEREPOINTS_ASA_CALC", new Integer(DEF_NSPHEREPOINTS_ASA_CALC).toString()));
+			nSpherePointsASAcalc = Integer.parseInt(p.getProperty("NSPHEREPOINTS_ASA_CALC", Integer.valueOf(DEF_NSPHEREPOINTS_ASA_CALC).toString()));
 			
-			minAsaForSurface = Double.parseDouble(p.getProperty("MIN_ASA_FOR_SURFACE", new Double(DEF_MIN_ASA_FOR_SURFACE).toString()));
+			minAsaForSurface = Double.parseDouble(p.getProperty("MIN_ASA_FOR_SURFACE", Double.valueOf(DEF_MIN_ASA_FOR_SURFACE).toString()));
 			
-			minSizeCofactorForAsa = Integer.parseInt(p.getProperty("MIN_SIZE_COFACTOR_FOR_ASA", new Integer(DEF_MIN_SIZE_COFACTOR_FOR_ASA).toString()));
+			minSizeCofactorForAsa = Integer.parseInt(p.getProperty("MIN_SIZE_COFACTOR_FOR_ASA", Integer.valueOf(DEF_MIN_SIZE_COFACTOR_FOR_ASA).toString()));
 
-			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", new Double(DEF_QUERY_COVERAGE_CUTOFF).toString()));
-			minNumSeqs = Integer.parseInt(p.getProperty("MIN_NUM_SEQUENCES", new Integer(DEF_MIN_NUM_SEQUENCES).toString()));
+			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", Double.valueOf(DEF_QUERY_COVERAGE_CUTOFF).toString()));
+			minNumSeqs = Integer.parseInt(p.getProperty("MIN_NUM_SEQUENCES", Integer.valueOf(DEF_MIN_NUM_SEQUENCES).toString()));
 			
-			minQueryCovForIdenticalsRemoval = Double.parseDouble(p.getProperty("MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL", new Double(DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL).toString()));
+			minQueryCovForIdenticalsRemoval = Double.parseDouble(p.getProperty("MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL", Double.valueOf(DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL).toString()));
 			
-			homIdStep = Double.parseDouble(p.getProperty("HOM_ID_STEP",new Double(DEF_HOM_ID_STEP).toString()));
+			homIdStep = Double.parseDouble(p.getProperty("HOM_ID_STEP", Double.valueOf(DEF_HOM_ID_STEP).toString()));
 			
-			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", new Double(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
-			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", new Double(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
+			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", Double.valueOf(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
+			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", Double.valueOf(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
 			
-			allowChimeras = Boolean.parseBoolean(p.getProperty("ALLOW_CHIMERAS", new Boolean(DEF_ALLOW_CHIMERAS).toString()));
+			allowChimeras = Boolean.parseBoolean(p.getProperty("ALLOW_CHIMERAS", Boolean.valueOf(DEF_ALLOW_CHIMERAS).toString()));
 			
-			usePdbCodeFromFile = Boolean.parseBoolean(p.getProperty("USE_PDB_CODE_FROM_FILE", new Boolean(DEF_USE_PDB_CODE_FROM_FILE).toString()));
+			usePdbCodeFromFile = Boolean.parseBoolean(p.getProperty("USE_PDB_CODE_FROM_FILE", Boolean.valueOf(DEF_USE_PDB_CODE_FROM_FILE).toString()));
 			
 			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 			alnCacheDir		 = p.getProperty("ALN_CACHE_DIR", DEF_ALN_CACHE_DIR);
 			
-			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC",new Boolean(DEF_USE_UNIPARC).toString()));
+			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC", Boolean.valueOf(DEF_USE_UNIPARC).toString()));
 			
-			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER",new Boolean(DEF_USE_PDB_RES_SER).toString()));
+			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER", Boolean.valueOf(DEF_USE_PDB_RES_SER).toString()));
 			
 			alphabet = new AAAlphabet(p.getProperty("CUSTOM_ALPHABET", DEF_ENTROPY_ALPHABET.toString()));
 			

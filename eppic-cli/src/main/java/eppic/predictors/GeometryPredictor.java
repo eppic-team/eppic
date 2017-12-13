@@ -115,15 +115,19 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		// WARNINGS
 		// 1) clashes
 		if (!clashes.isEmpty()) {			
-			String warning = "";
-			for (int i=0;i<clashes.size();i++) {
-				AtomContact pair = clashes.get(i);
-				warning +=  getPairInteractionString(pair);
-				if (i!=clashes.size()-1) warning+=", ";
+			StringBuilder warning = new StringBuilder();
+			if (clashes.size()>EppicParams.MAX_NUM_CLASHES_TO_REPORT_WUI) {
+				warning.append(clashes.size() + " clashes found");
+			} else {
+				for (int i=0;i<clashes.size();i++) {
+					AtomContact pair = clashes.get(i);
+					warning.append(getPairInteractionString(pair));
+					if (i!=clashes.size()-1) warning.append(", ");
+				}
 			}
 			
-			warnings.add("Clashes found between: "+warning);
-			LOGGER.warn("Interface "+interf.getId()+" has "+clashes.size()+" clashes: "+warning);
+			warnings.add("Clashes found between: "+warning.toString());
+			LOGGER.warn("Interface "+interf.getId()+" has "+clashes.size()+" clashes: "+warning.toString());
 		} 
 		// if no clashes then we report on any other kind of short distances
 		// 2) hydrogen bonds -- commented out for now: 
@@ -143,15 +147,15 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 //		}
 		// 3) any other kind of close interaction
 		else if (!closeInteracting.isEmpty()) {
-			String warning = closeInteracting.size()+" closely interacting atoms: ";
+			StringBuilder warning = new StringBuilder(closeInteracting.size()+" closely interacting atoms: ");
 			for (int i=0;i<closeInteracting.size();i++) {
 				AtomContact pair = closeInteracting.get(i);
-				warning +=  getPairInteractionString(pair);
-				if (i!=closeInteracting.size()-1) warning+=", ";
+				warning.append(getPairInteractionString(pair));
+				if (i!=closeInteracting.size()-1) warning.append(", ");
 			}
 			
-			warnings.add(warning);
-			LOGGER.warn("Interface "+interf.getId()+" has closely interacting atoms: "+warning);
+			warnings.add(warning.toString());
+			LOGGER.warn("Interface "+interf.getId()+" has closely interacting atoms: "+warning.toString());
 		}
 		// 4) checking whether either first or second member of interface are peptides
 		checkForPeptides(InterfaceEvolContext.FIRST);
