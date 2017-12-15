@@ -281,7 +281,6 @@ public class UploadToDb {
 				pdbsWithWarnings.add(currentPDB);
 				continue;
 			} 
-
 		}
 		
 		
@@ -300,6 +299,13 @@ public class UploadToDb {
 				System.out.print(pdb+" ");
 			}
 			System.out.println();
+		}
+
+		// make sure we exit with an error state in cases with many failures
+		int maxFailuresTolerated = (countPresent + countUploaded)/2;
+		if (pdbsWithWarnings.size() > maxFailuresTolerated) {
+			System.err.println("Total of "+pdbsWithWarnings.size()+" failures, more than "+maxFailuresTolerated+" failures. Something must be wrong!"); 
+			System.exit(1);
 		}
 
 	}
