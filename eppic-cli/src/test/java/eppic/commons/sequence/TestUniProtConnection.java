@@ -14,6 +14,7 @@ public class TestUniProtConnection {
 		String upid = "P30340";
 		UniProtConnection upc = new UniProtConnection();
 		UniProtEntry entry = upc.getEntry(upid);
-		assertEquals(upid, entry.getUniProtId().toString());
+		assertEquals("SMTB_SYNE7", entry.getUniProtId().getValue());
+		assertEquals(122, entry.getSequence().getLength());
 	}
 }
