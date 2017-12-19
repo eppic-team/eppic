@@ -1,5 +1,4 @@
-EPPIC
-=====
+## EPPIC
 
 Evolutionary Protein-Protein Interface Classifier
 http://www.eppic-web.org
@@ -15,8 +14,7 @@ If you use this software for your research, please cite:
 The software is released under the GNU General Public License (GPL).
 
 
-USAGE
-=====
+## USAGE
 
 Use 'eppic -h' to obtain help about the available command line options for 
 eppic. A typical run would be:
@@ -59,8 +57,7 @@ the -l switch (requires PyMOL): PyMOL session files (pse), PyMOL script files
 
 
 
-INSTALLATION
-============
+## INSTALLATION
 
 EPPIC is a java program that should work in any Unix like system. 
 It has only been tested in Linux but there is no reason why it should
@@ -85,18 +82,12 @@ Linux or downloading java from http://java.com/en/download/index.jsp
    - Blastclust binary found in legacy blast package, downloadable from 
      http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
      
-   - Clustalo (recommended) or T-coffee binary, downloadable from
-     http://www.clustal.org/omega/
-     http://www.tcoffee.org/Projects_home_page/t_coffee_home_page.html
-     
-   - The UniProt JAPI, downloadable from
-     http://www.ebi.ac.uk/uniprot/remotingAPI/download/uniprotjapi.jar
-     (can be automatically installed by the eppic script).
+   - Clustalo, downloadable from http://www.clustal.org/omega/
 
 2. Building:
    - A pre-built package is available from http://eppic-web.org/downloads/eppic.zip
    - To build from source, run `mvn package` (optionally with the `-DskipTests` option)
-     from the top-level or eppic-cli directory. This will generate the package
+     from the top-level. This will generate the package
      `eppic-cli/target/eppic-cli-<version>.zip`
 
 2. Configuring it: 
@@ -104,9 +95,6 @@ Linux or downloading java from http://java.com/en/download/index.jsp
    - Unzip the eppic.zip file. This will produce an eppic directory with 
      a few files in it (including this README) and two subdirectories bin
      and lib.
-     
-   - (Optional) To use a local copy of `uniprotjapi.jar`, copy or symlink it to the `lib/` subdirectory.
-     Otherwise, this will be automatically downloaded on the first run.
    
    - Copy the eppic.conf file provided to your home directory with the 
      name `.eppic.conf`. Edit it and set the parameters:
@@ -115,7 +103,7 @@ Linux or downloading java from http://java.com/en/download/index.jsp
      - BLAST_DB
      - BLASTCLUST_BIN
      - BLASTP_BIN
-     - CLUSTALO_BIN or TCOFFEE_BIN
+     - CLUSTALO_BIN
    
      to their appropriate paths. 
      Optionally you can also set PYMOL_EXE and GRAPHVIZ_EXE (needed for
@@ -134,43 +122,19 @@ Linux or downloading java from http://java.com/en/download/index.jsp
 
 
 
-THIRD PARTY LICENSE INFORMATION
-===============================
+## THIRD PARTY LICENSE INFORMATION
 
-EPPIC uses the following third-party libraries
-which are contained in the EPPIC download archive:
+EPPIC uses the following third-party libraries which are contained in the EPPIC download archive:
 
-1.	**[OWL library for Structural Bioinformatics]
-	(http://www.bioinformatics.org/owl).**
-	License:  [GPL](http://www.gnu.org/copyleft/gpl.html)
-
-2.	**[Jama]
-	(http://math.nist.gov/javanumerics/jama/).**
-	License:  Public Domain
-	
-3.	**[Jaligner]
-	(http://jaligner.sourceforge.net/).**
-	License:  [GPL](http://www.gnu.org/copyleft/gpl.html)
-	
-4.	**[MySQL java connector]
-	(http://dev.mysql.com/downloads/connector/j/5.1.html).**
-	License:  [GPL](http://www.gnu.org/copyleft/gpl.html)
-	
-5.	**[Java vecmath]
-	(https://java3d.dev.java.net/binary-builds.html).**
-	License:  [GPL with Classpath exception]
-			  (http://www.gnu.org/software/classpath/license.html)
-	
-6.	**[JUNG graph library]
-	(http://jung.sourceforge.net/).**
-	License:  [JUNG license (BSD)]
-			  (http://jung.sourceforge.net/license.txt)
-	
-7.	**[java-getopt]
-	(http://www.urbanophile.com/arenn/hacking/download.html).**
+1.	**[BioJava](https://github.com/biojava/biojava)**
+	License: [LGPL](http://www.gnu.org/licenses/lgpl.html)
+		
+2.	**[Jgrapht graph library](http://jgrapht.org/).**
 	License:  [LGPL](http://www.gnu.org/licenses/lgpl.html)
 	
-8.	**[UniProt JAPI]
-	(http://www.ebi.ac.uk/uniprot/remotingAPI/).**
+3.	**[java-getopt](http://www.urbanophile.com/arenn/hacking/download.html).**
+	License:  [LGPL](http://www.gnu.org/licenses/lgpl.html)
+	
+4.	**[UniProt JAPI](http://www.ebi.ac.uk/uniprot/remotingAPI/).**
 	License:  Apache License, version 2
 
