@@ -237,6 +237,13 @@ public class EppicParams {
 	public static final double LOGIT_CS_NOPRED = - LOGIT_INTERSECT / 
 			(LOGIT_NUM_FEATURES * LOGIT_CS_COEFFICIENT);
 	
+	/**
+	 * The minimum sum of assembly scores required to apply normalization. 
+	 * Scores lower than this value might indicate problems with scoring or
+	 * assembly generation, so a warning will also be shown.
+	 */
+	public static final double MIN_TOTAL_ASSEMBLY_SCORE = 0.2;
+	
 	// Probability thresholds for the WUI call confidence stars
 	/** Calls with probabilities higher than this value are considered high confidence */
 	public static final double HIGH_PROB_CONFIDENCE = 0.95;

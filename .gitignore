@@ -6,3 +6,4 @@ target/
 ${sys:logFilename}
 .idea/
 *.iml
+.metadata
