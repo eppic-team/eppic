@@ -31,7 +31,8 @@ Many output files are produced. The most important one is the .scores
 file containing the scoring for the 3 indicators and for the combined 
 consensus calls:
   
-*  1smt.scores             -  The scores table
+*  1smt.assemblies         -  The assemblies table with scores and predictions
+*  1smt.scores             -  The interfaces table with scores and predictions
 
 Also interesting are the sequence-related files, one per chain (the chain 
 code e.g. 'A' is used for the extension):
@@ -41,10 +42,11 @@ code e.g. 'A' is used for the extension):
                               positions
 *  1smt.A.log              -  The list of homologs used with some taxonomy info
   
-With the -p option PDB files per interface are produced (interface identified 
+With the -p option mmCIF files per assembly and interface are produced (interfaces identified 
 by a serial number from 1 to n going from largest interface to smallest).
 
-*  1smt.1.pdb.gz           -  The structure of interface 1: first partner of 
+*  1smt.assembly.1.cif.gz  -  The structure of assembly 1.
+*  1smt.interface.1.cif.gz -  The structure of interface 1: first partner of 
                               interface is in the original PDB file position, 
                               second partner is the one transformed with a 
                               crystal operator (unless it is in asymmetric 
