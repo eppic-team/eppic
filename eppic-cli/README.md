@@ -22,14 +22,16 @@ eppic. A typical run would be:
 eppic -i 1smt.pdb -s
 ```
 
-That will first calculate all interfaces present in the given PDB file,
+That will first calculate all interfaces present in the given PDB file (expanded to entire crystal),
 then find homologs in UniProt by using BLAST and finally align them to 
 produce evolutionary scores (core-rim score and core-surface score) for all
-interfaces found. The geometry scores will also be output.
+interfaces found. The geometry scores will also be output. Additionally 
+all valid (point-group symmetric) assemblies resulting from combinations of the 
+interfaces are also output, together with stoichiometry, symmetry and prediction
+scores (probability of assembly being biologically relevant).
 
-Many output files are produced. The most important one is the .scores 
-file containing the scoring for the 3 indicators and for the combined 
-consensus calls:
+Many output files are produced. The most important ones are the .assemblies and .scores 
+files containing the assemblies and interfaces enumeration together with scores:
   
 *  1smt.assemblies         -  The assemblies table with scores and predictions
 *  1smt.scores             -  The interfaces table with scores and predictions
