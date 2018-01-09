@@ -74,7 +74,11 @@ Linux or downloading java from http://java.com/en/download/index.jsp
 
    - The UniRef100 database downloadable from UniProt 
      (http://www.uniprot.org/downloads), formatted for blasting with 
-     formatdb.
+     makeblastdb (from the blast+ suite). This is the command needed for formatting:
+```
+cd uniprot
+gunzip -c uniref100.fasta.gz | makeblastdb -dbtype prot -logfile makeblastdb.log -parse_seqids -out uniref100.fasta -title uniref100.fasta
+```
    
    - Blast+ binaries, downloadable from 
      http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
