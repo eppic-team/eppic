@@ -18,8 +18,9 @@ The software is released under the GNU General Public License (GPL).
 
 Use 'eppic -h' to obtain help about the available command line options for 
 eppic. A typical run would be:
-
-    eppic -i 1smt.pdb -s
+```
+eppic -i 1smt.pdb -s
+```
 
 That will first calculate all interfaces present in the given PDB file,
 then find homologs in UniProt by using BLAST and finally align them to 
@@ -68,7 +69,7 @@ installed. Otherwise get it by installing the OpenJDK package in
 Linux or downloading java from http://java.com/en/download/index.jsp
 
 
-1. Prerequisites:
+### Prerequisites
 
    As minimum prerequisites you will need:
 
@@ -88,13 +89,13 @@ gunzip -c uniref100.fasta.gz | makeblastdb -dbtype prot -logfile makeblastdb.log
      
    - Clustalo, downloadable from http://www.clustal.org/omega/
 
-2. Building:
+### Building
    - A pre-built package is available from http://eppic-web.org/downloads/eppic.zip
    - To build from source, run `mvn package` (optionally with the `-DskipTests` option)
      from the top-level. This will generate the package
      `eppic-cli/target/eppic-cli-<version>.zip`
 
-2. Configuring it: 
+### Configuring
    
    - Unzip the eppic.zip file. This will produce an eppic directory with 
      a few files in it (including this README) and two subdirectories bin
@@ -114,7 +115,7 @@ gunzip -c uniref100.fasta.gz | makeblastdb -dbtype prot -logfile makeblastdb.log
      -l option) and LOCAL_CIF_DIR (needed to provide PDB codes with -i). 
 
 
-3. Now you can run eppic:
+### Running
    
         ./bin/eppic
    
