@@ -285,6 +285,8 @@ public class EppicParams {
 	
 	private boolean generateModelSerializedFile;
 	
+	private boolean noBlast;
+	
 	private File progressLogFile;
 	private PrintStream progressLog;
 	
@@ -384,6 +386,7 @@ public class EppicParams {
 		this.generatePdbFiles = false;
 		this.generateThumbnails = false;
 		this.generateModelSerializedFile = false;
+		this.noBlast = false;
 		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
@@ -395,7 +398,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:OpPlfwL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:OpPlfwBL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -463,6 +466,9 @@ public class EppicParams {
 				break;
 			case 'w':
 				generateModelSerializedFile = true;
+				break;
+			case 'B':
+				noBlast = true;
 				break;
 			case 'L':
 				progressLogFile = new File(g.getOptarg());
@@ -538,6 +544,10 @@ public class EppicParams {
 		"  [-f]         :  if specified together with -p, coordinate output will also be produced in \n"+
 		"                  PDB (gzipped) format as well as mmCIF format\n"+
 		"  [-w]         :  if specified a serialized webui.dat file will be produced\n" +
+		"  [-B]         :  if specified no blasting will be performed at all: a) UniProt references are taken\n"+
+		"                  from SIFTS only, b) only blast cache files are used.\n"+
+		"                  Useful for precomputation from scratch to avoid the dependency on\n"+
+		"                  blast index files.\n"+
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
 		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +
@@ -628,22 +638,27 @@ public class EppicParams {
 		}
 
 		if (isDoEvolScoring()) {
-			if (blastDbDir==null || ! new File(blastDbDir).isDirectory()) {
-				throw new EppicException(null,"BLAST_DB_DIR has not been set to a valid value in config file",true);
-			}
-			if (blastDb==null) {
-				throw new EppicException(null,"BLAST_DB has not been set to a valid value in config file",true);
+			
+			if (noBlast) {
+				LOGGER.info("No blast mode specified. We will not check if blast db and executables are present.");
 			} else {
-				// .00.xxx or .xxx with xxx one of phr, pin, psd, psi, psq
-				File dbFile1 = new File(blastDbDir,blastDb+".00.phr"); 
-				File dbFile2 = new File(blastDbDir,blastDb+".phr");
-				if (!dbFile1.exists() && !dbFile2.exists()){
-					throw new EppicException(null,dbFile1+" or "+dbFile2+" blast index files not present. Please set correct values of BLAST_DB_DIR and BLAST_DB in config file",true);
+				if (blastDbDir==null || ! new File(blastDbDir).isDirectory()) {
+					throw new EppicException(null,"BLAST_DB_DIR has not been set to a valid value in config file",true);
 				}
-				
-			}
-			if (!blastpBin.exists()) {
-				throw new EppicException(null,"The BLASTP_BIN path given in config file does not exist: "+blastpBin,true);
+				if (blastDb==null) {
+					throw new EppicException(null,"BLAST_DB has not been set to a valid value in config file",true);
+				} else {
+					// .00.xxx or .xxx with xxx one of phr, pin, psd, psi, psq
+					File dbFile1 = new File(blastDbDir,blastDb+".00.phr"); 
+					File dbFile2 = new File(blastDbDir,blastDb+".phr");
+					if (!dbFile1.exists() && !dbFile2.exists()){
+						throw new EppicException(null,dbFile1+" or "+dbFile2+" blast index files not present. Please set correct values of BLAST_DB_DIR and BLAST_DB in config file",true);
+					}
+
+				}
+				if (!blastpBin.exists()) {
+					throw new EppicException(null,"The BLASTP_BIN path given in config file does not exist: "+blastpBin,true);
+				}
 			}
 			if (!blastclustBin.exists()) {
 				throw new EppicException(null,"The BLASTCLUST_BIN path given in config file does not exist: "+blastclustBin,true);
@@ -894,6 +909,10 @@ public class EppicParams {
 	
 	public boolean isGenerateModelSerializedFile() {
 		return generateModelSerializedFile;
+	}
+	
+	public boolean isNoBlast() {
+		return noBlast;
 	}
 	
 	public PrintStream getProgressLog() {

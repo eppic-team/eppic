@@ -54,9 +54,11 @@ public class ChainEvolContextList implements Serializable {
 		
 		this.cecs = new TreeMap<String, ChainEvolContext>();
 		
-		// if we fail to read a version, it will stay null. Should we rather throw exception?
-		this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
-		LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
+		if (!params.isNoBlast()) {
+			// if we fail to read a version, it will stay null. Should we rather throw exception?
+			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
+			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
+		}
 		
 		if (params.getLocalUniprotDbName()!=null) {
 			this.useLocalUniprot = true;
@@ -85,9 +87,11 @@ public class ChainEvolContextList implements Serializable {
 		
 		this.cecs = new TreeMap<String, ChainEvolContext>();
 
-		// if we fail to read a version, it will stay null. Should we rather throw exception?
-		this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
-		LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
+		if (!params.isNoBlast()) {
+			// if we fail to read a version, it will stay null. Should we rather throw exception?
+			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
+			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
+		}
 		
 		if (params.getLocalUniprotDbName()!=null) {
 			this.useLocalUniprot = true;

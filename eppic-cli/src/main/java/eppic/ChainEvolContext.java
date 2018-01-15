@@ -196,13 +196,14 @@ public class ChainEvolContext implements Serializable {
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
 		List<SiftsFeature> mappings = null;
+		boolean findMappingWithBlast = false;
 		
 		if (!params.isInputAFile() || params.isUsePdbCodeFromFile()) {
 			String pdbCode = parent.getPdb().getPDBCode().toLowerCase();
 			if (useSifts) {
 				if (pdbCode==null || !pdbCode.matches("\\d\\w\\w\\w")) {
-					LOGGER.info("Could not read a PDB code in file. Will blast to find query-to-UniProt mapping.");
-					queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
+					LOGGER.info("Could not read a PDB code in file.");
+					findMappingWithBlast = true;
 				} else {
 
 					SiftsConnection siftsConn = parent.getSiftsConn(siftsLocation);
@@ -213,20 +214,29 @@ public class ChainEvolContext implements Serializable {
 
 					} catch (NoMatchFoundException e) {
 						LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+sequenceId);
-						LOGGER.info("Trying blasting to find one.");
-						queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);  
+						findMappingWithBlast = true;
 					}
 				}
 				
 			} else {
-				LOGGER.info("Using SIFTS feature is turned off. Will blast to find query-to-UniProt mapping.");
-				queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
+				LOGGER.info("Using SIFTS feature is turned off.");
+				findMappingWithBlast = true;
 			}
 		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
 		} else {
-			LOGGER.info("Input is from file, won't use SIFTS. Blasting to find the query-to-UniProt mapping. "
+			LOGGER.info("Input is from file, won't use SIFTS. "
 					+ "Set the property USE_PDB_CODE_FROM_FILE to true if you want to change this behavior.");
-			queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
+			findMappingWithBlast = true;
+		}
+		
+		if (findMappingWithBlast) {
+			if (params.isNoBlast()) {
+				LOGGER.info("Will not blast to find query to UniProt mapping. Blasting is disabled (-B option)."
+						+ " No UniProt reference mapping will be available and thus no homologs alignment.");
+			} else {
+				LOGGER.info("Will blast to find query to UniProt mapping.");
+				queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
+			}
 		}
 		
 		if (queryUniprotId!=null) hasQueryMatch = true;
@@ -539,7 +549,7 @@ public class ChainEvolContext implements Serializable {
 					"."+queryInterv.beg+"-"+queryInterv.end+EppicParams.BLAST_CACHE_FILE_SUFFIX);
 		}
 		
-		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCacheFile);
+		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCacheFile, params.isNoBlast());
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast (chain "+getRepresentativeChainCode()+")");
 		
 		if (homologs.getSizeFullList()>0) {

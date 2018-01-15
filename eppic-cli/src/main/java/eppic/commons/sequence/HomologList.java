@@ -134,11 +134,13 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * @param blastDb
 	 * @param blastNumThreads
 	 * @param cacheFile a file with the cached gzipped xml blast output file, if null blast will be always run
+	 * @param noBlast whether the "no blast" mode is enabled: if true no blast is performed at all, if false blast 
+	 * is attempted if needed
 	 * @throws IOException
 	 * @throws BlastException
 	 * @throws InterruptedException
 	 */
-	public void searchWithBlast(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, int maxNumSeqs, File cacheFile) 
+	public void searchWithBlast(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, int maxNumSeqs, File cacheFile, boolean noBlast) 
 			throws IOException, BlastException, InterruptedException {
 		
 		File outBlast = null;
@@ -188,7 +190,12 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			} catch (SAXException e) {
 				throw new IOException("Cache file "+cacheFile+" does not comply with blast XML format. "+e.getMessage());
 			}
-		} 
+		} else {
+			if (noBlast) {
+				throw new IOException("The \"no blast\" mode was specified (-B option) and blast cache file " +
+						cacheFile + " does not exist or is empty.");
+			}
+		}
 		
 		if (!fromCache) {
 			outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
