@@ -22,6 +22,8 @@ public class UploadToDb {
 	// the name of the dir that is the root of the divided dirs (indexed by the pdbCode middle 2-letters) 
 	private static final String DIVIDED_ROOT = "divided";
 	
+	private static final String SERIALIZED_FILE_SUFFIX = ".webui.dat";
+	
 	// after this number of entry uploads time statistics will be produced
 	private static final int TIME_STATS_EVERY1 = 100;
 	private static final int TIME_STATS_EVERY2 = 1000;
@@ -174,10 +176,12 @@ public class UploadToDb {
 				continue;
 			}
 			
-			//Check for 4 letter code directories starting with a number
-			if (!jobDirectory.getName().matches("^\\d\\w\\w\\w$")){
-				System.out.println("Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
-				continue; 
+			if (choosefromFile == null) {
+				//Check for 4 letter code directories starting with a number, only if we are not in -f (list provided)
+				if (!jobDirectory.getName().matches("^\\d\\w\\w\\w$")){
+					System.out.println("Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
+					continue; 
+				}
 			}
 
 
@@ -189,8 +193,15 @@ public class UploadToDb {
 
 
 			// Get the PDB-Score Item to be read
-			File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
-			boolean isSerializedFilePresent = webuiFile.isFile();
+			File webuiFile = null;
+			if (choosefromFile == null) {
+				// not in -f case: we consider this is a PDB id and not a user job
+				webuiFile = new File(jobDirectory, currentPDB + SERIALIZED_FILE_SUFFIX);
+			} else {
+				// -f case: this might be a user job, the file name can have a different name than job id
+				webuiFile = findWebuidatFile(jobDirectory);
+			}
+			boolean isSerializedFilePresent = webuiFile!=null && webuiFile.isFile();
 
 			try {				
 
@@ -373,5 +384,24 @@ public class UploadToDb {
 			System.exit(1);
 		}
 		return pdbCodes;
+	}
+	
+	/**
+	 * Finds a file ending with suffix {@value #SERIALIZED_FILE_SUFFIX} in given jobDirectory
+	 * @param jobDirectory 
+	 * @return the file or null if not found
+	 */
+	private static File findWebuidatFile(File jobDirectory) {
+		
+		File[] listOfFiles = jobDirectory.listFiles();
+		
+		for (int i = 0; i < listOfFiles.length; i++) {
+			if (listOfFiles[i].isFile()) {
+				if (listOfFiles[i].getName().endsWith(SERIALIZED_FILE_SUFFIX)) {
+					return listOfFiles[i];
+				}
+			}
+		}
+		return null;
 	}
 }
