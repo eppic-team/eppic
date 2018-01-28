@@ -62,12 +62,8 @@ public class ChainEvolContextList implements Serializable {
 		
 		if (params.getLocalUniprotDbName()!=null) {
 			this.useLocalUniprot = true;
-			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName());
-			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local database: "+params.getLocalUniprotDbName());
 		} else {
 			this.useLocalUniprot = false;
-			this.uniprotJapiConn = new UniProtConnection();
-			LOGGER.info("Using remote UniProt JAPI connection to retrieve UniProtKB data");
 		}
 		
 		for (Compound chainCluster:pdb.getCompounds()) {
@@ -95,12 +91,8 @@ public class ChainEvolContextList implements Serializable {
 		
 		if (params.getLocalUniprotDbName()!=null) {
 			this.useLocalUniprot = true;
-			this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName());
-			LOGGER.info("Using local UniProt connection to retrieve UniProtKB data. Local database: "+params.getLocalUniprotDbName());
 		} else {
 			this.useLocalUniprot = false;
-			this.uniprotJapiConn = new UniProtConnection();
-			LOGGER.info("Using remote UniProt JAPI connection to retrieve UniProtKB data");
 		}
 		
 		for (Sequence sequence: sequences) {
@@ -200,6 +192,9 @@ public class ChainEvolContextList implements Serializable {
 	public void retrieveQueryData(EppicParams params) throws EppicException {
 		params.getProgressLog().println("Finding query's UniProt mappings through SIFTS or blasting");
 		params.getProgressLog().print("chains: ");
+		
+		openConnections(params);
+		
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
 			try {
@@ -223,6 +218,9 @@ public class ChainEvolContextList implements Serializable {
 				throw new EppicException(e, msg, true);
 			}
 		}
+		
+		closeConnections();
+		
 		params.getProgressLog().println();
 	}
 	
@@ -237,9 +235,6 @@ public class ChainEvolContextList implements Serializable {
 		// 3) we then retrieve the uniprot kb data: sequences, tax ids and taxons for all homologs above the given hard cutoffs thresholds
 		// we won't need data for any other homolog
 		retrieveHomologsData(params);
-		
-		// now that we have all data we don't need the connections anymore
-		closeConnections();
 		
 		// 4) and now we apply the identity (soft/hard) cutoffs, which also does redundancy reduction in each iteration
 		applyIdentityCutoff(params);
@@ -277,6 +272,9 @@ public class ChainEvolContextList implements Serializable {
 	private void retrieveHomologsData(EppicParams params) throws EppicException {
 		params.getProgressLog().println("Retrieving UniProtKB data");
 		params.getProgressLog().print("chains: ");
+		
+		openConnections(params);	
+		
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -306,7 +304,10 @@ public class ChainEvolContextList implements Serializable {
 				throw new EppicException(e, msg, true);
 			}
 
-		}		
+		}	
+		
+		closeConnections();
+		
 		params.getProgressLog().println();
 	}
 	
@@ -430,6 +431,20 @@ public class ChainEvolContextList implements Serializable {
 			}
 		}
 		return dol;
+	}
+	
+	public void openConnections(EppicParams params) throws EppicException {
+		if (useLocalUniprot) {
+			try {
+				this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName());
+				LOGGER.info("Opening local UniProt connection to retrieve UniProtKB data. Local database: "+params.getLocalUniprotDbName());
+			} catch (SQLException e) {
+				throw new EppicException(e, "Could not open connection to local UniProt database " + params.getLocalUniprotDbName(), true);
+			}
+		} else {
+			this.uniprotJapiConn = new UniProtConnection();
+			LOGGER.info("Opening remote UniProt JAPI connection to retrieve UniProtKB data");
+		}
 	}
 	
 	public void closeConnections() {
