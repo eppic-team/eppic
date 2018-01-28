@@ -188,7 +188,18 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 					}
 				}
 			} catch (SAXException e) {
-				throw new IOException("Cache file "+cacheFile+" does not comply with blast XML format. "+e.getMessage());
+				// The file is there and can be read, but somehow corrupted or incomplete.
+				if (noBlast) {
+					throw new IOException("Cache file "+cacheFile+" does not comply with blast XML format. Error: "+
+							e.getMessage()+ ". Will not try blasting because the \"no blast\" mode (-B option) was specified.");
+				} else {
+					// Let's issue a warning and consider there was no file so that we go and blast again
+					// so that the file will eventually get overwritten and the error corrected
+					LOGGER.warn("Cache file "+cacheFile+" does not comply with blast XML format. "
+							+ "Error: "+e.getMessage()+". Will ignore file and try blasting.");
+					fromCache = false;
+				}
+				
 			}
 		} else {
 			if (noBlast) {
