@@ -239,8 +239,8 @@ public class DBHandler {
 		cqJob.where(cbJob.equal(rootJob.get(JobDB_.jobId), jobID));
 		//cqJob.select(rootJob);
 		
-		// in order to make the query light-weight we only take these 2 fields for which there is 
-		// a corresponding constructor in JobDB
+		// in order to make the query light-weight we only take these 3 fields for which there is 
+		// a corresponding constructor in JobDB, if there's no corresponding constructor the query fails
 		// with the simple 'select' above the query is a monster with many joins (following the full hierarchy of Job, PdbInfo etc) 
 		cqJob.multiselect(rootJob.get(JobDB_.inputName), rootJob.get(JobDB_.inputType), rootJob.get(JobDB_.status));
 		List<JobDB> queryJobList = em.createQuery(cqJob).getResultList();

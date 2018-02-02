@@ -33,6 +33,12 @@ public class JobDB implements Serializable {
 		this.inputType = inputType;
 	}
 	
+	public JobDB(String inputName, int inputType, String status) {
+		this.inputName = inputName;
+		this.inputType = inputType;
+		this.status = status;
+	}
+	
 	public Long getUid() {
 		return uid;
 	}
