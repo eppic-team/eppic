@@ -269,6 +269,7 @@ public class Main {
 		LOGGER.info("Calculating possible interfaces");
 		CrystalBuilder interfFinder = new CrystalBuilder(pdb);
 		interfaces = interfFinder.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
+		LOGGER.info("Calculating ASAs");
 		interfaces.calcAsas(params.getnSpherePointsASAcalc(), params.getNumThreads(), params.getMinSizeCofactorForAsa());
 		interfaces.removeInterfacesBelowArea(EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 		
