@@ -223,7 +223,7 @@ public class DBHandler {
 	}
 	
 	/**
-	 * Checks if an entry with the given jobID exists in the DataBase
+	 * Checks if a non-error entry with the given jobID exists in the DataBase
 	 * Note this returns true whenever the query returns at least 1 record, i.e. it doesn't guarantee
 	 * that the entry is complete with data present in all cascading tables
 	 * @param jobID
@@ -242,15 +242,15 @@ public class DBHandler {
 		// in order to make the query light-weight we only take these 2 fields for which there is 
 		// a corresponding constructor in JobDB
 		// with the simple 'select' above the query is a monster with many joins (following the full hierarchy of Job, PdbInfo etc) 
-		cqJob.multiselect(rootJob.get(JobDB_.inputName), rootJob.get(JobDB_.inputType));
+		cqJob.multiselect(rootJob.get(JobDB_.inputName), rootJob.get(JobDB_.inputType), rootJob.get(JobDB_.status));
 		List<JobDB> queryJobList = em.createQuery(cqJob).getResultList();
 		int querySize = queryJobList.size();
 		
+		if(querySize>0 && !queryJobList.get(0).getStatus().equals("Error")) {
+			return true;
+		}
 		
-		
-		if(querySize>0) return true;
-		else return false;
-		
+		return false;		
 	}
 	
 	/**
