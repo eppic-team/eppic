@@ -31,6 +31,11 @@ public class PymolRunner {
 	
 	private static final String[] DEF_CHAIN_COLORS_ASU_ALLINTERFACES = 
 		{"green", "tv_green", "chartreuse", "splitpea", "smudge", "palegreen", "limegreen", "lime", "limon", "forest"};
+	
+	/**
+	 * Pymol can't handle very long scripts, it breaks at about 32KB, see https://github.com/eppic-team/eppic/issues/210
+	 */
+	private static final int MAX_LENGTH_PYMOL_SCRIPT = 32600;
 
 	
 	private File pymolExec;
@@ -137,6 +142,10 @@ public class PymolRunner {
 		
 		command.add(pymolScriptBuilder.toString());
 
+		// pymol breaks at about 32KB, see https://github.com/eppic-team/eppic/issues/210
+		if (pymolScriptBuilder.length() > MAX_LENGTH_PYMOL_SCRIPT) {
+			throw new IOException("Can't create "+base+" png file. Script is longer than "+MAX_LENGTH_PYMOL_SCRIPT+" bytes, PyMOL can't handle that. Script length is " + pymolScriptBuilder.length() + " bytes.");
+		}
 		
 		Process pymolProcess = new ProcessBuilder(command).start();
 		int exit = pymolProcess.waitFor();
@@ -230,7 +239,11 @@ public class PymolRunner {
 		command.add("-d");
 
 		command.add(pymolScriptBuilder.toString());
-
+		
+		// pymol breaks at about 32KB, see https://github.com/eppic-team/eppic/issues/210
+		if (pymolScriptBuilder.length() > MAX_LENGTH_PYMOL_SCRIPT) {
+			throw new IOException("Can't create "+base+" png file. Script is longer than "+MAX_LENGTH_PYMOL_SCRIPT+" bytes, PyMOL can't handle that. Script length is " + pymolScriptBuilder.length() + " bytes.");
+		}
 
 		Process pymolProcess = new ProcessBuilder(command).start();
 		int exit = pymolProcess.waitFor();
