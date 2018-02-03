@@ -250,6 +250,7 @@ public class UploadToDb {
 							dbh.persistErrorJob(em, currentPDB);
 							countErrorJob++;
 						}
+						countUploaded++;
 						
 					} else {
 						// already present and is not an error
