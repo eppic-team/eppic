@@ -180,7 +180,7 @@ public class UserJobCopier {
 			}
 
 			//Check if jobs are really present in the source DB (can only happen when selecting jobs from file)
-			if (selFromFile!=null && !sourceDbh.checkJobExist(job)) {
+			if (selFromFile!=null && sourceDbh.checkJobExist(job)==0) {
 				System.out.println(" Job "+job+" not present in source DB '"+sourceDbName+"'. Skipping... ");
 				continue;
 			}
@@ -189,7 +189,7 @@ public class UserJobCopier {
 
 				if (!remove) {
 					// MODE COPY
-					if(targetDbh.checkJobExist(job)) {
+					if(targetDbh.checkJobExist(job)!=0) {
 						System.out.print(" Already present in target DB. ");
 						if (force) {
 							System.out.print(" Removing and copying... ");
@@ -204,7 +204,7 @@ public class UserJobCopier {
 					
 				} else {
 					//MODE REMOVE
-					if(sourceDbh.checkJobExist(job)) {
+					if(sourceDbh.checkJobExist(job)!=0) {
 						System.out.print(" Present in source DB. Removing... ");
 						sourceDbh.removeJob(job);
 					} else {

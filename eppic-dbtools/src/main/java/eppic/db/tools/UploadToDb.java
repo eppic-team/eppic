@@ -215,8 +215,8 @@ public class UploadToDb {
 
 				//MODE NEW INSERT
 				if (modeNew){
-					boolean isPresent = dbh.checkJobExist(currentPDB);
-					if(!isPresent){
+					int isPresent = dbh.checkJobExist(currentPDB);
+					if(isPresent == 0){ // not present
 						System.out.print(" Not Present.. Adding.. ");
 						if(isSerializedFilePresent) {
 							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
@@ -230,8 +230,29 @@ public class UploadToDb {
 							countErrorJob++;
 						}
 						countUploaded++;
-					}
-					else {
+					} else if (isPresent ==2) {
+						// already present but as an error, we have to remove and reinsert
+						boolean ifRemoved = dbh.removeJob(currentPDB);
+						if (ifRemoved) System.out.print(" Found as error.. Removing and Updating.. ");
+						else {
+							System.err.print(" Warning! Not Found, but there should be an error job. Skipping..");
+							continue;
+						}
+						
+						if(isSerializedFilePresent) {
+							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
+							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+							if (pdbScoreItem == null) continue;				
+
+							dbh.persistFinishedJob(em,pdbScoreItem);
+						}
+						else {
+							dbh.persistErrorJob(em, currentPDB);
+							countErrorJob++;
+						}
+						
+					} else {
+						// already present and is not an error
 						countPresent++;
 						System.out.print(" Already Present.. Skipping.. ");
 					}

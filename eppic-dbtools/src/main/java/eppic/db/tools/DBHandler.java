@@ -227,9 +227,9 @@ public class DBHandler {
 	 * Note this returns true whenever the query returns at least 1 record, i.e. it doesn't guarantee
 	 * that the entry is complete with data present in all cascading tables
 	 * @param jobID
-	 * @return true if present; false if not
+	 * @return 0 if not present, 1 if present and not Error; 2 if present and Error
 	 */
-	public boolean checkJobExist(String jobID){
+	public int checkJobExist(String jobID){
 		EntityManager em = this.getEntityManager();
 		
 		CriteriaBuilder cbJob = em.getCriteriaBuilder();
@@ -246,11 +246,17 @@ public class DBHandler {
 		List<JobDB> queryJobList = em.createQuery(cqJob).getResultList();
 		int querySize = queryJobList.size();
 		
-		if(querySize>0 && !queryJobList.get(0).getStatus().equals("Error")) {
-			return true;
+		if(querySize>0) {
+			if (!queryJobList.get(0).getStatus().equals(StatusOfJob.ERROR.getName())) {
+				// present and not error
+				return 1;
+			} else {
+				// present and error
+				return 2;
+			}			
 		}
-		
-		return false;		
+		// not present
+		return 0;		
 	}
 	
 	/**
