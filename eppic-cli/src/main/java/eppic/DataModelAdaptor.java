@@ -16,7 +16,7 @@ import java.util.TreeSet;
 
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.ExperimentalTechnique;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
@@ -179,7 +179,7 @@ public class DataModelAdaptor {
 		
 		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 
-		for (Compound compound:pdb.getCompounds()) {
+		for (EntityInfo compound:pdb.getEntityInfos()) {
 			
 			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
 			if (compound.getChains().isEmpty()) continue;
@@ -210,7 +210,7 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	private ChainClusterDB createChainCluster(Compound compound) {
+	private ChainClusterDB createChainCluster(EntityInfo compound) {
 		ChainClusterDB chainClusterDB = new ChainClusterDB();
 		
 		chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
@@ -281,7 +281,7 @@ public class DataModelAdaptor {
 		return chainClusterDB;
 	}
 	
-	private List<Group> getGroups(Compound compound) {
+	private List<Group> getGroups(EntityInfo compound) {
 		
 		List<Group> groups = new ArrayList<Group>();
 		
@@ -374,14 +374,14 @@ public class DataModelAdaptor {
 					ContactDB contact = new ContactDB();
 					Group firstGroup = groupContact.getPair().getFirst();
 					Group secondGroup = groupContact.getPair().getSecond();
-					if (firstGroup.getChain().getCompound()==null)
+					if (firstGroup.getChain().getEntityInfo()==null)
 						contact.setFirstResNumber(UNKNOWN_RESIDUE_INDEX);
 					else 
-						contact.setFirstResNumber(firstGroup.getChain().getCompound().getAlignedResIndex(firstGroup, firstGroup.getChain()) );
-					if (secondGroup.getChain().getCompound()==null)
+						contact.setFirstResNumber(firstGroup.getChain().getEntityInfo().getAlignedResIndex(firstGroup, firstGroup.getChain()) );
+					if (secondGroup.getChain().getEntityInfo()==null)
 						contact.setSecondResNumber(UNKNOWN_RESIDUE_INDEX);
 					else
-						contact.setSecondResNumber(secondGroup.getChain().getCompound().getAlignedResIndex(secondGroup, secondGroup.getChain()) );
+						contact.setSecondResNumber(secondGroup.getChain().getEntityInfo().getAlignedResIndex(secondGroup, secondGroup.getChain()) );
 					contact.setFirstResType(firstGroup.getPDBName());
 					contact.setSecondResType(secondGroup.getPDBName());
 					GroupAsa firstGroupAsa = interf.getFirstGroupAsa(firstGroup.getResidueNumber());
@@ -1177,7 +1177,7 @@ public class DataModelAdaptor {
 		else if (molecId == InterfaceEvolContext.SECOND) 
 			chain =	interf.getParentChains().getSecond();
 		
-		String repChainId = chain.getCompound().getRepresentative().getChainID();
+		String repChainId = chain.getEntityInfo().getRepresentative().getChainID();
 		ChainClusterDB chainCluster = pdbInfo.getChainCluster(repChainId);
 		
 		
@@ -1246,7 +1246,7 @@ public class DataModelAdaptor {
 			// residue in the representative chain (the one we store in the residueInfos in chainCluster).
 			// Thus the issues with residue serials in SEQRES/no SEQRES case will hit here!
 			// See the comment in createChainCluster
-			int resser = chain.getCompound().getAlignedResIndex(group, chain);
+			int resser = chain.getEntityInfo().getAlignedResIndex(group, chain);
 			if (resser==-1) {
 				if (noseqres) 
 					LOGGER.warn("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
@@ -1298,7 +1298,7 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public static String getChainClusterString(Compound compound) {
+	public static String getChainClusterString(EntityInfo compound) {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -1325,7 +1325,7 @@ public class DataModelAdaptor {
 		return sb.toString();
 	}
 
-	public static String getMemberChainsString(Compound compound) {
+	public static String getMemberChainsString(EntityInfo compound) {
 		List<String> uniqChainIds = compound.getChainIds();
 		
 		StringBuilder sb = new StringBuilder();

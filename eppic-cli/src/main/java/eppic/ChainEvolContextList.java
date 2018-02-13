@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
@@ -66,7 +66,7 @@ public class ChainEvolContextList implements Serializable {
 			this.useLocalUniprot = false;
 		}
 		
-		for (Compound chainCluster:pdb.getCompounds()) {
+		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
 			
 			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
 			if (chainCluster.getChains().isEmpty()) continue;
@@ -116,7 +116,7 @@ public class ChainEvolContextList implements Serializable {
 	 */
 	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
 		try {
-			Compound compound = pdb.getChainByPDB(pdbChainCode).getCompound();
+			EntityInfo compound = pdb.getChainByPDB(pdbChainCode).getEntityInfo();
 			return cecs.get( compound.getRepresentative().getChainID() );
 		} catch (StructureException e) {
 			LOGGER.error("Unexpected exception",e);

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
@@ -110,7 +110,7 @@ public class FindRedundantEntries {
 				continue;
 			} 
 			
-			for (Compound chainCluster:pdb.getCompounds()) {
+			for (EntityInfo chainCluster:pdb.getEntityInfos()) {
 				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
 				if (chainCluster.getChains().isEmpty()) continue;
 				

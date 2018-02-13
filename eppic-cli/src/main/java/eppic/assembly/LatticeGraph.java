@@ -283,7 +283,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 		for (Chain c:structure.getChains()) {
 			
-			if (c.getCompound()==null) {
+			if (c.getEntityInfo()==null) {
 				logger.warn("Chain {} will not be added to the graph because it does not have an entity associated to it.", c.getChainID());
 				continue;
 			}

@@ -98,7 +98,7 @@ public class ChainVertex implements ChainVertexInterface {
 
 	@Override
 	public int getEntityId() {
-		return c.getCompound().getMolId();
+		return c.getEntityInfo().getMolId();
 	}
 
 }

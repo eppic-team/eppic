@@ -22,7 +22,7 @@ import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
@@ -210,9 +210,9 @@ public class EnumerateInterfaces {
 		}
 
 
-		System.out.println(pdb.getPDBCode()+" - "+pdb.getChains()+" chains ("+pdb.getCompounds().size()+" sequence unique) ");
+		System.out.println(pdb.getPDBCode()+" - "+pdb.getChains()+" chains ("+pdb.getEntityInfos().size()+" sequence unique) ");
 
-		for (Compound chainCluster:pdb.getCompounds()) {
+		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
 			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
 			if (chainCluster.getChains().isEmpty()) continue;
 			System.out.println(DataModelAdaptor.getChainClusterString(chainCluster));

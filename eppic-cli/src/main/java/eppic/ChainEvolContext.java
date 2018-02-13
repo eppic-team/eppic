@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.StructureTools;
 import org.slf4j.Logger;
@@ -105,7 +105,7 @@ public class ChainEvolContext implements Serializable {
 	
 	private boolean isProtein;
 	
-	private Compound compound;
+	private EntityInfo entity;
 	
 
 	/**
@@ -122,7 +122,7 @@ public class ChainEvolContext implements Serializable {
 		this.searchWithFullUniprot = true;
 		this.queryWarnings = new ArrayList<String>();
 		this.isProtein = true;
-		this.compound = null;
+		this.entity = null;
 	}
 	
 	/**
@@ -130,7 +130,7 @@ public class ChainEvolContext implements Serializable {
 	 * @param parent
 	 * @param compound
 	 */
-	public ChainEvolContext(ChainEvolContextList parent, Compound compound) {
+	public ChainEvolContext(ChainEvolContextList parent, EntityInfo compound) {
 		this.parent = parent;
 		Chain chain = compound.getRepresentative();
 		
@@ -141,7 +141,7 @@ public class ChainEvolContext implements Serializable {
 		
 		this.isProtein = StructureTools.isProtein(chain);
 		
-		this.compound = compound;
+		this.entity = compound;
 		
 		this.pdbToUniProtMapper = new PdbToUniProtMapper(compound);
 		
@@ -156,8 +156,8 @@ public class ChainEvolContext implements Serializable {
 		return isProtein;
 	}
 	
-	public Compound getCompound() { 
-		return compound;
+	public EntityInfo getCompound() { 
+		return entity;
 	}
 	
 	/**
@@ -526,13 +526,13 @@ public class ChainEvolContext implements Serializable {
 		if (searchMode==HomologsSearchMode.GLOBAL) {
 						
 			LOGGER.info("Using full UniProt sequence {} {}-{} for blast search (entity {})",
-					query.getUniId(), queryInterv.beg, queryInterv.end, compound.getMolId());
+					query.getUniId(), queryInterv.beg, queryInterv.end, entity.getMolId());
 
 			searchWithFullUniprot = true;
 		} else if (searchMode==HomologsSearchMode.LOCAL) {
 						
 			LOGGER.info("Using UniProt {} subsequence {}-{} for blast search (entity {})",
-					query.getUniId(), queryInterv.beg, queryInterv.end, compound.getMolId());
+					query.getUniId(), queryInterv.beg, queryInterv.end, entity.getMolId());
 			searchWithFullUniprot = false;			
 		} 
 		

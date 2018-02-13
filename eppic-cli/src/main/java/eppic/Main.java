@@ -23,7 +23,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
@@ -768,7 +768,7 @@ public class Main {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Unique sequences: ");
 		
-		for (Compound chainCluster:pdb.getCompounds()) {
+		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
 			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
 			if (chainCluster.getChains().isEmpty()) continue;
 

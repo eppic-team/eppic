@@ -31,7 +31,7 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.gui.BiojavaJmol;
 import org.biojava.nbio.structure.io.MMCIFFileReader;
 import org.biojava.nbio.structure.io.PDBFileReader;
-import org.biojava.nbio.structure.io.util.FileDownloadUtils;
+import org.biojava.nbio.core.util.FileDownloadUtils;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;

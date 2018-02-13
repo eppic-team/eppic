@@ -12,7 +12,7 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
-import org.biojava.nbio.structure.io.util.FileDownloadUtils;
+import org.biojava.nbio.core.util.FileDownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -44,7 +44,7 @@ public class StructureUtils {
 				setChainIdsInResidueNumbers(clonedChain, newChainId);
 				Calc.transform(clonedChain, m);
 				chainsToAdd.add(clonedChain);
-				c.getCompound().addChain(clonedChain);
+				c.getEntityInfo().addChain(clonedChain);
 			}
 		}
 		

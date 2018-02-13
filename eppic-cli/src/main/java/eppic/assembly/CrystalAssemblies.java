@@ -13,7 +13,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -296,7 +296,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		idx2ChainIds = new HashMap<Integer, String>();
 
 		int i = 0;
-		for (Compound c:structure.getCompounds()) {
+		for (EntityInfo c:structure.getEntityInfos()) {
 			entityId2Idx.put(c.getMolId(),i);
 			idx2EntityId.put(i,c.getMolId());
 			i++;
@@ -435,7 +435,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @return
 	 */
 	public String getRepresentativeChainIdForEntityIndex(int index) {
-		return structure.getCompoundById(getEntityId(index)).getRepresentative().getChainID();
+		return structure.getEntityById(getEntityId(index)).getRepresentative().getChainID();
 	}
 	
 	/**
