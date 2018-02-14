@@ -27,6 +27,7 @@ import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -51,7 +52,6 @@ import eppic.assembly.GraphUtils;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
-import eppic.commons.util.StructureUtils;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryClusterPredictor;
@@ -265,7 +265,7 @@ public class Main {
 	public void doFindInterfaces() throws EppicException {
 
 		params.getProgressLog().println("Calculating possible interfaces...");
-		StructureUtils.expandNcsOps(pdb);
+		StructureTools.expandNcsOps(pdb);
 		LOGGER.info("Calculating possible interfaces");
 		CrystalBuilder interfFinder = new CrystalBuilder(pdb);
 		interfaces = interfFinder.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);

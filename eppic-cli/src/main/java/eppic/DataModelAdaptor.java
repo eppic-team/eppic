@@ -23,6 +23,8 @@ import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.asa.GroupAsa;
+import org.biojava.nbio.structure.cluster.SubunitClusterUtils;
+import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.contact.AtomContact;
 import org.biojava.nbio.structure.contact.GroupContact;
 import org.biojava.nbio.structure.contact.GroupContactSet;
@@ -1361,8 +1363,9 @@ public class DataModelAdaptor {
 	
 	/**
 	 * Finds the symmetry of the biounit with the biojava quat symmetry algorithms
+	 * @param pdb the au of the structure
 	 * @param bioUnitNumber
-	 * @return an array of size 4 with members: symmetry, stoichiometry, pseudosymmetry, pseudoStoichiometry
+	 * @return an array of size 2 with members: symmetry, stoichiometry
 	 */
 	private static String[] getSymmetry(Structure pdb, int bioUnitNumber) {
 		
@@ -1372,7 +1375,7 @@ public class DataModelAdaptor {
 			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms().size() == 0){
 			
 			LOGGER.warn("Could not load transformations for PDB biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
-			return new String[]{null,null,null,null};
+			return new String[]{null,null};
 		}
 		
 		List<BiologicalAssemblyTransformation> transformations = 
@@ -1381,72 +1384,31 @@ public class DataModelAdaptor {
 		
 		BiologicalAssemblyBuilder builder = new BiologicalAssemblyBuilder();
 
-		Structure bioAssembly = builder.rebuildQuaternaryStructure(pdb, transformations);
+		Structure bioAssembly = builder.rebuildQuaternaryStructure(pdb, transformations, true, false);
 
 		QuatSymmetryParameters parameters = new QuatSymmetryParameters();
         parameters.setOnTheFly(true);
-        parameters.setLocalSymmetry(false);
-		parameters.setVerbose(false);
+        SubunitClustererParameters clusterParams = new SubunitClustererParameters();
 
-		QuatSymmetryDetector detector = new QuatSymmetryDetector(bioAssembly, parameters);
+        // TODO not sure if this is still possible in biojava 5
+		//if (!detector.hasProteinSubunits()) {	
+		//	LOGGER.info("No protein chains in biounit {}, can't calculate symmetry. Will not assign a symmetry value to it.", bioUnitNumber);
+		//	return new String[]{null,null};
+		//}		
 
-		if (!detector.hasProteinSubunits()) {	
-			LOGGER.info("No protein chains in biounit {}, can't calculate symmetry. Will not assign a symmetry value to it.", bioUnitNumber);
-			return new String[]{null,null,null,null};
-		}		
-
-		List<QuatSymmetryResults> globalResults = detector.getGlobalSymmetry();
+		QuatSymmetryResults globalResults = QuatSymmetryDetector.calcGlobalSymmetry(bioAssembly, parameters, clusterParams);
 		
-		if (globalResults.isEmpty()) {
+		if (globalResults == null) {
 			LOGGER.warn("No global symmetry found for biounit {}. Will not assign a symmetry value to it.",  bioUnitNumber);
-			return new String[]{null, null, null, null};
+			return new String[]{null, null};
 		}
 		
-		String symmetry = null;
-		String stoichiometry = null;
-		String pseudoSymmetry = null;
-		String pseudoStoichiometry = null;
-
+		String symmetry = globalResults.getSymmetry();
+		String stoichiometry = SubunitClusterUtils.getStoichiometryString(globalResults.getSubunitClusters());
+		LOGGER.info("Symmetry {} (stoichiometry {}) found in biounit {}", 
+				symmetry, stoichiometry, bioUnitNumber);
 		
-		if (globalResults.size()>2) {
-			StringBuilder sb = new StringBuilder();
-			for (QuatSymmetryResults r:globalResults) {
-				sb.append(r.getSymmetry()+" ");
-			}
-			LOGGER.warn("More than 2 symmetry results found for biounit {}. The {} results are: {}", 
-					bioUnitNumber, globalResults.size(), sb.toString());
-		}
-		
-		for (QuatSymmetryResults r:globalResults) {
-			
-			if (r.getSubunits().isPseudoSymmetric()) {				
-				pseudoSymmetry = r.getSymmetry();
-				pseudoStoichiometry = r.getSubunits().getStoichiometry();
-				LOGGER.info("Pseudosymmetry {} (stoichiometry {}) found in biounit {}", 
-						pseudoSymmetry, pseudoStoichiometry, bioUnitNumber);
-			} else {
-				symmetry = r.getSymmetry();
-				stoichiometry = r.getSubunits().getStoichiometry();
-				LOGGER.info("Symmetry {} (stoichiometry {}) found in biounit {}", 
-						symmetry, stoichiometry, bioUnitNumber);
-			}
-			
-		}
-		// note: if there's no pseudosymmetry in the results then it remains null
-
-
-		if (symmetry==null) {
-			// this should not happen, will there ever be no global symmetry (non-pseudo) in the results?
-			LOGGER.warn("Could not find global symmetry for biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
-		} else if (stoichiometry==null){
-			LOGGER.warn("Symmetry found for biounit {}, but no stoichiometry value associated to it.", bioUnitNumber);
-		}
-		
-		if (pseudoSymmetry!=null && pseudoStoichiometry==null) {
-			LOGGER.warn("Pseudosymmetry found for biounit {}, but no stoichiometry value associated to it", bioUnitNumber);
-		}
-		
-		return new String[]{symmetry, stoichiometry, pseudoSymmetry, pseudoStoichiometry};
+		return new String[]{symmetry, stoichiometry};
 		
 	}
 }

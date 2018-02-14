@@ -33,7 +33,6 @@ import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
 import eppic.assembly.ParametricCircularArc;
-import eppic.commons.util.StructureUtils;
 
 /**
  * Jmol viewer for LatticeGraph.
@@ -190,7 +189,7 @@ public class LatticeGUIJmol {
 			System.exit(1);
 		}
 		
-		StructureUtils.expandNcsOps(struc);
+		StructureTools.expandNcsOps(struc);
 
 		LatticeGUIJmol gui = new LatticeGUIJmol(struc, file);
 		if(interfaceIds != null) {
