@@ -10,7 +10,7 @@ import java.util.Set;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Point3d;
 
-import org.biojava.nbio.structure.symmetry.core.AxisAligner;
+import org.biojava.nbio.structure.symmetry.axis.AxisAligner;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;

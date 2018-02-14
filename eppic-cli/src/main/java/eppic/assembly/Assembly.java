@@ -43,7 +43,7 @@ import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
-import org.biojava.nbio.structure.symmetry.core.AxisAligner;
+import org.biojava.nbio.structure.symmetry.axis.AxisAligner;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
