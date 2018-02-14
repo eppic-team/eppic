@@ -32,12 +32,18 @@ import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Atom;
+import org.biojava.nbio.structure.AtomImpl;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.cluster.Subunit;
+import org.biojava.nbio.structure.cluster.SubunitCluster;
+import org.biojava.nbio.structure.cluster.SubunitClusterer;
+import org.biojava.nbio.structure.cluster.SubunitClustererMethod;
+import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
@@ -49,7 +55,6 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.symmetry.core.Rotation;
 import org.biojava.nbio.structure.symmetry.core.RotationGroup;
-import org.biojava.nbio.structure.symmetry.core.Subunits;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.event.ConnectedComponentTraversalEvent;
@@ -552,48 +557,30 @@ public class Assembly {
 	 * @return
 	 */
 	private static QuatSymmetryResults getQuatSymm( Collection<ChainVertex> vertices) {
-		// hack subunits
-		List<Point3d[]> caCoords = new ArrayList<Point3d[]>();
-		List<Integer> folds = new ArrayList<Integer>();
-		List<Boolean> pseudo = new ArrayList<Boolean>();
-		List<String> chainIds = new ArrayList<String>();
-		List<Integer> models = new ArrayList<Integer>();
-		List<Double> seqIDmin = new ArrayList<Double>();
-		List<Double> seqIDmax = new ArrayList<Double>();
-		List<Integer> clusterIDs = new ArrayList<Integer>();
-		int fold = 1;
-		Character chain = 'A';
 
+		List<Subunit> subunits = new ArrayList<>();
+		
 		for (ChainVertex vert : vertices ){
-			Point3d[] coords = getDummyCoordinates(vert.getChain());
+			Atom[] coords = getDummyCoordinates(vert.getChain());
 			if (coords.length==0) {
 				logger.warn("0-length coordinate array. Can't calculate quaternary symmetry!");
 			}
-			caCoords.add(coords);
-
-			if (vertices.size() % fold == 0){
-				folds.add(fold); //the folds are the common denominators
-			}
-			fold++;
-			pseudo.add(false);
-			chainIds.add(chain+"");
-			chain++;
-			models.add(0);
-			seqIDmax.add(1.0);
-			seqIDmin.add(1.0);
-			clusterIDs.add(0);
+			Subunit subunit = new Subunit(coords, null, null, null);
+			
+			subunits.add(subunit);			
 		}
 
-		//Create directly the subunits, because we know the aligned CA
-		Subunits globalSubunits = new Subunits(caCoords, clusterIDs, 
-				pseudo, seqIDmin, seqIDmax, 
-				folds, chainIds, models);
+		SubunitClustererParameters clusterParams = new SubunitClustererParameters(true);
+		clusterParams.setSequenceIdentityThreshold(1.0);
+		clusterParams.setClustererMethod(SubunitClustererMethod.SEQUENCE);
+				
+		List<SubunitCluster> globalSubunits = SubunitClusterer.cluster(subunits, clusterParams);
 
 		//Quaternary Symmetry Detection
 		QuatSymmetryParameters param = new QuatSymmetryParameters();
 
 		QuatSymmetryResults gSymmetry = 
-				QuatSymmetryDetector.calcQuatSymmetry(globalSubunits, param);
+				QuatSymmetryDetector.calcGlobalSymmetry(globalSubunits, param);
 
 		return gSymmetry;
 	}
@@ -605,7 +592,7 @@ public class Assembly {
 	 * @param c
 	 * @return
 	 */
-	private static Point3d[] getDummyCoordinates(Chain c) {
+	private static Atom[] getDummyCoordinates(Chain c) {
 		// Using the centroid gave poor quality since it doesn't establish the orientation.
 
 		// Use the centroids of each third of the protein
@@ -618,7 +605,7 @@ public class Assembly {
 		}
 		if (ca.length<3) {
 			logger.warn("Fewer than 3 atoms in chain {} even after resorting to all atoms. Problems might happen in symmetry calculation to pack structure.", c.getChainID());
-			return Calc.atomsToPoints(ca);
+			return ca;
 		}	
 		
 		Atom[] ca1 = Arrays.copyOfRange(ca, 0,ca.length/3);
@@ -628,7 +615,7 @@ public class Assembly {
 		dummy[0] = Calc.getCentroid(ca1);
 		dummy[1] = Calc.getCentroid(ca2);
 		dummy[2] = Calc.getCentroid(ca3);
-		return Calc.atomsToPoints(dummy);
+		return dummy;
 	}
 
 	/**

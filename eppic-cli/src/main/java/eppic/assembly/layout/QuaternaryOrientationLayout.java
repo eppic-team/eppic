@@ -10,13 +10,19 @@ import java.util.Set;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Point3d;
 
+import org.biojava.nbio.structure.Atom;
+import org.biojava.nbio.structure.AtomImpl;
+import org.biojava.nbio.structure.cluster.Subunit;
+import org.biojava.nbio.structure.cluster.SubunitCluster;
+import org.biojava.nbio.structure.cluster.SubunitClusterer;
+import org.biojava.nbio.structure.cluster.SubunitClustererMethod;
+import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.symmetry.axis.AxisAligner;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.symmetry.core.Rotation;
 import org.biojava.nbio.structure.symmetry.core.RotationGroup;
-import org.biojava.nbio.structure.symmetry.core.Subunits;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.MaskFunctor;
@@ -81,47 +87,34 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 	public static <V,E> QuatSymmetryResults getQuatSymm(
 			UndirectedGraph<V, E> subgraph, VertexPositioner<V> vertexPositioner) {
 
-		List<Point3d[]> caCoords = new ArrayList<Point3d[]>();
-		List<Integer> folds = new ArrayList<Integer>();
-		List<Boolean> pseudo = new ArrayList<Boolean>();
-		List<String> chainIds = new ArrayList<String>();
-		List<Integer> models = new ArrayList<Integer>();
-		List<Double> seqIDmin = new ArrayList<Double>();
-		List<Double> seqIDmax = new ArrayList<Double>();
-		List<Integer> clusterIDs = new ArrayList<Integer>();
-		int fold = 1;
-		Character chain = 'A';
-
+		List<Subunit> subunits = new ArrayList<>();
+		
 		for (V vert : subgraph.vertexSet() ){
 			Point3d centroid = vertexPositioner.getPosition(vert);
-			caCoords.add(new Point3d[] {centroid});
+			Atom atom = new AtomImpl();
+			atom.setCoords(new double[] {centroid.x, centroid.y, centroid.z});
+			Atom[] caCoords = new Atom[] {atom};
 			
-			if (subgraph.vertexSet().size() % fold == 0){
-				folds.add(fold); //the folds are the common denominators
-			}
-			fold++;
-			pseudo.add(false);
-			chainIds.add(chain+"");
-			chain++;
-			models.add(0);
-			seqIDmax.add(1.0);
-			seqIDmin.add(1.0);
-			clusterIDs.add(0);
+			Subunit subunit = new Subunit(caCoords, null, null, null);
+			
+			subunits.add(subunit);			
 		}
 
-		//Create directly the subunits, because we know the aligned CA
-		Subunits globalSubunits = new Subunits(caCoords, clusterIDs, 
-				pseudo, seqIDmin, seqIDmax, 
-				folds, chainIds, models);
-
+		SubunitClustererParameters clusterParams = new SubunitClustererParameters(true);
+		clusterParams.setSequenceIdentityThreshold(1.0);
+		clusterParams.setClustererMethod(SubunitClustererMethod.SEQUENCE);
+				
+		List<SubunitCluster> globalSubunits = SubunitClusterer.cluster(subunits, clusterParams);
+		
 		//Quaternary Symmetry Detection
 		QuatSymmetryParameters param = new QuatSymmetryParameters();
 
 		QuatSymmetryResults gSymmetry = 
-				QuatSymmetryDetector.calcQuatSymmetry(globalSubunits, param);
+				QuatSymmetryDetector.calcGlobalSymmetry(globalSubunits, param);
 
 		return gSymmetry;
 	}
+	
 	public static <V,E> UndirectedMaskSubgraph<V,E> getVertexSubgraph(
 			final UndirectedGraph<V,E> graph,
 			final Set<V> connected) {
