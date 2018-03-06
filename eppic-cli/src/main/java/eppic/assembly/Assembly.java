@@ -32,7 +32,6 @@ import javax.vecmath.Point3i;
 import javax.vecmath.Vector3d;
 
 import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.AtomImpl;
 import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
@@ -40,7 +39,6 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.cluster.Subunit;
-import org.biojava.nbio.structure.cluster.SubunitCluster;
 import org.biojava.nbio.structure.cluster.SubunitClusterer;
 import org.biojava.nbio.structure.cluster.SubunitClustererMethod;
 import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
@@ -55,6 +53,7 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.symmetry.core.Rotation;
 import org.biojava.nbio.structure.symmetry.core.RotationGroup;
+import org.biojava.nbio.structure.symmetry.core.Stoichiometry;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.event.ConnectedComponentTraversalEvent;
@@ -574,7 +573,7 @@ public class Assembly {
 		clusterParams.setSequenceIdentityThreshold(1.0);
 		clusterParams.setClustererMethod(SubunitClustererMethod.SEQUENCE);
 				
-		List<SubunitCluster> globalSubunits = SubunitClusterer.cluster(subunits, clusterParams);
+		Stoichiometry globalSubunits = SubunitClusterer.cluster(subunits, clusterParams);
 
 		//Quaternary Symmetry Detection
 		QuatSymmetryParameters param = new QuatSymmetryParameters();

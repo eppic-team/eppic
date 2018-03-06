@@ -23,7 +23,6 @@ import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.asa.GroupAsa;
-import org.biojava.nbio.structure.cluster.SubunitClusterUtils;
 import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.contact.AtomContact;
 import org.biojava.nbio.structure.contact.GroupContact;
@@ -1404,7 +1403,8 @@ public class DataModelAdaptor {
 		}
 		
 		String symmetry = globalResults.getSymmetry();
-		String stoichiometry = SubunitClusterUtils.getStoichiometryString(globalResults.getSubunitClusters());
+		
+		String stoichiometry = globalResults.getStoichiometry().toString();
 		LOGGER.info("Symmetry {} (stoichiometry {}) found in biounit {}", 
 				symmetry, stoichiometry, bioUnitNumber);
 		

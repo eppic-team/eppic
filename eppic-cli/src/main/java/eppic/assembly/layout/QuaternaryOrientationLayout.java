@@ -23,6 +23,7 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.symmetry.core.Rotation;
 import org.biojava.nbio.structure.symmetry.core.RotationGroup;
+import org.biojava.nbio.structure.symmetry.core.Stoichiometry;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.MaskFunctor;
@@ -104,7 +105,7 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 		clusterParams.setSequenceIdentityThreshold(1.0);
 		clusterParams.setClustererMethod(SubunitClustererMethod.SEQUENCE);
 				
-		List<SubunitCluster> globalSubunits = SubunitClusterer.cluster(subunits, clusterParams);
+		Stoichiometry globalSubunits = SubunitClusterer.cluster(subunits, clusterParams);
 		
 		//Quaternary Symmetry Detection
 		QuatSymmetryParameters param = new QuatSymmetryParameters();
