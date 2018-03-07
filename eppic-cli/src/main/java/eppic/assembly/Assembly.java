@@ -560,17 +560,13 @@ public class Assembly {
 		List<Subunit> subunits = new ArrayList<>();
 		
 		for (ChainVertex vert : vertices ){
-			Atom[] coords = getDummyCoordinates(vert.getChain());
-			if (coords.length==0) {
-				logger.warn("0-length coordinate array. Can't calculate quaternary symmetry!");
-			}
-			Subunit subunit = new Subunit(coords, null, null, null);
+			Atom[] ca = StructureTools.getRepresentativeAtomArray(vert.getChain());
+			Subunit subunit = new Subunit(ca, vert.getChain().getId(), null, vert.getChain().getStructure());
 			
 			subunits.add(subunit);			
 		}
 
 		SubunitClustererParameters clusterParams = new SubunitClustererParameters(true);
-		clusterParams.setSequenceIdentityThreshold(1.0);
 		clusterParams.setClustererMethod(SubunitClustererMethod.SEQUENCE);
 				
 		Stoichiometry globalSubunits = SubunitClusterer.cluster(subunits, clusterParams);

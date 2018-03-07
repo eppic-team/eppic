@@ -14,10 +14,7 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +24,6 @@ import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
-import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -56,6 +52,8 @@ import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
+
+import javax.vecmath.Matrix4d;
 
 /**
  * The eppic main class to execute the CLI workflow.
@@ -258,16 +256,24 @@ public class Main {
 		modelAdaptor = new DataModelAdaptor();
 		modelAdaptor.setParams(params);
 		modelAdaptor.setPdbMetadata(pdb);
-		
-		
 	}
 
 	public void doFindInterfaces() throws EppicException {
 
 		params.getProgressLog().println("Calculating possible interfaces...");
-		StructureTools.expandNcsOps(pdb);
+
 		LOGGER.info("Calculating possible interfaces");
-		CrystalBuilder interfFinder = new CrystalBuilder(pdb);
+		CrystalBuilder interfFinder;
+		if (modelAdaptor.getPdbInfo().isNcsOpsPresent()) {
+			Map<String,String> chainOrigNames = new HashMap<>();
+			Map<String, Matrix4d > chainNcsOps = new HashMap<>();
+			CrystalBuilder.expandNcsOps(pdb,chainOrigNames,chainNcsOps);
+			modelAdaptor.setPdbMetadata(pdb);
+			interfFinder = new CrystalBuilder(pdb,chainOrigNames,chainNcsOps);
+		} else {
+			interfFinder = new CrystalBuilder(pdb);
+		}
+
 		interfaces = interfFinder.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
 		LOGGER.info("Calculating ASAs");
 		interfaces.calcAsas(params.getnSpherePointsASAcalc(), params.getNumThreads(), params.getMinSizeCofactorForAsa());
