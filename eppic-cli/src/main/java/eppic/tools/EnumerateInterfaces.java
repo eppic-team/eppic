@@ -360,7 +360,7 @@ public class EnumerateInterfaces {
 		if (writeDir!=null) {
 			Set<String> chainIds = new TreeSet<String>();
 			for (Chain chain:pdb.getPolyChains()) {
-				chainIds.add(chain.getChainID());
+				chainIds.add(chain.getName());
 			}
 			pr.generateInterfacesPse(inputFile, chainIds,
 					new File(writeDir,outBaseName+".allinterfaces.pml"), 

@@ -105,9 +105,9 @@ public class PdbToUniProtMapper implements Serializable {
 				
 				String seq = getAtomSequence(c);
 				
-				sequences.put(c.getChainID(), seq);
+				sequences.put(c.getName(), seq);
 				if (seq.isEmpty()) {
-					LOGGER.warn("Sequence from ATOM records for chain {} has length 0",chain.getChainID());
+					LOGGER.warn("Sequence from ATOM records for chain {} has length 0",chain.getName());
 				}
 
 			}
@@ -117,7 +117,7 @@ public class PdbToUniProtMapper implements Serializable {
 		} else {
 			
 			// we add just the 1 representative sequence
-			sequences.put(chain.getChainID() ,repSequenceSeqRes);
+			sequences.put(chain.getName() ,repSequenceSeqRes);
 			this.sequenceFromAtom = false;
 		}
 	}
@@ -468,7 +468,7 @@ public class PdbToUniProtMapper implements Serializable {
 		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
-			alignment = alignments.get(c.getChainID());
+			alignment = alignments.get(c.getName());
 		} else {
 			// we should have just the one alignment for the SEQRES sequence
 			alignment = alignments.values().iterator().next();
@@ -515,7 +515,7 @@ public class PdbToUniProtMapper implements Serializable {
 		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
-			alignment = alignments.get(c.getChainID());
+			alignment = alignments.get(c.getName());
 		} else {
 			// we should have just the one alignment for the SEQRES sequence
 			alignment = alignments.values().iterator().next();
@@ -589,7 +589,7 @@ public class PdbToUniProtMapper implements Serializable {
 		// getting the relevant chain
 		Chain chain = null;
 		for (Chain c:entity.getChains()) {
-			if (c.getChainID().equals(chainId)) {
+			if (c.getName().equals(chainId)) {
 				chain = c;
 			}
 		}

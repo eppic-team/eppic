@@ -9,7 +9,6 @@ import java.util.TreeMap;
 
 import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,13 +114,8 @@ public class ChainEvolContextList implements Serializable {
 	 * @return
 	 */
 	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
-		try {
-			EntityInfo compound = pdb.getChainByPDB(pdbChainCode).getEntityInfo();
-			return cecs.get( compound.getRepresentative().getChainID() );
-		} catch (StructureException e) {
-			LOGGER.error("Unexpected exception",e);
-			return null;
-		}
+		EntityInfo compound = pdb.getPolyChainByPDB(pdbChainCode).getEntityInfo();
+		return cecs.get( compound.getRepresentative().getName() );
 	}
 	
 	/**

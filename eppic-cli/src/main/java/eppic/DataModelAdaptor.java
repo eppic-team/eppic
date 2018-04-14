@@ -1142,10 +1142,10 @@ public class DataModelAdaptor {
 			}
 
 			if (noseqres) 
-				LOGGER.warn("There are no SEQRES groups available. "
+				LOGGER.warn("There are no SEQRES groups available for chain with name {}. "
 						+ "There can be problems in residue mapping if the residue numbering is inconsistent "
 						+ "across different chains of the same entity.", 
-						chain.getChainID());
+						chain.getName());
 		}
 		
 		for (StructureInterface interf:interfaces) {
@@ -1300,7 +1300,7 @@ public class DataModelAdaptor {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(compound.getRepresentative().getChainID());
+		sb.append(compound.getRepresentative().getName());
 		
 		List<String> uniqChainIds = compound.getChainIds();
 
@@ -1308,7 +1308,7 @@ public class DataModelAdaptor {
 
 			sb.append(" (");
 			for (String chainId:uniqChainIds) {
-				if (chainId.equals(compound.getRepresentative().getChainID())) {
+				if (chainId.equals(compound.getRepresentative().getName())) {
 					continue;
 				}
 

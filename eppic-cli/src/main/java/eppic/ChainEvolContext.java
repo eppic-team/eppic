@@ -16,7 +16,6 @@ import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Group;
-import org.biojava.nbio.structure.StructureTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -134,12 +133,12 @@ public class ChainEvolContext implements Serializable {
 		this.parent = parent;
 		Chain chain = compound.getRepresentative();
 		
-		this.sequenceId = chain.getChainID();
+		this.sequenceId = chain.getName();
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
 		this.queryWarnings = new ArrayList<String>();
 		
-		this.isProtein = StructureTools.isProtein(chain);
+		this.isProtein = chain.isProtein();
 		
 		this.entity = compound;
 		

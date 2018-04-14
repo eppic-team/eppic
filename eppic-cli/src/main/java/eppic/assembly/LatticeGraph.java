@@ -189,7 +189,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 			return referencePoints.get(null);
 		} else {
 			if( ! referencePoints.containsKey(chainId)) {
-				Point3d centroid = GeomTools.getCentroid(structure.getChainByPDB(chainId));
+				Point3d centroid = GeomTools.getCentroid(structure.getPolyChainByPDB(chainId));
 				referencePoints.put(chainId,centroid);
 				return centroid;
 			}
@@ -284,7 +284,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		for (Chain c:structure.getPolyChains()) {
 			
 			if (c.getEntityInfo()==null) {
-				logger.warn("Chain {} will not be added to the graph because it does not have an entity associated to it.", c.getChainID());
+				logger.warn("Chain {} will not be added to the graph because it does not have an entity associated to it.", c.getName());
 				continue;
 			}
 			
@@ -327,10 +327,10 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 
 				V sVertex = vertexFactory.createVertex();
-				sVertex.setChain(structure.getChainByPDB(sourceChainId));
+				sVertex.setChain(structure.getPolyChainByPDB(sourceChainId));
 				sVertex.setOpId(j);
 				V tVertex = vertexFactory.createVertex();
-				tVertex.setChain(structure.getChainByPDB(targetChainId));
+				tVertex.setChain(structure.getPolyChainByPDB(targetChainId));
 				tVertex.setOpId(k);
 
 				E edge = edgeFactory.createEdge(sVertex, tVertex);

@@ -8,7 +8,6 @@ import org.apache.commons.math.random.RandomDataImpl;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
-import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -280,9 +279,9 @@ public class InterfaceEvolContext implements Serializable {
 	
 	public static boolean isProtein(StructureInterface interf, int molecId) {
 		if (molecId==FIRST) {
-			return StructureTools.isProtein(interf.getMolecules().getFirst()[0].getGroup().getChain());
+			return interf.getMolecules().getFirst()[0].getGroup().getChain().isProtein();
 		} else if (molecId==SECOND) {
-			return StructureTools.isProtein(interf.getMolecules().getSecond()[0].getGroup().getChain());
+			return interf.getMolecules().getSecond()[0].getGroup().getChain().isProtein();
 		} else {
 			throw new IllegalArgumentException("Fatal error! Wrong molecId "+molecId);
 		}

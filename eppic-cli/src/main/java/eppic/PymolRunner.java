@@ -455,11 +455,11 @@ public class PymolRunner {
 			
 			List<Group> cores = null;
 			List<Group> rims = null;
-			if (interf.getMoleculeIds().getFirst().equals(chain.getChainID())) {
+			if (interf.getMoleculeIds().getFirst().equals(chain.getName())) {
 				cores = interf.getCoreResidues(caCutoffGeom, minAsaForSurface).getFirst();
 				rims = interf.getRimResidues(caCutoffGeom, minAsaForSurface).getFirst();
 				
-			} else if (interf.getMoleculeIds().getSecond().equals(chain.getChainID())) {
+			} else if (interf.getMoleculeIds().getSecond().equals(chain.getName())) {
 				cores = interf.getCoreResidues(caCutoffGeom, minAsaForSurface).getSecond();
 				rims = interf.getRimResidues(caCutoffGeom, minAsaForSurface).getSecond();
 
@@ -482,12 +482,12 @@ public class PymolRunner {
 			writeCommand(cmd, pml);
 
 
-			if (interf.getMoleculeIds().getFirst().equals(chain.getChainID())) {
+			if (interf.getMoleculeIds().getFirst().equals(chain.getName())) {
 				cores = interf.getCoreResidues(caCutoffCoreSurf, minAsaForSurface).getFirst();
 				rims = interf.getRimResidues(caCutoffCoreSurf, minAsaForSurface).getFirst();
 
 				
-			} else if (interf.getMoleculeIds().getSecond().equals(chain.getChainID())) {
+			} else if (interf.getMoleculeIds().getSecond().equals(chain.getName())) {
 				cores = interf.getCoreResidues(caCutoffCoreSurf, minAsaForSurface).getSecond();
 				rims = interf.getRimResidues(caCutoffCoreSurf, minAsaForSurface).getSecond();
 

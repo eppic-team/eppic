@@ -17,7 +17,6 @@ import org.biojava.nbio.structure.gui.BiojavaJmol;
 import org.biojava.nbio.structure.io.MMCIFFileReader;
 import org.biojava.nbio.structure.io.PDBFileReader;
 import org.biojava.nbio.core.util.FileDownloadUtils;
-import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

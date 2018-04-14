@@ -119,7 +119,7 @@ public class FindRedundantEntries {
 				if (seq.length()<12) continue; // we ignore too small sequences (blastclust doesn't like them)
 				// at the moment Biojava's getSeqResSequence uses XXXX for nucleotides, so the above condition captures this already
 				//if (seq.isNucleotide()) continue; // some sets (like Bahadur's monomers) contain DNA/RNA: ignore
-				Sequence s = new Sequence(pdbCode+chainCluster.getRepresentative().getChainID(),seq);
+				Sequence s = new Sequence(pdbCode+chainCluster.getRepresentative().getName(),seq);
 				s.writeToPrintStream(ps);
 			}
 			

@@ -457,7 +457,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		int numChains = structure.size();
 		Set<String> uniqueChains = new HashSet<String>();
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
-			uniqueChains.add(cv.getChain().getChainID());
+			uniqueChains.add(cv.getChain().getName());
 		}
 		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
 
@@ -479,9 +479,9 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 		int atomId = 1;
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
-			String chainId = cv.getChain().getChainID()+"_"+cv.getOpId();
+			String chainId = cv.getChain().getName()+"_"+cv.getOpId();
 			//TODO maybe need to clone and transform here?
-			Matrix4d m = getUnitCellTransformationOrthonormal(cv.getChain().getChainID(), cv.getOpId());
+			Matrix4d m = getUnitCellTransformationOrthonormal(cv.getChain().getName(), cv.getOpId());
 			//Point3d refCoord = graph.getReferenceCoordinate(cv.getChainId());
 
 			Chain newChain = (Chain) cv.getChain().clone();
@@ -524,7 +524,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	public Set<Matrix4d> getUnitCellTransforms() throws StructureException {
 		Set<Matrix4d> transforms = new HashSet<>();
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
-			Matrix4d m = getUnitCellTransformationOrthonormal(cv.getChain().getChainID(), cv.getOpId());
+			Matrix4d m = getUnitCellTransformationOrthonormal(cv.getChain().getName(), cv.getOpId());
 			
 			transforms.add(m);
 		}

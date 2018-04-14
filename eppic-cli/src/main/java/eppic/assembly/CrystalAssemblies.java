@@ -304,8 +304,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 		i = 0;
 		for (Chain c:structure.getPolyChains()) {
-			chainIds2Idx.put(c.getId(),i);
-			idx2ChainIds.put(i,c.getId());
+			chainIds2Idx.put(c.getName(),i);
+			idx2ChainIds.put(i,c.getName());
 			i++;
 		}
 	}
@@ -435,7 +435,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @return
 	 */
 	public String getRepresentativeChainIdForEntityIndex(int index) {
-		return structure.getEntityById(getEntityId(index)).getRepresentative().getChainID();
+		return structure.getEntityById(getEntityId(index)).getRepresentative().getName();
 	}
 	
 	/**

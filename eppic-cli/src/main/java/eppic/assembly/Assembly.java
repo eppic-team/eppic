@@ -587,6 +587,7 @@ public class Assembly {
 	 * @param c
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private static Atom[] getDummyCoordinates(Chain c) {
 		// Using the centroid gave poor quality since it doesn't establish the orientation.
 
@@ -595,11 +596,11 @@ public class Assembly {
 		if (ca.length<3) {
 			// in some cases we find no CAs or Ps, let's use all atoms then, see issue #167
 			// see also issue #195. For chains with fewer than 1 or 2 representative atoms we need to resort to all atoms too, e.g. 5VVV chain B 
-			logger.info("Fewer than 3 representative atoms in chain {}. Resorting to all atoms for calculating symmetry to pack structure.", c.getChainID());
+			logger.info("Fewer than 3 representative atoms in chain {}. Resorting to all atoms for calculating symmetry to pack structure.", c.getName());
 			ca = StructureTools.getAllAtomArray(c);
 		}
 		if (ca.length<3) {
-			logger.warn("Fewer than 3 atoms in chain {} even after resorting to all atoms. Problems might happen in symmetry calculation to pack structure.", c.getChainID());
+			logger.warn("Fewer than 3 atoms in chain {} even after resorting to all atoms. Problems might happen in symmetry calculation to pack structure.", c.getName());
 			return ca;
 		}	
 		
@@ -647,7 +648,7 @@ public class Assembly {
 			transmat.set(1., trans);
 			transmat.mul(m);
 
-			Chain chain = (Chain) structure.getChainByPDB(v.getChainId()).clone();
+			Chain chain = (Chain) structure.getPolyChainByPDB(v.getChainId()).clone();
 			Calc.transform(chain, transmat);
 			chains.add(new ChainVertex(chain,v.getOpId()));
 		}
@@ -882,7 +883,7 @@ public class Assembly {
 		int numChains = structure.size();
 		Set<String> uniqueChains = new HashSet<String>();
 		for (ChainVertex cv:structure) {
-			uniqueChains.add(cv.getChain().getChainID());
+			uniqueChains.add(cv.getChain().getName());
 		}
 		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
 
@@ -897,7 +898,7 @@ public class Assembly {
 
 		int atomId = 1;
 		for (ChainVertex cv:structure) {
-			String chainId = cv.getChain().getChainID()+"_"+cv.getOpId();
+			String chainId = cv.getChain().getName()+"_"+cv.getOpId();
 
 			for (Group g: cv.getChain().getAtomGroups()) {
 				for (Atom a: g.getAtoms()) {
