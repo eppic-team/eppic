@@ -14,14 +14,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.EntityInfo;
-import org.biojava.nbio.structure.ExperimentalTechnique;
-import org.biojava.nbio.structure.Group;
-import org.biojava.nbio.structure.PDBCrystallographicInfo;
-import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.asa.GroupAsa;
 import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.contact.AtomContact;
@@ -181,11 +174,14 @@ public class DataModelAdaptor {
 		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 
 		for (EntityInfo compound:pdb.getEntityInfos()) {
-			
-			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-			if (compound.getChains().isEmpty()) continue;
 
-			chainClusterDBs.add(createChainCluster(compound));
+			EntityType type = compound.getType();
+			if (type == EntityType.POLYMER) {
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (compound.getChains().isEmpty()) continue;
+
+				chainClusterDBs.add(createChainCluster(compound));
+			}
 		}
 		pdbInfo.setNumChainClusters(chainClusterDBs.size());
 		pdbInfo.setChainClusters(chainClusterDBs);
@@ -216,10 +212,10 @@ public class DataModelAdaptor {
 		
 		chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
 		
-		chainClusterDB.setRepChain(compound.getRepresentative().getChainID());
+		chainClusterDB.setRepChain(compound.getRepresentative().getName());
 		chainClusterDB.setMemberChains(getMemberChainsString(compound));
 		chainClusterDB.setNumMembers(compound.getChainIds().size());
-		chainClusterDB.setProtein(StructureTools.isProtein(compound.getRepresentative()));
+		chainClusterDB.setProtein(compound.getRepresentative().isProtein());
 		
 		chainClusterDB.setPdbInfo(pdbInfo);
 		
@@ -240,7 +236,7 @@ public class DataModelAdaptor {
 			residueInfoDB.setChainCluster(chainClusterDB);			
 			
 			residueInfoDB.setPdbCode(pdbInfo.getPdbCode());
-			residueInfoDB.setRepChain(compound.getRepresentative().getChainID());
+			residueInfoDB.setRepChain(compound.getRepresentative().getName());
 			
 			// NOTE, here there can be 2 behaviours:
 			// 1) there is a SEQRES and getAlignedResIndex gives the actual SEQRES indices
@@ -1179,7 +1175,7 @@ public class DataModelAdaptor {
 		else if (molecId == InterfaceEvolContext.SECOND) 
 			chain =	interf.getParentChains().getSecond();
 		
-		String repChainId = chain.getEntityInfo().getRepresentative().getChainID();
+		String repChainId = chain.getEntityInfo().getRepresentative().getName();
 		ChainClusterDB chainCluster = pdbInfo.getChainCluster(repChainId);
 		
 		
@@ -1328,13 +1324,18 @@ public class DataModelAdaptor {
 	}
 
 	public static String getMemberChainsString(EntityInfo compound) {
-		List<String> uniqChainIds = compound.getChainIds();
-		
+
+		List<Chain> chains = compound.getChains();
+		Set<String> uniqChainNames = new TreeSet<>();
+		for (Chain c : chains) {
+			uniqChainNames.add(c.getName());
+		}
+
 		StringBuilder sb = new StringBuilder();
 		int i = 0;
-		for (String chainId:uniqChainIds) {
+		for (String chainId:uniqChainNames) {
 			sb.append(chainId);
-			if (i!=uniqChainIds.size()-1) sb.append(",");
+			if (i!=uniqChainNames.size()-1) sb.append(",");
 			i++;
 		}
 		return sb.toString();
