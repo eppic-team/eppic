@@ -9,8 +9,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3i;
 
 import org.biojava.nbio.structure.Structure;
@@ -477,7 +480,7 @@ public class TestLatticeGraph {
 	public static CrystalAssemblies getCrystalAssemblies(String pdbId, boolean forceContracted) throws IOException, StructureException {
 		
 		Structure s = getStructure(pdbId);
-		
+
 		StructureInterfaceList interfaces = getAllInterfaces(s);
 		
 		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, forceContracted);
@@ -493,8 +496,6 @@ public class TestLatticeGraph {
 		StructureIO.setAtomCache(cache);
 		
 		Structure s =  StructureIO.getStructure(pdbId);
-		// we need to expand the ncs ops to be able to test properly entries with ncs ops
-		StructureTools.expandNcsOps(s);
 		
 		return s;
 	}
@@ -505,8 +506,19 @@ public class TestLatticeGraph {
 	
 	public static StructureInterfaceList getAllInterfaces(Structure s, boolean fast)  {
 		logger.info("Calculating interfaces for "+s.getIdentifier().toString());
-		
-		CrystalBuilder cb = new CrystalBuilder(s);
+
+		CrystalBuilder cb;
+
+		// we need to expand the ncs ops to be able to test properly entries with ncs ops
+		if (s.getCrystallographicInfo().getNcsOperators()!=null) {
+			Map<String,String> chainOrigNames = new HashMap<>();
+			Map<String, Matrix4d> chainNcsOps = new HashMap<>();
+			CrystalBuilder.expandNcsOps(s,chainOrigNames,chainNcsOps);
+			cb = new CrystalBuilder(s,chainOrigNames,chainNcsOps);
+		} else {
+			cb = new CrystalBuilder(s);
+		}
+
 		StructureInterfaceList interfaces = cb.getUniqueInterfaces();
 		int spherePoints = StructureInterfaceList.DEFAULT_ASA_SPHERE_POINTS;
 		if (fast) spherePoints = spherePoints / 10;
