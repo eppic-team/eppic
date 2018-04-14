@@ -40,8 +40,8 @@ public class TestInterfaceMatching {
 		
 		Structure s = m.getStructure();
 		
-		for (Chain c : s.getChains()) {
-			System.out.println("Chain id "+c.getChainID() + ", chain asym id "+c.getInternalChainID());
+		for (Chain c : s.getPolyChains()) {
+			System.out.println("Chain id "+c.getName() + ", chain asym id "+c.getId());
 		}
 		
 		

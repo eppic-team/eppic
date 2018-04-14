@@ -89,8 +89,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 		// Compute centroids in AU
 		chainCentroid = new HashMap<String,Point3d>();
-		for(Chain c: structure.getChains() ) {
-			chainCentroid.put(c.getChainID(), GeomTools.getCentroid(c));
+		for(Chain c: structure.getPolyChains() ) {
+			chainCentroid.put(c.getId(), GeomTools.getCentroid(c));
 		}
 		
 		// Compute 3D layout
@@ -127,8 +127,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 		// Compute centroids in AU
 		chainCentroid = new HashMap<String,Point3d>();
-		for(Chain c: structure.getChains() ) {
-			chainCentroid.put(c.getChainID(), GeomTools.getCentroid(c));
+		for(Chain c: structure.getPolyChains() ) {
+			chainCentroid.put(c.getId(), GeomTools.getCentroid(c));
 		}
 		
 		// Compute 3D layout

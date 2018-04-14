@@ -210,7 +210,7 @@ public class EnumerateInterfaces {
 		}
 
 
-		System.out.println(pdb.getPDBCode()+" - "+pdb.getChains()+" chains ("+pdb.getEntityInfos().size()+" sequence unique) ");
+		System.out.println(pdb.getPDBCode()+" - "+pdb.getPolyChains().size()+" poly chains ("+pdb.getEntityInfos().size()+" sequence unique) ");
 
 		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
 			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
@@ -218,8 +218,8 @@ public class EnumerateInterfaces {
 			System.out.println(DataModelAdaptor.getChainClusterString(chainCluster));
 		}
 		System.out.println("Chains: ");
-		for (Chain chain:pdb.getChains()) {
-			System.out.println(chain.getInternalChainID()+"("+chain.getChainID()+")");
+		for (Chain chain:pdb.getPolyChains()) {
+			System.out.println(chain.getId()+"("+chain.getName()+")");
 		}
 		
 		PDBCrystallographicInfo xtalInfo = pdb.getCrystallographicInfo();
@@ -359,7 +359,7 @@ public class EnumerateInterfaces {
 		
 		if (writeDir!=null) {
 			Set<String> chainIds = new TreeSet<String>();
-			for (Chain chain:pdb.getChains()) {
+			for (Chain chain:pdb.getPolyChains()) {
 				chainIds.add(chain.getChainID());
 			}
 			pr.generateInterfacesPse(inputFile, chainIds,

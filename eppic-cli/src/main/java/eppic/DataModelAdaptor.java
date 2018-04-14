@@ -201,13 +201,13 @@ public class DataModelAdaptor {
 	 * Note that the map should work in most cases, but it's not guaranteed because there is a one-to-many
 	 * relationship between author chain ids and asym ids (internal ids). This is the best we can do 
 	 * with the data available from Biojava 4.2 
-	 * @param pdb
+	 * @param pdb the structure
 	 */
 	private void initAsymIds2chainIdsMap(Structure pdb) {
 		asymIds2chainIds = new HashMap<>();
 		
 		for (Chain c : pdb.getChains()) {
-			asymIds2chainIds.put(c.getInternalChainID(), c.getChainID());
+			asymIds2chainIds.put(c.getId(), c.getName());
 		}
 	}
 	
@@ -717,6 +717,7 @@ public class DataModelAdaptor {
 	 * For the given PDB bio unit (first in PDB annotation), map the PDB-annotated interfaces 
 	 * to our interface cluster ids
 	 * @param bioUnit
+	 * @param cell
 	 * @return the list of matching cluster ids
 	 */
 	private Set<Integer> matchToInterfaceClusters(BioAssemblyInfo bioUnit, CrystalCell cell) {

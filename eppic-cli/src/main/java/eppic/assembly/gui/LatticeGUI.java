@@ -134,8 +134,8 @@ public class LatticeGUI {
 
 		// Compute AU positions for each vertex
 		chainCentroid = new HashMap<String,Point3d>();
-		for(Chain c: structure.getChains() ) {
-			chainCentroid.put(c.getChainID(), getCentroid(c));
+		for(Chain c: structure.getPolyChains() ) {
+			chainCentroid.put(c.getId(), getCentroid(c));
 		}
 
 		//assignColorsById();

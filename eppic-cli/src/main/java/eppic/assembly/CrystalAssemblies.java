@@ -303,9 +303,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		}
 
 		i = 0;
-		for (Chain c:structure.getChains()) {
-			chainIds2Idx.put(c.getChainID(),i);
-			idx2ChainIds.put(i,c.getChainID());
+		for (Chain c:structure.getPolyChains()) {
+			chainIds2Idx.put(c.getId(),i);
+			idx2ChainIds.put(i,c.getId());
 			i++;
 		}
 	}
@@ -443,7 +443,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @return
 	 */
 	public int getNumChainsInStructure() {
-		return structure.getChains().size();
+		return structure.getPolyChains().size();
 	}
 	
 	@Override

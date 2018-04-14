@@ -281,7 +281,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		SpaceGroup sg = getSpaceGroup(structure);
 		final int numOps = sg.getNumOperators();
 
-		for (Chain c:structure.getChains()) {
+		for (Chain c:structure.getPolyChains()) {
 			
 			if (c.getEntityInfo()==null) {
 				logger.warn("Chain {} will not be added to the graph because it does not have an entity associated to it.", c.getChainID());
