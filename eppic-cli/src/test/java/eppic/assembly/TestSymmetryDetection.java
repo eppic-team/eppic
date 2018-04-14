@@ -107,6 +107,9 @@ public class TestSymmetryDetection {
 		
 		CrystalAssemblies assemblies = TestLatticeGraph.getCrystalAssemblies("1auy");
 
+		// 4 assemblies including the icosahedral
+		assertEquals(4, assemblies.size());
+
 		for (Assembly a:assemblies) {
 
 			if (a.toString().equals("{2,3}")) {
