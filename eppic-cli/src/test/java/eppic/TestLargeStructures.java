@@ -1,5 +1,6 @@
 package eppic;
 
+//import org.junit.Ignore;
 import org.junit.Test;
 
 import eppic.model.ChainClusterDB;
@@ -30,6 +31,8 @@ public class TestLargeStructures {
 	 * All author chain ids are 2 chars long.
 	 * @throws IOException
 	 */
+	// can be long and memory hungry, ignore if needed
+	//@Ignore
 	@Test
 	public void test4v9e() throws IOException {
 		
