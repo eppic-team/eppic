@@ -739,6 +739,11 @@ public class Main {
 
 		try {
 			for (StructureInterface interf:interfaces) {
+				// a hack necessary to handle reduced redundancy in structures with NCS
+				if (modelAdaptor.getPdbInfo().isNcsOpsPresent() && modelAdaptor.getPdbInfo().getInterface(interf.getId())==null) {
+					LOGGER.info("Skipping generation of PyMOL interface files for redundant NCS interface {}", interf.getId());
+					continue;
+				}
 				File cifFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
 				pr.generateInterfacePng(interf, 
 						cifFile, 
