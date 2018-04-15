@@ -88,7 +88,7 @@ public class DataModelAdaptor {
 	public static final int INVALID_ASSEMBLY_ID = 0;
 	
 	private PdbInfoDB pdbInfo;
-	
+
 	private EppicParams params;
 	
 	private RunParametersDB runParameters;
@@ -170,7 +170,10 @@ public class DataModelAdaptor {
 			pdbInfo.setCellBeta(cc.getBeta());
 			pdbInfo.setCellGamma(cc.getGamma());			
 		}
-		
+
+	}
+
+	public void setChainClustersData(Structure pdb, Map<String,String> chainOrigNames) {
 		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 
 		for (EntityInfo compound:pdb.getEntityInfos()) {
@@ -180,12 +183,12 @@ public class DataModelAdaptor {
 				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
 				if (compound.getChains().isEmpty()) continue;
 
-				chainClusterDBs.add(createChainCluster(compound));
+				chainClusterDBs.add(createChainCluster(compound, chainOrigNames));
 			}
 		}
 		pdbInfo.setNumChainClusters(chainClusterDBs.size());
 		pdbInfo.setChainClusters(chainClusterDBs);
-				
+
 		initAsymIds2chainIdsMap(pdb);
 	}
 	
@@ -196,7 +199,8 @@ public class DataModelAdaptor {
 	 * <p/>
 	 * Note that the map should work in most cases, but it's not guaranteed because there is a one-to-many
 	 * relationship between author chain ids and asym ids (internal ids). This is the best we can do 
-	 * with the data available from Biojava 4.2 
+	 * with the data available from Biojava 4.2
+	 * TODO check if we still need with BioJava 5
 	 * @param pdb the structure
 	 */
 	private void initAsymIds2chainIdsMap(Structure pdb) {
@@ -206,15 +210,15 @@ public class DataModelAdaptor {
 			asymIds2chainIds.put(c.getId(), c.getName());
 		}
 	}
-	
-	private ChainClusterDB createChainCluster(EntityInfo compound) {
+
+	private ChainClusterDB createChainCluster(EntityInfo compound, Map<String,String> chainOrigNames) {
 		ChainClusterDB chainClusterDB = new ChainClusterDB();
 		
 		chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
 		
 		chainClusterDB.setRepChain(compound.getRepresentative().getName());
-		chainClusterDB.setMemberChains(getMemberChainsString(compound));
-		chainClusterDB.setNumMembers(compound.getChainIds().size());
+		chainClusterDB.setMemberChains(getMemberChainsString(compound, chainOrigNames));
+		chainClusterDB.setNumMembers(getUniqueChainNames(compound, chainOrigNames).size());
 		chainClusterDB.setProtein(compound.getRepresentative().isProtein());
 		
 		chainClusterDB.setPdbInfo(pdbInfo);
@@ -299,9 +303,9 @@ public class DataModelAdaptor {
 	}
 	
 	public void setInterfaces(StructureInterfaceList interfaces) {
-
 		
-		List<StructureInterfaceCluster> interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		List<StructureInterfaceCluster> interfaceClusters = reduceToNcsUnique(interfaces);
+
 		List<InterfaceClusterDB> icDBs = new ArrayList<InterfaceClusterDB>();
 		for (StructureInterfaceCluster ic:interfaceClusters) {
 			InterfaceClusterDB icDB = new InterfaceClusterDB();
@@ -451,6 +455,56 @@ public class DataModelAdaptor {
 
 		pdbInfo.setMaxNumClashesAnyInterface(Collections.max(numClashesPerInterface));
 		
+	}
+
+	private List<StructureInterfaceCluster> reduceToNcsUnique(StructureInterfaceList interfaces) {
+		List<StructureInterfaceCluster> clusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+
+		if (!pdbInfo.isNcsOpsPresent()) {
+			// no NCS case (normal case), return clusters as is
+			return clusters;
+		}
+
+		// NCS case. We need to reduce to the unique-to-NCS set
+		List<StructureInterfaceCluster> interfaceClustersNcs = interfaces.getClustersNcs();
+
+		List<StructureInterfaceCluster> reduced = new ArrayList<>();
+		for (StructureInterfaceCluster cluster : clusters) {
+			Set<Integer> indices = new TreeSet<>();
+			for (StructureInterface interf : cluster.getMembers()) {
+				indices.add(getCorrespondingClustersIndex(interf, interfaceClustersNcs));
+			}
+
+			StructureInterfaceCluster reducedCluster = new StructureInterfaceCluster();
+			reducedCluster.setId(cluster.getId());
+			reducedCluster.setAverageScore(cluster.getAverageScore());
+			for (int i : indices) {
+				// we add one interface per NCS interface cluster
+				StructureInterface interf = interfaceClustersNcs.get(i).getMembers().get(0);
+				if (interf.getCluster().getId() != reducedCluster.getId()) {
+					LOGGER.warn("Interface {} belongs to cluster {}. It should not be added to cluster id {}",
+							interf.getId(), interf.getCluster().getId(), reducedCluster.getId());
+				}
+				reducedCluster.addMember(interf);
+				// we add also the new back-reference to the parent
+				interf.setCluster(reducedCluster);
+			}
+
+			reduced.add(reducedCluster);
+		}
+
+		return reduced;
+	}
+
+	private static int getCorrespondingClustersIndex(StructureInterface interf, List<StructureInterfaceCluster> interfaceClustersNcs) {
+		for (int i = 0; i< interfaceClustersNcs.size(); i++) {
+			for (StructureInterface s : interfaceClustersNcs.get(i).getMembers()) {
+				if (s.getId() == interf.getId()) {
+					return i;
+				}
+			}
+		}
+		return -1;
 	}
 	
 	public void setAssemblies(CrystalAssemblies validAssemblies) {
@@ -792,6 +846,10 @@ public class DataModelAdaptor {
 		// geometry scores per interface
 		for (int i=0;i<gps.size();i++) {
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
+			if (pdbInfo.isNcsOpsPresent() && ii==null) {
+				LOGGER.info("Not storing geometry scores for redundant NCS interface {}", i+1);
+				continue;
+			}
 			InterfaceScoreDB is = new InterfaceScoreDB();
 			ii.addInterfaceScore(is);
 			is.setInterfaceItem(ii);
@@ -1152,6 +1210,10 @@ public class DataModelAdaptor {
 			
 			InterfaceDB ii = pdbInfo.getInterface(interf.getId());
 
+			if (pdbInfo.isNcsOpsPresent() && ii==null) {
+				LOGGER.info("Not storing residue burials info for redundant NCS interface {}", interf.getId());
+				continue;
+			}
 			// we add the residue details
 			
 			List<ResidueBurialDB> iril = new ArrayList<ResidueBurialDB>();
@@ -1323,13 +1385,24 @@ public class DataModelAdaptor {
 		return sb.toString();
 	}
 
-	public static String getMemberChainsString(EntityInfo compound) {
-
+	private Set<String> getUniqueChainNames(EntityInfo compound, Map<String, String> chainOrigNames) {
 		List<Chain> chains = compound.getChains();
 		Set<String> uniqChainNames = new TreeSet<>();
 		for (Chain c : chains) {
-			uniqChainNames.add(c.getName());
+			String chainName;
+			if(chainOrigNames!=null) { // will only be not null in cases with NCS ops
+				chainName = chainOrigNames.get(c.getName());
+			} else {
+				chainName = c.getName();
+			}
+			uniqChainNames.add(chainName);
 		}
+		return uniqChainNames;
+	}
+
+	private String getMemberChainsString(EntityInfo compound, Map<String, String> chainOrigNames) {
+
+		Set<String> uniqChainNames = getUniqueChainNames(compound, chainOrigNames);
 
 		StringBuilder sb = new StringBuilder();
 		int i = 0;

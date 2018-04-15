@@ -264,15 +264,17 @@ public class Main {
 
 		LOGGER.info("Calculating possible interfaces");
 		CrystalBuilder interfFinder;
+		Map<String,String> chainOrigNames = null;
 		if (modelAdaptor.getPdbInfo().isNcsOpsPresent()) {
-			Map<String,String> chainOrigNames = new HashMap<>();
+			chainOrigNames = new HashMap<>();
 			Map<String, Matrix4d > chainNcsOps = new HashMap<>();
 			CrystalBuilder.expandNcsOps(pdb,chainOrigNames,chainNcsOps);
-			modelAdaptor.setPdbMetadata(pdb);
 			interfFinder = new CrystalBuilder(pdb,chainOrigNames,chainNcsOps);
 		} else {
 			interfFinder = new CrystalBuilder(pdb);
 		}
+
+		modelAdaptor.setChainClustersData(pdb, chainOrigNames);
 
 		interfaces = interfFinder.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
 		LOGGER.info("Calculating ASAs");
