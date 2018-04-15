@@ -529,6 +529,11 @@ public class Main {
 			
 			// INTERFACE files
 			for (StructureInterface interf : interfaces) {
+				// a hack necessary to handle reduced redundancy in structures with NCS
+				if (modelAdaptor.getPdbInfo().isNcsOpsPresent() && modelAdaptor.getPdbInfo().getInterface(interf.getId())==null) {
+					LOGGER.info("Skipping generation of interface coordinate file for redundant NCS interface {}", interf.getId());
+					continue;
+				}
 				File outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 				PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));				
 				ps.print(interf.toMMCIF());

@@ -88,7 +88,10 @@ public class TestLargeStructures {
 				assertEquals(2, idb.getResidueBurials().get(0).getResidueInfo().getRepChain().length());
 			}
 		}
-		
+
+		// delete all files and then the dir
+		File[] files = outDir.listFiles();
+		for (File f : files) f.delete();
 		outDir.delete();
 		
 	}
@@ -98,6 +101,7 @@ public class TestLargeStructures {
 	 * Issue https://github.com/eppic-team/eppic/issues/205
 	 * @throws IOException
 	 */
+	//@Ignore // test is very heavy (it writes all coordinate files which takes half of the time or more), ignore if needed
 	@Test
 	public void test1auy() throws IOException {
 
@@ -110,6 +114,8 @@ public class TestLargeStructures {
 
 		String pdbId = "1auy";
 		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
+
+		params.setGenerateOutputCoordFiles(true);
 
 		Main m = new Main();
 
@@ -141,6 +147,16 @@ public class TestLargeStructures {
 		}
 
 		assertTrue(count<20);
+
+		File[] files = outDir.listFiles((d, name) -> (name.endsWith(".cif.gz") && name.contains(".interface.") ));
+
+		assertNotNull(files);
+
+		assertEquals(count, files.length);
+
+		// delete all files and then the dir
+		files = outDir.listFiles();
+		for (File f : files) f.delete();
 
 		outDir.delete();
 

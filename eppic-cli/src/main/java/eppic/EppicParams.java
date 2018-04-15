@@ -894,6 +894,10 @@ public class EppicParams {
 	public boolean isGenerateOutputCoordFiles() {
 		return generateOutputCoordFiles;
 	}
+
+	public void setGenerateOutputCoordFiles(boolean generateOutputCoordFiles) {
+		this.generateOutputCoordFiles = generateOutputCoordFiles;
+	}
 	
 	public boolean isGenerateThumbnails() {
 		return generateThumbnails;
@@ -901,6 +905,10 @@ public class EppicParams {
 	
 	public boolean isGenerateDiagrams() {
 		return generateDiagrams;
+	}
+
+	public void setGenerateDiagrams(boolean generateDiagrams) {
+		this.generateDiagrams = generateDiagrams;
 	}
 
 	public boolean isGeneratePdbFiles() {
