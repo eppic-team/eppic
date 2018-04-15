@@ -1,18 +1,15 @@
 package eppic;
 
 //import org.junit.Ignore;
+import ch.systemsx.sybit.crkwebui.shared.model.AssemblyScore;
 import eppic.assembly.TestLatticeGraph;
+import eppic.model.*;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.junit.Test;
-
-import eppic.model.ChainClusterDB;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceDB;
-import eppic.model.PdbInfoDB;
 
 import javax.vecmath.Matrix4d;
 
@@ -153,6 +150,20 @@ public class TestLargeStructures {
 		assertNotNull(files);
 
 		assertEquals(count, files.length);
+
+		// test for issue #141
+		AssemblyDB icoAssembly = pdbInfo.getAssemblies().get(3);
+		// check that this really is the icosahedral assembly
+		assertEquals("I", icoAssembly.getAssemblyContents().get(0).getSymmetry());
+		assertEquals(180, icoAssembly.getAssemblyContents().get(0).getMmSize());
+		boolean pdb1Annotation = false;
+		for (AssemblyScoreDB as : icoAssembly.getAssemblyScores()) {
+			if (as.getMethod().equals("pdb1") && as.getCallName().equals("bio")) {
+				pdb1Annotation = true;
+			}
+		}
+
+		assertTrue(pdb1Annotation);
 
 		// delete all files and then the dir
 		files = outDir.listFiles();
