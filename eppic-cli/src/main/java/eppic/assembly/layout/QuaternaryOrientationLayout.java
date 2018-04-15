@@ -10,8 +10,10 @@ import java.util.Set;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Point3d;
 
+import org.biojava.nbio.structure.AminoAcidImpl;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.AtomImpl;
+import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.cluster.Subunit;
 import org.biojava.nbio.structure.cluster.SubunitCluster;
 import org.biojava.nbio.structure.cluster.SubunitClusterer;
@@ -94,6 +96,11 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 			Point3d centroid = vertexPositioner.getPosition(vert);
 			Atom atom = new AtomImpl();
 			atom.setCoords(new double[] {centroid.x, centroid.y, centroid.z});
+			// setting a dummy group so that subunit clusterer doesn't break
+			Group g = new AminoAcidImpl();
+			((AminoAcidImpl) g).setAminoType('A');
+			g.setPDBName("ALA");
+			atom.setGroup(g);
 			Atom[] caCoords = new Atom[] {atom};
 			
 			Subunit subunit = new Subunit(caCoords, null, null, null);

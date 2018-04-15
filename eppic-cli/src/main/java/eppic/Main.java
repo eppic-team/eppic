@@ -621,8 +621,11 @@ public class Main {
 				//runner.generateFromDot(dotFile, pngFile, fileFormat);
 
 				// Generate thumbs via pipe
-				runner.generateFromDot(guiThumb, pngFile, fileFormat);
-				
+				if (params.getGraphvizExe()==null) {
+					LOGGER.warn("GRAPHVIZ_EXE was not specified in eppic.conf. Will not generate assembly {} png", a.getId());
+				} else {
+					runner.generateFromDot(guiThumb, pngFile, fileFormat);
+				}
 				
 				// 2. Generate the json file for the dynamic js graph in the wui
 				
