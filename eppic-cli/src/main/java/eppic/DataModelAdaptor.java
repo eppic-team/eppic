@@ -786,9 +786,9 @@ public class DataModelAdaptor {
 		}
 
 		if (!im.checkTheirsMatch()) {
-			String msg = "";
+			StringBuilder msg = new StringBuilder();
 			for (SimpleInterface theirI:im.getTheirsNotMatching()) {
-				msg += theirI.toString()+"\t";
+				msg.append(theirI.toString()).append("\t");
 			}
 
 			// This actually happens even if the mapping is fine. That's because we enumerate the biounit 
@@ -796,7 +796,7 @@ public class DataModelAdaptor {
 			// 2 molecules don't make a contact. 
 			LOGGER.info("Some interfaces of PDB bio unit "+EppicParams.PDB_BIOUNIT_TO_USE+
 					" do not match any of the EPPIC interfaces."+ 
-					" Non-matching interfaces are: "+msg);
+					" Non-matching interfaces are: "+msg.toString());
 
 		}
 
