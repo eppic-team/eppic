@@ -178,8 +178,7 @@ public class DataModelAdaptor {
 
 		for (EntityInfo compound:pdb.getEntityInfos()) {
 
-			EntityType type = compound.getType();
-			if (type == EntityType.POLYMER) {
+			if (compound.getType() == EntityType.POLYMER) {
 				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
 				if (compound.getChains().isEmpty()) continue;
 

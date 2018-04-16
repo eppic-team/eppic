@@ -12,10 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.EntityInfo;
-import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -297,6 +294,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 		int i = 0;
 		for (EntityInfo c:structure.getEntityInfos()) {
+			if (c.getType() != EntityType.POLYMER) continue;
+
 			entityId2Idx.put(c.getMolId(),i);
 			idx2EntityId.put(i,c.getMolId());
 			i++;

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import org.biojava.nbio.structure.EntityInfo;
+import org.biojava.nbio.structure.EntityType;
 import org.biojava.nbio.structure.Structure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,13 +67,16 @@ public class ChainEvolContextList implements Serializable {
 		}
 		
 		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
-			
-			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-			if (chainCluster.getChains().isEmpty()) continue;
-			
-			ChainEvolContext cec = new ChainEvolContext(this, chainCluster);
-			
-			cecs.put(cec.getSequenceId(), cec);
+
+			if (chainCluster.getType() == EntityType.POLYMER) {
+
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (chainCluster.getChains().isEmpty()) continue;
+
+				ChainEvolContext cec = new ChainEvolContext(this, chainCluster);
+
+				cecs.put(cec.getSequenceId(), cec);
+			}
 		}
 		
 	}

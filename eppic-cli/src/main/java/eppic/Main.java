@@ -20,10 +20,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
-import org.biojava.nbio.structure.EntityInfo;
-import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -790,11 +787,14 @@ public class Main {
 		sb.append("Unique sequences: ");
 		
 		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
-			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-			if (chainCluster.getChains().isEmpty()) continue;
 
-			sb.append(DataModelAdaptor.getChainClusterString(chainCluster));
-			sb.append(" ");
+			if (chainCluster.getType() == EntityType.POLYMER) {
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (chainCluster.getChains().isEmpty()) continue;
+
+				sb.append(DataModelAdaptor.getChainClusterString(chainCluster));
+				sb.append(" ");
+			}
 		}
 		
 		LOGGER.info(sb.toString());
