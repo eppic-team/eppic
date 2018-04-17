@@ -19,7 +19,7 @@ public class TestAssemblyDiagrams {
      * Testing that assembly diagram json files are properly generated
      */
     @Test
-    public void test1smt() {
+    public void test1cf8() {
         File outDir = new File(TMPDIR, "eppicTestAssemblyDiagrams");
 
         outDir.mkdir();
@@ -27,7 +27,7 @@ public class TestAssemblyDiagrams {
         assertTrue(outDir.isDirectory());
 
 
-        String pdbId = "1smt";
+        String pdbId = "1cf8";
         EppicParams params = Utils.generateEppicParams(pdbId, outDir);
         params.setGenerateDiagrams(true);
 
@@ -43,6 +43,7 @@ public class TestAssemblyDiagrams {
 
         files = outDir.listFiles((d, name) -> (name.endsWith(".json") && name.contains(".latticeGraph.") ));
         assertNotNull(files);
+        // there's always 1 additional file for the whole unit cell (named with a "*")
         assertEquals(pdbInfo.getAssemblies().size() + 1, files.length);
 
 

@@ -128,7 +128,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		// Compute centroids in AU
 		chainCentroid = new HashMap<String,Point3d>();
 		for(Chain c: structure.getPolyChains() ) {
-			chainCentroid.put(c.getId(), GeomTools.getCentroid(c));
+			chainCentroid.put(c.getName(), GeomTools.getCentroid(c));
 		}
 		
 		// Compute 3D layout
