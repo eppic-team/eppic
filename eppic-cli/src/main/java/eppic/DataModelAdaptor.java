@@ -1025,6 +1025,10 @@ public class DataModelAdaptor {
 			
 			InterfaceEvolContext iec = iecl.get(i);
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
+			if (pdbInfo.isNcsOpsPresent() && ii==null) {
+				LOGGER.info("Not storing evolutionary scores for redundant NCS interface {}", i+1);
+				continue;
+			}
 			
 			// 2) core-surface scores
 			EvolCoreSurfacePredictor ecsp = iec.getEvolCoreSurfacePredictor();
@@ -1133,6 +1137,10 @@ public class DataModelAdaptor {
 		// per interface combined scores
 		for (int i=0;i<cps.size();i++) {
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
+			if (pdbInfo.isNcsOpsPresent() && ii==null) {
+				LOGGER.info("Not storing combined scores for redundant NCS interface {}", i+1);
+				continue;
+			}
 			InterfaceScoreDB is = new InterfaceScoreDB();
 			ii.addInterfaceScore(is);
 			is.setMethod(ScoringMethod.EPPIC_FINAL);
