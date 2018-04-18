@@ -561,6 +561,12 @@ public class Assembly {
 		
 		for (ChainVertex vert : vertices ){
 			Atom[] ca = StructureTools.getRepresentativeAtomArray(vert.getChain());
+
+			if (ca.length == 0) {
+				// e.g. 2k4g, chain A
+				logger.info("No representative atoms for chain with name {}. Using all atoms to get symmetry for structure packing", vert.getChain().getName());
+				ca = StructureTools.getAllAtomArray(vert.getChain());
+			}
 			Subunit subunit = new Subunit(ca, vert.getChain().getId(), null, vert.getChain().getStructure());
 			
 			subunits.add(subunit);			
