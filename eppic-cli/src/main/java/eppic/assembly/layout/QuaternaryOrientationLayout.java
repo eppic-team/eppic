@@ -15,17 +15,11 @@ import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.AtomImpl;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.cluster.Subunit;
-import org.biojava.nbio.structure.cluster.SubunitCluster;
 import org.biojava.nbio.structure.cluster.SubunitClusterer;
 import org.biojava.nbio.structure.cluster.SubunitClustererMethod;
 import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.symmetry.axis.AxisAligner;
-import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
-import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
-import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
-import org.biojava.nbio.structure.symmetry.core.Rotation;
-import org.biojava.nbio.structure.symmetry.core.RotationGroup;
-import org.biojava.nbio.structure.symmetry.core.Stoichiometry;
+import org.biojava.nbio.structure.symmetry.core.*;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.MaskFunctor;
@@ -55,9 +49,12 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 			// Orient
 			QuatSymmetryResults gSymmetry = QuaternaryOrientationLayout.getQuatSymm(subgraph,vertexPositioner);
 			RotationGroup pointgroup = gSymmetry.getRotationGroup();
+			if (gSymmetry.getMethod()== SymmetryPerceptionMethod.ROTO_TRANSLATION) {
+				// this happens for cases like 5cti, assembly {1,2,3} since biojava 5
+				pointgroup = null;// helical case, we set this to null so that we go to helical case below
+			}
 			AxisAligner aligner = AxisAligner.getInstance(gSymmetry);
 			Point3d center = aligner.getGeometricCenter();
-
 			AxisAngle4d axis = null;
 			if (pointgroup==null) {
 				// pointgroup is null for 1y4m 

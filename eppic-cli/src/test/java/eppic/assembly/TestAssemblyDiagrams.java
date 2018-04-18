@@ -19,7 +19,7 @@ public class TestAssemblyDiagrams {
      * Testing that assembly diagram json files are properly generated
      */
     @Test
-    public void test1cf8() {
+    public void testAssemblyDiagramGeneration() {
         File outDir = new File(TMPDIR, "eppicTestAssemblyDiagrams");
 
         outDir.mkdir();
@@ -27,7 +27,7 @@ public class TestAssemblyDiagrams {
         assertTrue(outDir.isDirectory());
 
 
-        String pdbId = "1cf8";
+        String pdbId = "5cti";
         EppicParams params = Utils.generateEppicParams(pdbId, outDir);
         params.setGenerateDiagrams(true);
 
