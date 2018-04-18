@@ -17,6 +17,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
+import eppic.model.InterfaceClusterDB;
+import eppic.model.InterfaceDB;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
@@ -599,6 +601,16 @@ public class Main {
 				// TODO this is not going to work for contracted graphs: both clusterIds and interfaceids are wrong! see issue https://github.com/eppic-team/eppic/issues/148
 				SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
 				Set<Integer> interfaceIds = GraphUtils.getDistinctInterfaces(a.getAssemblyGraph().getSubgraph());
+				if (modelAdaptor.getPdbInfo().isNcsOpsPresent()) {
+					// we have to hack the interface list removing the redundant NCS interfaces. In model (and wui) they aren't present
+					Set<Integer> nonRedundantSet = new HashSet<>();
+					for (InterfaceClusterDB icdb : modelAdaptor.getPdbInfo().getInterfaceClusters()) {
+						for (InterfaceDB idb : icdb.getInterfaces()) {
+							nonRedundantSet.add(idb.getInterfaceId());
+						}
+					}
+					interfaceIds.removeIf( (Integer interfId) -> !nonRedundantSet.contains(interfId));
+				}
 				latticeGraph.filterEngagedClusters(clusterIds);
 					
 				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
