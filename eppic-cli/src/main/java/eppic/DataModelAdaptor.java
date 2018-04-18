@@ -480,7 +480,9 @@ public class DataModelAdaptor {
 			for (int i : indices) {
 				// we add one interface per NCS interface cluster
 				StructureInterface interf = interfaceClustersNcs.get(i).getMembers().get(0);
-				if (interf.getCluster().getId() != reducedCluster.getId()) {
+				if (interf.getCluster()==null) {
+					LOGGER.warn("Interface {} is not associated to a cluster. Something might be wrong", interf.getId());
+				} else if (interf.getCluster().getId() != reducedCluster.getId()) {
 					LOGGER.warn("Interface {} belongs to cluster {}. It should not be added to cluster id {}",
 							interf.getId(), interf.getCluster().getId(), reducedCluster.getId());
 				}

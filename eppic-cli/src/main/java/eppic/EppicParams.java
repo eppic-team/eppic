@@ -918,6 +918,10 @@ public class EppicParams {
 	public boolean isGenerateModelSerializedFile() {
 		return generateModelSerializedFile;
 	}
+
+	public void setGenerateModelSerializedFile(boolean generateModelSerializedFile) {
+		this.generateModelSerializedFile = generateModelSerializedFile;
+	}
 	
 	public boolean isNoBlast() {
 		return noBlast;
