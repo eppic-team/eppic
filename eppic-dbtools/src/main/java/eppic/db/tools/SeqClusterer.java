@@ -10,49 +10,35 @@ import java.util.Map;
 import java.util.Properties;
 
 import eppic.commons.blast.BlastException;
-import eppic.commons.blast.BlastRunner;
+import eppic.commons.blast.MmseqsRunner;
 import eppic.model.ChainClusterDB;
 
 public class SeqClusterer {
 
-	private static final String BLASTCLUST_BASENAME = "eppic_seq_clustering";
-	private static final String BLASTCLUST_OUT_SUFFIX = ".blastclust.out";
-	private static final String BLASTCLUST_SAVE_SUFFIX = ".blastclust.save";
+	private static final String BASENAME = "eppic_seq_clustering";
 	private static final String IN_FASTA_SUFFIX = "all_seqs.fa";
 
 	private static final boolean DEBUG = true;
 
-	// the wwww.pdb.org parameters for blastclust: -p T -b T -S 95 -L 0.9
-	private static final double BLASTCLUST_CLUSTERING_COVERAGE = 0.9;
-	public static final String CONFIG_FILE_NAME = ".eppic.conf";
-	private static final File     DEF_BLASTCLUST_BIN = new File("/usr/bin/blastclust"); // from legacy blast package
-	private static final String   DEF_BLAST_DATA_DIR = "/usr/share/blast";
+	private static final double CLUSTERING_COVERAGE = 0.9;
+	private static final String CONFIG_FILE_NAME = ".eppic.conf";
+	private static final File DEF_MMSEQS_BIN = new File("/usr/bin/mmseqs");
 
 	private File inFastaFile;
 	private int numThreads;
 
-	private BlastRunner blastRunner;
+	private File mmseqsBin;
 
-	private boolean saveFileComputed;
-
-	private File saveFile;
-	private File blastclustBin;
-	private String blastDataDir;
 
 	public SeqClusterer(Map<Integer, ChainClusterDB> allChains, int numThreads)
 			throws IOException {
 
-		inFastaFile = File.createTempFile(BLASTCLUST_BASENAME, IN_FASTA_SUFFIX);
+		inFastaFile = File.createTempFile(BASENAME, IN_FASTA_SUFFIX);
 		writeFastaFile(allChains);
 		System.out.println("Wrote FASTA file " + inFastaFile);
 
 		this.numThreads = numThreads;
 		loadConfigFile();
-		this.blastRunner = new BlastRunner(null);
-		this.saveFileComputed = false;
-
-		this.saveFile = File.createTempFile(BLASTCLUST_BASENAME,
-				BLASTCLUST_SAVE_SUFFIX);
 
 		if (!DEBUG) {
 			// saveFile.deleteOnExit();
@@ -65,66 +51,36 @@ public class SeqClusterer {
 			throws IOException {
 
 		loadConfigFile();
-		this.blastRunner = new BlastRunner(null);
-		this.saveFileComputed = true;
 
-		this.saveFile = saveFile;
-	}
-
-	public File getBlastclustSaveFile() {
-		return saveFile;
 	}
 
 	public List<List<String>> clusterThem(int clusteringId) throws IOException,
 			InterruptedException, BlastException {
 
-		File outblastclustFile = File.createTempFile(BLASTCLUST_BASENAME,
-				BLASTCLUST_OUT_SUFFIX);
+		File outClustFilePrefix = File.createTempFile(BASENAME, "");
 
-		List<List<String>> clusterslist = null;
+		System.out
+				.println("Running initial blastclust, this will take long...");
 
-		// first the real run of blastclust (we save neighbors with -s and reuse
-		// them after)
+		long start = System.currentTimeMillis();
 
-		if (!saveFileComputed) {
+		List<List<String>> clusterslist = MmseqsRunner.runMmseqsEasyCluster(mmseqsBin,
+				this.inFastaFile, outClustFilePrefix, clusteringId,
+				CLUSTERING_COVERAGE, numThreads);
 
-			System.out
-					.println("Running initial blastclust, this will take long...");
+		long end = System.currentTimeMillis();
+		System.out.println("Run mmseqs at identity "+clusteringId+" in "
+				+ ((end - start) / 1000) + "s ");
 
-			long start = System.currentTimeMillis();
+		System.out.println("Clustering with " + clusteringId
+				+ "% id resulted in " + clusterslist.size() + " clusters");
 
-			clusterslist = blastRunner.runBlastclust(blastclustBin,
-					this.inFastaFile, outblastclustFile, true, clusteringId,
-					BLASTCLUST_CLUSTERING_COVERAGE, blastDataDir, saveFile,
-					numThreads);
-
-			long end = System.currentTimeMillis();
-			System.out.println("Run initial blastclust ("
-					+ ((end - start) / 1000) + "s): "
-					+ blastRunner.getLastBlastCommand());
-			saveFileComputed = true;
-
-			System.out.println("Clustering with " + clusteringId
-					+ "% id resulted in " + clusterslist.size() + " clusters");
-
-		} else {
-
-			clusterslist = blastRunner.runBlastclust(blastclustBin,
-					outblastclustFile, true, clusteringId,
-					BLASTCLUST_CLUSTERING_COVERAGE, saveFile, numThreads);
-
-			System.out.println("Run blastclust from saved neighbors: "
-					+ blastRunner.getLastBlastCommand());
-
-			System.out.println("Clustering with " + clusteringId
-					+ "% id resulted in " + clusterslist.size() + " clusters");
-
-		}
 
 		if (!DEBUG) {
-			// note that if blastclust throws an exception then this is not
+			File outFile = new File(outClustFilePrefix.getParent(), outClustFilePrefix.getName() + MmseqsRunner.MMSEQS_TSV_SUFFIX);
+			// note that if mmseqs throws an exception then this is not
 			// reached and thus files not removed on exit
-			outblastclustFile.deleteOnExit();
+			outFile.deleteOnExit();
 
 		}
 
@@ -170,8 +126,7 @@ public class SeqClusterer {
 			System.out.println("Loading user configuration file "
 					+ userConfigFile);
 			params.load(new FileInputStream(userConfigFile));
-			blastclustBin   = new File(params.getProperty("BLASTCLUST_BIN", DEF_BLASTCLUST_BIN.toString()));
-			blastDataDir = params.getProperty("BLAST_DATA_DIR", DEF_BLAST_DATA_DIR);
+			mmseqsBin = new File(params.getProperty("MMSEQS_BIN", DEF_MMSEQS_BIN.toString()));
 		} catch (IOException e) {
 			System.err.println("Error while reading from config file: "
 					+ e.getMessage());

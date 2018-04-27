@@ -5,11 +5,7 @@ import eppic.model.SeqClusterDB;
 import gnu.getopt.Getopt;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class ClusterSequences {
 	
@@ -29,25 +25,27 @@ public class ClusterSequences {
 		String help = 
 				"Usage: ClusterSequences \n" +		
 				"  -D <string>: the database name to use\n"+
+				" [-d]        : dry run. Runs mmseqs but does not persist results to database\n" +
 				" [-a]        : number of threads (default 1)\n"+
-				" [-s <file>] : a blastclust save file with precomputed blast for all chains\n"+
 				" [-g <file>] : a configuration file containing the database access parameters, if not provided\n" +
 				"               the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
 				
 		
 		
 		int numThreads = 1;
-		File saveFile = null;
 		String dbName = null;
 		File configFile = null;
-
+		boolean dryRun = false;
 		
-		Getopt g = new Getopt("ClusterSequences", args, "D:a:s:g:h?");
+		Getopt g = new Getopt("ClusterSequences", args, "D:da:s:g:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 'D':
 				dbName = g.getOptarg();
+				break;
+			case 'd':
+				dryRun = true;
 				break;
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
@@ -55,9 +53,6 @@ public class ClusterSequences {
 			case 'h':
 				System.out.println(help);
 				System.exit(0);
-				break;
-			case 's':
-				saveFile = new File(g.getOptarg());
 				break;
 			case 'g':
 				configFile = new File(g.getOptarg());
@@ -90,40 +85,30 @@ public class ClusterSequences {
 		filterShortSeqs(allChains, MIN_LENGTH);
 		System.out.println(allChains.size()+" chains with length greater than "+MIN_LENGTH);
 		
-		SeqClusterer sc = null;
-		if (saveFile!=null) {
-			sc =new SeqClusterer(allChains, saveFile);
-		} else {
-			sc =new SeqClusterer(allChains, numThreads);
-			System.out.println("blastclust save file stored in "+sc.getBlastclustSaveFile());
-		}
-		
+		SeqClusterer sc =new SeqClusterer(allChains, numThreads);
+
 		Map<Integer,Map<Integer,Integer>> allMaps = new TreeMap<Integer,Map<Integer,Integer>>();
 		
 		for (int clusteringId:CLUSTERING_IDS) {
 			
 			List<List<String>> clustersList = sc.clusterThem(clusteringId);
 		
-			if (saveFile!=null) {
-				// if a save file was provided we need to make sure that it contains only the ids that we have in the database
-				// and not others
-				if (!checkIdsInList(clustersList, allChains)) {
-					System.err.println("Some chainCluster_uids found in blastclust output are not in the database! Exiting");
-					System.exit(1);
-				}
-			}
-			
 			allMaps.put(clusteringId, getMapFromList(clustersList));
 			 
 		}
 		
 		if (!canDoUpdate) {			
 			System.out.println("Can't do database update because SeqCluster table is not empty.");
-			System.out.println("Remove all records in SeqCluster table and then run again using the computed blastclust save file: -s "+sc.getBlastclustSaveFile());
+			System.out.println("Remove all records in SeqCluster table and then run again ");
 			System.out.println("Exiting");
 			System.exit(1);
 		}
-		
+
+		if (dryRun) {
+			System.out.println("Dry run option (-d) was passed. Not persisting clustering results to database.");
+			System.exit(0);
+		}
+
 		System.out.println("Writing to db...");
 		
 		Map<Integer,Integer> map100 = allMaps.get(100);
@@ -200,4 +185,6 @@ public class ClusterSequences {
 			}
 		return true;
 	}
+
+
 }
