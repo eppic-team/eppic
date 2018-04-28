@@ -19,6 +19,7 @@
 		<properties>
 			<property name="hibernate.show_sql" value="false" />
 			<property name="hibernate.format_sql" value="true" />
+			<!-- Note that this can be overridden in eppic-dbtools via the eppic-db.properties file - JD 2018-04-17 -->
 			<property name="hibernate.hbm2ddl.auto" value="validate" />
 		</properties>
 	</persistence-unit>

@@ -7,9 +7,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
+import org.biojava.nbio.structure.EntityType;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,14 +66,17 @@ public class ChainEvolContextList implements Serializable {
 			this.useLocalUniprot = false;
 		}
 		
-		for (Compound chainCluster:pdb.getCompounds()) {
-			
-			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-			if (chainCluster.getChains().isEmpty()) continue;
-			
-			ChainEvolContext cec = new ChainEvolContext(this, chainCluster);
-			
-			cecs.put(cec.getSequenceId(), cec);
+		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
+
+			if (chainCluster.getType() == EntityType.POLYMER) {
+
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (chainCluster.getChains().isEmpty()) continue;
+
+				ChainEvolContext cec = new ChainEvolContext(this, chainCluster);
+
+				cecs.put(cec.getSequenceId(), cec);
+			}
 		}
 		
 	}
@@ -115,13 +118,8 @@ public class ChainEvolContextList implements Serializable {
 	 * @return
 	 */
 	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
-		try {
-			Compound compound = pdb.getChainByPDB(pdbChainCode).getCompound();
-			return cecs.get( compound.getRepresentative().getChainID() );
-		} catch (StructureException e) {
-			LOGGER.error("Unexpected exception",e);
-			return null;
-		}
+		EntityInfo compound = pdb.getPolyChainByPDB(pdbChainCode).getEntityInfo();
+		return cecs.get( compound.getRepresentative().getName() );
 	}
 	
 	/**

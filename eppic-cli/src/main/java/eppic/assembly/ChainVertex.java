@@ -49,7 +49,7 @@ public class ChainVertex implements ChainVertexInterface {
 	
 	@Override
 	public String getChainId() {
-		return c.getChainID();
+		return c.getName();
 	}
 	
 	public Chain getChain() {
@@ -98,7 +98,7 @@ public class ChainVertex implements ChainVertexInterface {
 
 	@Override
 	public int getEntityId() {
-		return c.getCompound().getMolId();
+		return c.getEntityInfo().getMolId();
 	}
 
 }

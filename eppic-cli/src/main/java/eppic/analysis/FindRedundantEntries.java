@@ -9,10 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.biojava.nbio.structure.Compound;
-import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.util.AtomCache;
 
 import eppic.commons.blast.BlastException;
@@ -110,17 +107,21 @@ public class FindRedundantEntries {
 				continue;
 			} 
 			
-			for (Compound chainCluster:pdb.getCompounds()) {
-				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-				if (chainCluster.getChains().isEmpty()) continue;
-				
-				String seq = chainCluster.getRepresentative().getSeqResSequence();
-				if (seq.matches("X+")) continue; // if it's an all X sequence we don't want it (blastclust doesn't like them)
-				if (seq.length()<12) continue; // we ignore too small sequences (blastclust doesn't like them)
-				// at the moment Biojava's getSeqResSequence uses XXXX for nucleotides, so the above condition captures this already
-				//if (seq.isNucleotide()) continue; // some sets (like Bahadur's monomers) contain DNA/RNA: ignore
-				Sequence s = new Sequence(pdbCode+chainCluster.getRepresentative().getChainID(),seq);
-				s.writeToPrintStream(ps);
+			for (EntityInfo chainCluster:pdb.getEntityInfos()) {
+
+				if (chainCluster.getType() == EntityType.POLYMER) {
+					// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+					if (chainCluster.getChains().isEmpty()) continue;
+
+					String seq = chainCluster.getRepresentative().getSeqResSequence();
+					if (seq.matches("X+"))
+						continue; // if it's an all X sequence we don't want it (blastclust doesn't like them)
+					if (seq.length() < 12) continue; // we ignore too small sequences (blastclust doesn't like them)
+					// at the moment Biojava's getSeqResSequence uses XXXX for nucleotides, so the above condition captures this already
+					//if (seq.isNucleotide()) continue; // some sets (like Bahadur's monomers) contain DNA/RNA: ignore
+					Sequence s = new Sequence(pdbCode + chainCluster.getRepresentative().getName(), seq);
+					s.writeToPrintStream(ps);
+				}
 			}
 			
 		}

@@ -38,18 +38,22 @@ import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.cluster.Subunit;
+import org.biojava.nbio.structure.cluster.SubunitClusterer;
+import org.biojava.nbio.structure.cluster.SubunitClustererMethod;
+import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
-import org.biojava.nbio.structure.symmetry.core.AxisAligner;
+import org.biojava.nbio.structure.symmetry.axis.AxisAligner;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.symmetry.core.Rotation;
 import org.biojava.nbio.structure.symmetry.core.RotationGroup;
-import org.biojava.nbio.structure.symmetry.core.Subunits;
+import org.biojava.nbio.structure.symmetry.core.Stoichiometry;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.event.ConnectedComponentTraversalEvent;
@@ -552,48 +556,32 @@ public class Assembly {
 	 * @return
 	 */
 	private static QuatSymmetryResults getQuatSymm( Collection<ChainVertex> vertices) {
-		// hack subunits
-		List<Point3d[]> caCoords = new ArrayList<Point3d[]>();
-		List<Integer> folds = new ArrayList<Integer>();
-		List<Boolean> pseudo = new ArrayList<Boolean>();
-		List<String> chainIds = new ArrayList<String>();
-		List<Integer> models = new ArrayList<Integer>();
-		List<Double> seqIDmin = new ArrayList<Double>();
-		List<Double> seqIDmax = new ArrayList<Double>();
-		List<Integer> clusterIDs = new ArrayList<Integer>();
-		int fold = 1;
-		Character chain = 'A';
 
+		List<Subunit> subunits = new ArrayList<>();
+		
 		for (ChainVertex vert : vertices ){
-			Point3d[] coords = getDummyCoordinates(vert.getChain());
-			if (coords.length==0) {
-				logger.warn("0-length coordinate array. Can't calculate quaternary symmetry!");
-			}
-			caCoords.add(coords);
+			Atom[] ca = StructureTools.getRepresentativeAtomArray(vert.getChain());
 
-			if (vertices.size() % fold == 0){
-				folds.add(fold); //the folds are the common denominators
+			if (ca.length == 0) {
+				// e.g. 2k4g, chain A
+				logger.info("No representative atoms for chain with name {}. Using all atoms to get symmetry for structure packing", vert.getChain().getName());
+				ca = StructureTools.getAllAtomArray(vert.getChain());
 			}
-			fold++;
-			pseudo.add(false);
-			chainIds.add(chain+"");
-			chain++;
-			models.add(0);
-			seqIDmax.add(1.0);
-			seqIDmin.add(1.0);
-			clusterIDs.add(0);
+			Subunit subunit = new Subunit(ca, vert.getChain().getId(), null, vert.getChain().getStructure());
+			
+			subunits.add(subunit);			
 		}
 
-		//Create directly the subunits, because we know the aligned CA
-		Subunits globalSubunits = new Subunits(caCoords, clusterIDs, 
-				pseudo, seqIDmin, seqIDmax, 
-				folds, chainIds, models);
+		SubunitClustererParameters clusterParams = new SubunitClustererParameters(true);
+		clusterParams.setClustererMethod(SubunitClustererMethod.SEQUENCE);
+				
+		Stoichiometry globalSubunits = SubunitClusterer.cluster(subunits, clusterParams);
 
 		//Quaternary Symmetry Detection
 		QuatSymmetryParameters param = new QuatSymmetryParameters();
 
 		QuatSymmetryResults gSymmetry = 
-				QuatSymmetryDetector.calcQuatSymmetry(globalSubunits, param);
+				QuatSymmetryDetector.calcGlobalSymmetry(globalSubunits, param);
 
 		return gSymmetry;
 	}
@@ -605,7 +593,8 @@ public class Assembly {
 	 * @param c
 	 * @return
 	 */
-	private static Point3d[] getDummyCoordinates(Chain c) {
+	@SuppressWarnings("unused")
+	private static Atom[] getDummyCoordinates(Chain c) {
 		// Using the centroid gave poor quality since it doesn't establish the orientation.
 
 		// Use the centroids of each third of the protein
@@ -613,12 +602,12 @@ public class Assembly {
 		if (ca.length<3) {
 			// in some cases we find no CAs or Ps, let's use all atoms then, see issue #167
 			// see also issue #195. For chains with fewer than 1 or 2 representative atoms we need to resort to all atoms too, e.g. 5VVV chain B 
-			logger.info("Fewer than 3 representative atoms in chain {}. Resorting to all atoms for calculating symmetry to pack structure.", c.getChainID());
+			logger.info("Fewer than 3 representative atoms in chain {}. Resorting to all atoms for calculating symmetry to pack structure.", c.getName());
 			ca = StructureTools.getAllAtomArray(c);
 		}
 		if (ca.length<3) {
-			logger.warn("Fewer than 3 atoms in chain {} even after resorting to all atoms. Problems might happen in symmetry calculation to pack structure.", c.getChainID());
-			return Calc.atomsToPoints(ca);
+			logger.warn("Fewer than 3 atoms in chain {} even after resorting to all atoms. Problems might happen in symmetry calculation to pack structure.", c.getName());
+			return ca;
 		}	
 		
 		Atom[] ca1 = Arrays.copyOfRange(ca, 0,ca.length/3);
@@ -628,7 +617,7 @@ public class Assembly {
 		dummy[0] = Calc.getCentroid(ca1);
 		dummy[1] = Calc.getCentroid(ca2);
 		dummy[2] = Calc.getCentroid(ca3);
-		return Calc.atomsToPoints(dummy);
+		return dummy;
 	}
 
 	/**
@@ -665,7 +654,7 @@ public class Assembly {
 			transmat.set(1., trans);
 			transmat.mul(m);
 
-			Chain chain = (Chain) structure.getChainByPDB(v.getChainId()).clone();
+			Chain chain = (Chain) structure.getPolyChainByPDB(v.getChainId()).clone();
 			Calc.transform(chain, transmat);
 			chains.add(new ChainVertex(chain,v.getOpId()));
 		}
@@ -900,7 +889,7 @@ public class Assembly {
 		int numChains = structure.size();
 		Set<String> uniqueChains = new HashSet<String>();
 		for (ChainVertex cv:structure) {
-			uniqueChains.add(cv.getChain().getChainID());
+			uniqueChains.add(cv.getChain().getName());
 		}
 		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
 
@@ -915,7 +904,7 @@ public class Assembly {
 
 		int atomId = 1;
 		for (ChainVertex cv:structure) {
-			String chainId = cv.getChain().getChainID()+"_"+cv.getOpId();
+			String chainId = cv.getChain().getName()+"_"+cv.getOpId();
 
 			for (Group g: cv.getChain().getAtomGroups()) {
 				for (Atom a: g.getAtoms()) {

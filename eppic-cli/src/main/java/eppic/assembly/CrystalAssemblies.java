@@ -12,10 +12,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
-import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
+import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -296,16 +293,18 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		idx2ChainIds = new HashMap<Integer, String>();
 
 		int i = 0;
-		for (Compound c:structure.getCompounds()) {
+		for (EntityInfo c:structure.getEntityInfos()) {
+			if (c.getType() != EntityType.POLYMER) continue;
+
 			entityId2Idx.put(c.getMolId(),i);
 			idx2EntityId.put(i,c.getMolId());
 			i++;
 		}
 
 		i = 0;
-		for (Chain c:structure.getChains()) {
-			chainIds2Idx.put(c.getChainID(),i);
-			idx2ChainIds.put(i,c.getChainID());
+		for (Chain c:structure.getPolyChains()) {
+			chainIds2Idx.put(c.getName(),i);
+			idx2ChainIds.put(i,c.getName());
 			i++;
 		}
 	}
@@ -435,7 +434,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @return
 	 */
 	public String getRepresentativeChainIdForEntityIndex(int index) {
-		return structure.getCompoundById(getEntityId(index)).getRepresentative().getChainID();
+		return structure.getEntityById(getEntityId(index)).getRepresentative().getName();
 	}
 	
 	/**
@@ -443,7 +442,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @return
 	 */
 	public int getNumChainsInStructure() {
-		return structure.getChains().size();
+		return structure.getPolyChains().size();
 	}
 	
 	@Override

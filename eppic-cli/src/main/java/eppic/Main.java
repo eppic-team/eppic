@@ -14,19 +14,15 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
+import eppic.model.InterfaceClusterDB;
+import eppic.model.InterfaceDB;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
-import org.biojava.nbio.structure.Compound;
-import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -51,11 +47,12 @@ import eppic.assembly.GraphUtils;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
-import eppic.commons.util.StructureUtils;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
+
+import javax.vecmath.Matrix4d;
 
 /**
  * The eppic main class to execute the CLI workflow.
@@ -258,16 +255,26 @@ public class Main {
 		modelAdaptor = new DataModelAdaptor();
 		modelAdaptor.setParams(params);
 		modelAdaptor.setPdbMetadata(pdb);
-		
-		
 	}
 
 	public void doFindInterfaces() throws EppicException {
 
 		params.getProgressLog().println("Calculating possible interfaces...");
-		StructureUtils.expandNcsOps(pdb);
+
 		LOGGER.info("Calculating possible interfaces");
-		CrystalBuilder interfFinder = new CrystalBuilder(pdb);
+		CrystalBuilder interfFinder;
+		Map<String,String> chainOrigNames = null;
+		if (modelAdaptor.getPdbInfo().isNcsOpsPresent()) {
+			chainOrigNames = new HashMap<>();
+			Map<String, Matrix4d > chainNcsOps = new HashMap<>();
+			CrystalBuilder.expandNcsOps(pdb,chainOrigNames,chainNcsOps);
+			interfFinder = new CrystalBuilder(pdb,chainOrigNames,chainNcsOps);
+		} else {
+			interfFinder = new CrystalBuilder(pdb);
+		}
+
+		modelAdaptor.setChainClustersData(pdb, chainOrigNames);
+
 		interfaces = interfFinder.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
 		LOGGER.info("Calculating ASAs");
 		interfaces.calcAsas(params.getnSpherePointsASAcalc(), params.getNumThreads(), params.getMinSizeCofactorForAsa());
@@ -521,6 +528,11 @@ public class Main {
 			
 			// INTERFACE files
 			for (StructureInterface interf : interfaces) {
+				// a hack necessary to handle reduced redundancy in structures with NCS
+				if (modelAdaptor.getPdbInfo().isNcsOpsPresent() && modelAdaptor.getPdbInfo().getInterface(interf.getId())==null) {
+					LOGGER.info("Skipping generation of interface coordinate file for redundant NCS interface {}", interf.getId());
+					continue;
+				}
 				File outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 				PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));				
 				ps.print(interf.toMMCIF());
@@ -589,6 +601,16 @@ public class Main {
 				// TODO this is not going to work for contracted graphs: both clusterIds and interfaceids are wrong! see issue https://github.com/eppic-team/eppic/issues/148
 				SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
 				Set<Integer> interfaceIds = GraphUtils.getDistinctInterfaces(a.getAssemblyGraph().getSubgraph());
+				if (modelAdaptor.getPdbInfo().isNcsOpsPresent()) {
+					// we have to hack the interface list removing the redundant NCS interfaces. In model (and wui) they aren't present
+					Set<Integer> nonRedundantSet = new HashSet<>();
+					for (InterfaceClusterDB icdb : modelAdaptor.getPdbInfo().getInterfaceClusters()) {
+						for (InterfaceDB idb : icdb.getInterfaces()) {
+							nonRedundantSet.add(idb.getInterfaceId());
+						}
+					}
+					interfaceIds.removeIf( (Integer interfId) -> !nonRedundantSet.contains(interfId));
+				}
 				latticeGraph.filterEngagedClusters(clusterIds);
 					
 				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
@@ -608,8 +630,11 @@ public class Main {
 				//runner.generateFromDot(dotFile, pngFile, fileFormat);
 
 				// Generate thumbs via pipe
-				runner.generateFromDot(guiThumb, pngFile, fileFormat);
-				
+				if (params.getGraphvizExe()==null) {
+					LOGGER.warn("GRAPHVIZ_EXE was not specified in eppic.conf. Will not generate assembly {} png", a.getId());
+				} else {
+					runner.generateFromDot(guiThumb, pngFile, fileFormat);
+				}
 				
 				// 2. Generate the json file for the dynamic js graph in the wui
 				
@@ -723,6 +748,11 @@ public class Main {
 
 		try {
 			for (StructureInterface interf:interfaces) {
+				// a hack necessary to handle reduced redundancy in structures with NCS
+				if (modelAdaptor.getPdbInfo().isNcsOpsPresent() && modelAdaptor.getPdbInfo().getInterface(interf.getId())==null) {
+					LOGGER.info("Skipping generation of PyMOL interface files for redundant NCS interface {}", interf.getId());
+					continue;
+				}
 				File cifFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
 				pr.generateInterfacePng(interf, 
 						cifFile, 
@@ -768,12 +798,15 @@ public class Main {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Unique sequences: ");
 		
-		for (Compound chainCluster:pdb.getCompounds()) {
-			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-			if (chainCluster.getChains().isEmpty()) continue;
+		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
 
-			sb.append(DataModelAdaptor.getChainClusterString(chainCluster));
-			sb.append(" ");
+			if (chainCluster.getType() == EntityType.POLYMER) {
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (chainCluster.getChains().isEmpty()) continue;
+
+				sb.append(DataModelAdaptor.getChainClusterString(chainCluster));
+				sb.append(" ");
+			}
 		}
 		
 		LOGGER.info(sb.toString());
