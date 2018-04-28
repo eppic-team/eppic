@@ -12,8 +12,12 @@ import java.util.Properties;
 import eppic.commons.blast.BlastException;
 import eppic.commons.blast.MmseqsRunner;
 import eppic.model.ChainClusterDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SeqClusterer {
+
+	private static final Logger logger = LoggerFactory.getLogger(SeqClusterer.class);
 
 	private static final String BASENAME = "eppic_seq_clustering";
 	private static final String IN_FASTA_SUFFIX = "all_seqs.fa";
@@ -35,7 +39,7 @@ public class SeqClusterer {
 
 		inFastaFile = File.createTempFile(BASENAME, IN_FASTA_SUFFIX);
 		writeFastaFile(allChains);
-		System.out.println("Wrote FASTA file " + inFastaFile);
+		logger.info("Wrote FASTA file " + inFastaFile);
 
 		this.numThreads = numThreads;
 		loadConfigFile();
@@ -54,10 +58,9 @@ public class SeqClusterer {
 		File outClustFilePrefix = File.createTempFile(BASENAME, "");
 		boolean couldDelete = outClustFilePrefix.delete();
 		if (!couldDelete)
-			System.err.println("Warning. Could not delete temp file " + outClustFilePrefix +". mmseqs will probably fail");
+			logger.warn("Could not delete temp file " + outClustFilePrefix +". mmseqs will probably fail");
 
-		System.out
-				.println("Running mmseqs for identity "+clusteringId+"% , this will take long...");
+		logger.info("Running mmseqs for identity "+clusteringId+"% , this will take long...");
 
 		long start = System.currentTimeMillis();
 
@@ -66,10 +69,10 @@ public class SeqClusterer {
 				CLUSTERING_COVERAGE, numThreads);
 
 		long end = System.currentTimeMillis();
-		System.out.println("Run mmseqs at identity "+clusteringId+" in "
+		logger.info("Run mmseqs at identity "+clusteringId+" in "
 				+ ((end - start) / 1000) + "s ");
 
-		System.out.println("Clustering with " + clusteringId
+		logger.info("Clustering with " + clusteringId
 				+ "% id resulted in " + clusterslist.size() + " clusters");
 
 		return clusterslist;
@@ -111,12 +114,12 @@ public class SeqClusterer {
 				CONFIG_FILE_NAME);
 		try {
 
-			System.out.println("Loading user configuration file "
+			logger.info("Loading user configuration file "
 					+ userConfigFile);
 			params.load(new FileInputStream(userConfigFile));
 			mmseqsBin = new File(params.getProperty("MMSEQS_BIN", DEF_MMSEQS_BIN.toString()));
 		} catch (IOException e) {
-			System.err.println("Error while reading from config file: "
+			logger.error("Error while reading from config file: "
 					+ e.getMessage());
 			System.exit(1);
 		}
