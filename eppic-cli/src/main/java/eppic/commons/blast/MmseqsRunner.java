@@ -52,7 +52,7 @@ public class MmseqsRunner {
         cmd.add(inFile.getAbsolutePath());
         cmd.add(outFilePrefix.getAbsolutePath());
         cmd.add(tmpDir.getAbsolutePath());
-        cmd.add("--min-seq-id"); cmd.add(String.format("%3.1f",((double)clusteringPercentId/100.0)));
+        cmd.add("--min-seq-id"); cmd.add(String.format("%4.2f",((double)clusteringPercentId/100.0)));
         cmd.add("-c"); cmd.add(String.format("%4.2f",clusteringCoverage));
         cmd.add("-s"); cmd.add("8");
         cmd.add("--max-seqs"); cmd.add("1000");
@@ -81,7 +81,7 @@ public class MmseqsRunner {
 
         // remove temp trash when successful
         Files.walk(tmpDir.toPath())
-                .filter(Files::isRegularFile) // this catches symlinks too (tested in eppic-clie.TestFileWalk)
+                .filter(Files::isRegularFile) // this catches symlinks too (tested in TestFileWalk)
                 .map(Path::toFile)
                 .forEach(File::delete);
 
