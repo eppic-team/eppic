@@ -57,10 +57,15 @@ public class SeqClusterer {
 	public List<List<String>> clusterThem(int clusteringId) throws IOException,
 			InterruptedException, BlastException {
 
+		// we need a unique file name to pass to mmseqs but we don't want the file to exist when we run mmseqs,
+		// thus we create and remove immediately
 		File outClustFilePrefix = File.createTempFile(BASENAME, "");
+		boolean couldDelete = outClustFilePrefix.delete();
+		if (!couldDelete)
+			System.err.println("Warning. Could not delete temp file " + outClustFilePrefix +". mmseqs will probably fail");
 
 		System.out
-				.println("Running initial blastclust, this will take long...");
+				.println("Running mmseqs for identity "+clusteringId+"% , this will take long...");
 
 		long start = System.currentTimeMillis();
 

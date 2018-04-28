@@ -65,6 +65,11 @@ public class MmseqsRunner {
         logger.info("Will run mmseqs command: {}", cmdLine);
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
+        File stdout = new File(outFilePrefix.getParent(), outFilePrefix.getName() + "_mmseqs-out.log");
+        File stderr = new File(outFilePrefix.getParent(), outFilePrefix.getName() + "_mmseqs-err.log");
+        pb.redirectOutput(stdout);
+        pb.redirectError(stderr);
+
         Process proc = pb.start();
 
         int exitValue = proc.waitFor();
@@ -78,9 +83,17 @@ public class MmseqsRunner {
                 .map(Path::toFile)
                 .forEach(File::delete);
         Files.walk(tmpDir.toPath())
+                .filter(Files::isSymbolicLink)
+                .map(Path::toFile)
+                .forEach(File::delete);
+        Files.walk(tmpDir.toPath())
                 .filter(Files::isDirectory)
                 .map(Path::toFile)
                 .forEach(File::delete);
+
+        // delete the log files if successful
+        stdout.delete();
+        stderr.delete();
 
         if (tmpDir.exists()) {
             logger.warn("Could not remove mmseqs2 temp dir {}", tmpDir);
