@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 
 public class TestFileWalk {
 
@@ -16,6 +17,8 @@ public class TestFileWalk {
         tmpDir.mkdir();
         File subDir = new File(tmpDir, "subdir");
         subDir.mkdir();
+        File subsubdir = new File(subDir, "subsubdir");
+        subsubdir.mkdir();
         File file = new File(subDir, "testfile");
         file.createNewFile();
         File symLink = new File(subDir, "symlink");
@@ -23,24 +26,18 @@ public class TestFileWalk {
 
         assertTrue(tmpDir.isDirectory());
         assertTrue(subDir.isDirectory());
+        assertTrue(subsubdir.isDirectory());
         assertTrue(file.exists());
         assertTrue(file.isFile());
 
         Files.walk(tmpDir.toPath())
-                .filter(Files::isRegularFile)
-                .map(Path::toFile)
-                .forEach(File::delete);
-
-        Files.walk(tmpDir.toPath())
-                .filter(Files::isDirectory)
+                .sorted(Comparator.reverseOrder()) // important: so that the deepest dirs appear first in deletion
                 .map(Path::toFile)
                 .forEach(File::delete);
 
         assertFalse(file.exists());
-        assertFalse (subDir.exists());
-        assertTrue(tmpDir.exists());
-
-        tmpDir.delete();
+        assertFalse(subDir.exists());
+        assertFalse(subsubdir.exists());
         assertFalse(tmpDir.exists());
     }
 }

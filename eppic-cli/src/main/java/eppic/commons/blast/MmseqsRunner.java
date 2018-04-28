@@ -81,16 +81,9 @@ public class MmseqsRunner {
 
         // remove temp trash when successful
         Files.walk(tmpDir.toPath())
-                .filter(Files::isRegularFile) // this catches symlinks too (tested in TestFileWalk)
+                .sorted(Comparator.reverseOrder()) // important: so that the deepest dirs appear first in deletion
                 .map(Path::toFile)
                 .forEach(File::delete);
-
-        Files.walk(tmpDir.toPath())
-                .filter(Files::isDirectory)
-                .map(Path::toFile)
-                .forEach(File::delete);
-
-        tmpDir.delete();
 
         // delete the log files if successful
         stdout.delete();
