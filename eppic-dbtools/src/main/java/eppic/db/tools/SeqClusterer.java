@@ -47,13 +47,6 @@ public class SeqClusterer {
 
 	}
 
-	public SeqClusterer(Map<Integer, ChainClusterDB> allChains, File saveFile)
-			throws IOException {
-
-		loadConfigFile();
-
-	}
-
 	public List<List<String>> clusterThem(int clusteringId) throws IOException,
 			InterruptedException, BlastException {
 

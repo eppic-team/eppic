@@ -85,7 +85,7 @@ public class ClusterSequences {
 		filterShortSeqs(allChains, MIN_LENGTH);
 		System.out.println(allChains.size()+" chains with length greater than "+MIN_LENGTH);
 		
-		SeqClusterer sc =new SeqClusterer(allChains, numThreads);
+		SeqClusterer sc = new SeqClusterer(allChains, numThreads);
 
 		Map<Integer,Map<Integer,Integer>> allMaps = new TreeMap<Integer,Map<Integer,Integer>>();
 		

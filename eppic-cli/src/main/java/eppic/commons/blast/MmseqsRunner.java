@@ -91,6 +91,8 @@ public class MmseqsRunner {
                 .map(Path::toFile)
                 .forEach(File::delete);
 
+        tmpDir.delete();
+
         // delete the log files if successful
         stdout.delete();
         stderr.delete();
