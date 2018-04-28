@@ -43,7 +43,7 @@ public class MmseqsRunner {
 
         List<String> cmd = new ArrayList<String>();
 
-        File tmpDir = new File(outFilePrefix.getParent(), "tmp");
+        File tmpDir = new File(outFilePrefix.getParent(), "tmp-" + outFilePrefix.getName());
 
         cmd.add(mmseqsBin.getAbsolutePath());
         cmd.add("easy-cluster");
@@ -79,13 +79,10 @@ public class MmseqsRunner {
 
         // remove temp trash when successful
         Files.walk(tmpDir.toPath())
-                .filter(Files::isRegularFile)
+                .filter(Files::isRegularFile) // this catches symlinks too (tested in eppic-clie.TestFileWalk)
                 .map(Path::toFile)
                 .forEach(File::delete);
-        Files.walk(tmpDir.toPath())
-                .filter(Files::isSymbolicLink)
-                .map(Path::toFile)
-                .forEach(File::delete);
+
         Files.walk(tmpDir.toPath())
                 .filter(Files::isDirectory)
                 .map(Path::toFile)
