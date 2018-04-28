@@ -10,10 +10,11 @@
 			<appender-ref ref="ConsoleStdOut"/>
 		</root>
 		<!-- Specific logging for packages here -->
-		<!--
 		<Logger name="com.mchange" level="warn" additivity="false">
             <appender-ref ref="ConsoleStdOut"/>
         </Logger>
-        -->
+		<Logger name="org.hibernate" level="warn" additivity="false">
+			<appender-ref ref="ConsoleStdOut"/>
+		</Logger>
 	</loggers>
 </configuration>
