@@ -18,7 +18,7 @@ public class SeqClusterer {
 	private static final String BASENAME = "eppic_seq_clustering";
 	private static final String IN_FASTA_SUFFIX = "all_seqs.fa";
 
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
 	private static final double CLUSTERING_COVERAGE = 0.9;
 	private static final String CONFIG_FILE_NAME = ".eppic.conf";
@@ -41,7 +41,6 @@ public class SeqClusterer {
 		loadConfigFile();
 
 		if (!DEBUG) {
-			// saveFile.deleteOnExit();
 			inFastaFile.deleteOnExit();
 		}
 
@@ -72,15 +71,6 @@ public class SeqClusterer {
 
 		System.out.println("Clustering with " + clusteringId
 				+ "% id resulted in " + clusterslist.size() + " clusters");
-
-
-		if (!DEBUG) {
-			File outFile = new File(outClustFilePrefix.getParent(), outClustFilePrefix.getName() + MmseqsRunner.MMSEQS_TSV_SUFFIX);
-			// note that if mmseqs throws an exception then this is not
-			// reached and thus files not removed on exit
-			outFile.deleteOnExit();
-
-		}
 
 		return clusterslist;
 	}
