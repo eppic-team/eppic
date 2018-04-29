@@ -4,6 +4,11 @@ import eppic.model.ChainClusterDB;
 import eppic.model.SeqClusterDB;
 import gnu.getopt.Getopt;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.Table;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
 import java.io.File;
 import java.util.*;
 
@@ -26,6 +31,8 @@ public class ClusterSequences {
 				"Usage: ClusterSequences \n" +		
 				"  -D <string>: the database name to use\n"+
 				" [-d]        : dry run. Runs mmseqs but does not persist results to database\n" +
+				" [-f]        : force to truncate the SeqCluster table and load everything. \n" +
+				"               Default: not force, i.e. if table is not empty, nothing is persisted\n"+
 				" [-a]        : number of threads (default 1)\n"+
 				" [-g <file>] : a configuration file containing the database access parameters, if not provided\n" +
 				"               the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
@@ -36,8 +43,9 @@ public class ClusterSequences {
 		String dbName = null;
 		File configFile = null;
 		boolean dryRun = false;
+		boolean force = false;
 		
-		Getopt g = new Getopt("ClusterSequences", args, "D:da:s:g:h?");
+		Getopt g = new Getopt("ClusterSequences", args, "D:dfa:s:g:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -46,6 +54,9 @@ public class ClusterSequences {
 				break;
 			case 'd':
 				dryRun = true;
+				break;
+			case 'f':
+				force = true;
 				break;
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
@@ -71,15 +82,38 @@ public class ClusterSequences {
 		
 		// note if configFile is null, DBHandler will use a default location in user's home dir
 		DBHandler dbh = new DBHandler(dbName, configFile);
-		
+
 		boolean canDoUpdate = true;
-		
+
+		String seqClustersTable = getTableName(dbh.getEntityManager(), SeqClusterDB.class);
+
 		if (!dbh.checkSeqClusterEmpty()) {
-			System.err.println("Warning! SeqCluster table is not empty. Will continue calculating clusters but won't be able to update database");
-			//System.exit(1);
-			canDoUpdate = false;
+			System.out.println("Warning! '" + seqClustersTable + "' table is not empty.");
+			if (force) {
+				// these 2 needed: https://stackoverflow.com/questions/5452760/how-to-truncate-a-foreign-key-constrained-table?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+				// SET FOREIGN_KEY_CHECKS = 0;
+				// SET FOREIGN_KEY_CHECKS = 1;
+				System.out.println("Force (-f) specified: will wipe table "+seqClustersTable);
+				EntityManager em = dbh.getEntityManager();
+				Query q = em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 0");
+				q.executeUpdate();
+				String query = "TRUNCATE TABLE " + dbName + "." + seqClustersTable;
+				em.getTransaction().begin();
+				q = em.createNativeQuery(query);
+				q.executeUpdate();
+				em.getTransaction().commit();
+				q = em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1");
+				q.executeUpdate();
+
+			} else {
+				System.err.println("Will continue calculating clusters but won't be able to update table "+seqClustersTable+". If you want to wipe it, force it with -f");
+				//System.exit(1);
+				canDoUpdate = false;
+			}
 		}
-		
+
+
+
 		Map<Integer, ChainClusterDB> allChains = dbh.getAllChainsWithRef();
 		System.out.println("Read "+allChains.size()+" chains having pdbCode and UniProt reference");
 		filterShortSeqs(allChains, MIN_LENGTH);
@@ -186,5 +220,29 @@ public class ClusterSequences {
 		return true;
 	}
 
+	/**
+	 * Get SQL table name from JPA.
+	 * Recipe from https://stackoverflow.com/questions/2342075/how-to-retrieve-mapping-table-name-for-an-entity-in-jpa-at-runtime?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+	 * @param em
+	 * @param entityClass
+	 * @param <T>
+	 * @return
+	 */
+	private static <T> String getTableName(EntityManager em, Class<T> entityClass) {
+		/*
+		 * Check if the specified class is present in the metamodel.
+		 * Throws IllegalArgumentException if not.
+		 */
+		Metamodel meta = em.getMetamodel();
+		EntityType<T> entityType = meta.entity(entityClass);
+
+		//Check whether @Table annotation is present on the class.
+		Table t = entityClass.getAnnotation(Table.class);
+
+		String tableName = (t == null)
+				? entityType.getName().toLowerCase()
+				: t.name();
+		return tableName;
+	}
 
 }
