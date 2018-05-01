@@ -14,15 +14,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
-import org.biojava.nbio.structure.ExperimentalTechnique;
-import org.biojava.nbio.structure.Group;
-import org.biojava.nbio.structure.PDBCrystallographicInfo;
-import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureTools;
+import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.asa.GroupAsa;
+import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.contact.AtomContact;
 import org.biojava.nbio.structure.contact.GroupContact;
 import org.biojava.nbio.structure.contact.GroupContactSet;
@@ -94,7 +88,7 @@ public class DataModelAdaptor {
 	public static final int INVALID_ASSEMBLY_ID = 0;
 	
 	private PdbInfoDB pdbInfo;
-	
+
 	private EppicParams params;
 	
 	private RunParametersDB runParameters;
@@ -176,19 +170,24 @@ public class DataModelAdaptor {
 			pdbInfo.setCellBeta(cc.getBeta());
 			pdbInfo.setCellGamma(cc.getGamma());			
 		}
-		
+
+	}
+
+	public void setChainClustersData(Structure pdb, Map<String,String> chainOrigNames) {
 		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 
-		for (Compound compound:pdb.getCompounds()) {
-			
-			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-			if (compound.getChains().isEmpty()) continue;
+		for (EntityInfo compound:pdb.getEntityInfos()) {
 
-			chainClusterDBs.add(createChainCluster(compound));
+			if (compound.getType() == EntityType.POLYMER) {
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (compound.getChains().isEmpty()) continue;
+
+				chainClusterDBs.add(createChainCluster(compound, chainOrigNames));
+			}
 		}
 		pdbInfo.setNumChainClusters(chainClusterDBs.size());
 		pdbInfo.setChainClusters(chainClusterDBs);
-				
+
 		initAsymIds2chainIdsMap(pdb);
 	}
 	
@@ -199,26 +198,27 @@ public class DataModelAdaptor {
 	 * <p/>
 	 * Note that the map should work in most cases, but it's not guaranteed because there is a one-to-many
 	 * relationship between author chain ids and asym ids (internal ids). This is the best we can do 
-	 * with the data available from Biojava 4.2 
-	 * @param pdb
+	 * with the data available from Biojava 4.2
+	 * TODO check if we still need with BioJava 5
+	 * @param pdb the structure
 	 */
 	private void initAsymIds2chainIdsMap(Structure pdb) {
 		asymIds2chainIds = new HashMap<>();
 		
 		for (Chain c : pdb.getChains()) {
-			asymIds2chainIds.put(c.getInternalChainID(), c.getChainID());
+			asymIds2chainIds.put(c.getId(), c.getName());
 		}
 	}
-	
-	private ChainClusterDB createChainCluster(Compound compound) {
+
+	private ChainClusterDB createChainCluster(EntityInfo compound, Map<String,String> chainOrigNames) {
 		ChainClusterDB chainClusterDB = new ChainClusterDB();
 		
 		chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
 		
-		chainClusterDB.setRepChain(compound.getRepresentative().getChainID());
-		chainClusterDB.setMemberChains(getMemberChainsString(compound));
-		chainClusterDB.setNumMembers(compound.getChainIds().size());
-		chainClusterDB.setProtein(StructureTools.isProtein(compound.getRepresentative()));
+		chainClusterDB.setRepChain(compound.getRepresentative().getName());
+		chainClusterDB.setMemberChains(getMemberChainsString(compound, chainOrigNames));
+		chainClusterDB.setNumMembers(getUniqueChainNames(compound, chainOrigNames).size());
+		chainClusterDB.setProtein(compound.getRepresentative().isProtein());
 		
 		chainClusterDB.setPdbInfo(pdbInfo);
 		
@@ -239,7 +239,7 @@ public class DataModelAdaptor {
 			residueInfoDB.setChainCluster(chainClusterDB);			
 			
 			residueInfoDB.setPdbCode(pdbInfo.getPdbCode());
-			residueInfoDB.setRepChain(compound.getRepresentative().getChainID());
+			residueInfoDB.setRepChain(compound.getRepresentative().getName());
 			
 			// NOTE, here there can be 2 behaviours:
 			// 1) there is a SEQRES and getAlignedResIndex gives the actual SEQRES indices
@@ -281,7 +281,7 @@ public class DataModelAdaptor {
 		return chainClusterDB;
 	}
 	
-	private List<Group> getGroups(Compound compound) {
+	private List<Group> getGroups(EntityInfo compound) {
 		
 		List<Group> groups = new ArrayList<Group>();
 		
@@ -302,9 +302,9 @@ public class DataModelAdaptor {
 	}
 	
 	public void setInterfaces(StructureInterfaceList interfaces) {
-
 		
-		List<StructureInterfaceCluster> interfaceClusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+		List<StructureInterfaceCluster> interfaceClusters = reduceToNcsUnique(interfaces);
+
 		List<InterfaceClusterDB> icDBs = new ArrayList<InterfaceClusterDB>();
 		for (StructureInterfaceCluster ic:interfaceClusters) {
 			InterfaceClusterDB icDB = new InterfaceClusterDB();
@@ -374,14 +374,14 @@ public class DataModelAdaptor {
 					ContactDB contact = new ContactDB();
 					Group firstGroup = groupContact.getPair().getFirst();
 					Group secondGroup = groupContact.getPair().getSecond();
-					if (firstGroup.getChain().getCompound()==null)
+					if (firstGroup.getChain().getEntityInfo()==null)
 						contact.setFirstResNumber(UNKNOWN_RESIDUE_INDEX);
 					else 
-						contact.setFirstResNumber(firstGroup.getChain().getCompound().getAlignedResIndex(firstGroup, firstGroup.getChain()) );
-					if (secondGroup.getChain().getCompound()==null)
+						contact.setFirstResNumber(firstGroup.getChain().getEntityInfo().getAlignedResIndex(firstGroup, firstGroup.getChain()) );
+					if (secondGroup.getChain().getEntityInfo()==null)
 						contact.setSecondResNumber(UNKNOWN_RESIDUE_INDEX);
 					else
-						contact.setSecondResNumber(secondGroup.getChain().getCompound().getAlignedResIndex(secondGroup, secondGroup.getChain()) );
+						contact.setSecondResNumber(secondGroup.getChain().getEntityInfo().getAlignedResIndex(secondGroup, secondGroup.getChain()) );
 					contact.setFirstResType(firstGroup.getPDBName());
 					contact.setSecondResType(secondGroup.getPDBName());
 					GroupAsa firstGroupAsa = interf.getFirstGroupAsa(firstGroup.getResidueNumber());
@@ -454,6 +454,58 @@ public class DataModelAdaptor {
 
 		pdbInfo.setMaxNumClashesAnyInterface(Collections.max(numClashesPerInterface));
 		
+	}
+
+	private List<StructureInterfaceCluster> reduceToNcsUnique(StructureInterfaceList interfaces) {
+		List<StructureInterfaceCluster> clusters = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF);
+
+		if (!pdbInfo.isNcsOpsPresent()) {
+			// no NCS case (normal case), return clusters as is
+			return clusters;
+		}
+
+		// NCS case. We need to reduce to the unique-to-NCS set
+		List<StructureInterfaceCluster> interfaceClustersNcs = interfaces.getClustersNcs();
+
+		List<StructureInterfaceCluster> reduced = new ArrayList<>();
+		for (StructureInterfaceCluster cluster : clusters) {
+			Set<Integer> indices = new TreeSet<>();
+			for (StructureInterface interf : cluster.getMembers()) {
+				indices.add(getCorrespondingClustersIndex(interf, interfaceClustersNcs));
+			}
+
+			StructureInterfaceCluster reducedCluster = new StructureInterfaceCluster();
+			reducedCluster.setId(cluster.getId());
+			reducedCluster.setAverageScore(cluster.getAverageScore());
+			for (int i : indices) {
+				// we add one interface per NCS interface cluster
+				StructureInterface interf = interfaceClustersNcs.get(i).getMembers().get(0);
+				if (interf.getCluster()==null) {
+					LOGGER.warn("Interface {} is not associated to a cluster. Something might be wrong", interf.getId());
+				} else if (interf.getCluster().getId() != reducedCluster.getId()) {
+					LOGGER.warn("Interface {} belongs to cluster {}. It should not be added to cluster id {}",
+							interf.getId(), interf.getCluster().getId(), reducedCluster.getId());
+				}
+				reducedCluster.addMember(interf);
+				// we add also the new back-reference to the parent
+				interf.setCluster(reducedCluster);
+			}
+
+			reduced.add(reducedCluster);
+		}
+
+		return reduced;
+	}
+
+	private static int getCorrespondingClustersIndex(StructureInterface interf, List<StructureInterfaceCluster> interfaceClustersNcs) {
+		for (int i = 0; i< interfaceClustersNcs.size(); i++) {
+			for (StructureInterface s : interfaceClustersNcs.get(i).getMembers()) {
+				if (s.getId() == interf.getId()) {
+					return i;
+				}
+			}
+		}
+		return -1;
 	}
 	
 	public void setAssemblies(CrystalAssemblies validAssemblies) {
@@ -716,6 +768,7 @@ public class DataModelAdaptor {
 	 * For the given PDB bio unit (first in PDB annotation), map the PDB-annotated interfaces 
 	 * to our interface cluster ids
 	 * @param bioUnit
+	 * @param cell
 	 * @return the list of matching cluster ids
 	 */
 	private Set<Integer> matchToInterfaceClusters(BioAssemblyInfo bioUnit, CrystalCell cell) {
@@ -734,9 +787,9 @@ public class DataModelAdaptor {
 		}
 
 		if (!im.checkTheirsMatch()) {
-			String msg = "";
+			StringBuilder msg = new StringBuilder();
 			for (SimpleInterface theirI:im.getTheirsNotMatching()) {
-				msg += theirI.toString()+"\t";
+				msg.append(theirI.toString()).append("\t");
 			}
 
 			// This actually happens even if the mapping is fine. That's because we enumerate the biounit 
@@ -744,7 +797,7 @@ public class DataModelAdaptor {
 			// 2 molecules don't make a contact. 
 			LOGGER.info("Some interfaces of PDB bio unit "+EppicParams.PDB_BIOUNIT_TO_USE+
 					" do not match any of the EPPIC interfaces."+ 
-					" Non-matching interfaces are: "+msg);
+					" Non-matching interfaces are: "+msg.toString());
 
 		}
 
@@ -794,6 +847,10 @@ public class DataModelAdaptor {
 		// geometry scores per interface
 		for (int i=0;i<gps.size();i++) {
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
+			if (pdbInfo.isNcsOpsPresent() && ii==null) {
+				LOGGER.info("Not storing geometry scores for redundant NCS interface {}", i+1);
+				continue;
+			}
 			InterfaceScoreDB is = new InterfaceScoreDB();
 			ii.addInterfaceScore(is);
 			is.setInterfaceItem(ii);
@@ -970,6 +1027,10 @@ public class DataModelAdaptor {
 			
 			InterfaceEvolContext iec = iecl.get(i);
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
+			if (pdbInfo.isNcsOpsPresent() && ii==null) {
+				LOGGER.info("Not storing evolutionary scores for redundant NCS interface {}", i+1);
+				continue;
+			}
 			
 			// 2) core-surface scores
 			EvolCoreSurfacePredictor ecsp = iec.getEvolCoreSurfacePredictor();
@@ -1078,6 +1139,10 @@ public class DataModelAdaptor {
 		// per interface combined scores
 		for (int i=0;i<cps.size();i++) {
 			InterfaceDB ii = pdbInfo.getInterface(i+1);
+			if (pdbInfo.isNcsOpsPresent() && ii==null) {
+				LOGGER.info("Not storing combined scores for redundant NCS interface {}", i+1);
+				continue;
+			}
 			InterfaceScoreDB is = new InterfaceScoreDB();
 			ii.addInterfaceScore(is);
 			is.setMethod(ScoringMethod.EPPIC_FINAL);
@@ -1144,16 +1209,20 @@ public class DataModelAdaptor {
 			}
 
 			if (noseqres) 
-				LOGGER.warn("There are no SEQRES groups available. "
+				LOGGER.warn("There are no SEQRES groups available for chain with name {}. "
 						+ "There can be problems in residue mapping if the residue numbering is inconsistent "
 						+ "across different chains of the same entity.", 
-						chain.getChainID());
+						chain.getName());
 		}
 		
 		for (StructureInterface interf:interfaces) {
 			
 			InterfaceDB ii = pdbInfo.getInterface(interf.getId());
 
+			if (pdbInfo.isNcsOpsPresent() && ii==null) {
+				LOGGER.info("Not storing residue burials info for redundant NCS interface {}", interf.getId());
+				continue;
+			}
 			// we add the residue details
 			
 			List<ResidueBurialDB> iril = new ArrayList<ResidueBurialDB>();
@@ -1177,7 +1246,7 @@ public class DataModelAdaptor {
 		else if (molecId == InterfaceEvolContext.SECOND) 
 			chain =	interf.getParentChains().getSecond();
 		
-		String repChainId = chain.getCompound().getRepresentative().getChainID();
+		String repChainId = chain.getEntityInfo().getRepresentative().getName();
 		ChainClusterDB chainCluster = pdbInfo.getChainCluster(repChainId);
 		
 		
@@ -1246,7 +1315,7 @@ public class DataModelAdaptor {
 			// residue in the representative chain (the one we store in the residueInfos in chainCluster).
 			// Thus the issues with residue serials in SEQRES/no SEQRES case will hit here!
 			// See the comment in createChainCluster
-			int resser = chain.getCompound().getAlignedResIndex(group, chain);
+			int resser = chain.getEntityInfo().getAlignedResIndex(group, chain);
 			if (resser==-1) {
 				if (noseqres) 
 					LOGGER.warn("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
@@ -1298,11 +1367,11 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public static String getChainClusterString(Compound compound) {
+	public static String getChainClusterString(EntityInfo compound) {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(compound.getRepresentative().getChainID());
+		sb.append(compound.getRepresentative().getName());
 		
 		List<String> uniqChainIds = compound.getChainIds();
 
@@ -1310,7 +1379,7 @@ public class DataModelAdaptor {
 
 			sb.append(" (");
 			for (String chainId:uniqChainIds) {
-				if (chainId.equals(compound.getRepresentative().getChainID())) {
+				if (chainId.equals(compound.getRepresentative().getName())) {
 					continue;
 				}
 
@@ -1325,14 +1394,30 @@ public class DataModelAdaptor {
 		return sb.toString();
 	}
 
-	public static String getMemberChainsString(Compound compound) {
-		List<String> uniqChainIds = compound.getChainIds();
-		
+	private Set<String> getUniqueChainNames(EntityInfo compound, Map<String, String> chainOrigNames) {
+		List<Chain> chains = compound.getChains();
+		Set<String> uniqChainNames = new TreeSet<>();
+		for (Chain c : chains) {
+			String chainName;
+			if(chainOrigNames!=null) { // will only be not null in cases with NCS ops
+				chainName = chainOrigNames.get(c.getName());
+			} else {
+				chainName = c.getName();
+			}
+			uniqChainNames.add(chainName);
+		}
+		return uniqChainNames;
+	}
+
+	private String getMemberChainsString(EntityInfo compound, Map<String, String> chainOrigNames) {
+
+		Set<String> uniqChainNames = getUniqueChainNames(compound, chainOrigNames);
+
 		StringBuilder sb = new StringBuilder();
 		int i = 0;
-		for (String chainId:uniqChainIds) {
+		for (String chainId:uniqChainNames) {
 			sb.append(chainId);
-			if (i!=uniqChainIds.size()-1) sb.append(",");
+			if (i!=uniqChainNames.size()-1) sb.append(",");
 			i++;
 		}
 		return sb.toString();
@@ -1361,8 +1446,9 @@ public class DataModelAdaptor {
 	
 	/**
 	 * Finds the symmetry of the biounit with the biojava quat symmetry algorithms
+	 * @param pdb the au of the structure
 	 * @param bioUnitNumber
-	 * @return an array of size 4 with members: symmetry, stoichiometry, pseudosymmetry, pseudoStoichiometry
+	 * @return an array of size 2 with members: symmetry, stoichiometry
 	 */
 	private static String[] getSymmetry(Structure pdb, int bioUnitNumber) {
 		
@@ -1372,7 +1458,7 @@ public class DataModelAdaptor {
 			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms().size() == 0){
 			
 			LOGGER.warn("Could not load transformations for PDB biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
-			return new String[]{null,null,null,null};
+			return new String[]{null,null};
 		}
 		
 		List<BiologicalAssemblyTransformation> transformations = 
@@ -1381,72 +1467,32 @@ public class DataModelAdaptor {
 		
 		BiologicalAssemblyBuilder builder = new BiologicalAssemblyBuilder();
 
-		Structure bioAssembly = builder.rebuildQuaternaryStructure(pdb, transformations);
+		Structure bioAssembly = builder.rebuildQuaternaryStructure(pdb, transformations, true, false);
 
 		QuatSymmetryParameters parameters = new QuatSymmetryParameters();
         parameters.setOnTheFly(true);
-        parameters.setLocalSymmetry(false);
-		parameters.setVerbose(false);
+        SubunitClustererParameters clusterParams = new SubunitClustererParameters();
 
-		QuatSymmetryDetector detector = new QuatSymmetryDetector(bioAssembly, parameters);
+        // TODO not sure if this is still possible in biojava 5
+		//if (!detector.hasProteinSubunits()) {	
+		//	LOGGER.info("No protein chains in biounit {}, can't calculate symmetry. Will not assign a symmetry value to it.", bioUnitNumber);
+		//	return new String[]{null,null};
+		//}		
 
-		if (!detector.hasProteinSubunits()) {	
-			LOGGER.info("No protein chains in biounit {}, can't calculate symmetry. Will not assign a symmetry value to it.", bioUnitNumber);
-			return new String[]{null,null,null,null};
-		}		
-
-		List<QuatSymmetryResults> globalResults = detector.getGlobalSymmetry();
+		QuatSymmetryResults globalResults = QuatSymmetryDetector.calcGlobalSymmetry(bioAssembly, parameters, clusterParams);
 		
-		if (globalResults.isEmpty()) {
+		if (globalResults == null) {
 			LOGGER.warn("No global symmetry found for biounit {}. Will not assign a symmetry value to it.",  bioUnitNumber);
-			return new String[]{null, null, null, null};
+			return new String[]{null, null};
 		}
 		
-		String symmetry = null;
-		String stoichiometry = null;
-		String pseudoSymmetry = null;
-		String pseudoStoichiometry = null;
-
+		String symmetry = globalResults.getSymmetry();
 		
-		if (globalResults.size()>2) {
-			StringBuilder sb = new StringBuilder();
-			for (QuatSymmetryResults r:globalResults) {
-				sb.append(r.getSymmetry()+" ");
-			}
-			LOGGER.warn("More than 2 symmetry results found for biounit {}. The {} results are: {}", 
-					bioUnitNumber, globalResults.size(), sb.toString());
-		}
+		String stoichiometry = globalResults.getStoichiometry().toString();
+		LOGGER.info("Symmetry {} (stoichiometry {}) found in biounit {}", 
+				symmetry, stoichiometry, bioUnitNumber);
 		
-		for (QuatSymmetryResults r:globalResults) {
-			
-			if (r.getSubunits().isPseudoSymmetric()) {				
-				pseudoSymmetry = r.getSymmetry();
-				pseudoStoichiometry = r.getSubunits().getStoichiometry();
-				LOGGER.info("Pseudosymmetry {} (stoichiometry {}) found in biounit {}", 
-						pseudoSymmetry, pseudoStoichiometry, bioUnitNumber);
-			} else {
-				symmetry = r.getSymmetry();
-				stoichiometry = r.getSubunits().getStoichiometry();
-				LOGGER.info("Symmetry {} (stoichiometry {}) found in biounit {}", 
-						symmetry, stoichiometry, bioUnitNumber);
-			}
-			
-		}
-		// note: if there's no pseudosymmetry in the results then it remains null
-
-
-		if (symmetry==null) {
-			// this should not happen, will there ever be no global symmetry (non-pseudo) in the results?
-			LOGGER.warn("Could not find global symmetry for biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
-		} else if (stoichiometry==null){
-			LOGGER.warn("Symmetry found for biounit {}, but no stoichiometry value associated to it.", bioUnitNumber);
-		}
-		
-		if (pseudoSymmetry!=null && pseudoStoichiometry==null) {
-			LOGGER.warn("Pseudosymmetry found for biounit {}, but no stoichiometry value associated to it", bioUnitNumber);
-		}
-		
-		return new String[]{symmetry, stoichiometry, pseudoSymmetry, pseudoStoichiometry};
+		return new String[]{symmetry, stoichiometry};
 		
 	}
 }

@@ -223,7 +223,7 @@ public class PisaInterface implements Comparable<PisaInterface> {
 				continue;
 			}
 			// TODO check that insCode=0 is right as default insCode
-			ResidueNumber resNumber = new ResidueNumber(chain1.getChainID(), num, insCode);
+			ResidueNumber resNumber = new ResidueNumber(chain1.getName(), num, insCode);
 			Group g = null;
 			try {
 				g = chain1.getGroupByPDB(resNumber);
@@ -255,7 +255,7 @@ public class PisaInterface implements Comparable<PisaInterface> {
 				continue;
 			}
 			// TODO check that insCode=0 is right as default insCode
-			ResidueNumber resNumber = new ResidueNumber(chain2.getChainID(), num, insCode);
+			ResidueNumber resNumber = new ResidueNumber(chain2.getName(), num, insCode);
 			Group g = null;
 			try {
 				g = chain2.getGroupByPDB(resNumber);
@@ -281,13 +281,8 @@ public class PisaInterface implements Comparable<PisaInterface> {
 	 * @return
 	 */
 	private Chain findChainForPisaMolecule(PisaMolecule molecule, Structure pdb) {
-		if (molecule.isProtein()) {
-			try {
-				return pdb.getChainByPDB(molecule.getChainId());
-			} catch (StructureException e) {
-				System.err.println("Could not find chain for PISA chain "+molecule.getChainId());
-				return null;
-			}
+		if (molecule.isProtein()) {		
+			return pdb.getPolyChainByPDB(molecule.getChainId());
 		}
 		// TODO what to do with the non-polymeric chains from PISA????
 //		String pisaNonPolyChainId = molecule.getChainId();

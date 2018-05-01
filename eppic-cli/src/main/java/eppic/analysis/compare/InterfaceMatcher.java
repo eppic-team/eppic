@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.vecmath.Matrix4d;
 
@@ -17,6 +19,8 @@ import eppic.model.InterfaceClusterDB;
 import eppic.model.InterfaceDB;
 
 public class InterfaceMatcher {
+
+	private static final Pattern CHAIN_ID_REGEX = Pattern.compile("^(\\w+)\\d+n$");
 	
 	
 	private List<InterfaceClusterDB> ourInterfaceClusters;
@@ -190,15 +194,32 @@ public class InterfaceMatcher {
 		}
 		
 	}
+
+	private String ncsChainToStandardChain(String chainId){
+		if (chainId.length()>2 && chainId.endsWith("n")) {
+			Matcher m = CHAIN_ID_REGEX.matcher(chainId);
+			if (m.matches()) {
+				return m.group(1);
+			}
+		}
+		return chainId;
+	}
 	
 	private boolean areMatching(SimpleInterface theirI, InterfaceDB ourI) {
 		String ourChain1 = ourI.getChain1();
 		String ourChain2 = ourI.getChain2();
+
+		if (ourI.getInterfaceCluster().getPdbInfo().isNcsOpsPresent()) {
+			// we have special chain ids for NCS case, e.g. A1n
+			// see https://github.com/eppic-team/eppic/issues/141 , this is probably not solving the problem, but it helps
+			ourChain1 = ncsChainToStandardChain(ourChain1);
+			ourChain2 = ncsChainToStandardChain(ourChain2);
+		}
 		
 		String theirChain1 = theirI.getChain1();
 		String theirChain2 = theirI.getChain2();
 		
-		boolean invertedChains = false;
+		boolean invertedChains;
 		if (theirChain1.equals(ourChain1) && theirChain2.equals(ourChain2)) {
 			invertedChains = false;
 		}

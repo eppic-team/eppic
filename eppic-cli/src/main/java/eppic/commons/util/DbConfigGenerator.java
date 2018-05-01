@@ -35,6 +35,9 @@ public class DbConfigGenerator {
 		String user = null;
 		String pwd = null;
 
+		// default hbm2ddl mode is validate so that in normal production operations there's no risk of altering the schema
+		String hbm2ddlMode = "validate";
+
 		// port is the only optional property
 		if (properties.getProperty("port")!=null && !properties.getProperty("port").isEmpty()) 
 			port = properties.getProperty("port").trim();
@@ -53,6 +56,10 @@ public class DbConfigGenerator {
 			host = properties.getProperty("host").trim();
 		} else {
 			throw new IOException("Missing property 'host' in config file "+configurationFile);
+		}
+		// one more (optional) property to be able to control externally the behaviour of hibernate on startup (create tables, update, validate etc)
+		if (properties.getProperty("hibernate.hbm2ddl.auto")!=null && !properties.getProperty("hibernate.hbm2ddl.auto").isEmpty()) {
+			hbm2ddlMode = properties.getProperty("hibernate.hbm2ddl.auto").trim();
 		}
 		
 		if (dbName == null) {
@@ -76,6 +83,8 @@ public class DbConfigGenerator {
 		map.put("javax.persistence.jdbc.url", url);
 		map.put("javax.persistence.jdbc.user", user); 
 		map.put("javax.persistence.jdbc.password", pwd);
+
+		map.put("hibernate.hbm2ddl.auto", hbm2ddlMode);
 
 		map.put("hibernate.c3p0.min_size", "5");
 		map.put("hibernate.c3p0.max_size", "20");

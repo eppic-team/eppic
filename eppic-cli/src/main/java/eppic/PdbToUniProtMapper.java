@@ -16,7 +16,7 @@ import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.structure.AminoAcid;
 import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
+import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.GroupType;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class PdbToUniProtMapper implements Serializable {
 	 */
 	private Map<String, SequencePair<ProteinSequence,AminoAcidCompound>> alignments;
 	
-	private Compound compound;
+	private EntityInfo entity;
 	private Map<String, String> sequences;
 	private UnirefEntry uniProtReference;
 	
@@ -64,9 +64,9 @@ public class PdbToUniProtMapper implements Serializable {
 	private boolean sequenceFromAtom;
 	
 	
-	public PdbToUniProtMapper(Compound compound) {
+	public PdbToUniProtMapper(EntityInfo entity) {
 		
-		this.compound = compound;
+		this.entity = entity;
 		
 		initSequences();
 
@@ -91,7 +91,7 @@ public class PdbToUniProtMapper implements Serializable {
 		
 		sequences = new TreeMap<String, String>();
 			
-		Chain chain = compound.getRepresentative();
+		Chain chain = entity.getRepresentative();
 		// it looks like biojava interprets MSEs as METs, at least for the sequence, so no issues here
 		String repSequenceSeqRes = chain.getSeqResSequence();
 			
@@ -99,15 +99,15 @@ public class PdbToUniProtMapper implements Serializable {
 		// for files without a SEQRES, it will be empty, we get it from atom groups
 		if (repSequenceSeqRes.isEmpty()) {
 			LOGGER.warn("Could not get a sequence from SEQRES for entity {} (chains {}). Getting it from ATOM instead",
-					compound.getMolId(), compound.getChainIds().toString());
+					entity.getMolId(), entity.getChainIds().toString());
 			
-			for (Chain c:compound.getChains()) {
+			for (Chain c:entity.getChains()) {
 				
 				String seq = getAtomSequence(c);
 				
-				sequences.put(c.getChainID(), seq);
+				sequences.put(c.getName(), seq);
 				if (seq.isEmpty()) {
-					LOGGER.warn("Sequence from ATOM records for chain {} has length 0",chain.getChainID());
+					LOGGER.warn("Sequence from ATOM records for chain {} has length 0",chain.getName());
 				}
 
 			}
@@ -117,7 +117,7 @@ public class PdbToUniProtMapper implements Serializable {
 		} else {
 			
 			// we add just the 1 representative sequence
-			sequences.put(chain.getChainID() ,repSequenceSeqRes);
+			sequences.put(chain.getName() ,repSequenceSeqRes);
 			this.sequenceFromAtom = false;
 		}
 	}
@@ -127,7 +127,7 @@ public class PdbToUniProtMapper implements Serializable {
 		this.alignments = new TreeMap<String, SequencePair<ProteinSequence,AminoAcidCompound>>();
 		
 		if (sequenceFromAtom) {
-			LOGGER.info("PDB sequences are from ATOM, will have one alignment per member chain of entity {}",compound.getMolId());
+			LOGGER.info("PDB sequences are from ATOM, will have one alignment per member chain of entity {}",entity.getMolId());
 		}		
 		
 		
@@ -442,7 +442,7 @@ public class PdbToUniProtMapper implements Serializable {
 		
 		if (minBeg == Integer.MAX_VALUE || maxEnd == 0) {
 			
-			LOGGER.warn("Could not find a matching interval for entity {}", compound.getMolId());
+			LOGGER.warn("Could not find a matching interval for entity {}", entity.getMolId());
 			
 			matchingIntervalUniProtCoords = null;
 			matchingIntervalPdbCoords = null;
@@ -468,13 +468,13 @@ public class PdbToUniProtMapper implements Serializable {
 		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
-			alignment = alignments.get(c.getChainID());
+			alignment = alignments.get(c.getName());
 		} else {
 			// we should have just the one alignment for the SEQRES sequence
 			alignment = alignments.values().iterator().next();
-			if (compound.getChains().size()>1 && alignments.size()>1) 
+			if (entity.getChains().size()>1 && alignments.size()>1) 
 				LOGGER.warn("More than 1 alignment for entity {} contained in pdb-to-uniprot mapper, expected only 1: something is wrong!",
-						compound.getMolId());
+						entity.getMolId());
 		}
 		
 		int resser = getSeqresSerial(g);
@@ -515,13 +515,13 @@ public class PdbToUniProtMapper implements Serializable {
 		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
-			alignment = alignments.get(c.getChainID());
+			alignment = alignments.get(c.getName());
 		} else {
 			// we should have just the one alignment for the SEQRES sequence
 			alignment = alignments.values().iterator().next();
-			if (compound.getChains().size()>1 && alignments.size()>1) 
+			if (entity.getChains().size()>1 && alignments.size()>1) 
 				LOGGER.warn("More than 1 alignment for entity {} contained in pdb-to-uniprot mapper, expected only 1: something is wrong!",
-						compound.getMolId());
+						entity.getMolId());
 		}
 
 		int resser = getSeqresSerial(g);
@@ -574,9 +574,9 @@ public class PdbToUniProtMapper implements Serializable {
 		} else {
 			// we should have just the one alignment for the SEQRES sequence
 			alignment = alignments.values().iterator().next();
-			if (compound.getChains().size()>1 && alignments.size()>1) 
+			if (entity.getChains().size()>1 && alignments.size()>1) 
 				LOGGER.warn("More than 1 alignment for entity {} contained in pdb-to-uniprot mapper, expected only 1: something is wrong!",
-						compound.getMolId());
+						entity.getMolId());
 		}
 		
 		int alnIdx = alignment.getTarget().getAlignmentIndexAt(uniProtIndex);		
@@ -588,8 +588,8 @@ public class PdbToUniProtMapper implements Serializable {
 		
 		// getting the relevant chain
 		Chain chain = null;
-		for (Chain c:compound.getChains()) {
-			if (c.getChainID().equals(chainId)) {
+		for (Chain c:entity.getChains()) {
+			if (c.getName().equals(chainId)) {
 				chain = c;
 			}
 		}
@@ -652,7 +652,7 @@ public class PdbToUniProtMapper implements Serializable {
 		else { 
 			// IMPORTANT NOTE: this won't work for groups that are not in ATOM groups, due to
 			// seqres groups not having residue numbers in BioJava
-			return compound.getAlignedResIndex(g, g.getChain());
+			return entity.getAlignedResIndex(g, g.getChain());
 		}
 	}
 	

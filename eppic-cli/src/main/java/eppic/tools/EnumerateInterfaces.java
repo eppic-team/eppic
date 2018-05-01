@@ -21,13 +21,7 @@ import java.util.regex.Pattern;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Vector3d;
 
-import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.Compound;
-import org.biojava.nbio.structure.Group;
-import org.biojava.nbio.structure.PDBCrystallographicInfo;
-import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
-import org.biojava.nbio.structure.StructureIO;
+import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
@@ -209,17 +203,22 @@ public class EnumerateInterfaces {
 			outBaseName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf("."));
 		}
 
+		int countPolyEntities = 0;
+		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
+			if (chainCluster.getType() == EntityType.POLYMER) countPolyEntities++;
+		}
+		System.out.println(pdb.getPDBCode()+" - "+pdb.getPolyChains().size()+" poly chains ("+countPolyEntities+" sequence unique) ");
 
-		System.out.println(pdb.getPDBCode()+" - "+pdb.getChains()+" chains ("+pdb.getCompounds().size()+" sequence unique) ");
-
-		for (Compound chainCluster:pdb.getCompounds()) {
-			// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
-			if (chainCluster.getChains().isEmpty()) continue;
-			System.out.println(DataModelAdaptor.getChainClusterString(chainCluster));
+		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
+			if (chainCluster.getType() == EntityType.POLYMER) {
+				// in mmCIF files some sugars are annotated as compounds with no chains linked to them, e.g. 3s26
+				if (chainCluster.getChains().isEmpty()) continue;
+				System.out.println(DataModelAdaptor.getChainClusterString(chainCluster));
+			}
 		}
 		System.out.println("Chains: ");
-		for (Chain chain:pdb.getChains()) {
-			System.out.println(chain.getInternalChainID()+"("+chain.getChainID()+")");
+		for (Chain chain:pdb.getPolyChains()) {
+			System.out.println(chain.getId()+"("+chain.getName()+")");
 		}
 		
 		PDBCrystallographicInfo xtalInfo = pdb.getCrystallographicInfo();
@@ -359,8 +358,8 @@ public class EnumerateInterfaces {
 		
 		if (writeDir!=null) {
 			Set<String> chainIds = new TreeSet<String>();
-			for (Chain chain:pdb.getChains()) {
-				chainIds.add(chain.getChainID());
+			for (Chain chain:pdb.getPolyChains()) {
+				chainIds.add(chain.getName());
 			}
 			pr.generateInterfacesPse(inputFile, chainIds,
 					new File(writeDir,outBaseName+".allinterfaces.pml"), 

@@ -5,12 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
@@ -19,7 +16,7 @@ import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.gui.BiojavaJmol;
 import org.biojava.nbio.structure.io.MMCIFFileReader;
 import org.biojava.nbio.structure.io.PDBFileReader;
-import org.biojava.nbio.structure.io.util.FileDownloadUtils;
+import org.biojava.nbio.core.util.FileDownloadUtils;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +30,6 @@ import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
 import eppic.assembly.ParametricCircularArc;
-import eppic.commons.util.StructureUtils;
 
 /**
  * Jmol viewer for LatticeGraph.
@@ -56,7 +52,6 @@ public class LatticeGUIJmol {
 	 * Jmol needs to load the structure directly from strucFile.
 	 * @param struc Structure to build the graph
 	 * @param strucFile Path to the structure of the asymmetric unit.
-	 * @param interfaceIds List of interfaces to show, or null for all
 	 * @throws StructureException
 	 */
 	public LatticeGUIJmol(Structure struc, File strucFile) throws StructureException {
@@ -189,8 +184,13 @@ public class LatticeGUIJmol {
 			logger.error("Unable to read structure or file {}",input);
 			System.exit(1);
 		}
-		
-		StructureUtils.expandNcsOps(struc);
+
+		// TODO deal with NCS ops, since biojava 5 the handling of NCS has changed
+		//StructureTools.expandNcsOps(struc);
+		//if (struc.getCrystallographicInfo().getNcsOperators()!=null) {
+		//	CrystalBuilder.expandNcsOps(struc, new HashMap<>(), new HashMap<>());
+		//	//interfFinder = new CrystalBuilder(pdb,chainOrigNames,chainNcsOps);
+		//}
 
 		LatticeGUIJmol gui = new LatticeGUIJmol(struc, file);
 		if(interfaceIds != null) {
@@ -240,7 +240,7 @@ public class LatticeGUIJmol {
 
 		jmol.evalString(getJmolCommands());
 
-		jmol.getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		jmol.getFrame().setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 		return jmol;
 

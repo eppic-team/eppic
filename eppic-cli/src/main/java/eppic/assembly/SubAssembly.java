@@ -201,7 +201,7 @@ public class SubAssembly {
 				.mapToObj(i -> crystalAssemblies.getChainId(i))
 				.collect(Collectors.toList());
 		List<String> nodeChains = connectedGraph.vertexSet().stream()
-				.map(v -> v.getChain().getChainID())
+				.map(v -> v.getChain().getName())
 				.collect(Collectors.toList());
 
 		Stoichiometry<String> chainStoich = new Stoichiometry<>(nodeChains,chains);

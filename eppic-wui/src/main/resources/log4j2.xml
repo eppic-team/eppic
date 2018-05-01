@@ -6,9 +6,16 @@
 		</Console>
 	</appenders>
 	<loggers>
-		<Logger name="org.hibernate" level="warn"/>
+
 		<root level="info">
 			<appender-ref ref="ConsoleStdErr"/>
 		</root>
+
+		<Logger name="org.hibernate" level="warn" additivity="false">
+			<appender-ref ref="ConsoleStdErr"/>
+		</Logger>
+		<Logger name="com.mchange" level="warn" additivity="false">
+			<appender-ref ref="ConsoleStdErr"/>
+		</Logger>
 	</loggers>
 </configuration>

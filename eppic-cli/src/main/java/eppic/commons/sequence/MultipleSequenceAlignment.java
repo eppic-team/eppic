@@ -522,7 +522,7 @@ public class MultipleSequenceAlignment implements Serializable {
      * @param seqTag
      * @return
      */
-    public int getIndexFromTag(int seqTag) {
+    public int getIndexFromTag(String seqTag) {
     	return tags2indices.get(seqTag);
     }
     
