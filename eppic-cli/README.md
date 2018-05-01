@@ -5,11 +5,11 @@ http://www.eppic-web.org
 
 If you use this software for your research, please cite:
  
-> Duarte JM, Srebniak A, Schärer MA and Capitani G, Protein interface 
-> classification by evolutionary analysis, BMC Bioinformatics 2012 13:334 
-> doi:10.1186/1471-2105-13-334 
+> Bliven S, Lafita A, Parker A, Capitani G, Duarte JM (2018) 
+> Automated evaluation of quaternary structures from protein crystals. 
+> PLoS Comput Biol 14(4): e1006104. https://doi.org/10.1371/journal.pcbi.1006104 
 >
-> http://www.biomedcentral.com/1471-2105/13/334
+> http://journals.plos.org/ploscompbiol/article/metrics?id=10.1371/journal.pcbi.1006104
 
 The software is released under the GNU General Public License (GPL).
 
@@ -68,7 +68,7 @@ EPPIC is a java program that should work in any Unix like system.
 It has only been tested in Linux but there is no reason why it should
 not work in MacOSX.
 
-You need Java 1.7 or newer. Most systems will have java already 
+You need Java 1.8 or newer. Most systems will have java already 
 installed. Otherwise get it by installing the OpenJDK package in 
 Linux or downloading java from http://java.com/en/download/index.jsp
 
