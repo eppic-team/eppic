@@ -9,7 +9,7 @@ If you use this software for your research, please cite:
 > Automated evaluation of quaternary structures from protein crystals. 
 > PLoS Comput Biol 14(4): e1006104. https://doi.org/10.1371/journal.pcbi.1006104 
 >
-> http://journals.plos.org/ploscompbiol/article/metrics?id=10.1371/journal.pcbi.1006104
+> http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006104
 
 The software is released under the GNU General Public License (GPL).
 
