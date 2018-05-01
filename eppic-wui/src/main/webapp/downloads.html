@@ -55,7 +55,6 @@
 			<p>
 				<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=assembly&amp;id=&lt;PDB_code&gt;&amp;assemblyId=&lt;Assembly_id&gt;&amp;coordsFormat=cif</code>
 			</p>
-		</p>
 		<p>
 			Please note that the server uses gzip encoding. Thus if you use wget, you will need the following syntax:
 		</p>
@@ -147,10 +146,10 @@
 		</p>
 
 		<ul>
-			<li><a href="../downloads/DCxtal.txt"  target="_blank">DCxtal set</a>: a set of
+			<li><a href="https://github.com/eppic-team/datasets/blob/master/data/DCxtal.txt"  target="_blank">DCxtal set</a>: a set of
 				crystal contacts with large interface areas (&gt;1000Å<sup>2</sup>)
 			</li>
-			<li><a href="../downloads/DCbio.txt"  target="_blank">DCbio set</a>: a set of
+			<li><a href="https://github.com/eppic-team/datasets/blob/master/data/DCbio.txt"  target="_blank">DCbio set</a>: a set of
 				biologically relevant interfaces with relatively small interface
 				areas (&lt;2000Å<sup>2</sup>)</li>
 		</ul>
@@ -179,7 +178,7 @@
 			oligomeric structures. It can also be downloaded as text file here:
 		</p>
 		<ul>
-			<li><a href="../downloads/TMPbio.txt"  target="_blank">TMPbio set</a>: a set of
+			<li><a href="https://github.com/eppic-team/datasets/blob/master/data/TMPbio.txt"  target="_blank">TMPbio set</a>: a set of
 				biological interfaces spanning the transmembrane region, from both
 				alpha and beta TMP subclasses</li>
 		</ul>
@@ -198,38 +197,33 @@
 			XtalMany and BioMany can be downloaded as text files here:
 		</p>
 		<ul>
-			<li><a href="../downloads/ManyXtal.txt"  target="_blank">XtalMany set</a>: a large
+			<li><a href="https://github.com/eppic-team/datasets/blob/master/data/ManyXtal.txt"  target="_blank">XtalMany set</a>: a large
 				dataset of crystal contacts</li>
 		</ul>
 		<ul>
-			<li><a href="../downloads/ManyBio.txt"  target="_blank">BioMany set</a>: a large
+			<li><a href="https://github.com/eppic-team/datasets/blob/master/data/ManyBio.txt"  target="_blank">BioMany set</a>: a large
 				dataset of biological interfaces</li>
 		</ul>
 
-
+		<p>
+			In <a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006104" target="_blank">Bliven et al. 2018</a> we
+			used a dataset of assemblies extracted from the bioassembly annotations in the PDB (only the 1st bioassembly "PDB1" was used).
+			Bioassemblies with good consensus within their 70% sequence clusters were taken, see full details in
+			<a href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1006104" target="_blank">paper</a>.
+		</p>
+		<ul>
+			<li><a href="https://github.com/eppic-team/datasets/blob/master/data/benchmark-pdb1_clusters.csv" target="_blank">
+				Consensus assemblies (PDB1 clusters)</a> </li>
+		</ul>
 
 		<p>
 			Please note that the original publications also contain the datasets including
 			our full annotations. However we cannot update those if we find any mistakes.
-			The downloadable datasets here represent the most up-to-date and best
+			The datasets linked here represent the most up-to-date and best
 			validated sets. Please use these ones preferentially to the ones available in the
 			original publications.
 		</p>
-		<p>
-			For completeness this is a full changelog of any mistakes that we have found
-			since publication:
 
-		</p>
-		<ul>
-			<li>
-			DCbio set: 3f3e was removed because it is a membrane protein and additionally the experimental evidence
-			was not sufficiently clear; 1ytq was removed because it has a clear domain swap
-			</li>
-			<li>
-			TMPbio set: the relevant interface for 2wsw is 2, as listed in the publication. The downloadable dataset
-			file has been corrected accordingly
-			</li>
-		</ul>
 
 	</div>
 </body>

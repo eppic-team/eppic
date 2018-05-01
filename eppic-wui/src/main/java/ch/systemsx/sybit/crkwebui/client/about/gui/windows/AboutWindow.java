@@ -43,16 +43,6 @@ public class AboutWindow extends ResizableWindow
 				"</tr>" +
 				"<tr>" +
 				"<td></td>" +
-				"<td>" +
-				"Crystallography and Structural Bioinformatics Group<br>" +
-				"Laboratory of Biomolecular Research<br>" +
-				"Paul Scherrer Institut<br>" +
-				"Villigen PSI<br>" +
-				"Switzerland" +
-				"</td>" +
-				"</tr>" +
-				"<tr>" +
-				"<td></td>" +
 				"<td>This server is intended for research purposes only. " +
 				"It is a non-profit service to the scientific community, " +
 				"provided on an \"as is\" basis without any warranty, expressed or implied. " +
