@@ -96,31 +96,6 @@
 			<version>${mysql.connector.version}</version>
 		</dependency>
 		
-		<!-- 
-			For some reason the 5.x hibernate dependencies 
-			don't solve their subdependencies properly The only way I found to solve 
-			it is to add the subdependencies manually or otherwise errors come at runtime: 
-		 	  jackson-databind, javax.el-api, javax.el 
-		-->
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.7.4</version>
-		</dependency>
-
-		<dependency>
-			<groupId>javax.el</groupId>
-			<artifactId>javax.el-api</artifactId>
-			<version>2.2.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.web</groupId>
-			<artifactId>javax.el</artifactId>
-			<version>2.2.6</version>
-		</dependency>
-
-		
 		<!--  others -->
 		<dependency>
 			<groupId>us.levk</groupId>
