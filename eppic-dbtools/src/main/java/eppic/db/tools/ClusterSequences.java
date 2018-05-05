@@ -89,23 +89,7 @@ public class ClusterSequences {
 
 		if (!dbh.checkSeqClusterEmpty()) {
 			System.out.println("Warning! '" + seqClustersTable + "' table is not empty.");
-			if (force) {
-				// these 2 needed: https://stackoverflow.com/questions/5452760/how-to-truncate-a-foreign-key-constrained-table?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
-				// SET FOREIGN_KEY_CHECKS = 0;
-				// SET FOREIGN_KEY_CHECKS = 1;
-				System.out.println("Force (-f) specified: will wipe table "+seqClustersTable);
-				EntityManager em = dbh.getEntityManager();
-				Query q = em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 0");
-				q.executeUpdate();
-				String query = "TRUNCATE TABLE " + dbName + "." + seqClustersTable;
-				em.getTransaction().begin();
-				q = em.createNativeQuery(query);
-				q.executeUpdate();
-				em.getTransaction().commit();
-				q = em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1");
-				q.executeUpdate();
-
-			} else {
+			if (!force) {
 				System.err.println("Will continue calculating clusters but won't be able to update table "+seqClustersTable+". If you want to wipe it, force it with -f");
 				//System.exit(1);
 				canDoUpdate = false;
@@ -122,7 +106,9 @@ public class ClusterSequences {
 		SeqClusterer sc = new SeqClusterer(allChains, numThreads);
 
 		Map<Integer,Map<Integer,Integer>> allMaps = new TreeMap<Integer,Map<Integer,Integer>>();
-		
+
+		long start = System.currentTimeMillis();
+
 		for (int clusteringId:CLUSTERING_IDS) {
 			
 			List<List<String>> clustersList = sc.clusterThem(clusteringId);
@@ -130,10 +116,14 @@ public class ClusterSequences {
 			allMaps.put(clusteringId, getMapFromList(clustersList));
 			 
 		}
+
+		long end = System.currentTimeMillis();
+
+		System.out.println("Done calculating sequence clusters in " + ((end-start)/1000) +" s");
 		
 		if (!canDoUpdate) {			
 			System.out.println("Can't do database update because SeqCluster table is not empty.");
-			System.out.println("Remove all records in SeqCluster table and then run again ");
+			System.out.println("Remove all records in SeqCluster table and then run again, or use -f option to force table truncation ");
 			System.out.println("Exiting");
 			System.exit(1);
 		}
@@ -141,6 +131,14 @@ public class ClusterSequences {
 		if (dryRun) {
 			System.out.println("Dry run option (-d) was passed. Not persisting clustering results to database.");
 			System.exit(0);
+		}
+
+		if (!dbh.checkSeqClusterEmpty()) {
+			if (force) {
+				System.out.println("Attempting to truncate '" + seqClustersTable + "' table.");
+				// if this throws exception, then program aborts
+				truncateTable(dbh, dbName, seqClustersTable);
+			}
 		}
 
 		System.out.println("Writing to db...");
@@ -245,4 +243,27 @@ public class ClusterSequences {
 		return tableName;
 	}
 
+	private static void truncateTable(DBHandler dbh, String dbName, String seqClustersTable) {
+		// these 2 needed: https://stackoverflow.com/questions/5452760/how-to-truncate-a-foreign-key-constrained-table?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
+		// SET FOREIGN_KEY_CHECKS = 0;
+		// SET FOREIGN_KEY_CHECKS = 1;
+		System.out.println("Force (-f) specified: will wipe table "+seqClustersTable);
+		EntityManager em = dbh.getEntityManager();
+
+		Query q = em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 0");
+		em.getTransaction().begin();
+		q.executeUpdate();
+		em.getTransaction().commit();
+
+		String query = "TRUNCATE TABLE " + dbName + "." + seqClustersTable;
+		em.getTransaction().begin();
+		q = em.createNativeQuery(query);
+		q.executeUpdate();
+		em.getTransaction().commit();
+
+		em.getTransaction().begin();
+		q = em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1");
+		q.executeUpdate();
+		em.getTransaction().commit();
+	}
 }
