@@ -12,7 +12,7 @@
     <artifactId>eppic-rest</artifactId>
 
     <packaging>war</packaging>
-    <name>EPPIC REST API</name>
+    <name>eppic-rest</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -41,6 +41,25 @@
             <artifactId>eppic-model</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysql.connector.version}</version>
+        </dependency>
+
         <!-- JAX-RS -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
