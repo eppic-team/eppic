@@ -1,7 +1,6 @@
-package eppic.rest;
+package eppic.rest.commons;
 
 import eppic.jpautils.DbConfigGenerator;
-import eppic.rest.dao.jpa.EntityManagerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

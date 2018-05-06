@@ -1,4 +1,4 @@
-package eppic.rest;
+package eppic.rest.commons;
 
 
 import eppic.rest.filter.CORSResponseFilter;

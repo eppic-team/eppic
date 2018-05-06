@@ -1,6 +1,6 @@
 package eppic.rest.dao.jpa;
 
-import eppic.rest.AppConstants;
+import eppic.rest.commons.AppConstants;
 
 
 import javax.persistence.EntityManager;
