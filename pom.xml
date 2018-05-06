@@ -11,6 +11,7 @@
 		<module>eppic-cli</module>
 		<module>eppic-wui</module>
 		<module>eppic-dbtools</module>
+		<module>eppic-rest</module>
 	</modules>
 
 	<name>eppic</name>
