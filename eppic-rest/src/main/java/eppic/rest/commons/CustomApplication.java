@@ -20,7 +20,7 @@ public class CustomApplication extends ResourceConfig {
     // note the filter package with the CORS filter needs to be in the resources to scan or CORS filter won't work - JD 2017-11-16
     public static final String PACKAGES_TO_SCAN = RESOURCE_PACKAGE + ";" + "eppic.rest.filter";
 
-    public CustomApplication() throws Exception {
+    public CustomApplication() {
 
         logger.info("Starting CustomApplication");
 

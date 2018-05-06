@@ -69,61 +69,16 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 		
 		return result;
 	}
 	
-	@Override
-	public void insertPDBInfo(PdbInfoDB pdbScoreItem) throws DaoException
-	{
-		EntityManager entityManager = null;
-		
-		try
-		{
-			entityManager = EntityManagerHandler.getEntityManager();
-			entityManager.getTransaction().begin();
-			entityManager.persist(pdbScoreItem);
-			entityManager.getTransaction().commit();
-		}
-		catch(Throwable e)
-		{
-			e.printStackTrace();
-			
-			try
-			{
-				entityManager.getTransaction().rollback();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
-			
-			throw new DaoException(e);
-		}
-		finally
-		{
-			try
-			{
-				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
-		}
-	}
+
 }

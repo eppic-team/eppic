@@ -16,12 +16,6 @@ public interface PDBInfoDAO
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve pdb info item for job
 	 */
-	public PdbInfo getPDBInfo(String jobId) throws DaoException;
-	
-	/**
-	 * Persists pdb info item.
-	 * @param pdbInfo pdb info item to persist
-	 * @throws DaoException when can not insert pdb info item
-	 */
-	public void insertPDBInfo(PdbInfoDB pdbInfo) throws DaoException;
+	PdbInfo getPDBInfo(String jobId) throws DaoException;
+
 }
