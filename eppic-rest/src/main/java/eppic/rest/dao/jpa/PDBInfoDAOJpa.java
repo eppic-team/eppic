@@ -1,6 +1,5 @@
 package eppic.rest.dao.jpa;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.model.JobDB;
 import eppic.model.JobDB_;
 import eppic.model.PdbInfoDB;
@@ -13,12 +12,11 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 
 /**
- * Implementation of PDBInfoDAO.
- * @author AS
+ * JPA implementation of PDBInfoDAO.
+ * @author Jose Duarte
  *
  */
-public class PDBInfoDAOJpa implements PDBInfoDAO
-{
+public class PDBInfoDAOJpa implements PDBInfoDAO {
 	
 	public PDBInfoDAOJpa() 
 	{
@@ -26,13 +24,11 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 	}
 
 	@Override
-	public PdbInfo getPDBInfo(String jobId) throws DaoException
+	public PdbInfoDB getPDBInfoShallow(String jobId) throws DaoException
 	{
 		EntityManager entityManager = null;
-		PdbInfo result = null;
-	
-		try
-		{
+
+		try {
 			entityManager = EntityManagerHandler.getEntityManager();
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 			CriteriaQuery<PdbInfoDB> criteriaQuery = criteriaBuilder.createQuery(PdbInfoDB.class);
@@ -63,9 +59,8 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 			
 			TypedQuery<PdbInfoDB> query = entityManager.createQuery(criteriaQuery);
 			PdbInfoDB pdbScoreItemDB = query.getSingleResult();
-			
-			result = PdbInfo.create(pdbScoreItemDB);
-			result.setJobId(jobId);
+
+			return pdbScoreItemDB;
 		}
 		catch(Throwable e)
 		{
@@ -77,8 +72,60 @@ public class PDBInfoDAOJpa implements PDBInfoDAO
 				entityManager.close();
 		}
 		
-		return result;
 	}
-	
 
+	@Override
+	public PdbInfoDB getPDBInfo(String jobId) throws DaoException {
+		EntityManager entityManager = null;
+
+		try {
+			entityManager = EntityManagerHandler.getEntityManager();
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<PdbInfoDB> criteriaQuery = criteriaBuilder.createQuery(PdbInfoDB.class);
+
+			Root<PdbInfoDB> rootPDB = criteriaQuery.from(PdbInfoDB.class);
+			Path<JobDB> jobItemPath = rootPDB.get(PdbInfoDB_.job);
+			Predicate condition = criteriaBuilder.equal(jobItemPath.get(JobDB_.jobId), jobId);
+			criteriaQuery.where(condition);
+			TypedQuery<PdbInfoDB> query = entityManager.createQuery(criteriaQuery);
+			PdbInfoDB pdbInfoDB = query.getSingleResult();
+			return pdbInfoDB;
+
+		} catch(Throwable e) {
+			throw new DaoException(e);
+		}
+		finally
+		{
+			if (entityManager!=null)
+				entityManager.close();
+		}
+	}
+
+	@Override
+	public PdbInfoDB getPDBInfoByPdbId(String pdbId) throws DaoException {
+		EntityManager entityManager = null;
+
+		try {
+			entityManager = EntityManagerHandler.getEntityManager();
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<PdbInfoDB> criteriaQuery = criteriaBuilder.createQuery(PdbInfoDB.class);
+
+			Root<PdbInfoDB> rootPDB = criteriaQuery.from(PdbInfoDB.class);
+
+			criteriaQuery.where(criteriaBuilder.equal(rootPDB.get(PdbInfoDB_.pdbCode), pdbId));
+			criteriaQuery.select(rootPDB);
+
+			TypedQuery<PdbInfoDB> query = entityManager.createQuery(criteriaQuery);
+			PdbInfoDB pdbInfoDB = query.getSingleResult();
+			return pdbInfoDB;
+
+		} catch(Throwable e) {
+			throw new DaoException(e);
+		}
+		finally
+		{
+			if (entityManager!=null)
+				entityManager.close();
+		}
+	}
 }
