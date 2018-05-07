@@ -25,7 +25,7 @@ public class AppConstants {
     /**
      * The project version as declared in pom file (e.g. 1.2.1)
      */
-    public static final String PROJECT_VERSION = getBuildProperties().getProperty("project.version", "NA");
+    public static final String PROJECT_VERSION = getBuildProperties().getProperty("project.version", "0.0.0");
 
     /**
      * The major version as extracted from {@link #PROJECT_VERSION}, e.g. from project version 1.2.1, major is 1
@@ -59,7 +59,7 @@ public class AppConstants {
 
         try {
             props.load(propstream);
-        } catch (IOException var3) {
+        } catch (Exception e) {
             logger.warn("Could not get the build properties from {} file! Build information will not be available.", ABOUT_PROPERTIES_FILE_NAME);
         }
 
