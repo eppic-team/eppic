@@ -1,9 +1,6 @@
 package eppic.rest.dao.jpa;
 
-import eppic.model.JobDB;
-import eppic.model.JobDB_;
-import eppic.model.PdbInfoDB;
-import eppic.model.PdbInfoDB_;
+import eppic.model.*;
 import eppic.rest.dao.DaoException;
 import eppic.rest.dao.PDBInfoDAO;
 
@@ -17,9 +14,8 @@ import javax.persistence.criteria.*;
  *
  */
 public class PDBInfoDAOJpa implements PDBInfoDAO {
-	
-	public PDBInfoDAOJpa() 
-	{
+
+	public PDBInfoDAOJpa() {
 		
 	}
 
@@ -89,6 +85,7 @@ public class PDBInfoDAOJpa implements PDBInfoDAO {
 			criteriaQuery.where(condition);
 			TypedQuery<PdbInfoDB> query = entityManager.createQuery(criteriaQuery);
 			PdbInfoDB pdbInfoDB = query.getSingleResult();
+			grabAll(pdbInfoDB);
 			return pdbInfoDB;
 
 		} catch(Throwable e) {
@@ -126,6 +123,35 @@ public class PDBInfoDAOJpa implements PDBInfoDAO {
 		{
 			if (entityManager!=null)
 				entityManager.close();
+		}
+	}
+
+	/**
+	 * Force retrieval of the whole object, otherwise hibernate grabs lazily
+	 * and gives a LazyInitializationException when entityManager is already closed.
+	 * @param pdbInfoDB
+	 */
+	private static void grabAll(PdbInfoDB pdbInfoDB) {
+
+		for (InterfaceClusterDB icdb : pdbInfoDB.getInterfaceClusters()) {
+			icdb.getClusterId();
+			for (InterfaceDB idb : icdb.getInterfaces()) {
+				idb.getChain1();
+			}
+		}
+
+		for (AssemblyDB adb : pdbInfoDB.getAssemblies()) {
+			adb.getId();
+			for (AssemblyScoreDB asdb : adb.getAssemblyScores()) {
+				asdb.getCallName();
+			}
+		}
+
+		for (ChainClusterDB ccdb : pdbInfoDB.getChainClusters()) {
+			ccdb.getMemberChains();
+			for (HomologDB hdb : ccdb.getHomologs()) {
+				hdb.getQueryCoverage();
+			}
 		}
 	}
 }
