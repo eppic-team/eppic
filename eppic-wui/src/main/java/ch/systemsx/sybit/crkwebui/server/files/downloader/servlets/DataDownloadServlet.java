@@ -49,8 +49,10 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 /**
- * Servlet used to download results in xml format
- * @author biyani_n
+ * Servlet used to download results in xml/json format.
+ * Adapted to both json or xml by using eclipselink JAXB implementation.
+ * @author Nikhil Biyani
+ * @author Jose Duarte
  *
  */
 @PersistenceContext(name="eppicjpa", unitName="eppicjpa")
@@ -110,7 +112,7 @@ public class DataDownloadServlet extends BaseServlet{
 				pdbList.add(getResultData(jobId, jobIdMap.get(jobId), getSeqInfo));
 			}
 
-			createXMLResponse(response, pdbList);
+			createXMLResponse(response, pdbList, type);
 
 		}
 		catch(ValidationException e) {
@@ -198,28 +200,33 @@ public class DataDownloadServlet extends BaseServlet{
 	}
 
 	/**
-	 * converts the contents of the class to xml file
+	 * Converts the contents of the class to xml/json file
 	 * @param response to write xml file
+	 * @param pdbList
+	 * @param format either "json" or "xml"
 	 * @throws IOException 
 	 * @throws JAXBException 
 	 */
-	private void createXMLResponse(HttpServletResponse response, List<PdbInfo> pdbList) throws IOException, JAXBException{
+	private void createXMLResponse(HttpServletResponse response, List<PdbInfo> pdbList, String format) throws IOException, JAXBException{
 
 		if(pdbList == null) return;
 
-		response.setContentType("text/xml");
-		// TODO add if for json:
-		//response.setContentType("application/json");
+		if (format.equals("xml")) {
+			response.setContentType("text/xml");
+		} else if (format.equals("json")) {
+			response.setContentType("application/json");
+		}
+		// the validator should catch any other wrong value for format
 
 		response.setCharacterEncoding("UTF-8");
 
 		PrintWriter writer = response.getWriter();
 
-		serializePdbInfoList(pdbList, writer);
+		serializePdbInfoList(pdbList, writer, format);
 
 	}
 
-	public void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer) throws JAXBException {
+	public void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer, String format) throws JAXBException {
 	    // create JAXB context and initializing Marshaller
 	    JAXBContext jaxbContext = JAXBContext.newInstance(PdbInfo.class);
 	    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
@@ -228,19 +235,25 @@ public class DataDownloadServlet extends BaseServlet{
 	    jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 	    jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 
-	    // TODO add if for json/xml
-	    // for json, following https://stackoverflow.com/questions/15357366/converting-java-object-to-json-using-marshaller
-		jaxbMarshaller.setProperty(MarshallerProperties.MEDIA_TYPE, "application/xml");
-		//jaxbMarshaller.setProperty(MarshallerProperties.MEDIA_TYPE, "application/json");
-		jaxbMarshaller.setProperty(MarshallerProperties.JSON_INCLUDE_ROOT, false);
+		// for json, following https://stackoverflow.com/questions/15357366/converting-java-object-to-json-using-marshaller
+	    if (format.equals("xml")) {
+			jaxbMarshaller.setProperty(MarshallerProperties.MEDIA_TYPE, "application/xml");
+		} else if (format.equals("json")) {
+			jaxbMarshaller.setProperty(MarshallerProperties.MEDIA_TYPE, "application/json");
+			jaxbMarshaller.setProperty(MarshallerProperties.JSON_INCLUDE_ROOT, false);
+		}
 
-		// TODO below is for xml, add if for json
-	    // Writing to console
-	    writer.append("<eppicAnalysisList>");
+		// Writing to console
+		if (format.equals("xml")) {
+			writer.append("<eppicAnalysisList>");
+		}
 	    
 	    for(PdbInfo pdb:pdbList){
 	    	jaxbMarshaller.marshal(pdb, writer);
 	    }
-	    writer.append("</eppicAnalysisList>");
+
+		if (format.equals("xml")) {
+			writer.append("</eppicAnalysisList>");
+		}
 	}
 }

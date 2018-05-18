@@ -17,11 +17,11 @@ public class DataDownloadServletInputValidator {
 	private static final Logger log = LoggerFactory.getLogger(DataDownloadServletInputValidator.class);
 	
 	/**
-	 * Validates correctness of input data necessary to produce xml file.
+	 * Validates correctness of input data necessary to produce xml/json file.
 	 * @param type type of the file
 	 * @param jobIdMap map of identifier of the job to the interfaceId's
 	 * @param getSeqInfo string with t/f to provide seq info or not
-	 * @param maxXMLCalls maximum number of Job Ids to be used in one call
+	 * @param maxXMLJobs maximum number of Job Ids to be used in one call
 	 * @throws ValidationException when validation fails
 	 * @throws DaoException 
 	 */
@@ -30,8 +30,12 @@ public class DataDownloadServletInputValidator {
 											   String getSeqInfo,
 											   int maxXMLJobs) throws ValidationException, DaoException
 	{
-		if(type == null || !type.equals("xml")){
+		if(type == null || type.trim().isEmpty()){
 			throw new ValidationException("Please provide a correct value of file type to be downloaded with &type=");
+		}
+
+		if (!type.equals("xml") && !type.equals("json")) {
+			throw new ValidationException("Please provide a correct value of file type to be downloaded with &type= (either 'xml' or 'json')");
 		}
 		
 		if(jobIdMap.size() > maxXMLJobs){
