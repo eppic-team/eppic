@@ -17,6 +17,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.eclipse.persistence.jaxb.MarshallerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,11 +203,14 @@ public class DataDownloadServlet extends BaseServlet{
 	 * @throws IOException 
 	 * @throws JAXBException 
 	 */
-	void createXMLResponse(HttpServletResponse response, List<PdbInfo> pdbList) throws IOException, JAXBException{
+	private void createXMLResponse(HttpServletResponse response, List<PdbInfo> pdbList) throws IOException, JAXBException{
 
 		if(pdbList == null) return;
 
 		response.setContentType("text/xml");
+		// TODO add if for json:
+		//response.setContentType("application/json");
+
 		response.setCharacterEncoding("UTF-8");
 
 		PrintWriter writer = response.getWriter();
@@ -224,6 +228,13 @@ public class DataDownloadServlet extends BaseServlet{
 	    jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 	    jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 
+	    // TODO add if for json/xml
+	    // for json, following https://stackoverflow.com/questions/15357366/converting-java-object-to-json-using-marshaller
+		jaxbMarshaller.setProperty(MarshallerProperties.MEDIA_TYPE, "application/xml");
+		//jaxbMarshaller.setProperty(MarshallerProperties.MEDIA_TYPE, "application/json");
+		jaxbMarshaller.setProperty(MarshallerProperties.JSON_INCLUDE_ROOT, false);
+
+		// TODO below is for xml, add if for json
 	    // Writing to console
 	    writer.append("<eppicAnalysisList>");
 	    
