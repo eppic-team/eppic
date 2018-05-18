@@ -4,8 +4,10 @@ import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
+import ch.systemsx.sybit.server.db.entitylisteners.DoubleNaNXmlAdapter;
 import eppic.model.ResidueBurialDB;
 
 /**
@@ -25,6 +27,7 @@ public class Residue implements Serializable
 	private boolean side;
 	private double asa;
 	private double bsa;
+	@XmlJavaTypeAdapter(type=Double.class, value=DoubleNaNXmlAdapter.class)
 	private double bsaPercentage;
 	private short region; // one of the constants above: SURFACE, RIM, CORE
 

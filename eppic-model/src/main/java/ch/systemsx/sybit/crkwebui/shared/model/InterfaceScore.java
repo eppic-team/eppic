@@ -2,7 +2,10 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
+import ch.systemsx.sybit.server.db.entitylisteners.DoubleNaNXmlAdapter;
 import eppic.model.InterfaceScoreDB;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * DTO class for InterfaceScore.
@@ -19,9 +22,12 @@ public class InterfaceScore implements Serializable
 	
 	private String method;
 	private int interfaceId;
-	
+
+	@XmlJavaTypeAdapter(type=Double.class, value=DoubleNaNXmlAdapter.class)
 	private double score1;
+	@XmlJavaTypeAdapter(type=Double.class, value=DoubleNaNXmlAdapter.class)
 	private double score2;
+	@XmlJavaTypeAdapter(type=Double.class, value=DoubleNaNXmlAdapter.class)
 	private double score; 
 	
 	private double confidence;

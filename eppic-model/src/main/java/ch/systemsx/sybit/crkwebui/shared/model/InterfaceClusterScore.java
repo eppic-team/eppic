@@ -2,7 +2,10 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
+import ch.systemsx.sybit.server.db.entitylisteners.DoubleNaNXmlAdapter;
 import eppic.model.InterfaceClusterScoreDB;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 public class InterfaceClusterScore implements Serializable {
 
@@ -11,8 +14,11 @@ public class InterfaceClusterScore implements Serializable {
 	private int uid;
 	private String callName;
 	private String callReason;
+	@XmlJavaTypeAdapter(type=Double.class, value=DoubleNaNXmlAdapter.class)
 	private double score;
+	@XmlJavaTypeAdapter(type=Double.class, value=DoubleNaNXmlAdapter.class)
 	private double score1;
+	@XmlJavaTypeAdapter(type=Double.class, value=DoubleNaNXmlAdapter.class)
 	private double score2;
 	private double confidence;
 	private String method;
@@ -83,7 +89,7 @@ public class InterfaceClusterScore implements Serializable {
 
 	/**
 	 * Converts DB model item into DTO one
-	 * @param interfaceClusterScoreDB model item to convert
+	 * @param clusterScoreDB model item to convert
 	 * @return DTO representation of model item
 	 */
 	public static InterfaceClusterScore create(InterfaceClusterScoreDB clusterScoreDB)

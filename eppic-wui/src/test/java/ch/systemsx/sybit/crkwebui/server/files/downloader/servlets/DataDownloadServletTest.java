@@ -1,14 +1,12 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.servlets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.PropertyException;
 
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
@@ -66,6 +64,8 @@ public class DataDownloadServletTest {
 		assertTrue("Result should contain pdb title", resultString.contains("SMTB REPRESSOR FROM SYNECHOCOCCUS PCC7942"));
 		assertTrue("Result should contain the interface", resultString.contains("\"operatorType\" : \"OP\""));
 		assertTrue("Result should contain the interface cluster", resultString.contains("\"interfaceCluster\""));
+
+		assertFalse(resultString.contains("NaN"));
 	}
 
 	private List<PdbInfo> getPdbInfo() {
@@ -125,7 +125,7 @@ public class DataDownloadServletTest {
 		iCS1.setCallName("name1");
 		iCS1.setConfidence(.99);
 		iCS1.setMethod("method1");
-		iCS1.setScore(333.333);
+		iCS1.setScore(Double.NaN);
 		iCS1.setScore1(444.444);
 		iCS1.setScore2(555.555);
 		iCS1.setUid(1234);
