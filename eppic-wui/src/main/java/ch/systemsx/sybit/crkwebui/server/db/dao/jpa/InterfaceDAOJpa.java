@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.db.dao.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -80,7 +81,7 @@ public class InterfaceDAOJpa implements InterfaceDAO
 	}
 
 	@Override
-	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid, List<Integer> interfaceIds)throws DaoException
+	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid, Set<Integer> interfaceIds)throws DaoException
 	{
 		EntityManager entityManager = null;
 

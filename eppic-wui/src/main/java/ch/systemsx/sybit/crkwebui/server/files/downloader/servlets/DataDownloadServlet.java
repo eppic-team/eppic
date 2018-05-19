@@ -2,11 +2,8 @@ package ch.systemsx.sybit.crkwebui.server.files.downloader.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletConfig;
@@ -17,6 +14,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import ch.systemsx.sybit.crkwebui.server.files.downloader.generators.JobListWithInterfacesGenerator;
 import org.eclipse.persistence.jaxb.MarshallerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +35,6 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
-import ch.systemsx.sybit.crkwebui.server.files.downloader.generators.JobListWithInterfacesGenerator;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
 import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
@@ -68,14 +65,14 @@ public class DataDownloadServlet extends BaseServlet{
 	private static final Logger logger = LoggerFactory.getLogger(DataDownloadServlet.class);
 		
 	//Parameters
-	private int maxNumJobIds;
+	//private int maxNumJobIds;
 	private int defaultNrOfAllowedSubmissionsForIP;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
-		maxNumJobIds = Integer.parseInt(properties.getProperty("max_jobs_in_one_call","1"));
+		//maxNumJobIds = Integer.parseInt(properties.getProperty("max_jobs_in_one_call","1"));
 		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 	
 	}
@@ -87,32 +84,36 @@ public class DataDownloadServlet extends BaseServlet{
 			HttpServletResponse response) throws ServletException, IOException
 			{
 		String type = request.getParameter("type");
-		String jobIdCommaSep = request.getParameter("id");
-		String getSeqInfo = request.getParameter("getSeqInfo");
+		String jobId = request.getParameter("id");
+		String assemblyIds = request.getParameter("assemblyIds");
+		String interfaceClusterIds = request.getParameter("interfaceClusterIds");
+		String interfaceIds = request.getParameter("interfaceIds");
+		String getSeqInfo = request.getParameter("withSeqInfo");
 		
 		String requestIP = request.getRemoteAddr();
 
-		logger.info("XML data download requested for '{}'",jobIdCommaSep);
+		logger.info("Data download requested for '{}' with type '{}'. Request IP: {}", jobId, type, requestIP);
 		
 		try
 		{	
 			addIPToDB(requestIP);
-			
-			Map<String, List<Integer>> jobIdMap = JobListWithInterfacesGenerator.generateJobList(jobIdCommaSep);
-			
-			DataDownloadServletInputValidator.validateFileDownloadInput(type, jobIdMap, getSeqInfo, maxNumJobIds);
+
+			DataDownloadServletInputValidator.validateFileDownloadInput(type, jobId, getSeqInfo);
 			
 			IPVerifier.verifyIfCanBeSubmitted(requestIP, 
 										      defaultNrOfAllowedSubmissionsForIP, 
 										      true);
 			
-			List<PdbInfo> pdbList = new ArrayList<PdbInfo>();
+			List<PdbInfo> pdbList = new ArrayList<>();
 
-			for(String jobId: jobIdMap.keySet()){
-				pdbList.add(getResultData(jobId, jobIdMap.get(jobId), getSeqInfo));
-			}
+			Set<Integer> interfaceClusterIdList = JobListWithInterfacesGenerator.createIntegerList(interfaceClusterIds);
+			Set<Integer> interfaceIdList = JobListWithInterfacesGenerator.createIntegerList(interfaceIds);
+			Set<Integer> assemblyIdList = JobListWithInterfacesGenerator.createIntegerList(assemblyIds);
 
-			createXMLResponse(response, pdbList, type);
+			pdbList.add(getResultData(jobId, interfaceClusterIdList, interfaceIdList, assemblyIdList, getSeqInfo));
+
+
+			createResponse(response, pdbList, type);
 
 		}
 		catch(ValidationException e) {
@@ -137,11 +138,17 @@ public class DataDownloadServlet extends BaseServlet{
 	/**
 	 * Retrieves pdbInfo item for job.
 	 * @param jobId identifier of the job
+	 * @param interfaceClusterIdList list of interface cluster ids to be retrieved
 	 * @param interfaceIdList list of interface ids to be retrieved (null for everything)
+	 * @param assemblyIdList list of assembly ids to be retrieved
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve result of the job
 	 */
-	private PdbInfo getResultData(String jobId, List<Integer> interfaceIdList, String getSeqInfo) throws DaoException
+	private PdbInfo getResultData(String jobId,
+								  Set<Integer> interfaceClusterIdList,
+								  Set<Integer> interfaceIdList,
+								  Set<Integer> assemblyIdList,
+								  String getSeqInfo) throws DaoException
 	{
 		JobDAO jobDAO = new JobDAOJpa();
 		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
@@ -154,6 +161,11 @@ public class DataDownloadServlet extends BaseServlet{
 
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 		for(InterfaceCluster cluster: clusters){
+
+			if (interfaceClusterIdList!=null && !interfaceClusterIdList.contains(cluster.getClusterId())) {
+				continue;
+			}
+
 			logger.debug("Getting data for interface cluster uid {}", cluster.getUid());
 			List<Interface> interfaceItems;
 			if(interfaceIdList != null){
@@ -180,7 +192,8 @@ public class DataDownloadServlet extends BaseServlet{
 		
 		pdbInfo.setInterfaceClusters(clusters);
 
-		if(getSeqInfo == null || getSeqInfo.equals("t")){	
+		// by default no seq info is added, unless requested explicitly (before 3.0.7 default was always return chains and sequences)
+		if(getSeqInfo != null && getSeqInfo.equals("t")){
 			ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
 			List<ChainCluster> chainClusters = chainClusterDAO.getChainClusters(pdbInfo.getUid());
 			pdbInfo.setChainClusters(chainClusters);
@@ -194,6 +207,10 @@ public class DataDownloadServlet extends BaseServlet{
 		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 		
 		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
+		// filtering out if a list of ids provided
+		if (assemblyIdList!=null) {
+			assemblies = assemblies.stream().filter(a -> assemblyIdList.contains(a.getId())).collect(Collectors.toList());
+		}
 		pdbInfo.setAssemblies(assemblies);
 		
 		return pdbInfo;
@@ -207,7 +224,7 @@ public class DataDownloadServlet extends BaseServlet{
 	 * @throws IOException 
 	 * @throws JAXBException 
 	 */
-	private void createXMLResponse(HttpServletResponse response, List<PdbInfo> pdbList, String format) throws IOException, JAXBException{
+	private void createResponse(HttpServletResponse response, List<PdbInfo> pdbList, String format) throws IOException, JAXBException{
 
 		if(pdbList == null) return;
 
@@ -226,7 +243,7 @@ public class DataDownloadServlet extends BaseServlet{
 
 	}
 
-	public void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer, String format) throws JAXBException {
+	protected void serializePdbInfoList(List<PdbInfo> pdbList, PrintWriter writer, String format) throws JAXBException {
 	    // create JAXB context and initializing Marshaller
 	    JAXBContext jaxbContext = JAXBContext.newInstance(PdbInfo.class);
 	    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();

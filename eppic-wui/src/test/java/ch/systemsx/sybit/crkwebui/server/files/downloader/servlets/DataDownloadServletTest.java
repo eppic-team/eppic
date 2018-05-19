@@ -259,11 +259,6 @@ public class DataDownloadServletTest {
 
 	@Test(expected = ValidationException.class)
 	public void testDataDownloadServletValidator() throws ValidationException, DaoException {
-		Map<String, List<Integer>> jobIdMap = new HashMap<>();
-		List<Integer> ids = new ArrayList<>();
-		ids.add(1);
-		ids.add(2);
-		jobIdMap.put("1abc", ids);
-		DataDownloadServletInputValidator.validateFileDownloadInput("hola", jobIdMap, "t", 10);
+		DataDownloadServletInputValidator.validateFileDownloadInput("hola", "1abc", "t");
 	}
 }

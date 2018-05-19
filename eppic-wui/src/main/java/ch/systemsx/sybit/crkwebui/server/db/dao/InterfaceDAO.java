@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.db.dao;
 
 import java.util.List;
+import java.util.Set;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
@@ -28,7 +29,7 @@ public interface InterfaceDAO
 	 * @return list of interface items with residues and scores for pdb info item
 	 * @throws DaoException when can not retrieve interface items
 	 */
-	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid, List<Integer> interfaceIds) throws DaoException;
+	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid, Set<Integer> interfaceIds) throws DaoException;
 	
 	/**
 	 * Retrieves list of interface items with scores and residues for a particular interface cluster item.

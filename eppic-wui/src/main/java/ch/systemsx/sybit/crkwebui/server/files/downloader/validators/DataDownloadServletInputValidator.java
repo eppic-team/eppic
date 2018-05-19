@@ -1,8 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.validators;
 
-import java.util.List;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,16 +16,14 @@ public class DataDownloadServletInputValidator {
 	/**
 	 * Validates correctness of input data necessary to produce xml/json file.
 	 * @param type type of the file
-	 * @param jobIdMap map of identifier of the job to the interfaceId's
+	 * @param jobId the jobId (pdb id if precalculater result)
 	 * @param getSeqInfo string with t/f to provide seq info or not
-	 * @param maxXMLJobs maximum number of Job Ids to be used in one call
 	 * @throws ValidationException when validation fails
 	 * @throws DaoException 
 	 */
 	public static void validateFileDownloadInput(String type,
-											   Map<String, List<Integer>> jobIdMap,
-											   String getSeqInfo,
-											   int maxXMLJobs) throws ValidationException, DaoException
+											   String jobId,
+											   String getSeqInfo) throws ValidationException, DaoException
 	{
 		if(type == null || type.trim().isEmpty()){
 			throw new ValidationException("Please provide a correct value of file type to be downloaded with &type=");
@@ -37,15 +32,8 @@ public class DataDownloadServletInputValidator {
 		if (!type.equals("xml") && !type.equals("json")) {
 			throw new ValidationException("Please provide a correct value of file type to be downloaded with &type= (either 'xml' or 'json')");
 		}
-		
-		if(jobIdMap.size() > maxXMLJobs){
-			log.info("Number of XML jobs limit exceeded, requested: "+jobIdMap.size()+", max is: "+maxXMLJobs);
-			throw new ValidationException("Exceeded maximum number of jobs allowed ("+maxXMLJobs+") to be retrieved in one call");
-		}
-		
-		for(String jobId: jobIdMap.keySet()){
-			checkIfResultsExist(jobId);
-		}
+
+		checkIfResultsExist(jobId);
 		
 		if(getSeqInfo != null){
 			if(!( getSeqInfo.equals("t") || getSeqInfo.equals("f") )){
