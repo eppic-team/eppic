@@ -160,11 +160,13 @@ public class DataDownloadServlet extends BaseServlet{
 		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
 
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-		for(InterfaceCluster cluster: clusters){
 
-			if (interfaceClusterIdList!=null && !interfaceClusterIdList.contains(cluster.getClusterId())) {
-				continue;
-			}
+		// filter the clusters if list provided
+		if (interfaceClusterIdList!=null) {
+			clusters = clusters.stream().filter(c -> interfaceClusterIdList.contains(c.getClusterId())).collect(Collectors.toList());
+		}
+
+		for(InterfaceCluster cluster: clusters){
 
 			logger.debug("Getting data for interface cluster uid {}", cluster.getUid());
 			List<Interface> interfaceItems;
