@@ -29,7 +29,7 @@
 		 
 		<init-param>
 			<param-name>mimeTypes</param-name>
-			<param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml,chemical/x-cif</param-value>
+			<param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml,chemical/x-cif,application/json</param-value>
 		</init-param>
 	</filter>
 	
