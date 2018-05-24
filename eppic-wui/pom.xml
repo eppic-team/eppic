@@ -161,7 +161,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlets</artifactId>
-			<version>9.2.12.v20150709</version>
+			<version>9.2.24.v20180105</version>
 		</dependency>
 
 		<!-- For json output in DataDownloadServlet : eclipselink JAXB implementation
