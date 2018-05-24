@@ -89,6 +89,7 @@ public class DataDownloadServlet extends BaseServlet{
 		String interfaceClusterIds = request.getParameter("interfaceClusterIds");
 		String interfaceIds = request.getParameter("interfaceIds");
 		String getSeqInfo = request.getParameter("withSeqInfo");
+		String getResInfo = request.getParameter("withResInfo");
 		
 		String requestIP = request.getRemoteAddr();
 
@@ -98,7 +99,7 @@ public class DataDownloadServlet extends BaseServlet{
 		{	
 			addIPToDB(requestIP);
 
-			DataDownloadServletInputValidator.validateFileDownloadInput(type, jobId, getSeqInfo);
+			DataDownloadServletInputValidator.validateFileDownloadInput(type, jobId, getSeqInfo, getResInfo);
 			
 			IPVerifier.verifyIfCanBeSubmitted(requestIP, 
 										      defaultNrOfAllowedSubmissionsForIP, 
@@ -110,8 +111,12 @@ public class DataDownloadServlet extends BaseServlet{
 			Set<Integer> interfaceIdList = JobListWithInterfacesGenerator.createIntegerList(interfaceIds);
 			Set<Integer> assemblyIdList = JobListWithInterfacesGenerator.createIntegerList(assemblyIds);
 
-			pdbList.add(getResultData(jobId, interfaceClusterIdList, interfaceIdList, assemblyIdList, getSeqInfo));
+			// by default no seq info is added, unless requested explicitly (before 3.0.7 default was always return chains and sequences)
+			boolean getSeqs = (getSeqInfo != null && getSeqInfo.equals("t"));
+			// by default no res info is added, unless requested explicitly (before 3.0.7 default was always return residue info)
+			boolean getRes = (getResInfo != null && getResInfo.equals("t"));
 
+			pdbList.add(getResultData(jobId, interfaceClusterIdList, interfaceIdList, assemblyIdList, getSeqs, getRes));
 
 			createResponse(response, pdbList, type);
 
@@ -141,6 +146,8 @@ public class DataDownloadServlet extends BaseServlet{
 	 * @param interfaceClusterIdList list of interface cluster ids to be retrieved
 	 * @param interfaceIdList list of interface ids to be retrieved (null for everything)
 	 * @param assemblyIdList list of assembly ids to be retrieved
+	 * @param getSeqInfo whether to retrieve sequence info or not
+	 * @param getResInfo whether to retrieve residue info or not
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve result of the job
 	 */
@@ -148,7 +155,8 @@ public class DataDownloadServlet extends BaseServlet{
 								  Set<Integer> interfaceClusterIdList,
 								  Set<Integer> interfaceIdList,
 								  Set<Integer> assemblyIdList,
-								  String getSeqInfo) throws DaoException
+								  boolean getSeqInfo,
+								  boolean getResInfo) throws DaoException
 	{
 		JobDAO jobDAO = new JobDAOJpa();
 		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
@@ -171,11 +179,17 @@ public class DataDownloadServlet extends BaseServlet{
 			logger.debug("Getting data for interface cluster uid {}", cluster.getUid());
 			List<Interface> interfaceItems;
 			if(interfaceIdList != null){
-				logger.debug("Interface id list requested: {}", interfaceIdList.toString()); 
-				interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid(), interfaceIdList);
+				logger.debug("Interface id list requested: {}", interfaceIdList.toString());
+				if (getResInfo)
+					interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid(), interfaceIdList);
+				else
+					interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid(), interfaceIdList);
 			}
 			else{
-				interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid());
+				if (getResInfo)
+					interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid());
+				else
+					interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid());
 			}
 			cluster.setInterfaces(interfaceItems);
 		}
@@ -194,8 +208,7 @@ public class DataDownloadServlet extends BaseServlet{
 		
 		pdbInfo.setInterfaceClusters(clusters);
 
-		// by default no seq info is added, unless requested explicitly (before 3.0.7 default was always return chains and sequences)
-		if(getSeqInfo != null && getSeqInfo.equals("t")){
+		if(getSeqInfo){
 			ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
 			List<ChainCluster> chainClusters = chainClusterDAO.getChainClusters(pdbInfo.getUid());
 			pdbInfo.setChainClusters(chainClusters);

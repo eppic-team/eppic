@@ -259,6 +259,6 @@ public class DataDownloadServletTest {
 
 	@Test(expected = ValidationException.class)
 	public void testDataDownloadServletValidator() throws ValidationException, DaoException {
-		DataDownloadServletInputValidator.validateFileDownloadInput("hola", "1abc", "t");
+		DataDownloadServletInputValidator.validateFileDownloadInput("hola", "1abc", "t", "t");
 	}
 }

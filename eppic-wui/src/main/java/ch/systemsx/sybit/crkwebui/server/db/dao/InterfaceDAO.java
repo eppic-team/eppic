@@ -20,6 +20,16 @@ public interface InterfaceDAO
 	 * @throws DaoException when can not retrieve interface items
 	 */
 	public List<Interface> getInterfacesWithScores(int interfaceClusterUid) throws DaoException;
+
+	/**
+	 * Retrieves list of interface items with scores for a particular interface cluster item,
+	 * only those interfaces that are in the given list of interfaceIds will be returned.
+	 * @param interfaceClusterUid uid of interface cluster item
+	 * @param interfaceIds list of ids of the interfaces to be returned
+	 * @return list of interface items with scores for pdb info item
+	 * @throws DaoException when can not retrieve interface items
+	 */
+	public List<Interface> getInterfacesWithScores(int interfaceClusterUid, Set<Integer> interfaceIds) throws DaoException;
 	
 	/**
 	 * Retrieves a specific list of interface items with scores and residues for a particular interface cluster item,

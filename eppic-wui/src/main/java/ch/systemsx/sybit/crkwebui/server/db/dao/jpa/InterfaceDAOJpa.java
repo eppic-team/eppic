@@ -81,6 +81,56 @@ public class InterfaceDAOJpa implements InterfaceDAO
 	}
 
 	@Override
+	public List<Interface> getInterfacesWithScores(int interfaceClusterUid, Set<Integer> interfaceIds) throws DaoException {
+		EntityManager entityManager = null;
+
+		try
+		{
+			List<Interface> result = new ArrayList<Interface>();
+
+			entityManager = EntityManagerHandler.getEntityManager();
+
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<InterfaceDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceDB.class);
+
+			Root<InterfaceDB> interfaceItemRoot = criteriaQuery.from(InterfaceDB.class);
+			Path<InterfaceClusterDB> interfaceClusterPath = interfaceItemRoot.get(InterfaceDB_.interfaceCluster);
+			criteriaQuery.where(criteriaBuilder.equal(interfaceClusterPath.get(InterfaceClusterDB_.uid), interfaceClusterUid));
+
+			TypedQuery<InterfaceDB> query = entityManager.createQuery(criteriaQuery);
+
+			List<InterfaceDB> interfaceItemDBs = query.getResultList();
+
+			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
+			{
+				interfaceItemDB.setResidueBurials(null);
+				if(interfaceIds.contains(interfaceItemDB.getInterfaceId())){
+					result.add(Interface.create(interfaceItemDB));
+				}
+			}
+
+			return result;
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+			}
+		}
+
+	}
+
+	@Override
 	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid, Set<Integer> interfaceIds)throws DaoException
 	{
 		EntityManager entityManager = null;

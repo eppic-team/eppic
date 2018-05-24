@@ -18,12 +18,14 @@ public class DataDownloadServletInputValidator {
 	 * @param type type of the file
 	 * @param jobId the jobId (pdb id if precalculater result)
 	 * @param getSeqInfo string with t/f to provide seq info or not
+	 * @param getResInfo string with t/f to provide res info or not
 	 * @throws ValidationException when validation fails
 	 * @throws DaoException 
 	 */
 	public static void validateFileDownloadInput(String type,
-											   String jobId,
-											   String getSeqInfo) throws ValidationException, DaoException
+												 String jobId,
+												 String getSeqInfo,
+												 String getResInfo) throws ValidationException, DaoException
 	{
 		if(type == null || type.trim().isEmpty()){
 			throw new ValidationException("Please provide a correct value of file type to be downloaded with &type=");
@@ -38,6 +40,12 @@ public class DataDownloadServletInputValidator {
 		if(getSeqInfo != null){
 			if(!( getSeqInfo.equals("t") || getSeqInfo.equals("f") )){
 				throw new ValidationException("Please provide a correct value with &getSeqInfo=  ; (allowed: t/f)");
+			}
+		}
+
+		if (getResInfo !=null ) {
+			if(!( getResInfo.equals("t") || getResInfo.equals("f") )){
+				throw new ValidationException("Please provide a correct value with &getResInfo=  ; (allowed: t/f)");
 			}
 		}
 		
