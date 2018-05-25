@@ -24,6 +24,14 @@
 			<artifactId>eppic-cli</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
+			<exclusions>
+				<!-- Important: a subdependency of this clashes with a subdependency of jersey (hk2)
+				 Without this exclusion jersey doesn't work -->
+				<exclusion>
+					<groupId>uk.ac.ebi.uniprot</groupId>
+					<artifactId>japi</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- GWT and GXT -->
@@ -170,6 +178,30 @@
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
 			<version>2.7.1</version>
+		</dependency>
+
+		<!-- JERSEY REST -->
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>2.27</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet-core</artifactId>
+			<version>2.27</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-jetty-http</artifactId>
+			<version>2.27</version>
+		</dependency>
+		<!-- The explicit hk2 dependency is needed since jersey 2.26.
+		 See https://stackoverflow.com/questions/44088493/jersey-stopped-working-with-injectionmanagerfactory-not-found -->
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>2.27</version>
 		</dependency>
 
 
