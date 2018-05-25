@@ -151,7 +151,7 @@ public class DataDownloadServlet extends BaseServlet{
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve result of the job
 	 */
-	private PdbInfo getResultData(String jobId,
+	public static PdbInfo getResultData(String jobId,
 								  Set<Integer> interfaceClusterIdList,
 								  Set<Integer> interfaceIdList,
 								  Set<Integer> assemblyIdList,
