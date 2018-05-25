@@ -24,16 +24,28 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
+        PdbInfo pdbInfo = DataDownloadServlet.getResultData(jobId, null, null, null, false, false);
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(pdbInfo);
+
+        return responseBuilder.build();
+    }
+
+    /**
+     * Checks the format url parameter and returns the right mime type (either json or xml).
+     * If no format parameter present, then json is returned.
+     * @param uriInfo
+     * @return
+     */
+    private static String getMediaType(UriInfo uriInfo) {
         String mediaType = MediaType.APPLICATION_JSON;
         String format = uriInfo.getQueryParameters().getFirst("format");
         if (format!=null && format.equalsIgnoreCase("xml")) {
             mediaType = MediaType.APPLICATION_XML;
         }
-        PdbInfo pdbInfo = DataDownloadServlet.getResultData(jobId, null, null, null, false, false);
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(mediaType)
-                .entity(pdbInfo);
-        return responseBuilder.build();
+        return mediaType;
     }
 }
