@@ -1,4 +1,4 @@
-package eppic.commons.util;
+package eppic.jpautils;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -80,7 +80,7 @@ import ch.systemsx.sybit.shared.model.StatusOfJob;
 import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 
 import eppic.EppicParams;
-import eppic.commons.util.DbConfigGenerator;
+import eppic.jpautils.DbConfigGenerator;
 
 /**
  * The server side implementation of the RPC service.

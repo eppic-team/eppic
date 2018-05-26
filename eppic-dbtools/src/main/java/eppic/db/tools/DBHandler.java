@@ -32,7 +32,7 @@ import javax.persistence.metamodel.SingularAttribute;
 
 import ch.systemsx.sybit.shared.model.InputType;
 import ch.systemsx.sybit.shared.model.StatusOfJob;
-import eppic.commons.util.DbConfigGenerator;
+import eppic.jpautils.DbConfigGenerator;
 import eppic.model.ChainClusterDB;
 import eppic.model.ChainClusterDB_;
 import eppic.model.InterfaceClusterDB;
