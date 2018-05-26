@@ -175,6 +175,7 @@ public class PdbInfo implements Serializable, ProcessingData
 
 	private void createInterfaceList(List<InterfaceCluster> interfaceClusters) {
 		interfaces = new HashMap<Integer, Interface>();
+		if (interfaceClusters==null) return;
 		for(InterfaceCluster cluster : interfaceClusters)
 			for(Interface inf : cluster.getInterfaces())
 				interfaces.put(inf.getInterfaceId(), inf);

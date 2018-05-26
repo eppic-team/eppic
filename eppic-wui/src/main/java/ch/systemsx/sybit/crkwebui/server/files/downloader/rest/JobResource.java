@@ -2,16 +2,15 @@ package ch.systemsx.sybit.crkwebui.server.files.downloader.rest;
 
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadServlet;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
+import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
+import java.util.List;
 
 @Path("/job")
 public class JobResource {
@@ -24,12 +23,32 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        PdbInfo pdbInfo = DataDownloadServlet.getResultData(jobId, null, null, null, false, false);
+        PdbInfo pdbInfo = DataDownloadServlet.getResultData(jobId, false, false, false, false);
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
                 .type(getMediaType(uriInfo))
                 .entity(pdbInfo);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/assemblies/" + "{jobId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getAssemblies(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId) throws DaoException {
+
+
+        List<Assembly> assemblies = DataDownloadServlet.getAssemblyData(jobId);
+        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
+        GenericEntity<List<Assembly>> entity = new GenericEntity<List<Assembly>>(assemblies){};
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(entity);
 
         return responseBuilder.build();
     }
