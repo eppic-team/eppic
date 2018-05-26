@@ -7,7 +7,7 @@ import java.util.List;
 import org.junit.Test;
 
 import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
-import ch.systemsx.sybit.crkwebui.server.db.data.PDBSearchResult;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 
 

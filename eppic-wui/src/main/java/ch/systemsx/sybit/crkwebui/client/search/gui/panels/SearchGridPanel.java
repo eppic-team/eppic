@@ -9,7 +9,7 @@ import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbCodeCell;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.PdbDataDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.search.gui.cells.SequenceClusterTypeCell;
 import ch.systemsx.sybit.crkwebui.client.search.gui.util.PagingMemoryProxy;
-import ch.systemsx.sybit.crkwebui.server.db.data.PDBSearchResult;
+import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 
 import com.google.gwt.core.shared.GWT;
