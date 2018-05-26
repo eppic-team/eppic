@@ -10,7 +10,7 @@ import com.sencha.gxt.data.shared.loader.PagingLoadConfig;
 import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 import com.sencha.gxt.data.shared.loader.PagingLoadResultBean;
 
-import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
+import ch.systemsx.sybit.crkwebui.server.db.data.PDBSearchResult;
 
 public class PagingMemoryProxy implements DataProxy<PagingLoadConfig, PagingLoadResult<PDBSearchResult>> {
 

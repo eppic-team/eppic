@@ -1,11 +1,11 @@
 package ch.systemsx.sybit.crkwebui.server.files.uploader.validators;
 
 import ch.systemsx.sybit.crkwebui.server.commons.validators.CaptchaValidator;
+import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.files.uploader.data.UploadingData;
 import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 
 public class UploadingValidator 

@@ -31,6 +31,7 @@ import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.SessionValidator;
 import ch.systemsx.sybit.crkwebui.server.db.dao.AssemblyDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
+import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceClusterDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
@@ -46,6 +47,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ResidueDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.UserSessionDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
+import ch.systemsx.sybit.crkwebui.server.db.data.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailMessageData;
 import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
@@ -56,10 +58,8 @@ import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobStatusUpdater;
 import ch.systemsx.sybit.crkwebui.server.runners.CrkRunner;
 import ch.systemsx.sybit.crkwebui.server.settings.generators.ApplicationSettingsGenerator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.CrkWebException;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
-import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
@@ -149,28 +149,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	// the suffix of the filename used for writing the steps for the progress animation
 	public static final String STEPS_FILE_NAME_SUFFIX 	= ".steps.log";
-
-	/**
-	 * The settings to be passed to EntityManagerHandler to initialise the JPA connection
-	 */
-	public static Map<String,String> dbSettings;
-
-	static {
-		// initialising db settings
-		try {
-			File dbPropertiesFile =  new File(DB_PROPERTIES_FILE);
-			if (!dbPropertiesFile.exists()) {
-				logger.error("The db properties file {} does not exist!",dbPropertiesFile);
-			} else {
-				logger.info("Reading db properties file {}", dbPropertiesFile);
-				dbSettings = DbConfigGenerator.createDatabaseProperties(dbPropertiesFile);
-			}
-		} catch (IOException e) {
-			logger.error("Could not read all needed properties from db config file {}. Error: {}", 
-					DB_PROPERTIES_FILE, e.getMessage());
-
-		}
-	}
 
 	// general server settings
 	private Properties properties;
@@ -397,12 +375,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			logger.warn("{} is set to true in config file. No job status updater daemon will run.",ApplicationSettingsGenerator.DEVELOPMENT_MODE);
 		}
 
-		// checking that dbSettings are initialised
-		
-		if (dbSettings==null) {
-			throw new ServletException("Could not initialise the db properties.");
-		}
-		
 	}
 
 	private void initializeJobManager(String queuingSystem) throws ServletException {

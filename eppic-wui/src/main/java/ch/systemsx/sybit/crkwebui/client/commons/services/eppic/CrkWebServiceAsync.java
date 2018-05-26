@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 import java.util.HashMap;
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
+import ch.systemsx.sybit.crkwebui.server.db.data.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;

@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.rest;
 
+import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadServlet;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 
