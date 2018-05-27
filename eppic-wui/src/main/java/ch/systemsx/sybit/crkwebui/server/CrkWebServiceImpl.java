@@ -134,8 +134,29 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	// the file with the eppicjpa settings for database access through hibernate
 	public static final String DB_PROPERTIES_FILE = CONFIG_FILES_LOCATION + "/eppic-db.properties";
-	
-	
+
+	/**
+	 * The settings to be passed to EntityManagerHandler to initialise the JPA connection
+	 */
+	public static Map<String,String> dbSettings;
+
+	static {
+		// initialising db settings
+		try {
+			File dbPropertiesFile =  new File(DB_PROPERTIES_FILE);
+			if (!dbPropertiesFile.exists()) {
+				logger.error("The db properties file {} does not exist!",dbPropertiesFile);
+			} else {
+				logger.info("Reading db properties file {}", dbPropertiesFile);
+				dbSettings = DbConfigGenerator.createDatabaseProperties(dbPropertiesFile);
+			}
+		} catch (IOException e) {
+			logger.error("Could not read all needed properties from db config file {}. Error: {}",
+					DB_PROPERTIES_FILE, e.getMessage());
+
+		}
+	}
+
 	// the file where the progress log of the eppic CLI program is written to (using -L option), used to be called 'crklog'
 	public static final String PROGRESS_LOG_FILE_NAME 	= "eppic_wui_progress.log";
 	// the file to signal that a job is running, used to be called 'crkrun'
@@ -351,8 +372,9 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			throw new ServletException("Email titles and messages have not been specified");
 		}
 
-
-
+		logger.info("Initialising jpa/hibernate");
+		EntityManagerHandler.initFactory(dbSettings);
+		logger.info("Done initialising jpa/hibernate");
 
 		crkRunner = new CrkRunner(jobManager, 
 				crkApplicationLocation,
