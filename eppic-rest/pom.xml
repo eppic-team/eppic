@@ -69,6 +69,12 @@
             <version>3.1.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
+            <version>9.2.24.v20180105</version>
+        </dependency>
+
         <!-- Jersey -->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
