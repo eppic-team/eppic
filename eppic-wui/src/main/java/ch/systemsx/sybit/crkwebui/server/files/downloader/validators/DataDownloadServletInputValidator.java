@@ -1,8 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.validators;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
 import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
@@ -10,8 +7,6 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.shared.model.StatusOfJob;
 
 public class DataDownloadServletInputValidator {
-
-	private static final Logger log = LoggerFactory.getLogger(DataDownloadServletInputValidator.class);
 	
 	/**
 	 * Validates correctness of input data necessary to produce xml/json file.

@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
 import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
 import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
 import ch.systemsx.sybit.crkwebui.shared.model.*;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -12,6 +13,7 @@ public class PDBInfoDaoJpaTest {
     /**
      * Test jpa dao, must pass config with -DeppicDbProperties
      */
+    @Ignore
     @Test
     public void testPDBInfoDaoJpa() throws DaoException {
 

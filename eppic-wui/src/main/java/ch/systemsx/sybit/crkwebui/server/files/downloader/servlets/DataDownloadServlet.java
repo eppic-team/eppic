@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.files.downloader.servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.persistence.PersistenceContext;
 import javax.servlet.ServletConfig;
@@ -115,8 +116,7 @@ public class DataDownloadServlet extends BaseServlet{
 			// by default no res info is added, unless requested explicitly (before 3.0.7 default was always return residue info)
 			boolean getRes = (getResInfo != null && getResInfo.equals("t"));
 
-			// TODO have to comment this out for now, must remove the whole thing...
-			//pdbList.add(getResultData(jobId, interfaceClusterIdList, interfaceIdList, assemblyIdList, getSeqs, getRes));
+			pdbList.add(getResultData(jobId, interfaceClusterIdList, interfaceIdList, assemblyIdList, getSeqs, getRes));
 
 			createResponse(response, pdbList, type);
 
@@ -143,16 +143,18 @@ public class DataDownloadServlet extends BaseServlet{
 	/**
 	 * Retrieves pdbInfo item for job.
 	 * @param jobId identifier of the job
-	 * @param getInterfaceInfo whether to retrieve interface info or not
-	 * @param getAssemblyInfo whether to retrieve assembly info or not
+	 * @param interfaceClusterIdList list of interface cluster ids to be retrieved
+	 * @param interfaceIdList list of interface ids to be retrieved (null for everything)
+	 * @param assemblyIdList list of assembly ids to be retrieved
 	 * @param getSeqInfo whether to retrieve sequence info or not
 	 * @param getResInfo whether to retrieve residue info or not
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve result of the job
 	 */
 	public static PdbInfo getResultData(String jobId,
-								  boolean getInterfaceInfo,
-								  boolean getAssemblyInfo,
+								  Set<Integer> interfaceClusterIdList,
+								  Set<Integer> interfaceIdList,
+								  Set<Integer> assemblyIdList,
 								  boolean getSeqInfo,
 								  boolean getResInfo) throws DaoException
 	{
@@ -161,70 +163,72 @@ public class DataDownloadServlet extends BaseServlet{
 
 		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
 		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
-		pdbInfo.setInputType(input.getInputType());
-		pdbInfo.setInputName(input.getInputName());
 
+		InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
+		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
 
-		// retrieving interface clusters data only if requested
-		if (getInterfaceInfo) {
-			InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
-			List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 
-			InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
+		// filter the clusters if list provided
+		if (interfaceClusterIdList!=null) {
+			clusters = clusters.stream().filter(c -> interfaceClusterIdList.contains(c.getClusterId())).collect(Collectors.toList());
+		}
 
-			for (InterfaceCluster cluster : clusters) {
+		for(InterfaceCluster cluster: clusters){
 
-				logger.debug("Getting data for interface cluster uid {}", cluster.getUid());
-				List<Interface> interfaceItems;
+			logger.debug("Getting data for interface cluster uid {}", cluster.getUid());
+			List<Interface> interfaceItems;
+			if(interfaceIdList != null){
+				logger.debug("Interface id list requested: {}", interfaceIdList.toString());
+				if (getResInfo)
+					interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid(), interfaceIdList);
+				else
+					interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid(), interfaceIdList);
+			}
+			else{
 				if (getResInfo)
 					interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid());
 				else
 					interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid());
-				cluster.setInterfaces(interfaceItems);
 			}
-
-			pdbInfo.setInterfaceClusters(clusters);
-		} else {
-			pdbInfo.setInterfaceClusters(null);
+			cluster.setInterfaces(interfaceItems);
 		}
+
+		// now we remove interface clusters with no interfaces, which can happen when interfaceIdList is provided
+		if (interfaceIdList!=null) {
+			Iterator<InterfaceCluster> it = clusters.iterator();
+			while (it.hasNext()) {
+				InterfaceCluster cluster = it.next();
+				if (cluster.getInterfaces().size()==0) {
+					it.remove();
+					logger.debug("Removing cluster uid="+cluster.getUid()+", clusterId="+cluster.getClusterId()+" since none of its interfaces was requested");
+				}
+			}
+		}
+
+		pdbInfo.setInterfaceClusters(clusters);
 
 		if(getSeqInfo){
 			ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
 			List<ChainCluster> chainClusters = chainClusterDAO.getChainClusters(pdbInfo.getUid());
 			pdbInfo.setChainClusters(chainClusters);
-		} else {
-			pdbInfo.setChainClusters(null);
 		}
 
-		if (getAssemblyInfo) {
-			// assemblies info
-			AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+		pdbInfo.setInputType(input.getInputType());
+		pdbInfo.setInputName(input.getInputName());
 
-			List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
-
-			pdbInfo.setAssemblies(assemblies);
-		} else {
-			pdbInfo.setAssemblies(null);
-		}
-
-		return pdbInfo;
-	}
-
-	/**
-	 * Retrieves assembly data for job.
-	 * @param jobId identifier of the job
-	 * @return assembly data corresponding to job id
-	 * @throws DaoException when can not retrieve result of the job
-	 */
-	public static List<Assembly> getAssemblyData(String jobId) throws DaoException {
-
-		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
-		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
 		// assemblies info
 		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 
-		return assemblyDAO.getAssemblies(pdbInfo.getUid());
+		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
+		// filtering out if a list of ids provided
+		if (assemblyIdList!=null) {
+			assemblies = assemblies.stream().filter(a -> assemblyIdList.contains(a.getId())).collect(Collectors.toList());
+		}
+		pdbInfo.setAssemblies(assemblies);
+
+		return pdbInfo;
 	}
 
 	/**

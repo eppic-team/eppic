@@ -115,25 +115,6 @@
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.AssemblyDiagramServlet</servlet-class>
 	</servlet>
 
-	<servlet>
-		<servlet-name>jersey-rest-service</servlet-name>
-		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-
-
-		<init-param>
-			<param-name>javax.ws.rs.Application</param-name>
-			<param-value>ch.systemsx.sybit.crkwebui.server.commons.InitJerseyRestApp</param-value>
-		</init-param>
-
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>jersey-rest-service</servlet-name>
-		<!-- The endpoints are at /ewui/rest/* -->
-		<url-pattern>/rest/*</url-pattern>
-	</servlet-mapping>
-
 	<servlet-mapping>
 		<servlet-name>CrkService</servlet-name>
 		<url-pattern>/ewui/crk</url-pattern>
