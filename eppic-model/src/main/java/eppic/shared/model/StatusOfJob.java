@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.shared.model;
+package eppic.shared.model;
 
 /**
  * This enum is used to represent current status of processing for the job.

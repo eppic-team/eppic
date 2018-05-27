@@ -30,8 +30,8 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.SingularAttribute;
 
-import ch.systemsx.sybit.shared.model.InputType;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.InputType;
+import eppic.shared.model.StatusOfJob;
 import eppic.jpautils.DbConfigGenerator;
 import eppic.model.ChainClusterDB;
 import eppic.model.ChainClusterDB_;

@@ -22,7 +22,7 @@ import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.InputCell;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.JobStatusCell;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.grids.contextmenus.JobsPanelContextMenu;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;

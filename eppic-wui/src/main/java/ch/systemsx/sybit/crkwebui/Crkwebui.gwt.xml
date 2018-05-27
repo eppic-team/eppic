@@ -19,7 +19,7 @@
 
   <!-- Other module inherits                                      -->
   <inherits name='eppic.model'/>
-  <inherits name="ch.systemsx.sybit.shared.model"/>
+  <inherits name="eppic.shared.model"/>
 
   <inherits name="com.google.gwt.http.HTTP"/>
   

@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.jobs.managers.commons;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.StatusOfJob;
 
 /**
  * Job manager.

@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.shared.model;
+package eppic.shared.model;
 
 /**
  * Input type used to start the job.

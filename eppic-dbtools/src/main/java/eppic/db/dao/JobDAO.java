@@ -6,7 +6,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.shared.model.InputWithType;
 import ch.systemsx.sybit.crkwebui.shared.model.JobStatusDetails;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.StatusOfJob;
 import eppic.model.JobDB;
 import eppic.model.PdbInfoDB;
 

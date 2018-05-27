@@ -14,7 +14,7 @@ import ch.systemsx.sybit.crkwebui.server.jobs.generators.queuing.NativeSpecifica
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.StatusOfJob;
 
 /**
  * Drmaa specific implementation of JobManager.

@@ -5,7 +5,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;

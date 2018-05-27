@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import ch.systemsx.sybit.crkwebui.shared.model.InputWithType;
 import ch.systemsx.sybit.crkwebui.shared.model.JobStatusDetails;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.StatusOfJob;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;

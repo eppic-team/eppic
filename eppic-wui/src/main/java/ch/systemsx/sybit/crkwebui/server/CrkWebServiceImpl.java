@@ -57,8 +57,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
 import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
 import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
-import ch.systemsx.sybit.shared.model.InputType;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.InputType;
+import eppic.shared.model.StatusOfJob;
 
 import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 

@@ -72,8 +72,8 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.shared.model.InputType;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.shared.model.InputType;
+import eppic.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;

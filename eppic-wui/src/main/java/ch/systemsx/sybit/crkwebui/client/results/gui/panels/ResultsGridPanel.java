@@ -41,7 +41,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceClusterScore;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.shared.model.InputType;
+import eppic.shared.model.InputType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;

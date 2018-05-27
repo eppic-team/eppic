@@ -7,7 +7,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.shared.model.InputType;
+import eppic.shared.model.InputType;
 
 /**
  * EPPIC command generator.
