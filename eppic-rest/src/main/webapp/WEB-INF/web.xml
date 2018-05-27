@@ -5,33 +5,32 @@
          version="4.0">
 
 
-<display-name>EPPIC REST API</display-name>
+    <display-name>EPPIC REST API</display-name>
 
-<servlet>
-    <servlet-name>jersey-servlet</servlet-name>
-    <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-    <init-param>
-        <param-name>javax.ws.rs.Application</param-name>
-        <param-value>eppic.rest.commons.CustomApplication</param-value>
-    </init-param>
-    <init-param>
-        <param-name>jersey.config.server.provider.packages</param-name>
-        <param-value>eppic.rest</param-value>
-    </init-param>
-    <init-param>
-        <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
-        <param-value>true</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-</servlet>
+    <servlet>
+        <servlet-name>jersey-rest-service</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>eppic.rest.commons.InitJerseyRestApp</param-value>
+        </init-param>
 
-<!-- the variable ${project.artifact.selectedVersion.majorVersion} gets expanded by maven at build time
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>jersey-rest-service</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- the variable ${project.artifact.selectedVersion.majorVersion} gets expanded by maven at build time
      It gives the major version based on the version defined in pom file - JD 2017-11-03 -->
-<servlet-mapping>
-    <servlet-name>jersey-servlet</servlet-name>
-    <url-pattern>/api/v${project.artifact.selectedVersion.majorVersion}/*</url-pattern>
-</servlet-mapping>
-
+    <!--
+    <servlet-mapping>
+        <servlet-name>jersey-rest-service</servlet-name>
+        <url-pattern>/api/v${project.artifact.selectedVersion.majorVersion}/*</url-pattern>
+    </servlet-mapping>
+    -->
 
 
 </web-app>

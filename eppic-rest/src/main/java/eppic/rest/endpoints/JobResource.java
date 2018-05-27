@@ -4,6 +4,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import eppic.rest.service.JobService;
 import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
+import io.swagger.annotations.Api;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,6 +14,7 @@ import javax.ws.rs.core.*;
 import java.util.List;
 
 @Path("/job")
+@Api(tags = {"job"})
 public class JobResource {
 
     @GET
