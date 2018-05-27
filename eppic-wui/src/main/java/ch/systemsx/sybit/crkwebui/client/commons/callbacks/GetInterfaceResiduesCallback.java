@@ -11,7 +11,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ShowWaitingEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import eppic.dtomodel.Residue;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

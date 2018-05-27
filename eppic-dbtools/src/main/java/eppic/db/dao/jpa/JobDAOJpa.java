@@ -20,9 +20,9 @@ import javax.persistence.criteria.SetJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.shared.model.InputWithType;
-import ch.systemsx.sybit.crkwebui.shared.model.JobStatusDetails;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import eppic.dtomodel.InputWithType;
+import eppic.dtomodel.JobStatusDetails;
+import eppic.dtomodel.ProcessingInProgressData;
 import eppic.shared.model.StatusOfJob;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;

@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.cell.TwoDecimalDoubleCell;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils.ResiduePagingMemoryProxy;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import eppic.dtomodel.Residue;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.editor.client.Editor.Path;

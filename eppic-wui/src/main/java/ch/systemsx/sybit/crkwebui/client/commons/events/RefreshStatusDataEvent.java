@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.RefreshStatusDataHandler;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import eppic.dtomodel.ProcessingInProgressData;
 
 import com.google.gwt.event.shared.GwtEvent;
 

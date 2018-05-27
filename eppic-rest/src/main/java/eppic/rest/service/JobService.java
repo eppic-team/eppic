@@ -7,12 +7,12 @@ import javax.persistence.PersistenceContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.InputWithType;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.Assembly;
+import eppic.dtomodel.ChainCluster;
+import eppic.dtomodel.InputWithType;
+import eppic.dtomodel.Interface;
+import eppic.dtomodel.InterfaceCluster;
+import eppic.dtomodel.PdbInfo;
 import eppic.db.dao.*;
 import eppic.db.dao.jpa.*;
 

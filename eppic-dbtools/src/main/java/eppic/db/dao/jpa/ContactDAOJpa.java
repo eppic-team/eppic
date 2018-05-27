@@ -10,8 +10,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Contact;
-import ch.systemsx.sybit.crkwebui.shared.model.ContactsList;
+import eppic.dtomodel.Contact;
+import eppic.dtomodel.ContactsList;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.ContactDAO;
 import eppic.db.dao.DaoException;

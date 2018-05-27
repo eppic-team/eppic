@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.shared.comparators;
 
-import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import eppic.dtomodel.InputParameters;
 
 /**
  * Input parameters comparator.

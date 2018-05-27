@@ -2,8 +2,8 @@ package ch.systemsx.sybit.crkwebui.client.alignment.data;
 
 import java.io.Serializable;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentData;
-import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentInfo;
+import eppic.dtomodel.PairwiseAlignmentData;
+import eppic.dtomodel.PairwiseAlignmentInfo;
 
 /**
  * Class used to store the alignment data

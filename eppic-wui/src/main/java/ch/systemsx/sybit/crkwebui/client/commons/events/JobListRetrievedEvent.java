@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.events;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.JobListRetrievedHandler;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import eppic.dtomodel.ProcessingInProgressData;
 
 import com.google.gwt.event.shared.GwtEvent;
 

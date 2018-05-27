@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.homologs.data;
 
-import ch.systemsx.sybit.crkwebui.shared.model.HomologIdentityData;
+import eppic.dtomodel.HomologIdentityData;
 
 import com.google.gwt.editor.client.Editor.Path;
 import com.sencha.gxt.core.client.ValueProvider;

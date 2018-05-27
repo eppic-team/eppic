@@ -6,8 +6,8 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.ApplicationInitEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
+import eppic.dtomodel.ApplicationSettings;
+import eppic.dtomodel.WindowData;
 
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;

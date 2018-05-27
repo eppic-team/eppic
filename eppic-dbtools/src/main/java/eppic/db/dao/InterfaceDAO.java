@@ -3,7 +3,7 @@ package eppic.db.dao;
 import java.util.List;
 import java.util.Set;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import eppic.dtomodel.Interface;
 
 /**
  * DAO for Interface item.

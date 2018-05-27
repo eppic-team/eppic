@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.alignment.gui.cell;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentData;
+import eppic.dtomodel.PairwiseAlignmentData;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;

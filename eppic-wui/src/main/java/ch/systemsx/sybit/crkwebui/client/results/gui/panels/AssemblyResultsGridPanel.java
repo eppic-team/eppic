@@ -35,10 +35,10 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesLinkCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.SubscriptTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.AssemblyScore;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.Assembly;
+import eppic.dtomodel.AssemblyScore;
+import eppic.dtomodel.InterfaceCluster;
+import eppic.dtomodel.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;

@@ -1,7 +1,6 @@
 package eppic;
 
 //import org.junit.Ignore;
-import ch.systemsx.sybit.crkwebui.shared.model.AssemblyScore;
 import eppic.assembly.TestLatticeGraph;
 import eppic.model.*;
 import org.biojava.nbio.structure.Structure;

@@ -10,7 +10,7 @@ import javax.persistence.criteria.Root;
 
 import eppic.model.JobDB_;
 import eppic.model.PdbInfoDB_;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.PdbInfo;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.PDBInfoDAO;

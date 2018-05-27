@@ -10,7 +10,7 @@ import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import eppic.dtomodel.RunJobData;
 
 /**
  * This class is used to start the EPPIC CLI application (formerly known as CRK).

@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.alignment.data;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentData;
-import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentInfo;
+import eppic.dtomodel.PairwiseAlignmentData;
+import eppic.dtomodel.PairwiseAlignmentInfo;
 
 import com.google.gwt.editor.client.Editor.Path;
 import com.sencha.gxt.core.client.ValueProvider;

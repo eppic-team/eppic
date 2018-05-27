@@ -2,9 +2,9 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
+import eppic.dtomodel.SequenceClusterType;
+import eppic.dtomodel.ChainCluster;
+import eppic.dtomodel.PDBSearchResult;
 
 /**
  * DAO for HomologsInfo item.

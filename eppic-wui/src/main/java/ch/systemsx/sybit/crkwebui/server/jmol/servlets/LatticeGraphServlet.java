@@ -29,8 +29,8 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadS
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.LatticeGraphPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.LatticeGraphServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.Interface;
+import eppic.dtomodel.PdbInfo;
 import eppic.assembly.gui.LatticeGUI;
 import eppic.commons.util.Interval;
 import eppic.commons.util.IntervalSet;

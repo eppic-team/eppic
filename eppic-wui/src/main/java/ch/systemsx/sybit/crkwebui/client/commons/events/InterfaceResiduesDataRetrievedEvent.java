@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.InterfaceResiduesDataRetrievedHandler;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import eppic.dtomodel.Residue;
 
 import com.google.gwt.event.shared.GwtEvent;
 

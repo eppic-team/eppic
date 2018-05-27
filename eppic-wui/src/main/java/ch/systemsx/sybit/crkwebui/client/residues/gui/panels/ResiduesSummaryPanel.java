@@ -4,9 +4,9 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import eppic.dtomodel.InterfaceScore;
+import eppic.dtomodel.PdbInfo;
+import eppic.dtomodel.Residue;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlexTable;

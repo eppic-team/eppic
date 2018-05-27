@@ -10,7 +10,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
+import eppic.dtomodel.InterfaceCluster;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.InterfaceClusterDAO;

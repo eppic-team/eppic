@@ -6,7 +6,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.panels.InterfacesResiduesPanel;
 import ch.systemsx.sybit.crkwebui.client.residues.gui.panels.LegendPanel;
-import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
+import eppic.dtomodel.WindowData;
 
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.logical.shared.ResizeEvent;

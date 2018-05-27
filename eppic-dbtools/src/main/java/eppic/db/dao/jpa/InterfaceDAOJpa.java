@@ -13,7 +13,7 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import eppic.dtomodel.Interface;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.InterfaceDAO;

@@ -4,7 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import eppic.dtomodel.ProcessingInProgressData;
 import eppic.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;

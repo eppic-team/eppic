@@ -17,9 +17,10 @@
   <!-- for neptune theme (available since GXT 3.1), also needs an additional jar dependency -->
   <!--<inherits name="com.sencha.gxt.theme.neptune.Theme"/>-->
 
-  <!-- Other module inherits                                      -->
-  <inherits name='eppic.model'/>
+  <!-- Other module inherits (from eppic-model module)           -->
+  <inherits name="eppic.model"/>
   <inherits name="eppic.shared.model"/>
+  <inherits name="eppic.dtomodel"/>
 
   <inherits name="com.google.gwt.http.HTTP"/>
   

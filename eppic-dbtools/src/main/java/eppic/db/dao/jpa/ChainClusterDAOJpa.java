@@ -17,9 +17,9 @@ import javax.persistence.metamodel.SingularAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
-import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
+import eppic.dtomodel.ChainCluster;
+import eppic.dtomodel.PDBSearchResult;
+import eppic.dtomodel.SequenceClusterType;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.ChainClusterDAO;
 import eppic.db.dao.DaoException;

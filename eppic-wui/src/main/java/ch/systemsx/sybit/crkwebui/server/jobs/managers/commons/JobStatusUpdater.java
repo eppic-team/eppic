@@ -17,7 +17,7 @@ import ch.systemsx.sybit.crkwebui.server.email.data.EmailMessageData;
 import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DeserializationException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
-import ch.systemsx.sybit.crkwebui.shared.model.JobStatusDetails;
+import eppic.dtomodel.JobStatusDetails;
 import eppic.shared.model.StatusOfJob;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;

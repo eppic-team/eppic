@@ -36,11 +36,11 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.FinalCallSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodsSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceClusterScore;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.Interface;
+import eppic.dtomodel.InterfaceCluster;
+import eppic.dtomodel.InterfaceClusterScore;
+import eppic.dtomodel.InterfaceScore;
+import eppic.dtomodel.PdbInfo;
 import eppic.shared.model.InputType;
 
 import com.google.gwt.core.client.GWT;

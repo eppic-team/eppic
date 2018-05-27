@@ -13,7 +13,7 @@ import javax.persistence.criteria.Root;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
+import eppic.dtomodel.Assembly;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.AssemblyDAO;
 import eppic.db.dao.DaoException;

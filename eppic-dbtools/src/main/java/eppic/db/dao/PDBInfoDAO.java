@@ -1,6 +1,6 @@
 package eppic.db.dao;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.PdbInfo;
 import eppic.model.PdbInfoDB;
 
 /**

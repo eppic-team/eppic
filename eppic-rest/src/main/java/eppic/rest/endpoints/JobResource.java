@@ -1,9 +1,9 @@
 package eppic.rest.endpoints;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.Assembly;
+import eppic.dtomodel.Interface;
+import eppic.dtomodel.InterfaceCluster;
+import eppic.dtomodel.PdbInfo;
 import eppic.db.dao.DaoException;
 import eppic.rest.service.JobService;
 import io.swagger.annotations.Api;

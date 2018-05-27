@@ -2,7 +2,7 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
+import eppic.dtomodel.InterfaceCluster;
 
 /**
  * DAO for Interface clusters

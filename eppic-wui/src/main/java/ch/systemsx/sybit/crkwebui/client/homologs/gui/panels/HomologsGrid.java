@@ -11,8 +11,8 @@ import ch.systemsx.sybit.crkwebui.client.homologs.data.HomologsItemModelProperti
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.IdentityBarCell;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.LastTaxonCell;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.cells.UniprotIdCell;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologIdentityData;
-import ch.systemsx.sybit.crkwebui.shared.model.Homolog;
+import eppic.dtomodel.HomologIdentityData;
+import eppic.dtomodel.Homolog;
 
 import com.google.gwt.core.client.GWT;
 import com.sencha.gxt.data.shared.ListStore;

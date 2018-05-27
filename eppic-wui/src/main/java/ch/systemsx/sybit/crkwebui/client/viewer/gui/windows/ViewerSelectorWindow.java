@@ -17,7 +17,7 @@ import com.sencha.gxt.widget.core.client.form.CheckBox;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
-import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
+import eppic.dtomodel.WindowData;
 
 public class ViewerSelectorWindow extends ResizableWindow{
 

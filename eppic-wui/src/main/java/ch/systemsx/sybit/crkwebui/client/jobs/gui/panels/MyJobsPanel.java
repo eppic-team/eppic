@@ -21,7 +21,7 @@ import ch.systemsx.sybit.crkwebui.client.jobs.data.MyJobsModelProperties;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.InputCell;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.cells.JobStatusCell;
 import ch.systemsx.sybit.crkwebui.client.jobs.gui.grids.contextmenus.JobsPanelContextMenu;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import eppic.dtomodel.ProcessingInProgressData;
 import eppic.shared.model.StatusOfJob;
 
 import com.google.gwt.core.client.GWT;

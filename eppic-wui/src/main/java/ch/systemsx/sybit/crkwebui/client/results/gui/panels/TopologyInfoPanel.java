@@ -5,7 +5,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.images.ImageWithTooltip;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.PopupRunner;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.ViewerRunner;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.PdbInfo;
 import eppic.EppicParams;
 
 import com.google.gwt.event.dom.client.ClickEvent;

@@ -1,10 +1,10 @@
 package eppic.rest.dao.jpa;
 
-import ch.systemsx.sybit.crkwebui.shared.model.*;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.PDBInfoDAO;
 import eppic.db.dao.jpa.PDBInfoDAOJpa;
 
+import eppic.dtomodel.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;

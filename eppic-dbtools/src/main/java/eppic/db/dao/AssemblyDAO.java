@@ -2,7 +2,7 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
+import eppic.dtomodel.Assembly;
 
 public interface AssemblyDAO {
 

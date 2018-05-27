@@ -8,9 +8,9 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.panels.HomologsGrid;
 import ch.systemsx.sybit.crkwebui.client.homologs.gui.panels.HomologsHeaderPanel;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
+import eppic.dtomodel.ChainCluster;
+import eppic.dtomodel.PdbInfo;
+import eppic.dtomodel.WindowData;
 
 /**
  * Window to display homologs

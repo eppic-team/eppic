@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import eppic.dtomodel.Residue;
 
 import com.google.gwt.core.client.Callback;
 import com.sencha.gxt.data.shared.SortDir;

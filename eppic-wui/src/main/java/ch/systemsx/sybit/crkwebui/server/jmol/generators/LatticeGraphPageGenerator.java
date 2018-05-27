@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileCache;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import eppic.dtomodel.Interface;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;

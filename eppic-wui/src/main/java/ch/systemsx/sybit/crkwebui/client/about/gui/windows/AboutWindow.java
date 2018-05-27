@@ -4,7 +4,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.events.WindowHideEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
-import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
+import eppic.dtomodel.WindowData;
 
 import com.google.gwt.user.client.ui.HTML;
 import com.sencha.gxt.widget.core.client.event.HideEvent;

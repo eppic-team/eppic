@@ -2,8 +2,8 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Contact;
-import ch.systemsx.sybit.crkwebui.shared.model.ContactsList;
+import eppic.dtomodel.Contact;
+import eppic.dtomodel.ContactsList;
 
 /**
  * DAO for Contact

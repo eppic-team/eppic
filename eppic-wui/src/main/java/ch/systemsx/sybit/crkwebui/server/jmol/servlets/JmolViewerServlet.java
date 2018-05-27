@@ -18,9 +18,9 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadS
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.JmolPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.JmolViewerServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.dtomodel.Assembly;
+import eppic.dtomodel.Interface;
+import eppic.dtomodel.PdbInfo;
 import eppic.EppicParams;
 import eppic.db.dao.AssemblyDAO;
 import eppic.db.dao.DaoException;

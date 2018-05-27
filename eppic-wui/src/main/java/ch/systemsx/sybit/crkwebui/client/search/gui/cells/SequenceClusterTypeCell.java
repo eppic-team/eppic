@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.search.gui.cells;
 
 import ch.systemsx.sybit.crkwebui.client.homologs.util.IdentityColorPicker;
-import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
+import eppic.dtomodel.SequenceClusterType;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;

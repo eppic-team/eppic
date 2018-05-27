@@ -2,8 +2,8 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
+import eppic.dtomodel.Residue;
+import eppic.dtomodel.ResiduesList;
 
 /**
  * DAO for InterfaceResidue item.

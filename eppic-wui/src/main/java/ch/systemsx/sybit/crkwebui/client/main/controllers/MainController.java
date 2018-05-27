@@ -67,11 +67,11 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
 import ch.systemsx.sybit.crkwebui.client.search.gui.panels.SearchPanel;
 import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PDBSearchResult;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
+import eppic.dtomodel.Assembly;
+import eppic.dtomodel.InterfaceCluster;
+import eppic.dtomodel.PDBSearchResult;
+import eppic.dtomodel.PdbInfo;
+import eppic.dtomodel.ProcessingInProgressData;
 import eppic.shared.model.InputType;
 import eppic.shared.model.StatusOfJob;
 
