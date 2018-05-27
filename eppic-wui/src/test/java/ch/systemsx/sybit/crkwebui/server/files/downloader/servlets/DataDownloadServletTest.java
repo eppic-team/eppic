@@ -8,7 +8,6 @@ import java.util.*;
 
 import javax.xml.bind.JAXBException;
 
-import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import org.junit.Test;
@@ -25,6 +24,7 @@ import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
 import ch.systemsx.sybit.crkwebui.shared.model.Residue;
 import ch.systemsx.sybit.crkwebui.shared.model.RunParameters;
+import eppic.db.dao.DaoException;
 
 
 public class DataDownloadServletTest {

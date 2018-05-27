@@ -20,30 +20,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
-import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.AssemblyDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceClusterDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadTrackingDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.AssemblyDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ChainClusterDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceClusterDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
 import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.InputWithType;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.db.dao.AssemblyDAO;
+import eppic.db.dao.ChainClusterDAO;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.DataDownloadTrackingDAO;
+import eppic.db.dao.InterfaceClusterDAO;
+import eppic.db.dao.InterfaceDAO;
+import eppic.db.dao.JobDAO;
+import eppic.db.dao.PDBInfoDAO;
+import eppic.db.dao.jpa.AssemblyDAOJpa;
+import eppic.db.dao.jpa.ChainClusterDAOJpa;
+import eppic.db.dao.jpa.DataDownloadTrackingDAOJpa;
+import eppic.db.dao.jpa.InterfaceClusterDAOJpa;
+import eppic.db.dao.jpa.InterfaceDAOJpa;
+import eppic.db.dao.jpa.JobDAOJpa;
+import eppic.db.dao.jpa.PDBInfoDAOJpa;
 
 /**
  * Servlet used to download results in xml/json format.

@@ -2,8 +2,8 @@ package eppic.rest.endpoints;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.db.dao.DaoException;
 import eppic.rest.service.JobService;
-import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
 import io.swagger.annotations.Api;
 
 import javax.ws.rs.GET;

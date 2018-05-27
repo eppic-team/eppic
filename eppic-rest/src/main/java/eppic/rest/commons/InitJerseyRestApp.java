@@ -1,7 +1,7 @@
 package eppic.rest.commons;
 
 
-import ch.systemsx.sybit.crkwebui.server.EntityManagerHandler;
+import eppic.db.EntityManagerHandler;
 import eppic.rest.filter.CORSResponseFilter;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;

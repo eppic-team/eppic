@@ -4,18 +4,17 @@ import java.util.*;
 
 import javax.persistence.PersistenceContext;
 
-import ch.systemsx.sybit.crkwebui.server.db.dao.*;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
+import ch.systemsx.sybit.crkwebui.shared.model.InputWithType;
 import ch.systemsx.sybit.crkwebui.shared.model.Interface;
 import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.db.dao.*;
+import eppic.db.dao.jpa.*;
 
 /**
  * Servlet used to download results in xml/json format.
@@ -32,17 +31,7 @@ public class JobService {
      */
     public static final String SERVLET_NAME = "dataDownload";
 
-    private static final long serialVersionUID = 1L;
-
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
-
-    //Parameters
-    //private int maxNumJobIds;
-    private int defaultNrOfAllowedSubmissionsForIP;
-
-
-
-
 
 
 

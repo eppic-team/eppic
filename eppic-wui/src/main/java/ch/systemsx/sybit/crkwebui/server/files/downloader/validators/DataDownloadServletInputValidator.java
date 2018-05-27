@@ -1,10 +1,10 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.validators;
 
-import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
-import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.JobDAO;
+import eppic.db.dao.jpa.JobDAOJpa;
 
 public class DataDownloadServletInputValidator {
 	

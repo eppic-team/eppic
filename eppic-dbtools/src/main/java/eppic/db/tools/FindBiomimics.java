@@ -1,6 +1,6 @@
 package eppic.db.tools;
 
-import static eppic.db.Interface.*;
+import static eppic.db.tools.helpers.Interface.*;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -33,12 +33,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.CallType;
-import eppic.db.DirectedInterface;
-import eppic.db.Interface;
-import eppic.db.InterfaceCluster;
-import eppic.db.MultipleInterfaceComparator;
-import eppic.db.PdbInfo;
-import eppic.db.SeqClusterLevel;
+import eppic.db.tools.helpers.DirectedInterface;
+import eppic.db.tools.helpers.Interface;
+import eppic.db.tools.helpers.InterfaceCluster;
+import eppic.db.tools.helpers.MultipleInterfaceComparator;
+import eppic.db.tools.helpers.PdbInfo;
+import eppic.db.tools.helpers.SeqClusterLevel;
 import eppic.model.ChainClusterDB;
 import eppic.model.ContactDB;
 import eppic.model.InterfaceDB;
