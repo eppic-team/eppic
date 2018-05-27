@@ -2,8 +2,8 @@ package eppic.rest.endpoints;
 
 import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
 import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import eppic.rest.dao.DaoException;
 import eppic.rest.service.JobService;
+import ch.systemsx.sybit.crkwebui.server.db.dao.DaoException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -23,7 +23,7 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        PdbInfo pdbInfo = null;//JobService.getResultData(jobId, false, false, false, false);
+        PdbInfo pdbInfo = JobService.getResultData(jobId, false, false, false, false);
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -41,7 +41,7 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<Assembly> assemblies = null;//JobService.getAssemblyData(jobId);
+        List<Assembly> assemblies = JobService.getAssemblyData(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
         GenericEntity<List<Assembly>> entity = new GenericEntity<List<Assembly>>(assemblies){};
 
