@@ -46,24 +46,14 @@
             <groupId>org.eppic-web</groupId>
             <artifactId>eppic-dbtools</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-c3p0</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql.connector.version}</version>
+            <exclusions>
+                <!--We don't need eppic-cli at all. Plus the subdependency uniprot-JAPI of eppic-cli
+                has a jersey subdependency that clashes with the one below-->
+                <exclusion>
+                    <groupId>org.eppic-web</groupId>
+                    <artifactId>eppic-cli</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- JAX-RS -->
@@ -92,15 +82,17 @@
             <version>${jersey2.version}</version>
         </dependency>
 
+        <!-- The explicit hk2 dependency is needed since jersey 2.26.
+		 See https://stackoverflow.com/questions/44088493/jersey-stopped-working-with-injectionmanagerfactory-not-found -->
         <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
             <version>${jersey2.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-moxy</artifactId>
             <version>${jersey2.version}</version>
         </dependency>
 
