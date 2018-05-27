@@ -25,26 +25,7 @@
 	</dependencies>
 
 	<build>
-		<!-- This solves the 'no source code is available' problem for gwt compilation.
-			 The issue came when we moved the share.model DTO classes (ch.systemsx.sybit.crkwebui.shared.model) 
-			 from eppic-wui to the eppic-model project. GWT wouldn't be able to compile with the mentioned error -->
- 
-		<resources>
-        	<resource>
-            <directory>src/main/java</directory>
-            <includes>
-                <include>**/*.java</include>
-            </includes>
-        	</resource>
-        	<resource>
-            <directory>src/main/resources</directory>
-            <includes>
-                <include>**/*.*xml</include>
-                <include>**/*.*properties</include>
-            </includes>
-        	</resource>
-    	</resources>
-
+		
 	
 		<plugins>
 			<plugin>
