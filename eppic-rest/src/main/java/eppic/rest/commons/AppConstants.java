@@ -40,7 +40,7 @@ public class AppConstants {
     /**
      * The prefix to all resources, same value as set in servlets in web.xml
      */
-    public static final String RESOURCES_PREFIX = "api";
+    public static final String RESOURCES_PREFIX = "eppic-rest/api";
 
     /**
      * The full prefix including leading slash and the major version number
