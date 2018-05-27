@@ -306,7 +306,7 @@
 		<table name="InterfaceClusterScore" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ClusterScoreListener">
+				class="eppic.adapters.ClusterScoreListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -346,7 +346,7 @@
 		<table name="Interface" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.InterfaceListener">
+				class="eppic.adapters.InterfaceListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -424,7 +424,7 @@
 		<table name="ResidueBurial" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ResidueBurialListener">
+				class="eppic.adapters.ResidueBurialListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -456,7 +456,7 @@
 		<table name="ResidueInfo"/>
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ResidueInfoListener">
+				class="eppic.adapters.ResidueInfoListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -503,7 +503,7 @@
 		<table name="Contact" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ContactListener">
+				class="eppic.adapters.ContactListener">
 			</entity-listener>
 		</entity-listeners>			
 		<attributes>
@@ -541,7 +541,7 @@
 		<table name="InterfaceScore" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.InterfaceScoreListener">
+				class="eppic.adapters.InterfaceScoreListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -632,7 +632,7 @@
 		<table name="ChainCluster" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ChainClusterListener">
+				class="eppic.adapters.ChainClusterListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -754,7 +754,7 @@
 		<table name="Homolog" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.HomologListener">
+				class="eppic.adapters.HomologListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>

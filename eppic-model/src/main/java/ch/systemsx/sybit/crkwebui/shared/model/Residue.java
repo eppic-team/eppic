@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
-import ch.systemsx.sybit.server.db.entitylisteners.DoubleNaNXmlAdapter;
+import eppic.adapters.DoubleNaNXmlAdapter;
 import eppic.model.ResidueBurialDB;
 
 /**

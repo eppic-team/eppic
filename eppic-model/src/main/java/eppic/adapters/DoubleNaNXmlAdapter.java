@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.server.db.entitylisteners;
+package eppic.adapters;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 

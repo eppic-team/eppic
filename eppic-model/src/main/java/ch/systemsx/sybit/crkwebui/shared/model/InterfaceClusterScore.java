@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.shared.model;
 
 import java.io.Serializable;
 
-import ch.systemsx.sybit.server.db.entitylisteners.DoubleNaNXmlAdapter;
+import eppic.adapters.DoubleNaNXmlAdapter;
 import eppic.model.InterfaceClusterScoreDB;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
