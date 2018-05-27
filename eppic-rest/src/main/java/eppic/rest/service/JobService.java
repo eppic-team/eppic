@@ -122,5 +122,33 @@ public class JobService {
         return assemblyDAO.getAssemblies(pdbInfo.getUid());
     }
 
+    /**
+     * Retrieves interface cluster data for job.
+     * @param jobId identifier of the job
+     * @return interface cluster data corresponding to job id
+     * @throws DaoException when can not retrieve result of the job
+     */
+    public static List<InterfaceCluster> getInterfaceClusterData(String jobId) throws DaoException {
 
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
+        return clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+    }
+
+    /**
+     * Retrieves interface data for job.
+     * @param jobId identifier of the job
+     * @return interface data corresponding to job id
+     * @throws DaoException when can not retrieve result of the job
+     */
+    public static List<Interface> getInterfaceData(String jobId) throws DaoException {
+
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
+        return interfaceDAO.getAllInterfaces(pdbInfo.getUid());
+    }
 }
