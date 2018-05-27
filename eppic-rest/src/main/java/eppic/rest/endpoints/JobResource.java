@@ -1,9 +1,6 @@
 package eppic.rest.endpoints;
 
-import eppic.dtomodel.Assembly;
-import eppic.dtomodel.Interface;
-import eppic.dtomodel.InterfaceCluster;
-import eppic.dtomodel.PdbInfo;
+import eppic.dtomodel.*;
 import eppic.db.dao.DaoException;
 import eppic.rest.service.JobService;
 import io.swagger.annotations.Api;
@@ -88,6 +85,48 @@ public class JobResource {
         List<Interface> ics = JobService.getInterfaceData(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
         GenericEntity<List<Interface>> entity = new GenericEntity<List<Interface>>(ics){};
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(entity);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/sequences/" + "{jobId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getSequences(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId) throws DaoException {
+
+
+        List<ChainCluster> ics = JobService.getSequenceData(jobId);
+        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
+        GenericEntity<List<ChainCluster>> entity = new GenericEntity<List<ChainCluster>>(ics){};
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(entity);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/interfaceResidues/" + "{jobId}/{interfId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getInterfaceResidues(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("interfId") String interfId) throws DaoException {
+
+        // TODO validate interfId is int
+
+        List<Residue> ics = JobService.getResidueData(jobId, Integer.parseInt(interfId));
+        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
+        GenericEntity<List<Residue>> entity = new GenericEntity<List<Residue>>(ics){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)

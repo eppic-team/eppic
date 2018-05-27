@@ -46,9 +46,25 @@ public interface InterfaceDAO
 	 * @return list of interface items with residues and scores for pdb info item
 	 * @throws DaoException when can not retrieve interface items
 	 */
-	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid) throws DaoException;
-	
-	public Interface getInterfaceWithResidues(int pdbInfoUid, int interfaceId)throws DaoException;
+	List<Interface> getInterfacesWithResidues(int interfaceClusterUid) throws DaoException;
+
+	/**
+	 * Retrieves interface with scores for given interface id
+	 * @param pdbInfoUid
+	 * @param interfaceId
+	 * @return
+	 * @throws DaoException
+	 */
+	Interface getInterface(int pdbInfoUid, int interfaceId)throws DaoException;
+
+	/**
+	 * Retrieves interface with scores and residues for given interface id
+	 * @param pdbInfoUid
+	 * @param interfaceId
+	 * @return
+	 * @throws DaoException
+	 */
+	Interface getInterfaceWithResidues(int pdbInfoUid, int interfaceId)throws DaoException;
 
 	/**
 	 * Get a list of all interfaces (without residues or score) for a particular PDB

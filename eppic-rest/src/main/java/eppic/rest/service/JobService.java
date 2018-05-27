@@ -4,15 +4,10 @@ import java.util.*;
 
 import javax.persistence.PersistenceContext;
 
+import eppic.dtomodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.dtomodel.Assembly;
-import eppic.dtomodel.ChainCluster;
-import eppic.dtomodel.InputWithType;
-import eppic.dtomodel.Interface;
-import eppic.dtomodel.InterfaceCluster;
-import eppic.dtomodel.PdbInfo;
 import eppic.db.dao.*;
 import eppic.db.dao.jpa.*;
 
@@ -150,5 +145,38 @@ public class JobService {
 
         InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
         return interfaceDAO.getAllInterfaces(pdbInfo.getUid());
+    }
+
+    /**
+     * Retrieves sequence data for job.
+     * @param jobId identifier of the job
+     * @return sequence data corresponding to job id
+     * @throws DaoException when can not retrieve result of the job
+     */
+    public static List<ChainCluster> getSequenceData(String jobId) throws DaoException {
+
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        ChainClusterDAO chainClusterDAO = new ChainClusterDAOJpa();
+        return chainClusterDAO.getChainClusters(pdbInfo.getUid());
+    }
+
+    /**
+     * Retrieves residue data for job and interface id.
+     * @param jobId identifier of the job
+     * @param interfId the interface id
+     * @return residue data corresponding to job id and interface id
+     * @throws DaoException when can not retrieve result of the job
+     */
+    public static List<Residue> getResidueData(String jobId, int interfId) throws DaoException {
+
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
+        Interface interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfId);
+        ResidueDAO rdao = new ResidueDAOJpa();
+        return rdao.getResiduesForInterface(interf.getUid());
     }
 }

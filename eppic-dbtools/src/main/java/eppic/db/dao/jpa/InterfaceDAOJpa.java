@@ -283,6 +283,61 @@ public class InterfaceDAOJpa implements InterfaceDAO
 	}
 
 	@Override
+	public Interface getInterface(int pdbInfoUid, int interfaceId)throws DaoException {
+		EntityManager entityManager = null;
+
+		try
+		{
+			Interface result = null;
+
+			entityManager = EntityManagerHandler.getEntityManager();
+
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<InterfaceClusterDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceClusterDB.class);
+
+			Root<InterfaceClusterDB> interfaceClusterRoot = criteriaQuery.from(InterfaceClusterDB.class);
+			Path<PdbInfoDB> pdbInfoDB = interfaceClusterRoot.get(InterfaceClusterDB_.pdbInfo);
+			criteriaQuery.where(criteriaBuilder.equal(pdbInfoDB.get(PdbInfoDB_.uid), pdbInfoUid));
+
+			TypedQuery<InterfaceClusterDB> query = entityManager.createQuery(criteriaQuery);
+
+			List<InterfaceClusterDB> interfaceClusterDBs = query.getResultList();
+
+			for(InterfaceClusterDB interfaceClusterDB : interfaceClusterDBs) {
+
+				for (InterfaceDB interfaceDB:interfaceClusterDB.getInterfaces()) {
+					interfaceDB.setResidueBurials(null);
+					if (interfaceDB.getInterfaceId()==interfaceId) {
+						result = Interface.create(interfaceDB);
+					}
+				}
+			}
+
+			if (result==null)
+				throw new DaoException("Could not find an interface for pdbInfo uid "+pdbInfoUid+" and interface id "+interfaceId);
+
+			return result;
+		}
+		catch(Throwable e)
+		{
+			e.printStackTrace();
+			throw new DaoException(e);
+		}
+		finally
+		{
+			try
+			{
+				entityManager.close();
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+			}
+		}
+
+	}
+
+	@Override
 	public List<Interface> getAllInterfaces(int pdbInfoUid) throws DaoException {
 		EntityManager entityManager = null;
 
