@@ -11,9 +11,9 @@
 		<description>Persistence unit for the EPPIC WUI application</description>
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 		<non-jta-data-source>java:comp/env/jdbc/eppicDB</non-jta-data-source>
-		<class>ch.systemsx.sybit.server.db.model.IPForbidden</class>
-		<class>ch.systemsx.sybit.server.db.model.IPAllowed</class>
-		<class>ch.systemsx.sybit.server.db.model.DataDownloadTracking</class>
+		<class>eppic.server.model.IPForbidden</class>
+		<class>eppic.server.model.IPAllowed</class>
+		<class>eppic.server.model.DataDownloadTracking</class>
 		<validation-mode>NONE</validation-mode>
 		-->
 		<properties>

@@ -9,8 +9,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import ch.systemsx.sybit.server.db.model.IPAllowed;
-import ch.systemsx.sybit.server.db.model.IPAllowed_;
+import eppic.server.model.IPAllowed;
+import eppic.server.model.IPAllowed_;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.IPAllowedDAO;

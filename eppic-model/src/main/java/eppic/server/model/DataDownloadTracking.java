@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.server.db.model;
+package eppic.server.model;
 
 import java.util.Date;
 
