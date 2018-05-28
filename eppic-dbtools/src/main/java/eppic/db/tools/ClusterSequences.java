@@ -208,15 +208,6 @@ public class ClusterSequences {
 				it.remove();;
 		}
 	}
-	
-	private static boolean checkIdsInList(List<List<String>> clustersList, Map<Integer, ChainClusterDB> allChains) {
-		for (int i=0;i<clustersList.size();i++) {
-			for (String member:clustersList.get(i)) {
-					if (!allChains.containsKey(Integer.parseInt(member))) return false;
-				}
-			}
-		return true;
-	}
 
 	/**
 	 * Get SQL table name from JPA.

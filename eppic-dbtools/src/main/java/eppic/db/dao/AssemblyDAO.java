@@ -11,5 +11,5 @@ public interface AssemblyDAO {
 	 * @param pdbInfoUid
 	 * @return
 	 */
-	public List<Assembly> getAssemblies(int pdbInfoUid) throws DaoException;
+	List<Assembly> getAssemblies(int pdbInfoUid) throws DaoException;
 }

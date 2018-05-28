@@ -19,7 +19,7 @@ public interface ContactDAO {
 	 * @return list of contacts for specified interface
 	 * @throws DaoException when can not retrieve list of contacts
 	 */
-	public List<Contact> getContactsForInterface(int interfaceUid) throws DaoException;
+	List<Contact> getContactsForInterface(int interfaceUid) throws DaoException;
 	
 	/**
 	 * Retrieves list of contacts for all interfaces.
@@ -27,6 +27,6 @@ public interface ContactDAO {
 	 * @return list of contacts for all interfaces
 	 * @throws DaoException when can not retrieve list of contacts
 	 */
-	public ContactsList getContactsForAllInterfaces(String jobId) throws DaoException;
+	ContactsList getContactsForAllInterfaces(String jobId) throws DaoException;
 }
 

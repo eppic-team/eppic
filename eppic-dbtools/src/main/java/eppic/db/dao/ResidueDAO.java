@@ -18,7 +18,7 @@ public interface ResidueDAO {
 	 * @return list of interface residue items for specified interface
 	 * @throws DaoException when can not retrieve list of residue items
 	 */
-	public List<Residue> getResiduesForInterface(int interfaceUid) throws DaoException;
+	List<Residue> getResiduesForInterface(int interfaceUid) throws DaoException;
 	
 	/**
 	 * Retrieves list of interface residue items for all interfaces.
@@ -26,5 +26,5 @@ public interface ResidueDAO {
 	 * @return list of interface residue items for all interfaces
 	 * @throws DaoException when can not retrieve list of residue items
 	 */
-	public ResiduesList getResiduesForAllInterfaces(String jobId) throws DaoException;
+	ResiduesList getResiduesForAllInterfaces(String jobId) throws DaoException;
 }
