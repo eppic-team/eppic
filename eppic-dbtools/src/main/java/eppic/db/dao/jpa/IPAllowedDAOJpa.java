@@ -54,19 +54,12 @@ public class IPAllowedDAOJpa implements IPAllowedDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 		
 		return nrOfAllowedSubmissionsPerIP;

@@ -71,19 +71,12 @@ public class ResidueDAOJpa implements ResidueDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 		
 		logger.debug("Got {} residues for interface uid {}", result.size(), interfaceUid);
@@ -148,19 +141,12 @@ public class ResidueDAOJpa implements ResidueDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 		
 		logger.debug("Got residues for {} interfaces belonging to job id {}", residuesForInterfaces.size() , jobId);

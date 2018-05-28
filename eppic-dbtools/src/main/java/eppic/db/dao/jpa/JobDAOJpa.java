@@ -82,11 +82,11 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 
 			try
 			{
-				entityManager.getTransaction().rollback();
+				if (entityManager!=null)
+					entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
@@ -97,14 +97,8 @@ public class JobDAOJpa implements JobDAO
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -126,11 +120,10 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
-
 			try
 			{
-				entityManager.getTransaction().rollback();
+				if (entityManager!=null)
+					entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
@@ -141,14 +134,8 @@ public class JobDAOJpa implements JobDAO
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -186,10 +173,10 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 			try
 			{
-				entityManager.getTransaction().rollback();
+				if (entityManager!=null)
+					entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
@@ -200,14 +187,8 @@ public class JobDAOJpa implements JobDAO
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -249,19 +230,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -289,19 +263,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -336,19 +303,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 
 		return StatusOfJob.getByName(status);
@@ -377,19 +337,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -442,19 +395,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 
 		return nrOfJobs;
@@ -504,19 +450,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable t)
 		{
-			logger.error(t.getMessage(),t);
 			throw new DaoException(t);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -576,11 +515,11 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 
 			try
 			{
-				entityManager.getTransaction().rollback();
+				if (entityManager!=null)
+					entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
@@ -591,14 +530,8 @@ public class JobDAOJpa implements JobDAO
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -629,19 +562,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -671,11 +597,11 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 
 			try
 			{
-				entityManager.getTransaction().rollback();
+				if (entityManager!=null)
+					entityManager.getTransaction().rollback();
 			}
 			catch(Throwable t)
 			{
@@ -686,14 +612,8 @@ public class JobDAOJpa implements JobDAO
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -735,19 +655,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 
@@ -774,19 +687,12 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error closing EntityManager",t);
-			}
 		}
 	}
 	
@@ -825,7 +731,6 @@ public class JobDAOJpa implements JobDAO
 		}
 		catch(Throwable e)
 		{
-			logger.error(e.getMessage(),e);
 			throw new DaoException(e);
 		}
 		

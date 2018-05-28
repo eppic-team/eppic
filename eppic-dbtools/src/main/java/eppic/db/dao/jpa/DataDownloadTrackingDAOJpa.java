@@ -35,29 +35,16 @@ public class DataDownloadTrackingDAOJpa implements DataDownloadTrackingDAO {
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 
-			try
-			{
+			if (entityManager!=null)
 				entityManager.getTransaction().rollback();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 		
 	}
@@ -90,19 +77,12 @@ public class DataDownloadTrackingDAOJpa implements DataDownloadTrackingDAO {
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
 			throw new DaoException(t);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 
 		return nrOfDownloads;
@@ -148,19 +128,12 @@ public class DataDownloadTrackingDAOJpa implements DataDownloadTrackingDAO {
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
 			throw new DaoException(t);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 	}
 

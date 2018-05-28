@@ -58,18 +58,13 @@ public class ContactDAOJpa implements ContactDAO {
 			}
 		}
 		catch(Throwable e) {
-			
-			e.printStackTrace();
+
 			throw new DaoException(e);
 		}
 		finally	{
-			
-			try	{
+
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t) {
-				t.printStackTrace();
-			}
 		}
 
 		return result;
@@ -120,16 +115,11 @@ public class ContactDAOJpa implements ContactDAO {
 			}
 		}
 		catch(Throwable e) {
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally	{
-			try	{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t) {
-				t.printStackTrace();
-			}
 		}
 
 		return contactsForInterfaces;

@@ -51,30 +51,16 @@ public class UserSessionDAOJpa implements UserSessionDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
-			
-			try
-			{
+
+			if (entityManager!=null)
 				entityManager.getTransaction().rollback();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
-			
 			
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 	}
 	
@@ -112,7 +98,6 @@ public class UserSessionDAOJpa implements UserSessionDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally

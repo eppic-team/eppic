@@ -71,19 +71,12 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	}
 	catch(Throwable e)
 	{
-	    e.printStackTrace();
 	    throw new DaoException(e);
 	}
 	finally
 	{
-	    try
-	    {
-		entityManager.close();
-	    }
-	    catch(Throwable t)
-	    {
-		t.printStackTrace();
-	    }
+		if (entityManager!=null)
+			entityManager.close();
 	}
     }
 
@@ -127,19 +120,12 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	}
 	catch(Throwable e)
 	{
-	    e.printStackTrace();
 	    throw new DaoException(e);
 	}
 	finally
 	{
-	    try
-	    {
-		entityManager.close();
-	    }
-	    catch(Throwable t)
-	    {
-		t.printStackTrace();
-	    }
+		if (entityManager!=null)
+			entityManager.close();
 	}
 
     }
@@ -209,14 +195,8 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	}
 	finally
 	{
-	    try
-	    {
-		entityManager.close();
-	    }
-	    catch(Throwable t)
-	    {
-		t.printStackTrace();
-	    }
+		if (entityManager!=null)
+			entityManager.close();
 	}
 
     }
@@ -252,14 +232,8 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	}
 	finally
 	{
-	    try
-	    {
-		entityManager.close();
-	    }
-	    catch(Throwable t)
-	    {
-		t.printStackTrace();
-	    }
+		if (entityManager!=null)
+			entityManager.close();
 	}
     }
 
@@ -316,19 +290,12 @@ public class ChainClusterDAOJpa implements ChainClusterDAO {
 	}
 	catch(Throwable e)
 	{
-	    e.printStackTrace();
 	    throw new DaoException(e);
 	}
 	finally
 	{
-	    try
-	    {
-		entityManager.close();
-	    }
-	    catch(Throwable t)
-	    {
-		t.printStackTrace();
-	    }
+		if (entityManager!=null)
+			entityManager.close();
 	}
     }
 }

@@ -55,19 +55,12 @@ public class IPForbiddenDAOJpa implements IPForbiddenDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 	}
 }

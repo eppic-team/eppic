@@ -69,14 +69,8 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 	}
 
