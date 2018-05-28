@@ -225,7 +225,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 	static List<Interface> getInterfaceList(PdbInfo pdbInfo) throws DaoException {
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-			return interfaceDAO.getAllInterfaces(pdbInfo.getUid(), false, false);
+			return interfaceDAO.getInterfacesByPdbUid(pdbInfo.getUid(), false, false);
 	}
 	
 	/**

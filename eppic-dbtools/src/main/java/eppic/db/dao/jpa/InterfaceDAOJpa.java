@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -25,20 +24,21 @@ import eppic.model.PdbInfoDB;
 import eppic.model.PdbInfoDB_;
 
 /**
- * Implementation of InterfaceDAO.
- * @author AS
+ * JPA implementation of InterfaceDAO.
+ * @author Adam Srebniak
+ * @author Jose Duarte
  *
  */
 public class InterfaceDAOJpa implements InterfaceDAO 
 {
 	@Override
-	public List<Interface> getInterfacesWithScores(int interfaceClusterUid) throws DaoException
+	public List<Interface> getInterfacesForCluster(int interfaceClusterUid, boolean withScores, boolean withResidues) throws DaoException
 	{
 		EntityManager entityManager = null;
 
 		try
 		{
-			List<Interface> result = new ArrayList<Interface>();
+			List<Interface> result = new ArrayList<>();
 
 			entityManager = EntityManagerHandler.getEntityManager();
 
@@ -49,34 +49,32 @@ public class InterfaceDAOJpa implements InterfaceDAO
 			Path<InterfaceClusterDB> interfaceClusterPath = interfaceItemRoot.get(InterfaceDB_.interfaceCluster);
 			criteriaQuery.where(criteriaBuilder.equal(interfaceClusterPath.get(InterfaceClusterDB_.uid), interfaceClusterUid));
 
-			Query query = entityManager.createQuery(criteriaQuery);
+			TypedQuery<InterfaceDB> query = entityManager.createQuery(criteriaQuery);
 
-			@SuppressWarnings("unchecked")
 			List<InterfaceDB> interfaceItemDBs = query.getResultList();
 
-			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
+			for(InterfaceDB interfaceDB : interfaceItemDBs)
 			{
-				interfaceItemDB.setResidueBurials(null);
-				result.add(Interface.create(interfaceItemDB));
+				if (!withResidues) {
+					interfaceDB.setResidueBurials(null);
+				}
+				if (!withScores) {
+					interfaceDB.setInterfaceScores(null);
+				}
+				// TODO do we want an option to include/exclude interface warnings too? At the moment they are included
+				result.add(Interface.create(interfaceDB));
 			}
 
 			return result;
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 	}
 
@@ -180,53 +178,6 @@ public class InterfaceDAOJpa implements InterfaceDAO
 	}
 
 	@Override
-	public List<Interface> getInterfacesWithResidues(int interfaceClusterUid) throws DaoException
-	{
-		EntityManager entityManager = null;
-
-		try
-		{
-			List<Interface> result = new ArrayList<Interface>();
-
-			entityManager = EntityManagerHandler.getEntityManager();
-
-			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<InterfaceDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceDB.class);
-
-			Root<InterfaceDB> interfaceItemRoot = criteriaQuery.from(InterfaceDB.class);
-			Path<InterfaceClusterDB> interfaceClusterPath = interfaceItemRoot.get(InterfaceDB_.interfaceCluster);
-			criteriaQuery.where(criteriaBuilder.equal(interfaceClusterPath.get(InterfaceClusterDB_.uid), interfaceClusterUid));
-
-			TypedQuery<InterfaceDB> query = entityManager.createQuery(criteriaQuery);
-
-			List<InterfaceDB> interfaceItemDBs = query.getResultList();
-
-			for(InterfaceDB interfaceItemDB : interfaceItemDBs)
-			{
-				interfaceItemDB.setInterfaceWarnings(null);
-				result.add(Interface.create(interfaceItemDB));
-			}
-
-			return result;
-		}
-		catch(Throwable e)
-		{
-			throw new DaoException(e);
-		}
-		finally
-		{
-			try
-			{
-				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
-		}
-	}
-
-	@Override
 	public Interface getInterface(int pdbInfoUid, int interfaceId, boolean withScores, boolean withResidues)throws DaoException {
 		EntityManager entityManager = null;
 
@@ -280,7 +231,7 @@ public class InterfaceDAOJpa implements InterfaceDAO
 	}
 
 	@Override
-	public List<Interface> getAllInterfaces(int pdbInfoUid, boolean withScores, boolean withResidues) throws DaoException {
+	public List<Interface> getInterfacesByPdbUid(int pdbInfoUid, boolean withScores, boolean withResidues) throws DaoException {
 		EntityManager entityManager = null;
 
 		try

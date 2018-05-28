@@ -187,9 +187,9 @@ public class DataDownloadServlet extends BaseServlet{
 			}
 			else{
 				if (getResInfo)
-					interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid());
+					interfaceItems = interfaceDAO.getInterfacesForCluster(cluster.getUid(), true, true);
 				else
-					interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid());
+					interfaceItems = interfaceDAO.getInterfacesForCluster(cluster.getUid(), true, false);
 			}
 			cluster.setInterfaces(interfaceItems);
 		}

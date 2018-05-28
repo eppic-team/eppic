@@ -62,9 +62,9 @@ public class JobService {
                 logger.debug("Getting data for interface cluster uid {}", cluster.getUid());
                 List<Interface> interfaceItems;
                 if (getResInfo)
-                    interfaceItems = interfaceDAO.getInterfacesWithResidues(cluster.getUid());
+                    interfaceItems = interfaceDAO.getInterfacesForCluster(cluster.getUid(), true, true);
                 else
-                    interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid());
+                    interfaceItems = interfaceDAO.getInterfacesForCluster(cluster.getUid(), true, false);
                 cluster.setInterfaces(interfaceItems);
             }
 
@@ -139,7 +139,7 @@ public class JobService {
         PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-        return interfaceDAO.getAllInterfaces(pdbInfo.getUid(), true, false);
+        return interfaceDAO.getInterfacesByPdbUid(pdbInfo.getUid(), true, false);
     }
 
     /**
