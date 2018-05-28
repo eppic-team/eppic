@@ -163,7 +163,6 @@ public class InterfaceDAOJpa implements InterfaceDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
@@ -212,7 +211,6 @@ public class InterfaceDAOJpa implements InterfaceDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
@@ -265,7 +263,6 @@ public class InterfaceDAOJpa implements InterfaceDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
@@ -320,7 +317,6 @@ public class InterfaceDAOJpa implements InterfaceDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
@@ -362,6 +358,7 @@ public class InterfaceDAOJpa implements InterfaceDAO
 			List<Interface> result = new ArrayList<Interface>(interfaceDBs.size());
 
 			for(InterfaceDB interfaceDB : interfaceDBs) {
+				interfaceDB.setResidueBurials(null);
 				Interface iface = Interface.create(interfaceDB);
 				result.add(iface);
 			}
@@ -371,17 +368,13 @@ public class InterfaceDAOJpa implements InterfaceDAO
 			//	throw new DaoException("Could not find any interfaces for pdbInfo uid "+pdbInfoUid);
 
 			return result;
+		} catch (Throwable e) {
+			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 	}
 }
