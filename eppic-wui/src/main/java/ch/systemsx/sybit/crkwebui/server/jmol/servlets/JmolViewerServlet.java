@@ -180,7 +180,7 @@ public class JmolViewerServlet extends BaseServlet
 		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 				
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-		Interface interf = interfaceDAO.getInterfaceWithResidues(pdbInfo.getUid(), interfaceId);
+		Interface interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfaceId, false, true);
 		
 
 		return interf;

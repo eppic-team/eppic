@@ -20,12 +20,7 @@ import eppic.db.dao.jpa.*;
  */
 @PersistenceContext(name="eppicjpa", unitName="eppicjpa")
 public class JobService {
-
-    /**
-     * The servlet name, note that the name is defined in the web.xml file.
-     */
-    public static final String SERVLET_NAME = "dataDownload";
-
+    
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
 
 
@@ -144,7 +139,7 @@ public class JobService {
         PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-        return interfaceDAO.getAllInterfaces(pdbInfo.getUid());
+        return interfaceDAO.getAllInterfaces(pdbInfo.getUid(), true, false);
     }
 
     /**
@@ -175,7 +170,7 @@ public class JobService {
         PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-        Interface interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfId);
+        Interface interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfId, false, false);
         ResidueDAO rdao = new ResidueDAOJpa();
         return rdao.getResiduesForInterface(interf.getUid());
     }
