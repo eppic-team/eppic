@@ -718,7 +718,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		pdbInfo.setAssemblies(assemblies); 
 
 		InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
-		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClusters(pdbInfo.getUid(), true, false);
 
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 		for(InterfaceCluster cluster: clusters){

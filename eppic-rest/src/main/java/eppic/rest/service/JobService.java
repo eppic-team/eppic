@@ -53,7 +53,7 @@ public class JobService {
         // retrieving interface clusters data only if requested
         if (getInterfaceInfo) {
             InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
-            List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+            List<InterfaceCluster> clusters = clusterDAO.getInterfaceClusters(pdbInfo.getUid(), true, false);
 
             InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 
@@ -124,7 +124,7 @@ public class JobService {
         PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
-        return clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+        return clusterDAO.getInterfaceClusters(pdbInfo.getUid(), true, false);
     }
 
     /**

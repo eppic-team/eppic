@@ -2,9 +2,10 @@ package eppic.db.dao.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
@@ -23,13 +24,13 @@ public class InterfaceClusterDAOJpa implements InterfaceClusterDAO
 {
 
 	@Override
-	public List<InterfaceCluster> getInterfaceClustersWithoutInterfaces(int pdbInfoUid)	throws DaoException 
+	public List<InterfaceCluster> getInterfaceClusters(int pdbInfoUid, boolean withScores, boolean withInterfaces)	throws DaoException
 	{
 		EntityManager entityManager = null;
 		
 		try
 		{
-			List<InterfaceCluster> result = new ArrayList<InterfaceCluster>();
+			List<InterfaceCluster> result = new ArrayList<>();
 			
 			entityManager = EntityManagerHandler.getEntityManager();
 			
@@ -40,14 +41,18 @@ public class InterfaceClusterDAOJpa implements InterfaceClusterDAO
 			Path<PdbInfoDB> pdbInfoDB = interfaceClusterRoot.get(InterfaceClusterDB_.pdbInfo);
 			criteriaQuery.where(criteriaBuilder.equal(pdbInfoDB.get(PdbInfoDB_.uid), pdbInfoUid));
 			
-			Query query = entityManager.createQuery(criteriaQuery);
+			TypedQuery<InterfaceClusterDB> query = entityManager.createQuery(criteriaQuery);
 			
-			@SuppressWarnings("unchecked")
 			List<InterfaceClusterDB> interfaceClusterDBs = query.getResultList();
 			
 			for(InterfaceClusterDB interfaceClusterDB : interfaceClusterDBs)
 			{
-				interfaceClusterDB.setInterfaces(null);
+				if (!withScores) {
+					interfaceClusterDB.setInterfaceClusterScores(null);
+				}
+				if (!withInterfaces) {
+					interfaceClusterDB.setInterfaces(null);
+				}
 				result.add(InterfaceCluster.create(interfaceClusterDB));
 			}
 			
@@ -55,31 +60,24 @@ public class InterfaceClusterDAOJpa implements InterfaceClusterDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 	}
 
 	@Override
-	public List<InterfaceCluster> getInterfaceClustersWithoutInterfaces(int pdbInfoUid, List<Integer> interfaceClusterIds) 
+	public List<InterfaceCluster> getInterfaceClusters(int pdbInfoUid, Set<Integer> interfaceClusterIds, boolean withScores, boolean withInterfaces)
 			throws DaoException {
 		
 		EntityManager entityManager = null;
 		
 		try
 		{
-			List<InterfaceCluster> result = new ArrayList<InterfaceCluster>();
+			List<InterfaceCluster> result = new ArrayList<>();
 			
 			entityManager = EntityManagerHandler.getEntityManager();
 			
@@ -89,14 +87,18 @@ public class InterfaceClusterDAOJpa implements InterfaceClusterDAO
 			Root<InterfaceClusterDB> interfaceClusterRoot = criteriaQuery.from(InterfaceClusterDB.class);
 			Path<PdbInfoDB> pdbInfoDB = interfaceClusterRoot.get(InterfaceClusterDB_.pdbInfo);
 			criteriaQuery.where(criteriaBuilder.equal(pdbInfoDB.get(PdbInfoDB_.uid), pdbInfoUid));
+
+			TypedQuery<InterfaceClusterDB> query = entityManager.createQuery(criteriaQuery);
 			
-			Query query = entityManager.createQuery(criteriaQuery);
-			
-			@SuppressWarnings("unchecked")
 			List<InterfaceClusterDB> interfaceClusterDBs = query.getResultList();
 			
 			for(InterfaceClusterDB interfaceClusterDB : interfaceClusterDBs) {
-				interfaceClusterDB.setInterfaces(null);
+				if (!withScores) {
+					interfaceClusterDB.setInterfaceClusterScores(null);
+				}
+				if (!withInterfaces) {
+					interfaceClusterDB.setInterfaces(null);
+				}
 				if (interfaceClusterIds.contains(interfaceClusterDB.getClusterId())) { 
 					result.add(InterfaceCluster.create(interfaceClusterDB));
 				}
@@ -106,19 +108,12 @@ public class InterfaceClusterDAOJpa implements InterfaceClusterDAO
 		}
 		catch(Throwable e)
 		{
-			e.printStackTrace();
 			throw new DaoException(e);
 		}
 		finally
 		{
-			try
-			{
+			if (entityManager!=null)
 				entityManager.close();
-			}
-			catch(Throwable t)
-			{
-				t.printStackTrace();
-			}
 		}
 	}
 }

@@ -165,7 +165,7 @@ public class DataDownloadServlet extends BaseServlet{
 		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
 		InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
-		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClusters(pdbInfo.getUid(), true, false);
 
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 
