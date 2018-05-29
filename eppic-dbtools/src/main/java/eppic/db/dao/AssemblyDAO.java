@@ -8,8 +8,9 @@ public interface AssemblyDAO {
 
 	/**
 	 * Gets the list of Assemblies for a given pdbInfoUid
-	 * @param pdbInfoUid
-	 * @return
+	 * @param pdbInfoUid pdbInfo uid (db wide identifier)
+	 * @param withScores include assembly scores
+	 * @return the list of assemblies
 	 */
-	List<Assembly> getAssemblies(int pdbInfoUid) throws DaoException;
+	List<Assembly> getAssemblies(int pdbInfoUid, boolean withScores) throws DaoException;
 }

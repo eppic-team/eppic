@@ -85,7 +85,7 @@ public class JobService {
             // assemblies info
             AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 
-            List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
+            List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
 
             pdbInfo.setAssemblies(assemblies);
         } else {
@@ -109,7 +109,7 @@ public class JobService {
         // assemblies info
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 
-        return assemblyDAO.getAssemblies(pdbInfo.getUid());
+        return assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
     }
 
     /**
