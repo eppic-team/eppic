@@ -1,6 +1,6 @@
 package eppic.rest.commons;
 
-import eppic.jpautils.DbConfigGenerator;
+import eppic.db.jpautils.DbConfigGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

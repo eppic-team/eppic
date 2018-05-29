@@ -81,7 +81,7 @@ import eppic.db.dao.jpa.JobDAOJpa;
 import eppic.db.dao.jpa.PDBInfoDAOJpa;
 import eppic.db.dao.jpa.ResidueDAOJpa;
 import eppic.db.dao.jpa.UserSessionDAOJpa;
-import eppic.jpautils.DbConfigGenerator;
+import eppic.db.jpautils.DbConfigGenerator;
 
 /**
  * The server side implementation of the RPC service.

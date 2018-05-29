@@ -32,7 +32,7 @@ import javax.persistence.metamodel.SingularAttribute;
 
 import eppic.shared.model.InputType;
 import eppic.shared.model.StatusOfJob;
-import eppic.jpautils.DbConfigGenerator;
+import eppic.db.jpautils.DbConfigGenerator;
 import eppic.model.ChainClusterDB;
 import eppic.model.ChainClusterDB_;
 import eppic.model.InterfaceClusterDB;
