@@ -136,6 +136,25 @@ public class JobResource {
         return responseBuilder.build();
     }
 
+    @GET
+    @Path("/assembly/" + "{jobId}/{pdbAssemblyId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getAssembly(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("pdbAssemblyId") String pdbAssemblyId) throws DaoException {
+
+
+        Assembly assembly = JobService.getAssemblyData(jobId, Integer.parseInt(pdbAssemblyId));
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(assembly);
+
+        return responseBuilder.build();
+    }
+
     /**
      * Checks the format url parameter and returns the right mime type (either json or xml).
      * If no format parameter present, then json is returned.

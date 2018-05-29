@@ -174,4 +174,24 @@ public class JobService {
         ResidueDAO rdao = new ResidueDAOJpa();
         return rdao.getResiduesForInterface(interf.getUid());
     }
+
+    /**
+     * Retrieves assembly data for job and Pdb assembly id
+     * @param jobId job identifier
+     * @param pdbAssemblyId the PDB assembly id
+     * @return assembly data
+     * @throws DaoException
+     */
+    public static Assembly getAssemblyData(String jobId, int pdbAssemblyId) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+        Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), pdbAssemblyId);
+        if (assembly==null) {
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+pdbAssemblyId);
+        }
+        return assembly;
+    }
 }
