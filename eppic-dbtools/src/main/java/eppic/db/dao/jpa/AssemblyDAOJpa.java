@@ -83,7 +83,7 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 			String strPdbId = "pdb" + pdbAssemblyId;
 			for(AssemblyDB assemblyDB : assemblyDBs) {
 				for (AssemblyScoreDB asdb : assemblyDB.getAssemblyScores()) {
-					if (asdb.getMethod().equals(strPdbId)) {
+					if (asdb.getMethod().equals(strPdbId) && asdb.getCallName().equals("bio")) {
 						return Assembly.create(assemblyDB);
 					}
 				}
