@@ -1,7 +1,7 @@
 package eppic.db.tools.helpers;
 
-import eppic.model.ChainClusterDB;
-import eppic.model.SeqClusterDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.SeqClusterDB;
 
 public class ChainCluster {
 

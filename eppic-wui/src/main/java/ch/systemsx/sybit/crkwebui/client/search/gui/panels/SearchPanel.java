@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.DockLayoutPanel;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.panels.DisplayPanel;
-import eppic.dtomodel.PDBSearchResult;
+import eppic.model.dto.PDBSearchResult;
 
 /**
  * Panel to display search results

@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowResultsDataHandler;
-import eppic.dtomodel.PdbInfo;
+import eppic.model.dto.PdbInfo;
 
 import com.google.gwt.event.shared.GwtEvent;
 

@@ -36,12 +36,12 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.ClustersGridView;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.FinalCallSummaryRenderer;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.MethodsSummaryRenderer;
-import eppic.dtomodel.Interface;
-import eppic.dtomodel.InterfaceCluster;
-import eppic.dtomodel.InterfaceClusterScore;
-import eppic.dtomodel.InterfaceScore;
-import eppic.dtomodel.PdbInfo;
-import eppic.shared.model.InputType;
+import eppic.model.dto.Interface;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.InterfaceClusterScore;
+import eppic.model.dto.InterfaceScore;
+import eppic.model.dto.PdbInfo;
+import eppic.model.shared.InputType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
@@ -82,7 +82,7 @@ import com.sencha.gxt.widget.core.client.tips.ToolTipConfig;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
 import eppic.EppicParams;
-import eppic.model.ScoringMethod;
+import eppic.model.db.ScoringMethod;
 
 public class ResultsGridPanel extends VerticalLayoutContainer
 {

@@ -11,8 +11,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import eppic.server.model.DataDownloadTracking;
-import eppic.server.model.DataDownloadTracking_;
+import eppic.model.server.DataDownloadTracking;
+import eppic.model.server.DataDownloadTracking_;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.DataDownloadTrackingDAO;

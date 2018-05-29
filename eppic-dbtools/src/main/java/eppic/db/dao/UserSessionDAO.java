@@ -2,7 +2,7 @@ package eppic.db.dao;
 
 import javax.persistence.EntityManager;
 
-import eppic.model.UserSessionDB;
+import eppic.model.db.UserSessionDB;
 
 /**
  * DAO interface to manage sessions.

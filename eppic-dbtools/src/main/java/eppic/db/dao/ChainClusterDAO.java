@@ -2,9 +2,9 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import eppic.dtomodel.SequenceClusterType;
-import eppic.dtomodel.ChainCluster;
-import eppic.dtomodel.PDBSearchResult;
+import eppic.model.dto.SequenceClusterType;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.PDBSearchResult;
 
 /**
  * DAO for HomologsInfo item.

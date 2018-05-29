@@ -11,9 +11,9 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.UpdateStatusLabelEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.data.StatusMessageType;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebServiceProvider;
-import eppic.dtomodel.PdbInfo;
-import eppic.dtomodel.ProcessingData;
-import eppic.dtomodel.ProcessingInProgressData;
+import eppic.model.dto.PdbInfo;
+import eppic.model.dto.ProcessingData;
+import eppic.model.dto.ProcessingInProgressData;
 
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.rpc.AsyncCallback;

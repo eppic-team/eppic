@@ -2,8 +2,8 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import eppic.dtomodel.Residue;
-import eppic.dtomodel.ResiduesList;
+import eppic.model.dto.Residue;
+import eppic.model.dto.ResiduesList;
 
 /**
  * DAO for InterfaceResidue item.

@@ -2,8 +2,8 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import eppic.dtomodel.Contact;
-import eppic.dtomodel.ContactsList;
+import eppic.model.dto.Contact;
+import eppic.model.dto.ContactsList;
 
 /**
  * DAO for Contact

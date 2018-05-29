@@ -17,8 +17,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceDB;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;

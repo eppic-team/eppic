@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import eppic.model.PdbInfoDB;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * An integration test to make sure that large heteromeric structures work properly through the whole 

@@ -9,8 +9,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import eppic.server.model.IPForbidden;
-import eppic.server.model.IPForbidden_;
+import eppic.model.server.IPForbidden;
+import eppic.model.server.IPForbidden_;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.IPForbiddenDAO;

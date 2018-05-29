@@ -8,8 +8,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import eppic.model.AssemblyDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.PdbInfoDB;
 
 public class TestAssembliesForNonXtals {
 

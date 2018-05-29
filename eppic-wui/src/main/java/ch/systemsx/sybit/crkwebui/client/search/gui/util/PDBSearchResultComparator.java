@@ -5,7 +5,7 @@ import java.util.Comparator;
 import com.sencha.gxt.data.shared.SortDir;
 import com.sencha.gxt.data.shared.SortInfo;
 
-import eppic.dtomodel.PDBSearchResult;
+import eppic.model.dto.PDBSearchResult;
 
 public class PDBSearchResultComparator implements Comparator<PDBSearchResult> {
 

@@ -2,8 +2,8 @@ package eppic.analysis.compare;
 
 import eppic.commons.util.Goodies;
 import eppic.commons.util.MySQLConnection;
-import eppic.model.InterfaceDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 
 import java.io.File;

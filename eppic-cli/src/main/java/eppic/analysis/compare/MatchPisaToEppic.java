@@ -29,7 +29,7 @@ import eppic.commons.pisa.PisaAssembliesXMLParser;
 import eppic.commons.pisa.PisaInterfaceList;
 import eppic.commons.pisa.PisaInterfaceXMLParser;
 import eppic.commons.util.Goodies;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 
 

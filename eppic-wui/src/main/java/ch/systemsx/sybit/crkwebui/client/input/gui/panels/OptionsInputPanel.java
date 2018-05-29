@@ -7,8 +7,8 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.input.data.SearchModeComboModel;
 import ch.systemsx.sybit.crkwebui.client.input.listeners.SubmitKeyListener;
-import eppic.dtomodel.ApplicationSettings;
-import eppic.dtomodel.InputParameters;
+import eppic.model.dto.ApplicationSettings;
+import eppic.model.dto.InputParameters;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.editor.client.Editor.Path;

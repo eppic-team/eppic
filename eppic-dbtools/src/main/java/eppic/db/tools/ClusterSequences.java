@@ -1,7 +1,7 @@
 package eppic.db.tools;
 
-import eppic.model.ChainClusterDB;
-import eppic.model.SeqClusterDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.SeqClusterDB;
 import gnu.getopt.Getopt;
 
 import javax.persistence.EntityManager;

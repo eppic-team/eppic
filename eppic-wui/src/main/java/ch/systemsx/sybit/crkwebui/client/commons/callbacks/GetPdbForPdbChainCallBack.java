@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.events.SearchResultsDataRetriev
 import ch.systemsx.sybit.crkwebui.client.commons.events.ShowErrorEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.events.UnmaskMainViewEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
-import eppic.dtomodel.PDBSearchResult;
+import eppic.model.dto.PDBSearchResult;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

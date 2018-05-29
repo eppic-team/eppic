@@ -17,18 +17,18 @@ import javax.persistence.metamodel.SingularAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.dtomodel.ChainCluster;
-import eppic.dtomodel.PDBSearchResult;
-import eppic.dtomodel.SequenceClusterType;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.PDBSearchResult;
+import eppic.model.dto.SequenceClusterType;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.ChainClusterDAO;
 import eppic.db.dao.DaoException;
-import eppic.model.ChainClusterDB;
-import eppic.model.ChainClusterDB_;
-import eppic.model.PdbInfoDB;
-import eppic.model.PdbInfoDB_;
-import eppic.model.SeqClusterDB;
-import eppic.model.SeqClusterDB_;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.ChainClusterDB_;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.PdbInfoDB_;
+import eppic.model.db.SeqClusterDB;
+import eppic.model.db.SeqClusterDB_;
 
 /**
  * Implementation of ChainClusterDAO.

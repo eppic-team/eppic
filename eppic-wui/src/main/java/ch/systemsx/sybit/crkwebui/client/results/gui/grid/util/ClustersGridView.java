@@ -6,8 +6,8 @@ import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.MethodCallCell;
-import eppic.dtomodel.InterfaceCluster;
-import eppic.dtomodel.InterfaceClusterScore;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.InterfaceClusterScore;
 
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;

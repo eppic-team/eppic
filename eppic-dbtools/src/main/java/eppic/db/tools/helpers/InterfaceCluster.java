@@ -3,8 +3,8 @@ package eppic.db.tools.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceDB;
 
 /**
  * A class to wrap an interface cluster within a PDB entry as extracted from the EPPIC database.

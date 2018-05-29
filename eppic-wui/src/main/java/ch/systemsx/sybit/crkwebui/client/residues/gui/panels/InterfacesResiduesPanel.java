@@ -3,8 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.panels;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import eppic.dtomodel.Residue;
-import eppic.dtomodel.PdbInfo;
+import eppic.model.dto.Residue;
+import eppic.model.dto.PdbInfo;
 
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;

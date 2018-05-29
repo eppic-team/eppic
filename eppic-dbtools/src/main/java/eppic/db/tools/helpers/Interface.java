@@ -7,7 +7,7 @@ import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.structure.contact.Pair;
 
-import eppic.model.InterfaceDB;
+import eppic.model.db.InterfaceDB;
 
 /**
  * A class to wrap an Interface as extracted from the EPPIC database.

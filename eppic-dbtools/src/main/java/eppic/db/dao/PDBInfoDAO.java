@@ -1,7 +1,7 @@
 package eppic.db.dao;
 
-import eppic.dtomodel.PdbInfo;
-import eppic.model.PdbInfoDB;
+import eppic.model.dto.PdbInfo;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * DAO for PDBScore item.

@@ -5,7 +5,7 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
-import eppic.dtomodel.InterfaceWarning;
+import eppic.model.dto.InterfaceWarning;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;

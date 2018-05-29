@@ -29,8 +29,8 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadS
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.LatticeGraphPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.LatticeGraphServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import eppic.dtomodel.Interface;
-import eppic.dtomodel.PdbInfo;
+import eppic.model.dto.Interface;
+import eppic.model.dto.PdbInfo;
 import eppic.assembly.gui.LatticeGUI;
 import eppic.commons.util.Interval;
 import eppic.commons.util.IntervalSet;
@@ -41,7 +41,7 @@ import eppic.db.dao.PDBInfoDAO;
 import eppic.db.dao.jpa.InterfaceDAOJpa;
 import eppic.db.dao.jpa.JobDAOJpa;
 import eppic.db.dao.jpa.PDBInfoDAOJpa;
-import eppic.model.JobDB;
+import eppic.model.db.JobDB;
 
 /**
  * Servlet used to display a LatticeGraph3Dmol page.

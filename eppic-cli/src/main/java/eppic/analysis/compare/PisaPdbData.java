@@ -13,8 +13,8 @@ import eppic.commons.pisa.OligomericPrediction;
 import eppic.commons.pisa.PisaAsmSetList;
 import eppic.commons.pisa.PisaInterface;
 import eppic.commons.pisa.PisaInterfaceList;
-import eppic.model.InterfaceDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * Class to store the pisa data of a pdb entry

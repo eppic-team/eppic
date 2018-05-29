@@ -3,7 +3,7 @@ package eppic.db.dao;
 import java.util.List;
 import java.util.Set;
 
-import eppic.dtomodel.Interface;
+import eppic.model.dto.Interface;
 
 /**
  * DAO for Interface item.

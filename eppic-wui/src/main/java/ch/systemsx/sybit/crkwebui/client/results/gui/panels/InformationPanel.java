@@ -1,6 +1,6 @@
 package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 
-import eppic.dtomodel.PdbInfo;
+import eppic.model.dto.PdbInfo;
 
 import com.sencha.gxt.widget.core.client.container.HorizontalLayoutContainer;
 import com.sencha.gxt.core.client.util.Margins;

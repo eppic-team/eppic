@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.junit.Test;
 
-import eppic.dtomodel.PDBSearchResult;
-import eppic.dtomodel.SequenceClusterType;
+import eppic.model.dto.PDBSearchResult;
+import eppic.model.dto.SequenceClusterType;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.jpa.ChainClusterDAOJpa;
 

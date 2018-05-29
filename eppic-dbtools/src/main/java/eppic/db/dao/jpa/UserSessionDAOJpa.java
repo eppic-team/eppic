@@ -10,13 +10,13 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import eppic.model.JobDB_;
-import eppic.model.UserSessionDB_;
+import eppic.model.db.JobDB_;
+import eppic.model.db.UserSessionDB_;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UserSessionDAO;
-import eppic.model.JobDB;
-import eppic.model.UserSessionDB;
+import eppic.model.db.JobDB;
+import eppic.model.db.UserSessionDB;
 
 /**
  * Implementation of UserSessionDAO.

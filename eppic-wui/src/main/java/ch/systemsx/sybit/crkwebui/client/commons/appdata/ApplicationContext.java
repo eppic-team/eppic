@@ -3,11 +3,11 @@ package ch.systemsx.sybit.crkwebui.client.commons.appdata;
 import java.util.Collections;
 import java.util.List;
 
-import eppic.dtomodel.ApplicationSettings;
-import eppic.dtomodel.InterfaceCluster;
-import eppic.dtomodel.ResiduesList;
-import eppic.dtomodel.PdbInfo;
-import eppic.dtomodel.WindowData;
+import eppic.model.dto.ApplicationSettings;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.ResiduesList;
+import eppic.model.dto.PdbInfo;
+import eppic.model.dto.WindowData;
 
 /**
  * Application wide data.

@@ -3,7 +3,7 @@ package eppic.db.dao;
 import java.util.List;
 import java.util.Set;
 
-import eppic.dtomodel.InterfaceCluster;
+import eppic.model.dto.InterfaceCluster;
 
 /**
  * DAO for Interface clusters

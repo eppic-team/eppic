@@ -3,8 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.alignment.gui.windows;
 import ch.systemsx.sybit.crkwebui.client.alignment.gui.panels.AlignmentHeaderPanel;
 import ch.systemsx.sybit.crkwebui.client.alignment.gui.panels.AlignmentsGridPanel;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.windows.ResizableWindow;
-import eppic.dtomodel.ChainCluster;
-import eppic.dtomodel.WindowData;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.WindowData;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.DockLayoutPanel;

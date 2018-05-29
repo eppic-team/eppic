@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
-import eppic.dtomodel.InputParameters;
-import eppic.dtomodel.PdbInfo;
-import eppic.shared.model.InputType;
+import eppic.model.dto.InputParameters;
+import eppic.model.dto.PdbInfo;
+import eppic.model.shared.InputType;
 
 /**
  * EPPIC command generator.

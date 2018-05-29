@@ -12,18 +12,18 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloa
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import org.junit.Test;
 
-import eppic.dtomodel.Assembly;
-import eppic.dtomodel.AssemblyContent;
-import eppic.dtomodel.AssemblyScore;
-import eppic.dtomodel.ChainCluster;
-import eppic.dtomodel.Homolog;
-import eppic.dtomodel.Interface;
-import eppic.dtomodel.InterfaceCluster;
-import eppic.dtomodel.InterfaceClusterScore;
-import eppic.dtomodel.InterfaceScore;
-import eppic.dtomodel.PdbInfo;
-import eppic.dtomodel.Residue;
-import eppic.dtomodel.RunParameters;
+import eppic.model.dto.Assembly;
+import eppic.model.dto.AssemblyContent;
+import eppic.model.dto.AssemblyScore;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.Homolog;
+import eppic.model.dto.Interface;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.InterfaceClusterScore;
+import eppic.model.dto.InterfaceScore;
+import eppic.model.dto.PdbInfo;
+import eppic.model.dto.Residue;
+import eppic.model.dto.RunParameters;
 import eppic.db.dao.DaoException;
 
 

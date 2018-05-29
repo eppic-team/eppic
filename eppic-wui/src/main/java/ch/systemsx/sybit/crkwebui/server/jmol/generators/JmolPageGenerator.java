@@ -11,9 +11,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.dtomodel.Assembly;
-import eppic.dtomodel.Interface;
-import eppic.dtomodel.Residue;
+import eppic.model.dto.Assembly;
+import eppic.model.dto.Interface;
+import eppic.model.dto.Residue;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -22,7 +22,7 @@ import com.github.mustachejava.MustacheFactory;
 import eppic.EppicParams;
 import eppic.MolViewersHelper;
 import eppic.assembly.gui.LatticeGUIMustache;
-import eppic.model.ResidueBurialDB;
+import eppic.model.db.ResidueBurialDB;
 
 /**
  * Generate 3D molecular viewer pages. Note that the "Jmol" title is historical;

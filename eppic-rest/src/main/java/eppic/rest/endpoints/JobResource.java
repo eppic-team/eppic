@@ -1,7 +1,7 @@
 package eppic.rest.endpoints;
 
-import eppic.dtomodel.*;
 import eppic.db.dao.DaoException;
+import eppic.model.dto.*;
 import eppic.rest.service.JobService;
 import io.swagger.annotations.Api;
 

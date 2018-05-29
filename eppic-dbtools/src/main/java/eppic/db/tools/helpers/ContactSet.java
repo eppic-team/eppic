@@ -8,7 +8,7 @@ import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.structure.contact.Pair;
 
-import eppic.model.ContactDB;
+import eppic.model.db.ContactDB;
 
 /**
  * Represents a set of contacting residues for interface alignment. Contacts

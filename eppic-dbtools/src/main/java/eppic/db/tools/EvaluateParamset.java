@@ -2,12 +2,12 @@ package eppic.db.tools;
 
 import eppic.commons.sequence.AAAlphabet;
 import eppic.commons.sequence.MultipleSequenceAlignment;
-import eppic.model.ChainClusterDB;
-import eppic.model.HomologDB;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceDB;
-import eppic.model.PdbInfoDB;
-import eppic.model.ResidueBurialDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.HomologDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.ResidueBurialDB;
 import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;

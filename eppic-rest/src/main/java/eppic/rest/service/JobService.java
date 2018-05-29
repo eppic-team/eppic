@@ -4,7 +4,7 @@ import java.util.*;
 
 import javax.persistence.PersistenceContext;
 
-import eppic.dtomodel.*;
+import eppic.model.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

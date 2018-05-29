@@ -17,11 +17,11 @@ import ch.systemsx.sybit.crkwebui.server.email.data.EmailMessageData;
 import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.DeserializationException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
-import eppic.dtomodel.JobStatusDetails;
-import eppic.shared.model.StatusOfJob;
+import eppic.model.dto.JobStatusDetails;
+import eppic.model.shared.StatusOfJob;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * Daemon used to update status of submitted jobs.

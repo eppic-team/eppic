@@ -13,7 +13,7 @@ import org.biojava.nbio.core.alignment.template.Profile;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 
-import eppic.model.ContactDB;
+import eppic.model.db.ContactDB;
 
 /**
  * Compares multiple interfaces based on a shared chain

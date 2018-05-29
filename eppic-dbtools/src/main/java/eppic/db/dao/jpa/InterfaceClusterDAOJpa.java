@@ -11,14 +11,14 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import eppic.dtomodel.InterfaceCluster;
+import eppic.model.dto.InterfaceCluster;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.InterfaceClusterDAO;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceClusterDB_;
-import eppic.model.PdbInfoDB;
-import eppic.model.PdbInfoDB_;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceClusterDB_;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.PdbInfoDB_;
 
 public class InterfaceClusterDAOJpa implements InterfaceClusterDAO
 {

@@ -10,7 +10,7 @@ import com.sencha.gxt.data.shared.loader.PagingLoadConfig;
 import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 import com.sencha.gxt.data.shared.loader.PagingLoadResultBean;
 
-import eppic.dtomodel.PDBSearchResult;
+import eppic.model.dto.PDBSearchResult;
 
 public class PagingMemoryProxy implements DataProxy<PagingLoadConfig, PagingLoadResult<PDBSearchResult>> {
 

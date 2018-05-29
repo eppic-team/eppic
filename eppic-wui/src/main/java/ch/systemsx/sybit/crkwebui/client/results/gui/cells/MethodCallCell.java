@@ -8,15 +8,15 @@ import java.util.List;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
-import eppic.dtomodel.Interface;
-import eppic.dtomodel.InterfaceScore;
+import eppic.model.dto.Interface;
+import eppic.model.dto.InterfaceScore;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.sencha.gxt.data.shared.ListStore;
 
 import eppic.EppicParams;
-import eppic.model.ScoringMethod;
+import eppic.model.db.ScoringMethod;
 
 /**
  * Cell used to used to style the results of calculations for each of the method call (xtal/bio).

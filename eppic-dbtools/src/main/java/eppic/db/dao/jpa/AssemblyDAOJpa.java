@@ -10,9 +10,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import eppic.model.*;
-
-import eppic.dtomodel.Assembly;
+import eppic.model.db.*;
+import eppic.model.dto.Assembly;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.AssemblyDAO;
 import eppic.db.dao.DaoException;

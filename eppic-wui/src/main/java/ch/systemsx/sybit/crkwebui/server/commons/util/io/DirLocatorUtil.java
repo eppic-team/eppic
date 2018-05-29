@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.commons.util.io;
 
 import java.io.File;
 
-import eppic.dtomodel.ApplicationSettings;
+import eppic.model.dto.ApplicationSettings;
 
 public class DirLocatorUtil {
 	

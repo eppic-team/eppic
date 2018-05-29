@@ -22,9 +22,9 @@
   These 3 packages from eppic-model are here because classes within are used in the client packages (GWT).
   Each of them have a corresponding package_name.gwt.xml file in eppic-model module
   -->
-  <inherits name="eppic.model"/>
-  <inherits name="eppic.shared.model"/>
-  <inherits name="eppic.dtomodel"/>
+  <inherits name="eppic.model.db"/>
+  <inherits name="eppic.model.shared"/>
+  <inherits name="eppic.model.dto"/>
 
   <inherits name="com.google.gwt.http.HTTP"/>
   

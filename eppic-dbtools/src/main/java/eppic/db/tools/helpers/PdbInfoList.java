@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import eppic.model.PdbInfoDB;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * A container for a list of PDB structures coming from database.

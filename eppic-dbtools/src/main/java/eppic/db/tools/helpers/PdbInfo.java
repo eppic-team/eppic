@@ -16,9 +16,9 @@ import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.structure.contact.Pair;
 
-import eppic.model.ChainClusterDB;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * A class to wrap a PDB entry as extracted from the EPPIC database.

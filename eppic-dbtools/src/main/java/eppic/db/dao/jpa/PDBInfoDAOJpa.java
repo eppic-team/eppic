@@ -8,14 +8,14 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import eppic.model.JobDB_;
-import eppic.model.PdbInfoDB_;
-import eppic.dtomodel.PdbInfo;
+import eppic.model.db.JobDB_;
+import eppic.model.db.PdbInfoDB_;
+import eppic.model.dto.PdbInfo;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.PDBInfoDAO;
-import eppic.model.JobDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.JobDB;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * Implementation of PDBInfoDAO.

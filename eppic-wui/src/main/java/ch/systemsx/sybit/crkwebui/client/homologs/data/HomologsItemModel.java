@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.homologs.data;
 
 import java.io.Serializable;
 
-import eppic.dtomodel.HomologIdentityData;
+import eppic.model.dto.HomologIdentityData;
 
 /**
  * Class used as a model for homologs info grid

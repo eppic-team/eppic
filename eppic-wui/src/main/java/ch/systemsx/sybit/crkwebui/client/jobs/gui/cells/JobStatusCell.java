@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.jobs.gui.cells;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import eppic.shared.model.StatusOfJob;
+import eppic.model.shared.StatusOfJob;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;

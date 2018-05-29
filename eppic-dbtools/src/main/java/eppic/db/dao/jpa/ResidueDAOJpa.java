@@ -17,18 +17,18 @@ import org.slf4j.LoggerFactory;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.ResidueDAO;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceClusterDB_;
-import eppic.model.InterfaceDB_;
-import eppic.model.JobDB_;
-import eppic.model.PdbInfoDB_;
-import eppic.model.ResidueBurialDB_;
-import eppic.dtomodel.Residue;
-import eppic.dtomodel.ResiduesList;
-import eppic.model.InterfaceDB;
-import eppic.model.ResidueBurialDB;
-import eppic.model.JobDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceClusterDB_;
+import eppic.model.db.InterfaceDB_;
+import eppic.model.db.JobDB_;
+import eppic.model.db.PdbInfoDB_;
+import eppic.model.db.ResidueBurialDB_;
+import eppic.model.dto.Residue;
+import eppic.model.dto.ResiduesList;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.ResidueBurialDB;
+import eppic.model.db.JobDB;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * Implementation of ResidueDAO.

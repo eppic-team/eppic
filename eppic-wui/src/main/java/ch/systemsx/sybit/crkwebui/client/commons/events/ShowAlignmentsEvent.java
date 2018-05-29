@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowAlignmentsHandler;
-import eppic.dtomodel.ChainCluster;
+import eppic.model.dto.ChainCluster;
 
 import com.google.gwt.event.shared.GwtEvent;
 

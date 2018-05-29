@@ -12,16 +12,16 @@ import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import eppic.dtomodel.Interface;
+import eppic.model.dto.Interface;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.InterfaceDAO;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceClusterDB_;
-import eppic.model.InterfaceDB;
-import eppic.model.InterfaceDB_;
-import eppic.model.PdbInfoDB;
-import eppic.model.PdbInfoDB_;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceClusterDB_;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.InterfaceDB_;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.PdbInfoDB_;
 
 /**
  * JPA implementation of InterfaceDAO.

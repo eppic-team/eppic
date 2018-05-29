@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.validators;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import eppic.shared.model.StatusOfJob;
+import eppic.model.shared.StatusOfJob;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
 import eppic.db.dao.jpa.JobDAOJpa;

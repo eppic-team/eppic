@@ -3,12 +3,12 @@ package eppic.db.dao;
 import java.util.Date;
 import java.util.List;
 
-import eppic.dtomodel.InputWithType;
-import eppic.dtomodel.JobStatusDetails;
-import eppic.dtomodel.ProcessingInProgressData;
-import eppic.shared.model.StatusOfJob;
-import eppic.model.JobDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.dto.InputWithType;
+import eppic.model.dto.JobStatusDetails;
+import eppic.model.dto.ProcessingInProgressData;
+import eppic.model.shared.StatusOfJob;
+import eppic.model.db.JobDB;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * DAO interface for Job item.

@@ -2,7 +2,7 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import eppic.dtomodel.Assembly;
+import eppic.model.dto.Assembly;
 
 public interface AssemblyDAO {
 

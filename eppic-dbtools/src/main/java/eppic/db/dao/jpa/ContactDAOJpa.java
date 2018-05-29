@@ -10,21 +10,21 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
-import eppic.dtomodel.Contact;
-import eppic.dtomodel.ContactsList;
+import eppic.model.dto.Contact;
+import eppic.model.dto.ContactsList;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.ContactDAO;
 import eppic.db.dao.DaoException;
-import eppic.model.ContactDB;
-import eppic.model.ContactDB_;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceClusterDB_;
-import eppic.model.InterfaceDB_;
-import eppic.model.JobDB_;
-import eppic.model.PdbInfoDB_;
-import eppic.model.InterfaceDB;
-import eppic.model.JobDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.ContactDB;
+import eppic.model.db.ContactDB_;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceClusterDB_;
+import eppic.model.db.InterfaceDB_;
+import eppic.model.db.JobDB_;
+import eppic.model.db.PdbInfoDB_;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.JobDB;
+import eppic.model.db.PdbInfoDB;
 
 public class ContactDAOJpa implements ContactDAO {
 

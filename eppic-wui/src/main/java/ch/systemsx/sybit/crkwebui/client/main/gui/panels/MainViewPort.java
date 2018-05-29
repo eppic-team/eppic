@@ -26,10 +26,10 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.panels.ResultsPanel;
 import ch.systemsx.sybit.crkwebui.client.results.gui.panels.StatusPanel;
 import ch.systemsx.sybit.crkwebui.client.search.gui.panels.SearchPanel;
 import ch.systemsx.sybit.crkwebui.client.viewer.gui.windows.ViewerSelectorWindow;
-import eppic.dtomodel.ChainCluster;
-import eppic.dtomodel.Interface;
-import eppic.dtomodel.Residue;
-import eppic.dtomodel.PdbInfo;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.Interface;
+import eppic.model.dto.Residue;
+import eppic.model.dto.PdbInfo;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;

@@ -20,19 +20,19 @@ import javax.persistence.criteria.SetJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.dtomodel.InputWithType;
-import eppic.dtomodel.JobStatusDetails;
-import eppic.dtomodel.ProcessingInProgressData;
-import eppic.shared.model.StatusOfJob;
+import eppic.model.dto.InputWithType;
+import eppic.model.dto.JobStatusDetails;
+import eppic.model.dto.ProcessingInProgressData;
+import eppic.model.shared.StatusOfJob;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
 import eppic.db.dao.UserSessionDAO;
-import eppic.model.JobDB;
-import eppic.model.JobDB_;
-import eppic.model.PdbInfoDB;
-import eppic.model.UserSessionDB;
-import eppic.model.UserSessionDB_;
+import eppic.model.db.JobDB;
+import eppic.model.db.JobDB_;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.UserSessionDB;
+import eppic.model.db.UserSessionDB_;
 
 /**
  * Implementation of JobDAO.

@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileCache;
-import eppic.dtomodel.Interface;
+import eppic.model.dto.Interface;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;

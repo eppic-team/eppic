@@ -39,11 +39,11 @@ import eppic.db.tools.helpers.InterfaceCluster;
 import eppic.db.tools.helpers.MultipleInterfaceComparator;
 import eppic.db.tools.helpers.PdbInfo;
 import eppic.db.tools.helpers.SeqClusterLevel;
-import eppic.model.ChainClusterDB;
-import eppic.model.ContactDB;
-import eppic.model.InterfaceDB;
-import eppic.model.InterfaceScoreDB;
-import eppic.model.ScoringMethod;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.ContactDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.InterfaceScoreDB;
+import eppic.model.db.ScoringMethod;
 import gnu.getopt.Getopt;
 
 public class FindBiomimics {

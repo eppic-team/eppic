@@ -3,13 +3,13 @@ package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 import java.util.HashMap;
 import java.util.List;
 
-import eppic.dtomodel.ApplicationSettings;
-import eppic.dtomodel.Residue;
-import eppic.dtomodel.ResiduesList;
-import eppic.dtomodel.JobsForSession;
-import eppic.dtomodel.PDBSearchResult;
-import eppic.dtomodel.ProcessingData;
-import eppic.dtomodel.RunJobData;
+import eppic.model.dto.ApplicationSettings;
+import eppic.model.dto.Residue;
+import eppic.model.dto.ResiduesList;
+import eppic.model.dto.JobsForSession;
+import eppic.model.dto.PDBSearchResult;
+import eppic.model.dto.ProcessingData;
+import eppic.model.dto.RunJobData;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
