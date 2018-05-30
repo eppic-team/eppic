@@ -176,6 +176,28 @@ public class JobService {
     }
 
     /**
+     * Retrieves contact data for job and interface id
+     * @param jobId identifier of the job
+     * @param interfId the interface id
+     * @return contact data
+     * @throws DaoException when can not retrieve result of the job
+     */
+    public static List<Contact> getContactData(String jobId, int interfId) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        ContactDAO contactDAO = new ContactDAOJpa();
+        List<Contact> list = contactDAO.getContactsForInterface(pdbInfo.getUid(), interfId);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (list==null) {
+            throw new DaoException("Could not find contact data for job "+jobId+" and interface id "+interfId);
+        }
+
+        return list;
+    }
+
+    /**
      * Retrieves assembly data for job and Pdb assembly id
      * @param jobId job identifier
      * @param pdbAssemblyId the PDB assembly id
@@ -189,6 +211,8 @@ public class JobService {
         // assemblies info
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
         Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), pdbAssemblyId);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null) {
             throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+pdbAssemblyId);
         }

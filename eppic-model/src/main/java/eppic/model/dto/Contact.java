@@ -3,8 +3,11 @@ package eppic.model.dto;
 import java.io.Serializable;
 
 import eppic.model.db.ContactDB;
-import eppic.model.db.InterfaceDB;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Contact implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -30,8 +33,6 @@ public class Contact implements Serializable {
 	
 	private int interfaceId;
 	private String pdbCode;
-	
-	private InterfaceDB interfaceItem;
 
 	public int getUid() {
 		return uid;
@@ -145,14 +146,6 @@ public class Contact implements Serializable {
 		this.pdbCode = pdbCode;
 	}
 
-	public InterfaceDB getInterfaceItem() {
-		return interfaceItem;
-	}
-
-	public void setInterfaceItem(InterfaceDB interfaceItem) {
-		this.interfaceItem = interfaceItem;
-	}
-
 	public static Contact create(ContactDB contactDB) {
 		
 		Contact contact = new Contact();
@@ -171,9 +164,7 @@ public class Contact implements Serializable {
 
 		contact.setInterfaceId(contactDB.getInterfaceId()); 		
 		contact.setPdbCode(contactDB.getPdbCode()); 
-		
-		contact.setInterfaceItem(contactDB.getInterfaceItem()); 
-		
+
 		contact.setUid(contactDB.getUid());
 		
 		return contact;

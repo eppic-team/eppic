@@ -144,6 +144,7 @@ public class JobResource {
             @PathParam("jobId") String jobId,
             @PathParam("pdbAssemblyId") String pdbAssemblyId) throws DaoException {
 
+        // TODO validate pdbAssemblyId is int
 
         Assembly assembly = JobService.getAssemblyData(jobId, Integer.parseInt(pdbAssemblyId));
 
@@ -151,6 +152,28 @@ public class JobResource {
                 .status(Response.Status.OK)
                 .type(getMediaType(uriInfo))
                 .entity(assembly);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/contacts/" + "{jobId}/{interfId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getContacts(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("interfId") String interfId) throws DaoException {
+
+        // TODO validate interfId is int
+
+        List<Contact> cs = JobService.getContactData(jobId, Integer.parseInt(interfId));
+        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
+        GenericEntity<List<Contact>> entity = new GenericEntity<List<Contact>>(cs){};
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(entity);
 
         return responseBuilder.build();
     }

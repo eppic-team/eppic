@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
@@ -29,7 +30,7 @@ import eppic.model.db.PdbInfoDB;
 public class ContactDAOJpa implements ContactDAO {
 
 	@Override
-	public List<Contact> getContactsForInterface(int interfaceUid)
+	public List<Contact> getContactsForInterface(int pdbInfoUid, int interfaceId)
 			throws DaoException {
 		
 		EntityManager entityManager = null;
@@ -41,16 +42,42 @@ public class ContactDAOJpa implements ContactDAO {
 			entityManager = EntityManagerHandler.getEntityManager();
 
 			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<ContactDB> criteriaQuery = criteriaBuilder.createQuery(ContactDB.class);
+			CriteriaQuery<InterfaceClusterDB> criteriaQuery = criteriaBuilder.createQuery(InterfaceClusterDB.class);
 
-			Root<ContactDB> contactRoot = criteriaQuery.from(ContactDB.class);
+			Root<InterfaceClusterDB> interfaceClusterRoot = criteriaQuery.from(InterfaceClusterDB.class);
+			Path<PdbInfoDB> pdbInfoDB = interfaceClusterRoot.get(InterfaceClusterDB_.pdbInfo);
+			criteriaQuery.where(criteriaBuilder.equal(pdbInfoDB.get(PdbInfoDB_.uid), pdbInfoUid));
+
+			TypedQuery<InterfaceClusterDB> query = entityManager.createQuery(criteriaQuery);
+
+			List<InterfaceClusterDB> interfaceClusterDBs = query.getResultList();
+
+			int interfUid = -1;
+
+			outer:
+			for(InterfaceClusterDB interfaceClusterDB : interfaceClusterDBs) {
+
+				for (InterfaceDB interfaceDB : interfaceClusterDB.getInterfaces()) {
+					if (interfaceDB.getInterfaceId() == interfaceId) {
+						interfUid = interfaceDB.getUid();
+						break outer;
+					}
+				}
+			}
+
+			if (interfUid == -1) {
+				return null;
+			}
+
+			CriteriaQuery<ContactDB> contactDBCriteriaQuery = criteriaBuilder.createQuery(ContactDB.class);
+
+			Root<ContactDB> contactRoot = contactDBCriteriaQuery.from(ContactDB.class);
 			Path<InterfaceDB> interfaceItem = contactRoot.get(ContactDB_.interfaceItem);
-			criteriaQuery.where(criteriaBuilder.equal(interfaceItem.get(InterfaceDB_.uid), interfaceUid));
+			contactDBCriteriaQuery.where(criteriaBuilder.equal(interfaceItem.get(InterfaceDB_.uid), interfUid));
 
-			Query query = entityManager.createQuery(criteriaQuery);
+			TypedQuery<ContactDB> contactDBTypedQuery = entityManager.createQuery(contactDBCriteriaQuery);
 
-			@SuppressWarnings("unchecked")
-			List<ContactDB> contactDBs = query.getResultList();
+			List<ContactDB> contactDBs = contactDBTypedQuery.getResultList();
 
 			for(ContactDB contactDB : contactDBs)	{
 				
@@ -91,9 +118,8 @@ public class ContactDAOJpa implements ContactDAO {
 			Path<JobDB> jobItem = pdbScoreItem.get(PdbInfoDB_.job);
 			criteriaQuery.where(criteriaBuilder.equal(jobItem.get(JobDB_.jobId), jobId));
 
-			Query query = entityManager.createQuery(criteriaQuery);
+			TypedQuery<ContactDB> query = entityManager.createQuery(criteriaQuery);
 
-			@SuppressWarnings("unchecked")
 			List<ContactDB> contactDBs = query.getResultList();
 
 			for(ContactDB contactDB : contactDBs) {
