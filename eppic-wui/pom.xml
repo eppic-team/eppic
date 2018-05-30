@@ -32,7 +32,8 @@
 			<scope>compile</scope>
 			<exclusions>
 				<!-- Important: a subdependency of this clashes with a subdependency of jersey (hk2)
-				 Without this exclusion jersey doesn't work -->
+				  Without this exclusion jersey doesn't work. Jersey is not used anymore but still we don't
+				  need this dependency here. -->
 				<exclusion>
 					<groupId>uk.ac.ebi.uniprot</groupId>
 					<artifactId>japi</artifactId>
@@ -64,12 +65,7 @@
 			<version>${gwt.version}</version>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-codeserver</artifactId>
-			<version>${gwt.version}</version>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>com.sencha.gxt</groupId>
 			<artifactId>gxt</artifactId>
@@ -86,7 +82,13 @@
 		</dependency>		
 		<!-- needed for neptune theme (available since GXT 3.1 <dependency> <groupId>com.sencha.gxt</groupId> 
 			<artifactId>gxt-theme-neptune</artifactId> <version>3.1.1</version> </dependency> -->
-		
+
+		<dependency>
+			<groupId>com.gwtplatform</groupId>
+			<artifactId>gwtp-processors</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+
 		<!--  others -->
 		<dependency>
 			<groupId>us.levk</groupId>
@@ -111,44 +113,27 @@
 			<artifactId>recaptcha4j</artifactId>
 			<version>0.0.7</version>
 		</dependency>
+
+		<!--  fileupload needed for user jobs submission -->
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
 			<version>1.2.2</version>
 		</dependency>
-		
-		
-		<dependency>
-			<groupId>com.gwtplatform</groupId>
-			<artifactId>gwtp-processors</artifactId>
-			<version>1.2.1</version>
-		</dependency>
-		<!--
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<version>2.2</version>
-		</dependency>
-		-->
+
+		<!-- the commons-fileupload requires commons-io and commons-lang at runtime (but not compile time)-->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.0.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
-		
-		<!-- Removing javassist: clashes with a dependency of hibernate-entitymanager 
-		<dependency>
-			<groupId>javassist</groupId>
-			<artifactId>javassist</artifactId>
-			<version>3.12.0.GA</version>
-		</dependency>
-		-->
-	
+
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlets</artifactId>
@@ -163,6 +148,12 @@
 			<version>2.7.1</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>${gson.version}</version>
+		</dependency>
+
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -170,11 +161,14 @@
 			<version>4.10</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>${gson.version}</version>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-codeserver</artifactId>
+			<version>${gwt.version}</version>
+			<scope>test</scope>
 		</dependency>
+		
 	</dependencies>
 
 	<build>
