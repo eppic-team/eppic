@@ -12,7 +12,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Context;
 
 @ApplicationPath("/")
 public class InitJerseyRestApp extends ResourceConfig {
@@ -23,7 +25,10 @@ public class InitJerseyRestApp extends ResourceConfig {
     // note the filter package with the CORS filter needs to be in the resources to scan or CORS filter won't work - JD 2017-11-16
     public static final String PACKAGES_TO_SCAN = RESOURCE_PACKAGE + ";" + "eppic.rest.filter";
 
-    public InitJerseyRestApp() {
+    public InitJerseyRestApp(@Context ServletContext servletContext) {
+
+        // ServletContext needed only for application context path in swagger,
+        // see https://stackoverflow.com/questions/19450202/get-servletcontext-in-application/27785718
 
         logger.info("Initialising Jersey REST application");
 
@@ -48,7 +53,7 @@ public class InitJerseyRestApp extends ResourceConfig {
 
         //Configure and Initialize Swagger
         logger.info("Initialising swagger bean config");
-        createSwaggerBeanConfig();
+        createSwaggerBeanConfig(servletContext);
 
         logger.info("Initialising JPA/hibernate");
         EntityManagerHandler.initFactory(AppConstants.DB_SETTINGS);
@@ -59,11 +64,13 @@ public class InitJerseyRestApp extends ResourceConfig {
     /**
      * Setting up swagger, see https://github.com/swagger-api/swagger-core/wiki/Swagger-Core-Jersey-2.X-Project-Setup-1.5
      */
-    private static void createSwaggerBeanConfig(){
+    private static void createSwaggerBeanConfig(ServletContext servletContext){
         BeanConfig beanConfig = new BeanConfig();
         beanConfig.setVersion(AppConstants.PROJECT_VERSION);
         beanConfig.setSchemes(new String[]{"http"});
-        beanConfig.setBasePath(AppConstants.RESOURCES_PREFIX_FULL);
+        String basePath = servletContext.getContextPath() + AppConstants.RESOURCES_PREFIX_FULL;
+        logger.info("Setting swagger base path to {}", basePath);
+        beanConfig.setBasePath(basePath);
         beanConfig.setResourcePackage(RESOURCE_PACKAGE);
         beanConfig.setDescription( "List of services currently provided" );
         beanConfig.setTitle( "EPPIC REST API" );
