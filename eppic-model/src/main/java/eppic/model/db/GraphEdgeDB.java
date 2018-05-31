@@ -15,6 +15,8 @@ public class GraphEdgeDB implements Serializable {
     private int label;
     private String color;
 
+    private boolean inGraph2d;
+
     private int xtalTransA;
     private int xtalTransB;
     private int xtalTransC;
@@ -94,5 +96,13 @@ public class GraphEdgeDB implements Serializable {
 
     public void setNode2Label(String node2Label) {
         this.node2Label = node2Label;
+    }
+
+    public boolean isInGraph2d() {
+        return inGraph2d;
+    }
+
+    public void setInGraph2d(boolean inGraph2d) {
+        this.inGraph2d = inGraph2d;
     }
 }

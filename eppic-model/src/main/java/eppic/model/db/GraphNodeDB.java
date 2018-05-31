@@ -14,6 +14,8 @@ public class GraphNodeDB implements Serializable {
     private String label;
     private String color;
 
+    private boolean inGraph2d;
+
     private double pos2dX;
     private double pos2dY;
 
@@ -91,5 +93,13 @@ public class GraphNodeDB implements Serializable {
 
     public void setPos3dZ(double pos3dZ) {
         this.pos3dZ = pos3dZ;
+    }
+
+    public boolean isInGraph2d() {
+        return inGraph2d;
+    }
+
+    public void setInGraph2d(boolean inGraph2d) {
+        this.inGraph2d = inGraph2d;
     }
 }

@@ -565,28 +565,36 @@ public class DataModelAdaptor {
 		SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(assembly.getAssemblyGraph().getSubgraph());
 
 		latticeGraph.filterEngagedClusters(clusterIds);
-		latticeGraph.setHexColors(); // TODO check if we need this call
+		latticeGraph.setHexColors();
 
+		// the exposed graph
 		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
+
+		// the 2d layed-out graph
 		// TODO get rid of template param, perhaps simply implement another constructor
 		LatticeGUIMustache latticeGUIMustache = new LatticeGUIMustache(null, latticeGraph);
 		latticeGUIMustache.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(latticeGraph.getCrystalCell()));
+		UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2D = latticeGUIMustache.getGraph2D();
 
 		// vertices
 		for (ChainVertex3D v : graph.vertexSet()) {
 			GraphNodeDB nodeDB = new GraphNodeDB();
 			nodeDB.setColor(v.getColorStr());
-			nodeDB.setLabel(v.getChainId()+"_"+v.getOpId()); //TODO should it be v.getUniqueName()?
+			nodeDB.setLabel(v.getChainId()+"_"+v.getOpId());
 
 			// fill the 2D layout positions
 
 			// first we get corresponding 2d vertex (by matching chain id and op id)
-			ChainVertex3D v2d = getCorrespondingVertex(latticeGUIMustache.getGraph2D(), v);
+			ChainVertex3D v2d = getCorrespondingVertex(graph2D, v);
 			if (v2d == null) {
-				LOGGER.warn("Could not find corresponsing 2D vertex for 3D vertex {} of assembly {}. The 2D positions for this vertex will be null in model.", v.toString(), assembly.toString());
+				// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever
+				// a vertex is not part of the subgraph that is displayed in 2D
+				// TODO does this work for disjoint cases?
+				nodeDB.setInGraph2d(false);
 			} else {
 				nodeDB.setPos2dX(v2d.getCenter().x);
 				nodeDB.setPos2dY(v2d.getCenter().y);
+				nodeDB.setInGraph2d(true);
 			}
 
 			// fill the 3D positions
@@ -602,12 +610,21 @@ public class DataModelAdaptor {
 		for (InterfaceEdge3D e : graph.edgeSet()) {
 			GraphEdgeDB edgeDB = new GraphEdgeDB();
 			edgeDB.setColor(e.getColorStr());
-			edgeDB.setLabel(e.getClusterId()); // TODO check if correct
+			edgeDB.setLabel(e.getClusterId());
 
 			ChainVertex3D v1 = graph.getEdgeSource(e);
 			ChainVertex3D v2 = graph.getEdgeTarget(e);
-			edgeDB.setNode1Label(v1.getChainId()+"_"+v1.getOpId()); // TODO should it be v.getUniqueName()?
+			edgeDB.setNode1Label(v1.getChainId()+"_"+v1.getOpId());
 			edgeDB.setNode2Label(v2.getChainId()+"_"+v2.getOpId());
+
+			if (getCorrespondingEdge(graph2D, e, v1, v2) == null) {
+				// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever
+				// an edge is not part of the subgraph that is displayed in 2D
+				// TODO does this work for disjoint cases?
+				edgeDB.setInGraph2d(false);
+			} else {
+				edgeDB.setInGraph2d(true);
+			}
 
 			edgeDB.setXtalTransA(e.getXtalTrans().x);
 			edgeDB.setXtalTransB(e.getXtalTrans().y);
@@ -623,6 +640,21 @@ public class DataModelAdaptor {
 		for (ChainVertex3D v2d : graph2d.vertexSet()){
 			if (v2d.getChainId().equals(v.getChainId()) && v2d.getOpId() == v.getOpId()) {
 				return v2d;
+			}
+		}
+		return null;
+	}
+
+	private InterfaceEdge3DSourced<ChainVertex3D> getCorrespondingEdge(UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d, InterfaceEdge3D e, ChainVertex3D s, ChainVertex3D t) {
+		for (InterfaceEdge3DSourced<ChainVertex3D> e2d : graph2d.edgeSet()){
+			ChainVertex3D v2dSrc = graph2d.getEdgeSource(e2d);
+			ChainVertex3D v2dTar = graph2d.getEdgeTarget(e2d);
+			if (e2d.getClusterId() == e.getClusterId() &&
+					v2dSrc.getChainId().equals(s.getChainId()) &&
+					v2dSrc.getOpId() == s.getOpId() &&
+					v2dTar.getChainId().equals(t.getChainId()) &&
+					v2dTar.getOpId() == t.getOpId()) {
+				return e2d;
 			}
 		}
 		return null;
