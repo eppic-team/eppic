@@ -153,13 +153,18 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 			
-			<basic name="id"></basic>
+			<basic name="id">
+			</basic>
 			
 			<basic name="pdbCode">
 				<column length="4" />
 			</basic>
+
+			<basic name="unitCellAssembly">
+			</basic>
 			
-			<basic name="topologicallyValid"></basic>
+			<basic name="topologicallyValid">
+			</basic>
 
 			<!-- Entries like ribosomes can have very long list of interfaces here, we need text -->
 			<basic name="interfaceClusterIds">
@@ -178,6 +183,17 @@
 			<one-to-many name="assemblyContents" mapped-by="assembly">
 				<cascade>
 					<cascade-all />
+				</cascade>
+			</one-to-many>
+
+			<one-to-many name="graphNodes" mapped-by="assembly" fetch="LAZY">
+				<cascade>
+					<cascade-all/>
+				</cascade>
+			</one-to-many>
+			<one-to-many name="graphEdges" mapped-by="assembly" fetch="LAZY">
+				<cascade>
+					<cascade-all/>
 				</cascade>
 			</one-to-many>
 
@@ -204,7 +220,8 @@
 				<column length="4" />
 			</basic>
 			
-			<basic name="mmSize"></basic>
+			<basic name="mmSize">
+			</basic>
 			<basic name="symmetry">
 				<column length="10"/>
 			</basic>
@@ -216,7 +233,8 @@
 			<basic name="compositionRepChainIds">
 				<column length="20000" />
 			</basic>
-			<basic name="stoichiometry"></basic>
+			<basic name="stoichiometry">
+			</basic>
 			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
 			     very long list of chains in their assemblies, we need text here -->
 			<basic name="chainIds">
@@ -244,11 +262,84 @@
 				<column length="15" />
 			</basic>
 
-			<basic name="callName"></basic>
-			<basic name="callReason"></basic>
+			<basic name="callName">
+			</basic>
+			<basic name="callReason">
+			</basic>
 			
-			<basic name="score"></basic>
-			<basic name="confidence"></basic>
+			<basic name="score">
+			</basic>
+			<basic name="confidence">
+			</basic>
+
+			<many-to-one name="assembly">
+			</many-to-one>
+
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.db.GraphNodeDB" name="GraphNode">
+		<table name="GraphNode"/>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY"/>
+			</id>
+
+			<basic name="label">
+				<column length="10"/>
+			</basic>
+			<basic name="color">
+				<column length="6"/>
+			</basic>
+
+			<!-- These 2 must be nullable because in unitCell graph case they are not set -->
+			<basic name="pos2dX">
+				<column nullable="true" />
+			</basic>
+			<basic name="pos2dY">
+				<column nullable="true" />
+			</basic>
+
+			<basic name="pos3dX">
+			</basic>
+			<basic name="pos3dY">
+			</basic>
+			<basic name="pos3dZ">
+			</basic>
+
+			<many-to-one name="assembly">
+			</many-to-one>
+
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.db.GraphEdgeDB" name="GraphEdge">
+		<table name="GraphEdge"/>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY"/>
+			</id>
+
+			<basic name="label">
+			</basic>
+
+			<basic name="color">
+				<column length="6"/>
+			</basic>
+
+			<basic name="xtalTransA">
+			</basic>
+			<basic name="xtalTransB">
+			</basic>
+			<basic name="xtalTransC">
+			</basic>
+
+			<basic name="node1Label">
+				<column length="10"/>
+			</basic>
+			<basic name="node2Label">
+				<column length="10"/>
+			</basic>
 
 			<many-to-one name="assembly">
 			</many-to-one>
@@ -263,20 +354,27 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 
-			<basic name="clusterId"></basic>
+			<basic name="clusterId">
+			</basic>
 			<basic name="pdbCode">
 				<column length="4" />
 			</basic>
 			
-			<basic name="avgArea"></basic>
-			<basic name="avgContactOverlapScore"></basic>
+			<basic name="avgArea">
+			</basic>
+			<basic name="avgContactOverlapScore">
+			</basic>
 			
-			<basic name="infinite"></basic>
-			<basic name="isologous"></basic>
+			<basic name="infinite">
+			</basic>
+			<basic name="isologous">
+			</basic>
 			
-			<basic name="numMembers"></basic>
+			<basic name="numMembers">
+			</basic>
 			
-			<basic name="globalInterfClusterId"></basic>
+			<basic name="globalInterfClusterId">
+			</basic>
 
 			<many-to-one name="pdbInfo">
 			</many-to-one>
@@ -319,7 +417,8 @@
 			<basic name="method">
 				<column length="15" />
 			</basic>
-			<basic name="clusterId"></basic>
+			<basic name="clusterId">
+			</basic>
 			<basic name="score">
 				<column nullable="true" />
 			</basic>

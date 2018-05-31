@@ -11,11 +11,12 @@ public class AssemblyDB implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int uid;
-	
+
 	private int id;
 	
 	private String pdbCode;
-	
+
+	private boolean unitCellAssembly;
 
 	private boolean topologicallyValid;
 	
@@ -28,6 +29,10 @@ public class AssemblyDB implements Serializable {
 	private List<AssemblyScoreDB> assemblyScores;
 	
 	private List<AssemblyContentDB> assemblyContents;
+
+	private List<GraphNodeDB> graphNodes;
+
+	private List<GraphEdgeDB> graphEdges;
 
 	public AssemblyDB() {
 		assemblyScores = new ArrayList<AssemblyScoreDB>();
@@ -108,7 +113,29 @@ public class AssemblyDB implements Serializable {
 
 	public void setAssemblyContents(List<AssemblyContentDB> assemblyContents) {
 		this.assemblyContents = assemblyContents;
-	}	
-	
+	}
 
+	public boolean isUnitCellAssembly() {
+		return unitCellAssembly;
+	}
+
+	public List<GraphNodeDB> getGraphNodes() {
+		return graphNodes;
+	}
+
+	public List<GraphEdgeDB> getGraphEdges() {
+		return graphEdges;
+	}
+
+	public void setUnitCellAssembly(boolean unitCellAssembly) {
+		this.unitCellAssembly = unitCellAssembly;
+	}
+
+	public void setGraphNodes(List<GraphNodeDB> graphNodes) {
+		this.graphNodes = graphNodes;
+	}
+
+	public void setGraphEdges(List<GraphEdgeDB> graphEdges) {
+		this.graphEdges = graphEdges;
+	}
 }
