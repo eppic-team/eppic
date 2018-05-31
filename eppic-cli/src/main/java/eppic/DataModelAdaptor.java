@@ -564,32 +564,19 @@ public class DataModelAdaptor {
 
 		SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(assembly.getAssemblyGraph().getSubgraph());
 
-		// TODO do we need the interfaIds here? what for?
-		Set<Integer> interfaceIds = GraphUtils.getDistinctInterfaces(assembly.getAssemblyGraph().getSubgraph());
-		if (getPdbInfo().isNcsOpsPresent()) {
-			// we have to hack the interface list removing the redundant NCS interfaces. In model (and wui) they aren't present
-			Set<Integer> nonRedundantSet = new HashSet<>();
-			for (InterfaceClusterDB icdb : getPdbInfo().getInterfaceClusters()) {
-				for (InterfaceDB idb : icdb.getInterfaces()) {
-					nonRedundantSet.add(idb.getInterfaceId());
-				}
-			}
-			interfaceIds.removeIf( (Integer interfId) -> !nonRedundantSet.contains(interfId));
-		}
-
 		latticeGraph.filterEngagedClusters(clusterIds);
-		latticeGraph.setHexColors();
+		latticeGraph.setHexColors(); // TODO check if we need this call
 
 		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
-		// TODO get rid of template param
-		LatticeGUIMustache latticeGUIMustache = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
-		latticeGUIMustache.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(null)); // TODO pass structure or crystal cell
+		// TODO get rid of template param, perhaps simply implement another constructor
+		LatticeGUIMustache latticeGUIMustache = new LatticeGUIMustache(null, latticeGraph);
+		latticeGUIMustache.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(latticeGraph.getCrystalCell()));
 
 		// vertices
 		for (ChainVertex3D v : graph.vertexSet()) {
 			GraphNodeDB nodeDB = new GraphNodeDB();
 			nodeDB.setColor(v.getColorStr());
-			nodeDB.setLabel(v.getChainId()+"_"+v.getOpId()); //TODO check chain id is correct
+			nodeDB.setLabel(v.getChainId()+"_"+v.getOpId()); //TODO should it be v.getUniqueName()?
 
 			// fill the 2D layout positions
 
@@ -619,7 +606,7 @@ public class DataModelAdaptor {
 
 			ChainVertex3D v1 = graph.getEdgeSource(e);
 			ChainVertex3D v2 = graph.getEdgeTarget(e);
-			edgeDB.setNode1Label(v1.getChainId()+"_"+v1.getOpId()); // TODO check chain id is correct
+			edgeDB.setNode1Label(v1.getChainId()+"_"+v1.getOpId()); // TODO should it be v.getUniqueName()?
 			edgeDB.setNode2Label(v2.getChainId()+"_"+v2.getOpId());
 
 			edgeDB.setXtalTransA(e.getXtalTrans().x);

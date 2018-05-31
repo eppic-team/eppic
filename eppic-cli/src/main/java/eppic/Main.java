@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
+import eppic.assembly.*;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import org.apache.logging.log4j.LogManager;
@@ -41,10 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
-import eppic.assembly.Assembly;
-import eppic.assembly.CrystalAssemblies;
-import eppic.assembly.GraphUtils;
-import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.predictors.CombinedClusterPredictor;
@@ -614,7 +611,7 @@ public class Main {
 				latticeGraph.filterEngagedClusters(clusterIds);
 					
 				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
-				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
+				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(latticeGraph.getCrystalCell()));
 				guiThumb.setTitle("Assembly "+a.getId());
 				guiThumb.setPdbId(pdb.getPDBCode());
 				int dpi = 72; // 72 dots per inch for output
@@ -639,7 +636,7 @@ public class Main {
 				// 2. Generate the json file for the dynamic js graph in the wui
 				
 				guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, latticeGraph);
-				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
+				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(latticeGraph.getCrystalCell()));
 				String json;
 				// Hack to work around Mustache limitations which prevent generating valid JSON
 				try(StringWriter sw = new StringWriter();

@@ -29,6 +29,7 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.core.util.FileDownloadUtils;
+import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
@@ -480,7 +481,7 @@ public class LatticeGUIMustache {
 			System.exit(1); return;
 		}
 
-		gui.setLayout2D( getDefaultLayout2D(struc) );
+		gui.setLayout2D( getDefaultLayout2D(LatticeGraph.getCrystalCell(struc)) );
 		gui.execute(mainOut);
 
 		if( !output.equals("-")) {
@@ -488,12 +489,11 @@ public class LatticeGUIMustache {
 		}
 	}
 
-	public static GraphLayout<ChainVertex3D, InterfaceEdge3D> getDefaultLayout2D(
-			Structure struc) {
+	public static GraphLayout<ChainVertex3D, InterfaceEdge3D> getDefaultLayout2D(CrystalCell cell) {
 		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
 		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
 
-		layouts.add( new UnitCellLayout<>(vertexPositioner, LatticeGraph.getCrystalCell(struc)));
+		layouts.add( new UnitCellLayout<>(vertexPositioner, cell));
 		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
 
 //		Point3d center = new Point3d();

@@ -632,8 +632,27 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	public List<Integer> getDistinctEntities() {
 		return new ArrayList<>(GraphUtils.getDistinctEntities(subgraph));
 	}
-	
-		/**
+
+	/**
+	 * Return the CrystalCell associated with this LatticeGraph. If the structure is not crystallographic
+	 * returns the trivial 1, 1, 1, 90, 90, 90 cell.
+	 * @see #getCrystalCell(Structure)
+	 * @return
+	 */
+	public CrystalCell getCrystalCell() {
+		return getCrystalCell(this.structure);
+	}
+
+	/**
+	 * Return the space group associated with this LatticeGraph. If the structure is not crystallographic, return P1.
+	 * @see #getSpaceGroup(Structure) 
+	 * @return
+	 */
+	protected SpaceGroup getSpaceGroup() {
+		return getSpaceGroup(this.structure);
+	}
+
+	/**
 	 * Return the CrystalCell for the given Structure. If the structure is not crystallographic
 	 * returns the trivial 1, 1, 1, 90, 90, 90 cell.
 	 * @param s

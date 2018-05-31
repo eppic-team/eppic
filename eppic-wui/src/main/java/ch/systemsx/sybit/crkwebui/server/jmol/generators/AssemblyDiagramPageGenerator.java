@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import eppic.assembly.LatticeGraph;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
@@ -65,7 +66,7 @@ public class AssemblyDiagramPageGenerator {
 
 			LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces);
 
-			GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(auStruct);
+			GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(LatticeGraph.getCrystalCell(auStruct));
 			gui.setLayout2D( layout2D );
 
 

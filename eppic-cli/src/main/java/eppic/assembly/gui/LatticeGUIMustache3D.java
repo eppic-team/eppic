@@ -29,6 +29,7 @@ import eppic.commons.util.IntervalSet;
  *
  */
 public class LatticeGUIMustache3D extends LatticeGUIMustache {
+
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGUIMustache3D.class);
 
 	public static final String MUSTACHE_TEMPLATE_3DMOL = "mustache/eppic/assembly/gui/LatticeGUI3Dmol.html.mustache";
@@ -48,13 +49,13 @@ public class LatticeGUIMustache3D extends LatticeGUIMustache {
 	 * @param strucURL URI to access strucFile through the browser
 	 * @param interfaceIds List of interface numbers, or null for all interfaces
 	 */
-	public LatticeGUIMustache3D(Structure struc,String strucURI,Collection<Integer> interfaceIds) {
+	public LatticeGUIMustache3D(Structure struc, String strucURI, Collection<Integer> interfaceIds) {
 		this(MUSTACHE_TEMPLATE_3DMOL,struc,strucURI,interfaceIds);
 	}
-	public LatticeGUIMustache3D(Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) {
+	public LatticeGUIMustache3D(Structure struc, String strucURI, Collection<Integer> interfaceIds, List<StructureInterface> allInterfaces) {
 		this(MUSTACHE_TEMPLATE_3DMOL,struc,strucURI,interfaceIds,allInterfaces);
 	}
-	public LatticeGUIMustache3D(String template, Structure struc,String strucURI,Collection<Integer> interfaceIds) {
+	public LatticeGUIMustache3D(String template, Structure struc, String strucURI,Collection<Integer> interfaceIds) {
 		this(template,struc,strucURI,interfaceIds,null);
 	}
 	public LatticeGUIMustache3D(String template, LatticeGraph3D graph, String strucURL) {
