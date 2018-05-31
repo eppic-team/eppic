@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import eppic.assembly.*;
+import eppic.assembly.gui.InterfaceEdge3DSourced;
+import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.model.db.*;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.asa.GroupAsa;
@@ -579,13 +581,26 @@ public class DataModelAdaptor {
 		latticeGraph.setHexColors();
 
 		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
+		// TODO get rid of template param
+		LatticeGUIMustache latticeGUIMustache = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
+		latticeGUIMustache.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(null)); // TODO pass structure or crystal cell
+
 		// vertices
 		for (ChainVertex3D v : graph.vertexSet()) {
 			GraphNodeDB nodeDB = new GraphNodeDB();
 			nodeDB.setColor(v.getColorStr());
 			nodeDB.setLabel(v.getChainId()+"_"+v.getOpId()); //TODO check chain id is correct
 
-			// TODO fill the 2D layout positions
+			// fill the 2D layout positions
+
+			// first we get corresponding 2d vertex (by matching chain id and op id)
+			ChainVertex3D v2d = getCorrespondingVertex(latticeGUIMustache.getGraph2D(), v);
+			if (v2d == null) {
+				LOGGER.warn("Could not find corresponsing 2D vertex for 3D vertex {} of assembly {}. The 2D positions for this vertex will be null in model.", v.toString(), assembly.toString());
+			} else {
+				nodeDB.setPos2dX(v2d.getCenter().x);
+				nodeDB.setPos2dY(v2d.getCenter().y);
+			}
 
 			// fill the 3D positions
 			Point3d center = v.getCenter();
@@ -615,6 +630,15 @@ public class DataModelAdaptor {
 			edges.add(edgeDB);
 		}
 
+	}
+
+	private ChainVertex3D getCorrespondingVertex(UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2d, ChainVertex3D v) {
+		for (ChainVertex3D v2d : graph2d.vertexSet()){
+			if (v2d.getChainId().equals(v.getChainId()) && v2d.getOpId() == v.getOpId()) {
+				return v2d;
+			}
+		}
+		return null;
 	}
 	
 	/**
