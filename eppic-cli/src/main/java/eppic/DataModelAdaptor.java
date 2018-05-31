@@ -2,18 +2,11 @@ package eppic;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
 
+import eppic.assembly.*;
+import eppic.model.db.*;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.asa.GroupAsa;
 import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
@@ -31,34 +24,14 @@ import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
-import eppic.assembly.Assembly;
-import eppic.assembly.AssemblyDescription;
-import eppic.assembly.CrystalAssemblies;
-import eppic.assembly.GraphUtils;
 import eppic.commons.sequence.Homolog;
 import eppic.commons.util.Goodies;
-import eppic.model.db.AssemblyContentDB;
-import eppic.model.db.AssemblyDB;
-import eppic.model.db.AssemblyScoreDB;
-import eppic.model.db.ChainClusterDB;
-import eppic.model.db.ContactDB;
-import eppic.model.db.HomologDB;
-import eppic.model.db.InterfaceClusterDB;
-import eppic.model.db.InterfaceClusterScoreDB;
-import eppic.model.db.InterfaceDB;
-import eppic.model.db.InterfaceScoreDB;
-import eppic.model.db.InterfaceWarningDB;
-import eppic.model.db.PdbInfoDB;
-import eppic.model.db.ResidueBurialDB;
-import eppic.model.db.ResidueInfoDB;
-import eppic.model.db.RunParametersDB;
-import eppic.model.db.ScoringMethod;
-import eppic.model.db.UniProtRefWarningDB;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.EvolCoreRimClusterPredictor;
@@ -67,6 +40,8 @@ import eppic.predictors.EvolCoreSurfaceClusterPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
+
+import javax.vecmath.Point3d;
 
 
 public class DataModelAdaptor {
@@ -511,6 +486,9 @@ public class DataModelAdaptor {
 	public void setAssemblies(CrystalAssemblies validAssemblies) {
 		
 		pdbInfo.setExhaustiveAssemblyEnumeration(validAssemblies.isExhaustiveEnumeration());
+
+		// needed in setGraph (last step)
+		LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
 		
 		for (Assembly validAssembly:validAssemblies) {
 			AssemblyDB assembly = new AssemblyDB();
@@ -567,8 +545,76 @@ public class DataModelAdaptor {
 			as.setAssembly(assembly);
 			assembly.addAssemblyScore(as);
 			
-			
+			// set graph
+			setGraph(validAssembly, assembly, latticeGraph);
+
+			// TODO set graph for unitcell assembly
+
 		}
+	}
+
+	private void setGraph(Assembly assembly, AssemblyDB assemblyDB, LatticeGraph3D latticeGraph) {
+
+		List<GraphNodeDB> nodes = new ArrayList<>();
+		List<GraphEdgeDB> edges = new ArrayList<>();
+		assemblyDB.setGraphNodes(nodes);
+		assemblyDB.setGraphEdges(edges);
+
+		SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(assembly.getAssemblyGraph().getSubgraph());
+
+		// TODO do we need the interfaIds here? what for?
+		Set<Integer> interfaceIds = GraphUtils.getDistinctInterfaces(assembly.getAssemblyGraph().getSubgraph());
+		if (getPdbInfo().isNcsOpsPresent()) {
+			// we have to hack the interface list removing the redundant NCS interfaces. In model (and wui) they aren't present
+			Set<Integer> nonRedundantSet = new HashSet<>();
+			for (InterfaceClusterDB icdb : getPdbInfo().getInterfaceClusters()) {
+				for (InterfaceDB idb : icdb.getInterfaces()) {
+					nonRedundantSet.add(idb.getInterfaceId());
+				}
+			}
+			interfaceIds.removeIf( (Integer interfId) -> !nonRedundantSet.contains(interfId));
+		}
+
+		latticeGraph.filterEngagedClusters(clusterIds);
+		latticeGraph.setHexColors();
+
+		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
+		// vertices
+		for (ChainVertex3D v : graph.vertexSet()) {
+			GraphNodeDB nodeDB = new GraphNodeDB();
+			nodeDB.setColor(v.getColorStr());
+			nodeDB.setLabel(v.getChainId()+"_"+v.getOpId()); //TODO check chain id is correct
+
+			// TODO fill the 2D layout positions
+
+			// fill the 3D positions
+			Point3d center = v.getCenter();
+			nodeDB.setPos3dX(center.x);
+			nodeDB.setPos3dY(center.y);
+			nodeDB.setPos3dZ(center.z);
+			nodeDB.setAssembly(assemblyDB);
+			nodes.add(nodeDB);
+		}
+
+		// edges
+		for (InterfaceEdge3D e : graph.edgeSet()) {
+			GraphEdgeDB edgeDB = new GraphEdgeDB();
+			edgeDB.setColor(e.getColorStr());
+			edgeDB.setLabel(e.getClusterId()); // TODO check if correct
+
+			ChainVertex3D v1 = graph.getEdgeSource(e);
+			ChainVertex3D v2 = graph.getEdgeTarget(e);
+			edgeDB.setNode1Label(v1.getChainId()+"_"+v1.getOpId()); // TODO check chain id is correct
+			edgeDB.setNode2Label(v2.getChainId()+"_"+v2.getOpId());
+
+			edgeDB.setXtalTransA(e.getXtalTrans().x);
+			edgeDB.setXtalTransB(e.getXtalTrans().y);
+			edgeDB.setXtalTransC(e.getXtalTrans().z);
+
+			edgeDB.setAssembly(assemblyDB);
+			edges.add(edgeDB);
+		}
+
 	}
 	
 	/**

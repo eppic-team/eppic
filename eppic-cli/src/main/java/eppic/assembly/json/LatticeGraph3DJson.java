@@ -3,7 +3,6 @@ package eppic.assembly.json;
 import java.lang.reflect.Type;
 import java.util.Set;
 
-import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +20,8 @@ public class LatticeGraph3DJson implements JsonSerializer<LatticeGraph3D>{
 		JsonObject json = new JsonObject();
 		json.add("vertices", context.serialize(src.getGraph().vertexSet(),Set.class));
 		json.add("edges", context.serialize(src.getGraph().edgeSet(),Set.class));
-		try {
-			json.add("unitCellTransforms",context.serialize(src.getUnitCellTransforms(), Set.class));
-		} catch (StructureException e) {
-			logger.error("Error getting unit cell transforms",e);
-		}
+		json.add("unitCellTransforms",context.serialize(src.getUnitCellTransforms(), Set.class));
+
 		return json;
 	}
 }

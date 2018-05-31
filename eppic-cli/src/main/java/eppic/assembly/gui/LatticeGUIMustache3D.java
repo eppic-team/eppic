@@ -47,22 +47,21 @@ public class LatticeGUIMustache3D extends LatticeGUIMustache {
 	 * @param strucFile Location on the filesystem for the unit cell mmcif file
 	 * @param strucURL URI to access strucFile through the browser
 	 * @param interfaceIds List of interface numbers, or null for all interfaces
-	 * @throws StructureException For errors parsing the structure
 	 */
-	public LatticeGUIMustache3D(Structure struc,String strucURI,Collection<Integer> interfaceIds) throws StructureException {
+	public LatticeGUIMustache3D(Structure struc,String strucURI,Collection<Integer> interfaceIds) {
 		this(MUSTACHE_TEMPLATE_3DMOL,struc,strucURI,interfaceIds);
 	}
-	public LatticeGUIMustache3D(Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+	public LatticeGUIMustache3D(Structure struc,String strucURI,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) {
 		this(MUSTACHE_TEMPLATE_3DMOL,struc,strucURI,interfaceIds,allInterfaces);
 	}
-	public LatticeGUIMustache3D(String template, Structure struc,String strucURI,Collection<Integer> interfaceIds) throws StructureException {
+	public LatticeGUIMustache3D(String template, Structure struc,String strucURI,Collection<Integer> interfaceIds) {
 		this(template,struc,strucURI,interfaceIds,null);
 	}
-	public LatticeGUIMustache3D(String template, LatticeGraph3D graph, String strucURL) throws StructureException {
+	public LatticeGUIMustache3D(String template, LatticeGraph3D graph, String strucURL) {
 		super(template, graph);
 		this.strucURL = strucURL;
 	}
-	public LatticeGUIMustache3D(String template, Structure struc,String strucURL,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces) throws StructureException {
+	public LatticeGUIMustache3D(String template, Structure struc,String strucURL,Collection<Integer> interfaceIds,List<StructureInterface> allInterfaces)  {
 		super(template, struc,interfaceIds, allInterfaces);
 
 		this.strucURL = strucURL;

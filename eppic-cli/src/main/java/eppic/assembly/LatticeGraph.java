@@ -17,7 +17,6 @@ import javax.vecmath.Point3i;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.xtal.CrystalCell;
@@ -90,9 +89,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 *  be calculated from the structure (slow).
 	 * @param vertexClass Class of vertices, used to create new nodes
 	 * @param edgeClass Class of edges, used to create new edges
-	 * @throws StructureException
 	 */
-	public LatticeGraph(Structure struct, List<StructureInterface> interfaces, Class<? extends V> vertexClass,Class<? extends E> edgeClass) throws StructureException {
+	public LatticeGraph(Structure struct, List<StructureInterface> interfaces, Class<? extends V> vertexClass,Class<? extends E> edgeClass) {
 
 		this.structure = struct;
 		globalReferencePoint = true;
@@ -109,8 +107,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		}
 
 		if(structure.getCrystallographicInfo() == null) {
-			logger.error("No crystallographic info set for this structure.");
-			throw new StructureException("No crystallographic information");
+			// the null is handled later by adding a fake cell
+			logger.warn("No crystallographic info set for this structure.");
 		}
 
 		initLatticeGraphTopologically(interfaces,vertexFactory,edgeFactory);
@@ -164,7 +162,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 
 	public LatticeGraph(Structure struct,
 			StructureInterfaceList interfaces, Class<? extends V> vertexClass,
-			Class<? extends E> edgeClass) throws StructureException {
+			Class<? extends E> edgeClass) {
 		this(struct, Lists.newArrayList(interfaces),vertexClass,edgeClass);
 	}
 
@@ -176,9 +174,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * depending on the value of {@link #isGlobalReferencePoint()}.
 	 * @param chainId
 	 * @return
-	 * @throws StructureException
 	 */
-	public Point3d getReferenceCoordinate(String chainId) throws StructureException {
+	public Point3d getReferenceCoordinate(String chainId) {
 		if( globalReferencePoint ) {
 			// null is AU centroid
 			if( ! referencePoints.containsKey(null) ) {
@@ -203,9 +200,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param chainId Chain ID
 	 * @param opId operator number, relative to the space group transformations
 	 * @return An array of transformation matrices
-	 * @throws StructureException if an error occurs calculating the centroid
 	 */
-	public Matrix4d getUnitCellTransformationOrthonormal(String chainId, int opId) throws StructureException {
+	public Matrix4d getUnitCellTransformationOrthonormal(String chainId, int opId) {
 		return getUnitCellTransformationsOrthonormal(chainId)[opId];
 	}
 	/**
@@ -213,9 +209,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * to transform the specified chain to all locations in the unit cell
 	 * @param chainId Chain ID
 	 * @return An array of transformation matrices
-	 * @throws StructureException if an error occurs calculating the centroid
 	 */
-	public Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) throws StructureException {
+	public Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) {
 		
 		CrystalCell cell = getCrystalCell(structure);
 
@@ -234,9 +229,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param chainId Chain ID
 	 * @param opId operator number, relative to the space group transformations
 	 * @return An array of transformation matrices
-	 * @throws StructureException if an error occurs calculating the centroid
 	 */
-	public Matrix4d getUnitCellTransformationCrystal(String chainId, int opId) throws StructureException {
+	public Matrix4d getUnitCellTransformationCrystal(String chainId, int opId) {
 		return getUnitCellTransformationsCrystal(chainId)[opId];
 	}
 	/**
@@ -244,9 +238,8 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * to transform the specified chain to all locations in the unit cell
 	 * @param chainId Chain ID
 	 * @return An array of transformation matrices
-	 * @throws StructureException if an error occurs calculating the centroid
 	 */
-	public Matrix4d[] getUnitCellTransformationsCrystal(String chainId) throws StructureException {
+	public Matrix4d[] getUnitCellTransformationsCrystal(String chainId) {
 		Matrix4d[] chainTransformations;
 		synchronized(unitCellOperators) {
 			if( ! unitCellOperators.containsKey(chainId) ) {
@@ -276,7 +269,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		return chainTransformations;
 	}
 
-	private void initLatticeGraphTopologically(List<StructureInterface> interfaces, VertexFactory<V> vertexFactory, EdgeFactory<V, E> edgeFactory) throws StructureException {		
+	private void initLatticeGraphTopologically(List<StructureInterface> interfaces, VertexFactory<V> vertexFactory, EdgeFactory<V, E> edgeFactory) {
 
 		SpaceGroup sg = getSpaceGroup(structure);
 		final int numOps = sg.getNumOperators();
@@ -347,10 +340,10 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	/**
 	 * Given an operator, returns the operator id of the matching generator
 	 * @param m
+	 * @param chainId
 	 * @return
-	 * @throws StructureException 
 	 */
-	private int getEndAuCell(Matrix4d m, String chainId) throws StructureException {
+	private int getEndAuCell(Matrix4d m, String chainId) {
 		Matrix4d[] ops = getUnitCellTransformationsCrystal(chainId);
 		for (int j=0;j<ops.length;j++) {
 			Matrix4d Tj = ops[j];
@@ -540,7 +533,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	}
 	/**
 	 * Filter the edges of this graph down to the selected interface clusters
-	 * @param interfaces List of clusters to include, or null to reset to all interfaces
+	 * @param clusterIds List of clusters to include, or null to reset to all interfaces
 	 */
 	public void filterEngagedClusters(final Collection<Integer> clusterIds) {
 		if(clusterIds == null ) {

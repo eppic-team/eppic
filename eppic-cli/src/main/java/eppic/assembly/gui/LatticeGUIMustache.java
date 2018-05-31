@@ -99,10 +99,9 @@ public class LatticeGUIMustache {
 	 * @param struc
 	 * @param interfaceIds
 	 * @return
-	 * @throws StructureException 
 	 * @throws IllegalArgumentException if the template couldn't be found or was ambiguous
 	 */
-	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds) throws StructureException {
+	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds) {
 		String templatePath = expandTemplatePath(template);
 		logger.info("Loading mustache template from {}",templatePath);
 
@@ -202,9 +201,8 @@ public class LatticeGUIMustache {
 	 * @param template Path to the template file. Short names are supported for templates in the MUSTACHE_TEMPLATE_DIR
 	 * @param struc Structure used to create the graph (must have cell info)
 	 * @param interfaceIds List of interface numbers, or null for all interfaces
-	 * @throws StructureException For errors parsing the structure
 	 */
-	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds) throws StructureException {
+	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds) {
 		this(template,struc,interfaceIds,null);
 	}
 	/**
@@ -214,9 +212,8 @@ public class LatticeGUIMustache {
 	 * @param interfaceIds
 	 * @param allInterfaces (Optional) List of interfaces for this structure.
 	 *  If not null it avoids recalculating the full list.
-	 * @throws StructureException
 	 */
-	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds, List<StructureInterface> allInterfaces) throws StructureException {
+	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds, List<StructureInterface> allInterfaces) {
 		this(template,new LatticeGraph3D(struc,allInterfaces));
 
 		if( interfaceIds != null ) {
@@ -225,7 +222,12 @@ public class LatticeGUIMustache {
 		}
 
 		if (struc.getStructureIdentifier()!=null ) {
-			pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+			try {
+				pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+			} catch (StructureException e) {
+				logger.warn("Couldn't get PDB id. Error: {}", e.getMessage());
+				pdbId = null;
+			}
 		}
 		if(pdbId == null || pdbId.length() != 4) {
 			pdbId = struc.getName();
@@ -243,9 +245,8 @@ public class LatticeGUIMustache {
 	 * properties should be set manually as well.
 	 * @param template
 	 * @param latticeGraph
-	 * @throws StructureException
 	 */
-	public LatticeGUIMustache(String template, LatticeGraph3D latticeGraph) throws StructureException {
+	public LatticeGUIMustache(String template, LatticeGraph3D latticeGraph) {
 		this.latticeGraph = latticeGraph;
 		this.template = template;
 
@@ -349,9 +350,8 @@ public class LatticeGUIMustache {
 	 * Write a cif file containing the unit cell.
 	 * @param out
 	 * @throws IOException
-	 * @throws StructureException
 	 */
-	public void writeCIFfile(PrintWriter out) throws IOException, StructureException {
+	public void writeCIFfile(PrintWriter out) throws IOException {
 		latticeGraph.writeCellToMmCifFile(out);
 	}
 	

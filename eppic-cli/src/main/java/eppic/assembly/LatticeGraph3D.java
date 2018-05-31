@@ -24,7 +24,6 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.FileConvert;
@@ -70,9 +69,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Create the graph after calculating the interfaces
 	 * @param struc
-	 * @throws StructureException
 	 */
-	public LatticeGraph3D(Structure struc) throws StructureException {
+	public LatticeGraph3D(Structure struc) {
 		this(struc,null);
 	}
 	/**
@@ -80,9 +78,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	 * @param struc Structure, which must include crystallographic info
 	 * @param interfaces (Optional) list of interfaces from struct. If null, will
 	 *  be calculated from the structure (slow).
-	 * @throws StructureException
 	 */
-	public LatticeGraph3D(Structure struc, List<StructureInterface> interfaces) throws StructureException {
+	public LatticeGraph3D(Structure struc, List<StructureInterface> interfaces) {
 		super(struc,interfaces,ChainVertex3D.class, InterfaceEdge3D.class);
 		
 		this.policy = WrappingPolicy.DUPLICATE;
@@ -116,9 +113,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Copy the other LatticeGraph. Recalculates all 3D position information
 	 * @param other
-	 * @throws StructureException
 	 */
-	public LatticeGraph3D(LatticeGraph<? extends ChainVertex, ? extends InterfaceEdge> other) throws StructureException {
+	public LatticeGraph3D(LatticeGraph<? extends ChainVertex, ? extends InterfaceEdge> other) {
 		// Clone graph & basic properties
 		super(other,ChainVertex3D.class,InterfaceEdge3D.class);
 		
@@ -142,9 +138,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 	/**
 	 * Calculate vertex positions and colors
-	 * @throws StructureException
 	 */
-	private final void positionVertices() throws StructureException {
+	private final void positionVertices() {
 
 		Set<ChainVertex3D> vertices = graph.vertexSet();
 		for(ChainVertex3D v : vertices) {
@@ -158,9 +153,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Initialize edge positions. Should be called during initialization after
 	 * {@link #positionVertices()}.
-	 * @throws StructureException
 	 */
-	private final void positionEdges() throws StructureException {
+	private final void positionEdges() {
 		Set<InterfaceEdge3D> edges = graph.edgeSet();
 		for(InterfaceEdge3D edge : edges) {
 			ChainVertex3D source = graph.getEdgeSource(edge);
@@ -252,7 +246,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	}
 
 	
-	private Point3d getPosition(ChainVertex3D v) throws StructureException {
+	private Point3d getPosition(ChainVertex3D v) {
 		String chainId = v.getChainId();
 		int au = v.getOpId();
 
@@ -444,9 +438,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	 * Note that PyMOL supports multi-letter chain ids only from 1.7.4
 	 * @param out the writer to write the mmCIF data to
 	 * @throws IOException
-	 * @throws StructureException
 	 */
-	public void writeCellToMmCifFile(PrintWriter out) throws IOException, StructureException {
+	public void writeCellToMmCifFile(PrintWriter out) throws IOException {
 		
 		// Some molecular viewers like 3Dmol.js need globally unique atom identifiers (across chains)
 		// With the approach below we add an offset to atom ids of sym-related molecules to avoid repeating atom ids
@@ -519,9 +512,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Returns a set of all unique transformations needed to create the unit cell (one per vertex in lattice graph).
 	 * @return
-	 * @throws StructureException if problems occur calculating centroids
 	 */
-	public Set<Matrix4d> getUnitCellTransforms() throws StructureException {
+	public Set<Matrix4d> getUnitCellTransforms() {
 		Set<Matrix4d> transforms = new HashSet<>();
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
 			Matrix4d m = getUnitCellTransformationOrthonormal(cv.getChain().getName(), cv.getOpId());

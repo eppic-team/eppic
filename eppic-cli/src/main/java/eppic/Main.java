@@ -692,7 +692,7 @@ public class Main {
 			pw.println(json);
 			pw.close();
 			
-		} catch( IOException|StructureException|InterruptedException e) {
+		} catch( IOException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
 		}
 	}
