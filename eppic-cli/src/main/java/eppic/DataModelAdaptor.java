@@ -60,9 +60,18 @@ public class DataModelAdaptor {
 	/**
 	 * The method name for PDB biounit annotations, suffixed with the biounit number, e.g. pdb1, pdb2, ...
 	 */
-	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pdb";	
-	
-	public static final int INVALID_ASSEMBLY_ID = 0;
+	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pdb";
+
+	/**
+	 * The assembly id for non-topologically valid assemblies. The value was 0 before v 3.1.0
+	 */
+	public static final int INVALID_ASSEMBLY_ID = -1;
+
+	/**
+	 * The assembly id for the unit cell assembly.
+	 * @since 3.1.0
+	 */
+	public static final int UNITCELL_ASSEMBLY_ID = 0;
 	
 	private PdbInfoDB pdbInfo;
 
@@ -493,76 +502,126 @@ public class DataModelAdaptor {
 		LatticeGraph3D latticeGraph = new LatticeGraph3D(validAssemblies.getLatticeGraph());
 		
 		for (Assembly validAssembly:validAssemblies) {
-			AssemblyDB assembly = new AssemblyDB();
-			
-			assembly.setId(validAssembly.getId());
-			
-			// all assemblies that we pass are topologically valid, only externally calculated assemblies can be invalid (PDB, PISA)
-			// and would need to be added explicitly when adding external assembly predictions
-			assembly.setTopologicallyValid(true);
-			
-			// relations
-			assembly.setPdbInfo(pdbInfo);
-			pdbInfo.addAssembly(assembly);
-			
-			Set<InterfaceClusterDB> interfaceClusters = new HashSet<InterfaceClusterDB>();
-			for (int id: GraphUtils.getDistinctInterfaceClusters(validAssembly.getAssemblyGraph().getSubgraph())) {
-				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(id);
-				interfaceClusters.add(icDB);
-				icDB.addAssembly(assembly);
-			}
-			assembly.setInterfaceClusters(interfaceClusters);
-						
-			// other data
-			assembly.setPdbCode(pdbInfo.getPdbCode());			
-			
-			assembly.setInterfaceClusterIds(validAssembly.toString());
-			
-			List<AssemblyDescription> description = validAssembly.getDescription();
-			List<AssemblyContentDB> acDBs = new ArrayList<AssemblyContentDB>();
-			for (AssemblyDescription d:description) {
-				AssemblyContentDB acDB = new AssemblyContentDB();
-				acDB.setPdbCode(pdbInfo.getPdbCode());
-				acDB.setAssembly(assembly);
-				acDB.setMmSize(d.getSize());
-				acDB.setSymmetry(d.getSymmetry());
-				acDB.setStoichiometry(d.getStoichiometry());
-				acDB.setComposition(d.getCompositionChainIds());
-				acDB.setCompositionRepChainIds(d.getCompositionRepChainIds());
-				acDB.setChainIds(d.getChainIds()); 
-				acDBs.add(acDB);
-			}
-			assembly.setAssemblyContents(acDBs);			
-						
-			AssemblyScoreDB as = new AssemblyScoreDB();
-			as.setMethod(ScoringMethod.EPPIC_FINAL);
-			if (validAssembly.getCall()==null) 
-				LOGGER.warn("Call is null for assembly {}", validAssembly.getId());
-			else 
-				as.setCallName(validAssembly.getCall().getName());
-			as.setCallReason(validAssembly.getCallReason());
-			as.setScore(validAssembly.getScore());
-			as.setConfidence(validAssembly.getConfidence());
-			as.setPdbCode(pdbInfo.getPdbCode());
-			as.setAssembly(assembly);
-			assembly.addAssemblyScore(as);
-			
-			// set graph
-			setGraph(validAssembly, assembly, latticeGraph);
-
-			// TODO set graph for unitcell assembly
-
+			setAssembly(validAssembly, latticeGraph);
 		}
+
+		setUnitCellAssembly(latticeGraph);
+
+		// note that in setPdbBioUnits() extra assemblies are added from PDB annotated ones whenever they don't match any of ours
 	}
 
-	private void setGraph(Assembly assembly, AssemblyDB assemblyDB, LatticeGraph3D latticeGraph) {
+	private void setAssembly(Assembly validAssembly, LatticeGraph3D latticeGraph) {
+		AssemblyDB assembly = new AssemblyDB();
+
+		assembly.setId(validAssembly.getId());
+
+		// all assemblies that we pass are topologically valid, only externally calculated assemblies can be invalid (PDB, PISA)
+		// and would need to be added explicitly when adding external assembly predictions
+		assembly.setTopologicallyValid(true);
+
+		// relations
+		assembly.setPdbInfo(pdbInfo);
+		pdbInfo.addAssembly(assembly);
+
+		Set<InterfaceClusterDB> interfaceClusters = new HashSet<>();
+
+		SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(validAssembly.getAssemblyGraph().getSubgraph());
+		for (int id: clusterIds) {
+			InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(id);
+			interfaceClusters.add(icDB);
+			icDB.addAssembly(assembly);
+		}
+		assembly.setInterfaceClusters(interfaceClusters);
+
+		// other data
+		assembly.setPdbCode(pdbInfo.getPdbCode());
+
+		assembly.setInterfaceClusterIds(validAssembly.toString());
+
+		List<AssemblyDescription> description = validAssembly.getDescription();
+		List<AssemblyContentDB> acDBs = new ArrayList<AssemblyContentDB>();
+		for (AssemblyDescription d:description) {
+			AssemblyContentDB acDB = new AssemblyContentDB();
+			acDB.setPdbCode(pdbInfo.getPdbCode());
+			acDB.setAssembly(assembly);
+			acDB.setMmSize(d.getSize());
+			acDB.setSymmetry(d.getSymmetry());
+			acDB.setStoichiometry(d.getStoichiometry());
+			acDB.setComposition(d.getCompositionChainIds());
+			acDB.setCompositionRepChainIds(d.getCompositionRepChainIds());
+			acDB.setChainIds(d.getChainIds());
+			acDBs.add(acDB);
+		}
+		assembly.setAssemblyContents(acDBs);
+
+		AssemblyScoreDB as = new AssemblyScoreDB();
+		as.setMethod(ScoringMethod.EPPIC_FINAL);
+		if (validAssembly.getCall()==null)
+			LOGGER.warn("Call is null for assembly {}", validAssembly.getId());
+		else
+			as.setCallName(validAssembly.getCall().getName());
+		as.setCallReason(validAssembly.getCallReason());
+		as.setScore(validAssembly.getScore());
+		as.setConfidence(validAssembly.getConfidence());
+		as.setPdbCode(pdbInfo.getPdbCode());
+		as.setAssembly(assembly);
+		assembly.addAssemblyScore(as);
+
+		// set graph
+		setGraph(clusterIds, assembly, latticeGraph, true);
+
+	}
+
+	/**
+	 * Set the extra artificial assembly containing the full unit cell graph. Needed in applications where full graph
+	 * is required, e.g. show full lattice graph of the unit cell.
+	 * @param latticeGraph the lattice graph
+	 */
+	private void setUnitCellAssembly(LatticeGraph3D latticeGraph) {
+		// and finally setting an extra assembly with full unit cell
+		AssemblyDB unitcellAssembly = new AssemblyDB();
+		unitcellAssembly.setId(UNITCELL_ASSEMBLY_ID);
+		// the unit cell assembly can be topologically valid in some cases, nevertheless is better to abuse this field
+		// and set to false so that as to flag it as a special assembly
+		unitcellAssembly.setTopologicallyValid(false);
+
+		// relations
+		unitcellAssembly.setPdbInfo(pdbInfo);
+		pdbInfo.addAssembly(unitcellAssembly);
+
+		Set<InterfaceClusterDB> interfaceClusters = new HashSet<>();
+
+		// this exposes the full graph via getGraph
+		latticeGraph.filterEngagedClusters(null);
+
+		SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(latticeGraph.getGraph());
+		for (int id: clusterIds) {
+			InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(id);
+			interfaceClusters.add(icDB);
+			icDB.addAssembly(unitcellAssembly);
+		}
+		unitcellAssembly.setInterfaceClusters(interfaceClusters);
+
+		unitcellAssembly.setPdbCode(pdbInfo.getPdbCode());
+
+		// no description, content or scores for this case
+
+		setGraph(null, unitcellAssembly, latticeGraph, false);
+	}
+
+	/**
+	 * Sets the graph data associated to one assembly in the model
+	 * @param clusterIds the interface cluster ids, if null then full graph is considered
+	 * @param assemblyDB the assembly model bean
+	 * @param latticeGraph the lattice graph
+	 * @param add2dLayout whether to add 2D layout data or not
+	 */
+	private void setGraph(SortedSet<Integer> clusterIds, AssemblyDB assemblyDB, LatticeGraph3D latticeGraph, boolean add2dLayout) {
 
 		List<GraphNodeDB> nodes = new ArrayList<>();
 		List<GraphEdgeDB> edges = new ArrayList<>();
 		assemblyDB.setGraphNodes(nodes);
 		assemblyDB.setGraphEdges(edges);
-
-		SortedSet<Integer> clusterIds = GraphUtils.getDistinctInterfaceClusters(assembly.getAssemblyGraph().getSubgraph());
 
 		latticeGraph.filterEngagedClusters(clusterIds);
 		latticeGraph.setHexColors();
@@ -571,8 +630,10 @@ public class DataModelAdaptor {
 		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 
 		// the 2d layed-out graph
-		UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2D =
-				LayoutUtils.getGraph2D(latticeGraph.getGraph(), LayoutUtils.getDefaultLayout2D(latticeGraph.getCrystalCell()));
+		UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2D = null;
+		if (add2dLayout) {
+			graph2D = LayoutUtils.getGraph2D(latticeGraph.getGraph(), LayoutUtils.getDefaultLayout2D(latticeGraph.getCrystalCell()));
+		}
 
 		// vertices
 		for (ChainVertex3D v : graph.vertexSet()) {
@@ -580,19 +641,22 @@ public class DataModelAdaptor {
 			nodeDB.setColor(v.getColorStr());
 			nodeDB.setLabel(v.getChainId()+"_"+v.getOpId());
 
-			// fill the 2D layout positions
-
-			// first we get corresponding 2d vertex (by matching chain id and op id)
-			ChainVertex3D v2d = getCorrespondingVertex(graph2D, v);
-			if (v2d == null) {
-				// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever
-				// a vertex is not part of the subgraph that is displayed in 2D
-				// TODO does this work for disjoint cases?
-				nodeDB.setInGraph2d(false);
+			if (add2dLayout) {
+				// fill the 2D layout positions
+				// first we get corresponding 2d vertex (by matching chain id and op id)
+				ChainVertex3D v2d = getCorrespondingVertex(graph2D, v);
+				if (v2d == null) {
+					// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever
+					// a vertex is not part of the subgraph that is displayed in 2D
+					// TODO does this work for disjoint cases?
+					nodeDB.setInGraph2d(false);
+				} else {
+					nodeDB.setPos2dX(v2d.getCenter().x);
+					nodeDB.setPos2dY(v2d.getCenter().y);
+					nodeDB.setInGraph2d(true);
+				}
 			} else {
-				nodeDB.setPos2dX(v2d.getCenter().x);
-				nodeDB.setPos2dY(v2d.getCenter().y);
-				nodeDB.setInGraph2d(true);
+				nodeDB.setInGraph2d(false);
 			}
 
 			// fill the 3D positions
@@ -615,13 +679,17 @@ public class DataModelAdaptor {
 			edgeDB.setNode1Label(v1.getChainId()+"_"+v1.getOpId());
 			edgeDB.setNode2Label(v2.getChainId()+"_"+v2.getOpId());
 
-			if (getCorrespondingEdge(graph2D, e, v1, v2) == null) {
-				// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever
-				// an edge is not part of the subgraph that is displayed in 2D
-				// TODO does this work for disjoint cases?
-				edgeDB.setInGraph2d(false);
+			if (add2dLayout) {
+				if (getCorrespondingEdge(graph2D, e, v1, v2) == null) {
+					// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever
+					// an edge is not part of the subgraph that is displayed in 2D
+					// TODO does this work for disjoint cases?
+					edgeDB.setInGraph2d(false);
+				} else {
+					edgeDB.setInGraph2d(true);
+				}
 			} else {
-				edgeDB.setInGraph2d(true);
+				edgeDB.setInGraph2d(false);
 			}
 
 			edgeDB.setXtalTransA(e.getXtalTrans().x);
@@ -658,7 +726,7 @@ public class DataModelAdaptor {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Populate the data model with all the PDB biounit annotations.
 	 * @param bioAssemblies
@@ -762,6 +830,8 @@ public class DataModelAdaptor {
 			assembly.setId(INVALID_ASSEMBLY_ID);
 			
 			assembly.setTopologicallyValid(false);
+
+			assembly.setUnitCellAssembly(false);
 			
 			// relations
 			assembly.setPdbInfo(pdbInfo);
