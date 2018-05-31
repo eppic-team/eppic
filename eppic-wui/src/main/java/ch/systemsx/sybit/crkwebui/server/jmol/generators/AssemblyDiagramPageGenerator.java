@@ -27,6 +27,7 @@ import eppic.assembly.ChainVertex3D;
 import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.assembly.layout.GraphLayout;
+import eppic.assembly.layout.LayoutUtils;
 
 /**
  * Helper class to generate the LatticeGraph HTML
@@ -66,7 +67,7 @@ public class AssemblyDiagramPageGenerator {
 
 			LatticeGUIMustache gui = LatticeGUIMustache.createLatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, auStruct, requestedIfaces);
 
-			GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LatticeGUIMustache.getDefaultLayout2D(LatticeGraph.getCrystalCell(auStruct));
+			GraphLayout<ChainVertex3D, InterfaceEdge3D> layout2D = LayoutUtils.getDefaultLayout2D(LatticeGraph.getCrystalCell(auStruct));
 			gui.setLayout2D( layout2D );
 
 

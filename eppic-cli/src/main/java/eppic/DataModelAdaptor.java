@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 
 import eppic.assembly.*;
 import eppic.assembly.gui.InterfaceEdge3DSourced;
-import eppic.assembly.gui.LatticeGUIMustache;
+import eppic.assembly.layout.LayoutUtils;
 import eppic.model.db.*;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.asa.GroupAsa;
@@ -571,10 +571,8 @@ public class DataModelAdaptor {
 		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 
 		// the 2d layed-out graph
-		// TODO get rid of template param, perhaps simply implement another constructor
-		LatticeGUIMustache latticeGUIMustache = new LatticeGUIMustache(null, latticeGraph);
-		latticeGUIMustache.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(latticeGraph.getCrystalCell()));
-		UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2D = latticeGUIMustache.getGraph2D();
+		UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> graph2D =
+				LayoutUtils.getGraph2D(latticeGraph.getGraph(), LayoutUtils.getDefaultLayout2D(latticeGraph.getCrystalCell()));
 
 		// vertices
 		for (ChainVertex3D v : graph.vertexSet()) {
@@ -649,6 +647,7 @@ public class DataModelAdaptor {
 		for (InterfaceEdge3DSourced<ChainVertex3D> e2d : graph2d.edgeSet()){
 			ChainVertex3D v2dSrc = graph2d.getEdgeSource(e2d);
 			ChainVertex3D v2dTar = graph2d.getEdgeTarget(e2d);
+			// TODO assuming source and target must be same in graph3d and graph2d, needs checking if always true
 			if (e2d.getClusterId() == e.getClusterId() &&
 					v2dSrc.getChainId().equals(s.getChainId()) &&
 					v2dSrc.getOpId() == s.getOpId() &&
