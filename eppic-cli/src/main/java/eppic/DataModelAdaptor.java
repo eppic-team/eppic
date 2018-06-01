@@ -515,6 +515,8 @@ public class DataModelAdaptor {
 
 		assembly.setId(validAssembly.getId());
 
+		assembly.setUnitCellAssembly(false);
+
 		// all assemblies that we pass are topologically valid, only externally calculated assemblies can be invalid (PDB, PISA)
 		// and would need to be added explicitly when adding external assembly predictions
 		assembly.setTopologicallyValid(true);
@@ -581,6 +583,7 @@ public class DataModelAdaptor {
 		// and finally setting an extra assembly with full unit cell
 		AssemblyDB unitcellAssembly = new AssemblyDB();
 		unitcellAssembly.setId(UNITCELL_ASSEMBLY_ID);
+		unitcellAssembly.setUnitCellAssembly(true);
 		// the unit cell assembly can be topologically valid in some cases, nevertheless is better to abuse this field
 		// and set to false so that as to flag it as a special assembly
 		unitcellAssembly.setTopologicallyValid(false);
