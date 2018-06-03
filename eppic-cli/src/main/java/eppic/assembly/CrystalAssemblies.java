@@ -75,9 +75,8 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * 
 	 * @param structure
 	 * @param interfaces
-	 * @throws StructureException
 	 */
-	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) throws StructureException {
+	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces) {
 		init(structure, interfaces, false);
 	}
 	
@@ -86,13 +85,12 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @param structure
 	 * @param interfaces
 	 * @param forceContracted
-	 * @throws StructureException
 	 */
-	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) throws StructureException {
+	public CrystalAssemblies(Structure structure, StructureInterfaceList interfaces, boolean forceContracted){
 		init(structure, interfaces, forceContracted);
 	}
 	
-	private void init(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) throws StructureException {
+	private void init(Structure structure, StructureInterfaceList interfaces, boolean forceContracted) {
 		this.largeNumAssemblies = false;
 		
 		// for most cases we'll do the exhaustive enumeration, below we set to false when not

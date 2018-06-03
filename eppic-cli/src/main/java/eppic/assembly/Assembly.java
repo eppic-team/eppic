@@ -36,7 +36,6 @@ import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.cluster.Subunit;
 import org.biojava.nbio.structure.cluster.SubunitClusterer;
@@ -338,9 +337,8 @@ public class Assembly {
 	 * the output will not be read correctly by other software since it will contain
 	 * duplicate chain identifiers.
 	 * @return
-	 * @throws StructureException 
 	 */
-	public List<ChainVertex> getStructure() throws StructureException {
+	public List<ChainVertex> getStructure() {
 		// Place chains within unit cell
 		List<ChainVertex> chains = new ArrayList<ChainVertex>();
 
@@ -364,9 +362,8 @@ public class Assembly {
 	 * to avoid this.
 	 * @return For each connected component in the assembly, give a list of
 	 *  vertices with transformed chains.
-	 * @throws StructureException
 	 */
-	public List<List<ChainVertex>> getStructureCentered() throws StructureException {
+	public List<List<ChainVertex>> getStructureCentered() {
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
 		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
@@ -396,9 +393,8 @@ public class Assembly {
 	 * complexes to avoid overlaps
 	 * @return A list of all vertices, with their Chain objects transformed to
 	 *  the correct 3D positions
-	 * @throws StructureException
 	 */
-	public List<ChainVertex> getStructurePacked() throws StructureException {
+	public List<ChainVertex> getStructurePacked() {
 
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
@@ -630,12 +626,10 @@ public class Assembly {
 	 * @param cell Unit cell
 	 * @param chains (Optional) Output list to insert transformed chains into
 	 * @return chains with appended elements, or a new list of transformed Chain objects if chains was null
-	 * @throws StructureException
 	 */
 	private static List<ChainVertex> transformChains(Map<ChainVertex, Point3i> placements,
 			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
 			CrystalCell cell, List<ChainVertex> chains)
-			throws StructureException
 	{
 		if( chains == null) {
 			chains = new ArrayList<ChainVertex>();
@@ -665,7 +659,6 @@ public class Assembly {
 	private static void transformChainsInPlace(Map<ChainVertex, Point3i> placements,
 			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
 			CrystalCell cell)
-					throws StructureException
 	{
 		for(Entry<ChainVertex, Point3i> entry : placements.entrySet()) {
 			ChainVertex v = entry.getKey();
@@ -848,10 +841,9 @@ public class Assembly {
 	/**
 	 * Writes this Assembly to PDB file (gzipped) with a model per chain.
 	 * @param file
-	 * @throws StructureException
 	 * @throws IOException
 	 */
-	public void writeToPdbFile(File file) throws StructureException, IOException {
+	public void writeToPdbFile(File file) throws IOException {
 		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
 		int modelId = 1;
 		for (ChainVertex cv:getStructurePacked()) {
@@ -875,9 +867,8 @@ public class Assembly {
 	 * Note that PyMOL supports multi-letter chain ids only from 1.7.4
 	 * @param file
 	 * @throws IOException
-	 * @throws StructureException
 	 */
-	public void writeToMmCifFile(File file) throws IOException, StructureException {
+	public void writeToMmCifFile(File file) throws IOException {
 
 		// Some molecular viewers like 3Dmol.js need globally unique atom identifiers (across chains)
 		// With the approach below we add an offset to atom ids of sym-related molecules to avoid repeating atom ids
