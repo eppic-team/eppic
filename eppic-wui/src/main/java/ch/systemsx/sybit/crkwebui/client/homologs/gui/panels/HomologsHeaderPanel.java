@@ -6,8 +6,8 @@ package ch.systemsx.sybit.crkwebui.client.homologs.gui.panels;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.ImageLinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;

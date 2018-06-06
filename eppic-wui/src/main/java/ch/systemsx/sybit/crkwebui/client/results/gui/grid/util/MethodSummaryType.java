@@ -7,7 +7,7 @@ import ch.systemsx.sybit.crkwebui.client.results.data.InterfaceItemModel;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.widget.core.client.grid.SummaryType;
 
-import eppic.model.ScoringMethod;
+import eppic.model.db.ScoringMethod;
 
 /**
  * Gets the final cluster call value (summary) for a method

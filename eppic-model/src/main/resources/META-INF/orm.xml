@@ -6,7 +6,7 @@
 	<description>EPPIC JPA entities</description>
 	<package>EPPIC entities</package>
 
-	<entity class="eppic.model.UserSessionDB" name="UserSession">
+	<entity class="eppic.model.db.UserSessionDB" name="UserSession">
 		<table name="UserSession" />
 		<attributes>
 			<id name="uid">
@@ -30,7 +30,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.JobDB" name="Job">
+	<entity class="eppic.model.db.JobDB" name="Job">
 		<table name="Job">
 			<!-- Whenever a job is invoked, the table has to be searched for jobIds, this index is very important! -->
 			<index name="jobId_idx" column-list="jobId" unique="true"></index>
@@ -70,7 +70,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.PdbInfoDB" name="PdbInfo">
+	<entity class="eppic.model.db.PdbInfoDB" name="PdbInfo">
 		<table name="PdbInfo" />
 		<attributes>
 			<id name="uid">
@@ -146,7 +146,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.AssemblyDB" name="Assembly">
+	<entity class="eppic.model.db.AssemblyDB" name="Assembly">
 		<table name="Assembly" />
 		<attributes>
 			<id name="uid">
@@ -193,7 +193,7 @@
 		</attributes>
 	</entity>
 	
-	<entity class="eppic.model.AssemblyContentDB" name="AssemblyContent">
+	<entity class="eppic.model.db.AssemblyContentDB" name="AssemblyContent">
 		<table name="AssemblyContent" />
 		<attributes>
 			<id name="uid">
@@ -229,7 +229,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.AssemblyScoreDB" name="AssemblyScore">
+	<entity class="eppic.model.db.AssemblyScoreDB" name="AssemblyScore">
 		<table name="AssemblyScore" />
 		<attributes>
 			<id name="uid">
@@ -256,7 +256,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.InterfaceClusterDB" name="InterfaceCluster">
+	<entity class="eppic.model.db.InterfaceClusterDB" name="InterfaceCluster">
 		<table name="InterfaceCluster" />
 		<attributes>
 			<id name="uid">
@@ -302,11 +302,11 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.InterfaceClusterScoreDB" name="InterfaceClusterScore">
+	<entity class="eppic.model.db.InterfaceClusterScoreDB" name="InterfaceClusterScore">
 		<table name="InterfaceClusterScore" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ClusterScoreListener">
+				class="eppic.model.adapters.ClusterScoreListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -342,11 +342,11 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.InterfaceDB" name="Interface">
+	<entity class="eppic.model.db.InterfaceDB" name="Interface">
 		<table name="Interface" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.InterfaceListener">
+				class="eppic.model.adapters.InterfaceListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -420,11 +420,11 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.ResidueBurialDB" name="ResidueBurial">
+	<entity class="eppic.model.db.ResidueBurialDB" name="ResidueBurial">
 		<table name="ResidueBurial" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ResidueBurialListener">
+				class="eppic.model.adapters.ResidueBurialListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -452,11 +452,11 @@
 		</attributes>
 	</entity>
 	
-	<entity class="eppic.model.ResidueInfoDB" name="ResidueInfo">
+	<entity class="eppic.model.db.ResidueInfoDB" name="ResidueInfo">
 		<table name="ResidueInfo"/>
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ResidueInfoListener">
+				class="eppic.model.adapters.ResidueInfoListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -499,11 +499,11 @@
 		</attributes>
 	</entity>
 	
-	<entity class="eppic.model.ContactDB" name="Contact">
+	<entity class="eppic.model.db.ContactDB" name="Contact">
 		<table name="Contact" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ContactListener">
+				class="eppic.model.adapters.ContactListener">
 			</entity-listener>
 		</entity-listeners>			
 		<attributes>
@@ -537,11 +537,11 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.InterfaceScoreDB" name="InterfaceScore">
+	<entity class="eppic.model.db.InterfaceScoreDB" name="InterfaceScore">
 		<table name="InterfaceScore" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.InterfaceScoreListener">
+				class="eppic.model.adapters.InterfaceScoreListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -577,7 +577,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.InterfaceWarningDB" name="InterfaceWarning">
+	<entity class="eppic.model.db.InterfaceWarningDB" name="InterfaceWarning">
 		<table name="InterfaceWarning" />
 		<attributes>
 			<id name="uid">
@@ -592,7 +592,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.RunParametersDB" name="RunParameters">
+	<entity class="eppic.model.db.RunParametersDB" name="RunParameters">
 		<table name="RunParameters" />
 		<attributes>
 			<id name="uid">
@@ -628,11 +628,11 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.ChainClusterDB" name="ChainCluster">
+	<entity class="eppic.model.db.ChainClusterDB" name="ChainCluster">
 		<table name="ChainCluster" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.ChainClusterListener">
+				class="eppic.model.adapters.ChainClusterListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -706,7 +706,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.SeqClusterDB" name="SeqCluster">
+	<entity class="eppic.model.db.SeqClusterDB" name="SeqCluster">
 		<table name="SeqCluster" />
 		<attributes>
 			<id name="uid">
@@ -750,11 +750,11 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.HomologDB" name="Homolog">
+	<entity class="eppic.model.db.HomologDB" name="Homolog">
 		<table name="Homolog" />
 		<entity-listeners>
 			<entity-listener
-				class="ch.systemsx.sybit.server.db.entitylisteners.HomologListener">
+				class="eppic.model.adapters.HomologListener">
 			</entity-listener>
 		</entity-listeners>
 		<attributes>
@@ -788,7 +788,7 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.UniProtRefWarningDB" name="UniProtRefWarning">
+	<entity class="eppic.model.db.UniProtRefWarningDB" name="UniProtRefWarning">
 		<table name="UniProtRefWarning" />
 		<attributes>
 			<id name="uid">

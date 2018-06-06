@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.residues.gui.grid.utils;
 
 import java.util.Comparator;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import eppic.model.dto.Residue;
 
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;

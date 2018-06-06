@@ -13,11 +13,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.AssemblyContent;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import eppic.model.ResidueBurialDB;
+import eppic.model.dto.Assembly;
+import eppic.model.dto.AssemblyContent;
+import eppic.model.dto.Interface;
+import eppic.model.dto.Residue;
+import eppic.model.db.ResidueBurialDB;
 
 public class TestJmolPageGenerator {
 	private static final Logger logger = LoggerFactory.getLogger(TestJmolPageGenerator.class);

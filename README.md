@@ -16,8 +16,9 @@ The software is released under the GNU General Public License (GPL).
 The software is divided into submodules: 
 * **[eppic-cli](eppic-cli/README.md):** the command line interface
 * **[eppic-wui](eppic-wui/README.md):** the web graphical user interface, a front-end to the command line tool. You can see it working live at http://www.eppic-web.org
-* **eppic-model:** Hybernate model for communicating with the database
-* **eppic-dbtools:** Tools for managing the database
+* **eppic-model:** Data model, used by all other modules.
+* **eppic-dbtools:** The DAO layer (with a JPA implementation). Also includes some tools for managing the database.
+* **eppic-rest:** The REST API, new since 3.1.0.
 
 Please note that the project was previously in two separate repositories (eppic-cli and eppic-wui) and has now been unified into a single repository here.
 

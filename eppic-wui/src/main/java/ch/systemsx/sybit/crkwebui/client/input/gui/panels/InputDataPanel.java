@@ -23,7 +23,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
 import ch.systemsx.sybit.crkwebui.client.input.listeners.SubmitKeyListener;
 import ch.systemsx.sybit.crkwebui.client.input.validators.EmailFieldValidator;
 import ch.systemsx.sybit.crkwebui.shared.comparators.InputParametersComparator;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import eppic.model.dto.RunJobData;
 import ch.systemsx.sybit.crkwebui.shared.validators.PdbCodeVerifier;
 
 import com.google.gwt.core.client.GWT;

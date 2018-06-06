@@ -29,23 +29,6 @@ import ch.systemsx.sybit.crkwebui.server.commons.util.log.LogHandler;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.PreSubmitValidator;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.RunJobDataValidator;
 import ch.systemsx.sybit.crkwebui.server.commons.validators.SessionValidator;
-import ch.systemsx.sybit.crkwebui.server.db.dao.AssemblyDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.ChainClusterDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceClusterDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.ResidueDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.UserSessionDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.AssemblyDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ChainClusterDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceClusterDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.ResidueDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.UserSessionDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.data.InputWithType;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailMessageData;
 import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
@@ -56,31 +39,49 @@ import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobStatusUpdater;
 import ch.systemsx.sybit.crkwebui.server.runners.CrkRunner;
 import ch.systemsx.sybit.crkwebui.server.settings.generators.ApplicationSettingsGenerator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.CrkWebException;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
-import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
-import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingInProgressData;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
-import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
-import ch.systemsx.sybit.crkwebui.shared.model.StepStatus;
-import ch.systemsx.sybit.shared.model.InputType;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
+import eppic.model.dto.ApplicationSettings;
+import eppic.model.dto.Assembly;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.InputWithType;
+import eppic.model.dto.Interface;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.JobsForSession;
+import eppic.model.dto.PDBSearchResult;
+import eppic.model.dto.PdbInfo;
+import eppic.model.dto.ProcessingData;
+import eppic.model.dto.ProcessingInProgressData;
+import eppic.model.dto.Residue;
+import eppic.model.dto.ResiduesList;
+import eppic.model.dto.RunJobData;
+import eppic.model.dto.SequenceClusterType;
+import eppic.model.dto.StepStatus;
+import eppic.model.shared.InputType;
+import eppic.model.shared.StatusOfJob;
 
 import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 
 import eppic.EppicParams;
-import eppic.commons.util.DbConfigGenerator;
+import eppic.db.EntityManagerHandler;
+import eppic.db.dao.AssemblyDAO;
+import eppic.db.dao.ChainClusterDAO;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.InterfaceClusterDAO;
+import eppic.db.dao.InterfaceDAO;
+import eppic.db.dao.JobDAO;
+import eppic.db.dao.PDBInfoDAO;
+import eppic.db.dao.ResidueDAO;
+import eppic.db.dao.UserSessionDAO;
+import eppic.db.dao.jpa.AssemblyDAOJpa;
+import eppic.db.dao.jpa.ChainClusterDAOJpa;
+import eppic.db.dao.jpa.InterfaceClusterDAOJpa;
+import eppic.db.dao.jpa.InterfaceDAOJpa;
+import eppic.db.dao.jpa.JobDAOJpa;
+import eppic.db.dao.jpa.PDBInfoDAOJpa;
+import eppic.db.dao.jpa.ResidueDAOJpa;
+import eppic.db.dao.jpa.UserSessionDAOJpa;
+import eppic.db.jpautils.DbConfigGenerator;
 
 /**
  * The server side implementation of the RPC service.
@@ -134,21 +135,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	// the file with the eppicjpa settings for database access through hibernate
 	public static final String DB_PROPERTIES_FILE = CONFIG_FILES_LOCATION + "/eppic-db.properties";
-	
-	
-	// the file where the progress log of the eppic CLI program is written to (using -L option), used to be called 'crklog'
-	public static final String PROGRESS_LOG_FILE_NAME 	= "eppic_wui_progress.log";
-	// the file to signal that a job is running, used to be called 'crkrun'
-	public static final String RUN_FILE_NAME 			= "eppic_run";
-
-	// the file to signal a killed job
-	public static final String KILLED_FILE_NAME 		= "killed";
-
-	// the file that the eppic CLI writes upon successful completion, used to signal that the queuing job finished successfully
-	public static final String FINISHED_FILE_NAME 		= EppicParams.FINISHED_FILE_NAME;
-
-	// the suffix of the filename used for writing the steps for the progress animation
-	public static final String STEPS_FILE_NAME_SUFFIX 	= ".steps.log";
 
 	/**
 	 * The settings to be passed to EntityManagerHandler to initialise the JPA connection
@@ -166,11 +152,25 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				dbSettings = DbConfigGenerator.createDatabaseProperties(dbPropertiesFile);
 			}
 		} catch (IOException e) {
-			logger.error("Could not read all needed properties from db config file {}. Error: {}", 
+			logger.error("Could not read all needed properties from db config file {}. Error: {}",
 					DB_PROPERTIES_FILE, e.getMessage());
 
 		}
 	}
+
+	// the file where the progress log of the eppic CLI program is written to (using -L option), used to be called 'crklog'
+	public static final String PROGRESS_LOG_FILE_NAME 	= "eppic_wui_progress.log";
+	// the file to signal that a job is running, used to be called 'crkrun'
+	public static final String RUN_FILE_NAME 			= "eppic_run";
+
+	// the file to signal a killed job
+	public static final String KILLED_FILE_NAME 		= "killed";
+
+	// the file that the eppic CLI writes upon successful completion, used to signal that the queuing job finished successfully
+	public static final String FINISHED_FILE_NAME 		= EppicParams.FINISHED_FILE_NAME;
+
+	// the suffix of the filename used for writing the steps for the progress animation
+	public static final String STEPS_FILE_NAME_SUFFIX 	= ".steps.log";
 
 	// general server settings
 	private Properties properties;
@@ -373,8 +373,9 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			throw new ServletException("Email titles and messages have not been specified");
 		}
 
-
-
+		logger.info("Initialising jpa/hibernate");
+		EntityManagerHandler.initFactory(dbSettings);
+		logger.info("Done initialising jpa/hibernate");
 
 		crkRunner = new CrkRunner(jobManager, 
 				crkApplicationLocation,
@@ -397,12 +398,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			logger.warn("{} is set to true in config file. No job status updater daemon will run.",ApplicationSettingsGenerator.DEVELOPMENT_MODE);
 		}
 
-		// checking that dbSettings are initialised
-		
-		if (dbSettings==null) {
-			throw new ServletException("Could not initialise the db properties.");
-		}
-		
 	}
 
 	private void initializeJobManager(String queuingSystem) throws ServletException {
@@ -719,15 +714,15 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 		
 		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
-		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid());
+		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
 		pdbInfo.setAssemblies(assemblies); 
 
 		InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOJpa();
-		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClustersWithoutInterfaces(pdbInfo.getUid());
+		List<InterfaceCluster> clusters = clusterDAO.getInterfaceClusters(pdbInfo.getUid(), true, false);
 
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
 		for(InterfaceCluster cluster: clusters){
-			List<Interface> interfaceItems = interfaceDAO.getInterfacesWithScores(cluster.getUid());
+			List<Interface> interfaceItems = interfaceDAO.getInterfacesForCluster(cluster.getUid(), true, false);
 			cluster.setInterfaces(interfaceItems);
 		}
 		pdbInfo.setInterfaceClusters(clusters);

@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.commons.validators;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
+import eppic.model.dto.InputParameters;
 
 /**
  * Run job data validator.

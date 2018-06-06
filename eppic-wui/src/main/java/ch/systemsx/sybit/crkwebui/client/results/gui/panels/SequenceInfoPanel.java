@@ -26,9 +26,9 @@ import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowQueryWarningsHandl
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.util.EscapedStringGenerator;
 import ch.systemsx.sybit.crkwebui.client.commons.util.StyleGenerator;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.crkwebui.shared.model.UniProtRefWarning;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.PdbInfo;
+import eppic.model.dto.UniProtRefWarning;
 
 
 

@@ -9,16 +9,16 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import eppic.db.InterfaceCluster;
-import eppic.db.GlobalInterfaceCluster;
-import eppic.db.LatticeComparisonGroup;
-import eppic.db.PdbInfo;
-import eppic.db.GlobalPdbInfoCluster;
-import eppic.db.PdbInfoList;
-import eppic.db.SeqClusterLevel;
-import eppic.model.ChainClusterDB;
-import eppic.model.InterfaceDB;
-import eppic.model.PdbInfoDB;
+import eppic.db.tools.helpers.GlobalInterfaceCluster;
+import eppic.db.tools.helpers.GlobalPdbInfoCluster;
+import eppic.db.tools.helpers.InterfaceCluster;
+import eppic.db.tools.helpers.LatticeComparisonGroup;
+import eppic.db.tools.helpers.PdbInfo;
+import eppic.db.tools.helpers.PdbInfoList;
+import eppic.db.tools.helpers.SeqClusterLevel;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 
 public class ClusterCrystalForms {

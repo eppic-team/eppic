@@ -1,9 +1,8 @@
 package eppic;
 
 //import org.junit.Ignore;
-import ch.systemsx.sybit.crkwebui.shared.model.AssemblyScore;
 import eppic.assembly.TestLatticeGraph;
-import eppic.model.*;
+import eppic.model.db.*;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;

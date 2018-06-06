@@ -4,11 +4,11 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
 import org.junit.Test;
 
-import eppic.model.AssemblyDB;
-import eppic.model.AssemblyScoreDB;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.PdbInfoDB;
-import eppic.model.ScoringMethod;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.AssemblyScoreDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.ScoringMethod;
 
 import static org.junit.Assert.*;
 

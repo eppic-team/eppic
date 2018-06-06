@@ -7,16 +7,16 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.server.db.dao.DataDownloadTrackingDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.IPAllowedDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.IPForbiddenDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.DataDownloadTrackingDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.IPAllowedDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.IPForbiddenDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.DataDownloadTrackingDAO;
+import eppic.db.dao.IPAllowedDAO;
+import eppic.db.dao.IPForbiddenDAO;
+import eppic.db.dao.JobDAO;
+import eppic.db.dao.jpa.DataDownloadTrackingDAOJpa;
+import eppic.db.dao.jpa.IPAllowedDAOJpa;
+import eppic.db.dao.jpa.IPForbiddenDAOJpa;
+import eppic.db.dao.jpa.JobDAOJpa;
 
 /**
  * This class is used to verify whether job can be submitted from specified IP. 

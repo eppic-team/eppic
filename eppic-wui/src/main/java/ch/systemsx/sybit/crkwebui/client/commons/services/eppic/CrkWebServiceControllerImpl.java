@@ -17,7 +17,7 @@ import ch.systemsx.sybit.crkwebui.client.commons.callbacks.UntieJobsFromSessionC
 import ch.systemsx.sybit.crkwebui.client.commons.events.BeforeJobDeletedEvent;
 import ch.systemsx.sybit.crkwebui.client.commons.managers.EventBusManager;
 import ch.systemsx.sybit.crkwebui.client.commons.services.xsrf.XsrfTokenServiceProvider;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import eppic.model.dto.RunJobData;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.History;

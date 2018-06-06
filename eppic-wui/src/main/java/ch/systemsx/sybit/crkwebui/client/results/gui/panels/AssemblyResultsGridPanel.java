@@ -35,10 +35,10 @@ import ch.systemsx.sybit.crkwebui.client.results.gui.cells.InterfacesLinkCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.cells.SubscriptTypeCell;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodSummaryType;
 import ch.systemsx.sybit.crkwebui.client.results.gui.grid.util.AssemblyMethodsSummaryRenderer;
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.AssemblyScore;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.model.dto.Assembly;
+import eppic.model.dto.AssemblyScore;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.NativeEvent;
@@ -74,7 +74,7 @@ import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
 import eppic.DataModelAdaptor;
 import eppic.EppicParams;
-import eppic.model.ScoringMethod;
+import eppic.model.db.ScoringMethod;
 
 public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 {

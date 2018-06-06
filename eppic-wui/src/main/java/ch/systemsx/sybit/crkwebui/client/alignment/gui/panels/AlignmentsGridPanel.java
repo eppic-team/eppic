@@ -7,9 +7,9 @@ import ch.systemsx.sybit.crkwebui.client.alignment.data.AlignmentDataModel;
 import ch.systemsx.sybit.crkwebui.client.alignment.data.AlignmentDataModelProperties;
 import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.AlignmentCell;
 import ch.systemsx.sybit.crkwebui.client.alignment.gui.cell.PairwiseAlignmentInfoCell;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentData;
-import ch.systemsx.sybit.crkwebui.shared.model.PairwiseAlignmentInfo;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.PairwiseAlignmentData;
+import eppic.model.dto.PairwiseAlignmentInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;

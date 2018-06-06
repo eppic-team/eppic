@@ -1,7 +1,7 @@
 package ch.systemsx.sybit.crkwebui.client.commons.gui.windows;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.shared.model.WindowData;
+import eppic.model.dto.WindowData;
 
 import com.sencha.gxt.widget.core.client.Dialog;
 

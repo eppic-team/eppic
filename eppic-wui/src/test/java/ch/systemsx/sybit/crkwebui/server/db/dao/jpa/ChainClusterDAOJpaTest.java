@@ -6,9 +6,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
-import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
-import ch.systemsx.sybit.crkwebui.shared.model.SequenceClusterType;
+import eppic.model.dto.PDBSearchResult;
+import eppic.model.dto.SequenceClusterType;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.jpa.ChainClusterDAOJpa;
 
 
 public class ChainClusterDAOJpaTest {

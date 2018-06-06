@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.results.data;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceWarning;
+import eppic.model.dto.InterfaceWarning;
 
 import com.google.gwt.editor.client.Editor.Path;
 import com.sencha.gxt.core.client.ValueProvider;

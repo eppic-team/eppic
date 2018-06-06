@@ -1,8 +1,8 @@
 package ch.systemsx.sybit.crkwebui.client.commons.events;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.ShowHomologsHandler;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.PdbInfo;
 
 import com.google.gwt.event.shared.GwtEvent;
 

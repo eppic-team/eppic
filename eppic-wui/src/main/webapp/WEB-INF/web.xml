@@ -14,7 +14,7 @@
   		<param-name>gwt.xsrf.session_cookie_name</param-name>
   		<param-value>JSESSIONID</param-value>
 	</context-param>
-	
+
 	<filter>
 		<filter-name>GzipFilter</filter-name>
 		<!-- The gzip filter for older versions of jetty-->
@@ -23,16 +23,16 @@
 
 		<!-- The gzip filter for jetty 8.1 and 9.2 -->
 		<filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class>
-		
+
 		<!-- The gzip filter for jetty 9.3 -->
-		<!-- <filter-class>org.eclipse.jetty.server.handler.gzip.GzipHandler</filter-class> -->	
-		 
+		<!-- <filter-class>org.eclipse.jetty.server.handler.gzip.GzipHandler</filter-class> -->
+
 		<init-param>
 			<param-name>mimeTypes</param-name>
-			<param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml,chemical/x-cif</param-value>
+			<param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml,chemical/x-cif,application/json,application/xml</param-value>
 		</init-param>
 	</filter>
-	
+
 	<filter>
 		<filter-name>CrawlerFilter</filter-name>
 		<filter-class>ch.systemsx.sybit.crkwebui.server.crawler.servlets.CrawlerFilter</filter-class>
@@ -73,7 +73,8 @@
 		<filter-name>cross-origin</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-	
+
+
 	<servlet>
 		<servlet-name>CrkService</servlet-name>
 		<servlet-class>ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl</servlet-class>

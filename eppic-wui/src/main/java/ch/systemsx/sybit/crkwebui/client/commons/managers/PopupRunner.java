@@ -10,8 +10,8 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadS
 import ch.systemsx.sybit.crkwebui.server.jmol.servlets.AssemblyDiagramServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
+import eppic.model.dto.Assembly;
+import eppic.model.dto.Interface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;

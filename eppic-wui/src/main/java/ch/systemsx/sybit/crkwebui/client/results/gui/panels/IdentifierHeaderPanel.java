@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.links.LinkWithTooltip;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadServlet;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.model.dto.PdbInfo;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HTML;

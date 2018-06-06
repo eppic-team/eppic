@@ -14,10 +14,10 @@ import org.junit.Test;
 import eppic.EppicParams;
 import eppic.Main;
 import eppic.Utils;
-import eppic.model.AssemblyContentDB;
-import eppic.model.AssemblyDB;
-import eppic.model.AssemblyScoreDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.AssemblyContentDB;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.AssemblyScoreDB;
+import eppic.model.db.PdbInfoDB;
 
 
 

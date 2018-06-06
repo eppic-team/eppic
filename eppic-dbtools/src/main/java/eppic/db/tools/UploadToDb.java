@@ -1,6 +1,6 @@
 package eppic.db.tools;
 
-import eppic.model.PdbInfoDB;
+import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;

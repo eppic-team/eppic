@@ -3,7 +3,7 @@ package eppic.assembly;
 import eppic.EppicParams;
 import eppic.Main;
 import eppic.Utils;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.PdbInfoDB;
 import org.junit.Test;
 
 import java.io.File;

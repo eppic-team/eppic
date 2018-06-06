@@ -9,9 +9,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-import eppic.model.AssemblyDB;
-import eppic.model.AssemblyScoreDB;
-import eppic.model.PdbInfoDB;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.AssemblyScoreDB;
+import eppic.model.db.PdbInfoDB;
 
 public class TestMultiPdbBiounits {
 

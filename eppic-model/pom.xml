@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.eppic-web</groupId>
 		<artifactId>eppic</artifactId>
-		<version>3.0.7-SNAPSHOT</version>
+		<version>3.1.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>eppic-model</artifactId>
@@ -25,26 +25,6 @@
 	</dependencies>
 
 	<build>
-		<!-- This solves the 'no source code is available' problem for gwt compilation.
-			 The issue came when we moved the share.model DTO classes (ch.systemsx.sybit.crkwebui.shared.model) 
-			 from eppic-wui to the eppic-model project. GWT wouldn't be able to compile with the mentioned error -->
- 
-		<resources>
-        	<resource>
-            <directory>src/main/java</directory>
-            <includes>
-                <include>**/*.java</include>
-            </includes>
-        	</resource>
-        	<resource>
-            <directory>src/main/resources</directory>
-            <includes>
-                <include>**/*.*xml</include>
-                <include>**/*.*properties</include>
-            </includes>
-        	</resource>
-    	</resources>
-
 	
 		<plugins>
 			<plugin>
@@ -95,23 +75,12 @@
 			</plugin>
 
 			<!-- the gwt plugin so that sources are understood by eppic-wui -->
-			<!-- This is apparently a better solution than the one above, -->
 			<!-- see http://mojo.codehaus.org/gwt-maven-plugin/user-guide/multiproject.html -->
 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>gwt-maven-plugin</artifactId>
 				<version>${gwt.version}</version>
-				
-				<!-- This solution from http://stackoverflow.com/questions/9549303/no-source-code-is-available-for-type-gwt-compilation-error 
-				     did not solve the problem of 'no source code available' for gwt compilation. Including the sources explicitly (see above) did solve it -->
-				<!-- 
-				<configuration>
-                    <compileSourcesArtifacts>
-                        <compileSourcesArtifact>org.eppic-web:eppic-model</compileSourcesArtifact>
-                    </compileSourcesArtifacts>
-                </configuration>
-                -->
                 
 				<executions>
 					<execution>

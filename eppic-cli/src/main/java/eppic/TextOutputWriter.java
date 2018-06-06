@@ -8,19 +8,19 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.model.AssemblyContentDB;
-import eppic.model.AssemblyDB;
-import eppic.model.ChainClusterDB;
-import eppic.model.ContactDB;
-import eppic.model.HomologDB;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceClusterScoreDB;
-import eppic.model.InterfaceDB;
-import eppic.model.InterfaceScoreDB;
-import eppic.model.PdbInfoDB;
-import eppic.model.ResidueBurialDB;
-import eppic.model.ResidueInfoDB;
-import eppic.model.ScoringMethod;
+import eppic.model.db.AssemblyContentDB;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.ContactDB;
+import eppic.model.db.HomologDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceClusterScoreDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.InterfaceScoreDB;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.ResidueBurialDB;
+import eppic.model.db.ResidueInfoDB;
+import eppic.model.db.ScoringMethod;
 
 public class TextOutputWriter {
 	

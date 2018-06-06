@@ -15,8 +15,8 @@ import javax.vecmath.Matrix4d;
 
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceDB;
 
 public class InterfaceMatcher {
 

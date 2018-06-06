@@ -4,7 +4,7 @@
 package ch.systemsx.sybit.crkwebui.client.homologs.gui.cells;
 
 import ch.systemsx.sybit.crkwebui.client.homologs.util.IdentityColorPicker;
-import ch.systemsx.sybit.crkwebui.shared.model.HomologIdentityData;
+import eppic.model.dto.HomologIdentityData;
 
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.sencha.gxt.cell.core.client.ResizeCell;

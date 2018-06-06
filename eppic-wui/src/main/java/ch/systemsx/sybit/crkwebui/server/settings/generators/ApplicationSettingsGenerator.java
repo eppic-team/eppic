@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ParsingException;
-import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
+import eppic.model.dto.ApplicationSettings;
 
 /**
  * Application settings generator.

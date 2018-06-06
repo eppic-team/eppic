@@ -12,9 +12,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.InputParameters;
-import ch.systemsx.sybit.crkwebui.shared.model.ScreenSettings;
+import eppic.model.dto.ApplicationSettings;
+import eppic.model.dto.InputParameters;
+import eppic.model.dto.ScreenSettings;
 
 /**
  * This class is used to parse input parameters file.

@@ -25,23 +25,23 @@ import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
-import ch.systemsx.sybit.crkwebui.server.db.dao.InterfaceDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.JobDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.PDBInfoDAO;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.InterfaceDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.JobDAOJpa;
-import ch.systemsx.sybit.crkwebui.server.db.dao.jpa.PDBInfoDAOJpa;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.LatticeGraphPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.LatticeGraphServletInputValidator;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.DaoException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.model.dto.Interface;
+import eppic.model.dto.PdbInfo;
 import eppic.assembly.gui.LatticeGUI;
 import eppic.commons.util.Interval;
 import eppic.commons.util.IntervalSet;
-import eppic.model.JobDB;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.InterfaceDAO;
+import eppic.db.dao.JobDAO;
+import eppic.db.dao.PDBInfoDAO;
+import eppic.db.dao.jpa.InterfaceDAOJpa;
+import eppic.db.dao.jpa.JobDAOJpa;
+import eppic.db.dao.jpa.PDBInfoDAOJpa;
+import eppic.model.db.JobDB;
 
 /**
  * Servlet used to display a LatticeGraph3Dmol page.
@@ -225,7 +225,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 	static List<Interface> getInterfaceList(PdbInfo pdbInfo) throws DaoException {
 		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-			return interfaceDAO.getAllInterfaces(pdbInfo.getUid());
+			return interfaceDAO.getInterfacesByPdbUid(pdbInfo.getUid(), false, false);
 	}
 	
 	/**

@@ -1,7 +1,7 @@
 package eppic.db.tools;
 
-import eppic.model.ChainClusterDB;
-import eppic.model.SeqClusterDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.SeqClusterDB;
 import gnu.getopt.Getopt;
 
 import javax.persistence.EntityManager;
@@ -207,15 +207,6 @@ public class ClusterSequences {
 			if (allChains.get(it.next()).getPdbAlignedSeq().replaceAll("-",	"").length()<=minLength) 
 				it.remove();;
 		}
-	}
-	
-	private static boolean checkIdsInList(List<List<String>> clustersList, Map<Integer, ChainClusterDB> allChains) {
-		for (int i=0;i<clustersList.size();i++) {
-			for (String member:clustersList.get(i)) {
-					if (!allChains.containsKey(Integer.parseInt(member))) return false;
-				}
-			}
-		return true;
 	}
 
 	/**

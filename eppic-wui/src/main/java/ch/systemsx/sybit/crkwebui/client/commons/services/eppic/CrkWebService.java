@@ -3,13 +3,13 @@ package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 import java.util.HashMap;
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
-import ch.systemsx.sybit.crkwebui.shared.model.ApplicationSettings;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import ch.systemsx.sybit.crkwebui.shared.model.ResiduesList;
-import ch.systemsx.sybit.crkwebui.shared.model.JobsForSession;
-import ch.systemsx.sybit.crkwebui.shared.model.ProcessingData;
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import eppic.model.dto.ApplicationSettings;
+import eppic.model.dto.Residue;
+import eppic.model.dto.ResiduesList;
+import eppic.model.dto.JobsForSession;
+import eppic.model.dto.PDBSearchResult;
+import eppic.model.dto.ProcessingData;
+import eppic.model.dto.RunJobData;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;

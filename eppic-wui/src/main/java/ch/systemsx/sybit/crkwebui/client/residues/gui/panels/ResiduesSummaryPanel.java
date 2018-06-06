@@ -4,9 +4,9 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
 import ch.systemsx.sybit.crkwebui.client.commons.gui.labels.LabelWithTooltip;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
+import eppic.model.dto.InterfaceScore;
+import eppic.model.dto.PdbInfo;
+import eppic.model.dto.Residue;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -16,8 +16,8 @@ import com.sencha.gxt.core.client.dom.XElement;
 import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.widget.core.client.container.CssFloatLayoutContainer;
 
-import eppic.model.ResidueBurialDB;
-import eppic.model.ScoringMethod;
+import eppic.model.db.ResidueBurialDB;
+import eppic.model.db.ScoringMethod;
 
 /**
  * Panel used to display the residues summary for one structure.

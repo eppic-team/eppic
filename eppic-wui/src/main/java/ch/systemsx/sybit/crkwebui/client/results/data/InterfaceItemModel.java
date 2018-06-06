@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.AppPropertiesManager;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceWarning;
+import eppic.model.dto.InterfaceWarning;
 
 /**
  * Data model for interfaces grid.

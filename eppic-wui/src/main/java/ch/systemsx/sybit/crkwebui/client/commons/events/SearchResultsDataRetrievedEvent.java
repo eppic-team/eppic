@@ -3,7 +3,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.events;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.handlers.SearchResultsDataRetrievedHandler;
-import ch.systemsx.sybit.crkwebui.shared.helpers.PDBSearchResult;
+import eppic.model.dto.PDBSearchResult;
 
 import com.google.gwt.event.shared.GwtEvent;
 

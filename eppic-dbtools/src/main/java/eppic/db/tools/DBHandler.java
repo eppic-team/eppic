@@ -1,6 +1,3 @@
-/**
- * 
- */
 package eppic.db.tools;
 
 import java.io.File;
@@ -30,28 +27,32 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.SingularAttribute;
 
-import ch.systemsx.sybit.shared.model.InputType;
-import ch.systemsx.sybit.shared.model.StatusOfJob;
-import eppic.commons.util.DbConfigGenerator;
-import eppic.model.ChainClusterDB;
-import eppic.model.ChainClusterDB_;
-import eppic.model.InterfaceClusterDB;
-import eppic.model.InterfaceClusterDB_;
-import eppic.model.InterfaceDB;
-import eppic.model.InterfaceDB_;
-import eppic.model.JobDB;
-import eppic.model.JobDB_;
-import eppic.model.PdbInfoDB;
-import eppic.model.PdbInfoDB_;
-import eppic.model.ResidueBurialDB;
-import eppic.model.ResidueBurialDB_;
-import eppic.model.ResidueInfoDB;
-import eppic.model.SeqClusterDB;
-import eppic.model.SeqClusterDB_;
+import eppic.model.shared.InputType;
+import eppic.model.shared.StatusOfJob;
+import eppic.db.jpautils.DbConfigGenerator;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.ChainClusterDB_;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceClusterDB_;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.InterfaceDB_;
+import eppic.model.db.JobDB;
+import eppic.model.db.JobDB_;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.PdbInfoDB_;
+import eppic.model.db.ResidueBurialDB;
+import eppic.model.db.ResidueBurialDB_;
+import eppic.model.db.ResidueInfoDB;
+import eppic.model.db.SeqClusterDB;
+import eppic.model.db.SeqClusterDB_;
 
 /**
  * Class to perform operations on the EPPIC database, such as adding by job,
  * removing a job or checking if a job is present in the database
+ *
+ * This is essentially a DAO layer. It duplicates what the {@link eppic.db.dao} package does.
+ * TODO unify at some point
+ *
  * @author biyani_n
  *
  */
@@ -69,7 +70,7 @@ public class DBHandler {
 	 * Constructor.
 	 * 
 	 * @param dbName the database name
-	 * @param userConfigFile a user supplied config file, if null the default location {@value #DEFAULT_CONFIG_FILE} will be used.
+	 * @param userConfigFile a user supplied config file, if null the default location {@link #DEFAULT_CONFIG_FILE} will be used.
 	 */
 	public DBHandler(String dbName, File userConfigFile) {
 		

@@ -1,45 +1,43 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.servlets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.PropertyException;
 
+import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import org.junit.Test;
 
-import ch.systemsx.sybit.crkwebui.shared.model.Assembly;
-import ch.systemsx.sybit.crkwebui.shared.model.AssemblyContent;
-import ch.systemsx.sybit.crkwebui.shared.model.AssemblyScore;
-import ch.systemsx.sybit.crkwebui.shared.model.ChainCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.Homolog;
-import ch.systemsx.sybit.crkwebui.shared.model.Interface;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceClusterScore;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceScore;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import ch.systemsx.sybit.crkwebui.shared.model.Residue;
-import ch.systemsx.sybit.crkwebui.shared.model.RunParameters;
+import eppic.model.dto.Assembly;
+import eppic.model.dto.AssemblyContent;
+import eppic.model.dto.AssemblyScore;
+import eppic.model.dto.ChainCluster;
+import eppic.model.dto.Homolog;
+import eppic.model.dto.Interface;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.InterfaceClusterScore;
+import eppic.model.dto.InterfaceScore;
+import eppic.model.dto.PdbInfo;
+import eppic.model.dto.Residue;
+import eppic.model.dto.RunParameters;
+import eppic.db.dao.DaoException;
 
 
 public class DataDownloadServletTest {
 
 	@Test
-	public void testSerializePdbInfoList() throws PropertyException, JAXBException {
+	public void testSerializePdbInfoList() throws JAXBException {
 		List<PdbInfo> pdbList = getPdbInfo();
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter p = new PrintWriter(stringWriter);
 
 		DataDownloadServlet d = new DataDownloadServlet();
 
-		d.serializePdbInfoList(pdbList, p);
+		d.serializePdbInfoList(pdbList, p, "xml");
 
 		String resultString = stringWriter.getBuffer().toString();
 		System.out.println(resultString);
@@ -48,6 +46,26 @@ public class DataDownloadServletTest {
 		assertTrue("Result should contain pdb title", resultString.contains("SMTB REPRESSOR FROM SYNECHOCOCCUS PCC7942"));
 		assertTrue("Result should contain the interface", resultString.contains("<operatorType>OP</operatorType>"));
 		assertTrue("Result should contain the interface cluster", resultString.contains("<interfaceCluster>"));
+
+		// and json test
+		stringWriter = new StringWriter();
+		p = new PrintWriter(stringWriter);
+
+		d = new DataDownloadServlet();
+
+		d.serializePdbInfoList(pdbList, p, "json");
+
+		resultString = stringWriter.getBuffer().toString();
+		System.out.println(resultString);
+		expectedFirstLine = "{ \"uid\" : 9999, \"jobId\" : \"1smt\", \"inputType\" : 0, \"inputName\" : \"1smt\", ";
+		assertEquals("Wrong content", expectedFirstLine,
+						resultString.substring(0,
+						resultString.lastIndexOf("\"pdbCode\" : \"1smt\"")).replaceAll("\n","").replaceAll("\\s+"," "));
+		assertTrue("Result should contain pdb title", resultString.contains("SMTB REPRESSOR FROM SYNECHOCOCCUS PCC7942"));
+		assertTrue("Result should contain the interface", resultString.contains("\"operatorType\" : \"OP\""));
+		assertTrue("Result should contain the interface cluster", resultString.contains("\"interfaceCluster\""));
+
+		assertFalse(resultString.contains("NaN"));
 	}
 
 	private List<PdbInfo> getPdbInfo() {
@@ -107,7 +125,7 @@ public class DataDownloadServletTest {
 		iCS1.setCallName("name1");
 		iCS1.setConfidence(.99);
 		iCS1.setMethod("method1");
-		iCS1.setScore(333.333);
+		iCS1.setScore(Double.NaN);
 		iCS1.setScore1(444.444);
 		iCS1.setScore2(555.555);
 		iCS1.setUid(1234);
@@ -237,5 +255,10 @@ public class DataDownloadServletTest {
 		runParameters.setEppicVersion("X");
 		runParameters.setGeomCallCutOff(6);
 		return runParameters;
+	}
+
+	@Test(expected = ValidationException.class)
+	public void testDataDownloadServletValidator() throws ValidationException, DaoException {
+		DataDownloadServletInputValidator.validateFileDownloadInput("hola", "1abc", "t", "t");
 	}
 }

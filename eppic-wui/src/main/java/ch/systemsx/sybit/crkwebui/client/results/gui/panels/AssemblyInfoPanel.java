@@ -3,8 +3,8 @@ package ch.systemsx.sybit.crkwebui.client.results.gui.panels;
 import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
-import ch.systemsx.sybit.crkwebui.shared.model.InterfaceCluster;
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.PdbInfo;
 
 import com.google.gwt.user.client.ui.HTML;
 import com.sencha.gxt.core.client.dom.ScrollSupport.ScrollMode;

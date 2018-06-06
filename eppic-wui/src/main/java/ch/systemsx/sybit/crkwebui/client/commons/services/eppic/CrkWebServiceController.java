@@ -2,7 +2,7 @@ package ch.systemsx.sybit.crkwebui.client.commons.services.eppic;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.model.RunJobData;
+import eppic.model.dto.RunJobData;
 
 /**
  * This is the service manager used to contact with the server

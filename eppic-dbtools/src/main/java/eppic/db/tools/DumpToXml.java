@@ -15,8 +15,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import ch.systemsx.sybit.crkwebui.shared.model.PdbInfo;
-import eppic.model.PdbInfoDB;
+import eppic.model.dto.PdbInfo;
+import eppic.model.db.PdbInfoDB;
 
 /**
  * Class to dump all PDB ids present in db to individual xml files

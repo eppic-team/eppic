@@ -11,7 +11,7 @@ import java.util.Properties;
 
 import eppic.commons.blast.BlastException;
 import eppic.commons.blast.MmseqsRunner;
-import eppic.model.ChainClusterDB;
+import eppic.model.db.ChainClusterDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

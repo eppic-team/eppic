@@ -4,10 +4,10 @@ import java.io.File;
 
 import org.biojava.nbio.structure.contact.Pair;
 
-import eppic.db.LatticeMatchMatrix;
-import eppic.db.LatticeOverlapScore;
-import eppic.db.PdbInfo;
-import eppic.db.SeqClusterLevel;
+import eppic.db.tools.helpers.LatticeMatchMatrix;
+import eppic.db.tools.helpers.LatticeOverlapScore;
+import eppic.db.tools.helpers.PdbInfo;
+import eppic.db.tools.helpers.SeqClusterLevel;
 import gnu.getopt.Getopt;
 
 public class CompareLattices {
