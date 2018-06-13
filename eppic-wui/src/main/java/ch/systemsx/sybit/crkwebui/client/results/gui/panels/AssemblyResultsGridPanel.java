@@ -672,8 +672,9 @@ public class AssemblyResultsGridPanel extends VerticalLayoutContainer
 				History.newItem("interfaces/" + pdbCode + "/" + assemblyID);	
 				PDBIdentifierPanel.informationLabel.setHTML(EscapedStringGenerator.generateEscapedString(
 								AppPropertiesManager.CONSTANTS.info_panel_interface_pdb_identifier() + ": "));
-				PDBIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in ");// + pdbCode);
-				PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+pdbCode+"'>"+pdbCode+"</a>");
+				PDBIdentifierPanel.pdbNameLabel.setHTML("Assembly " + assemblyID + " in ");
+				PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='" +
+						ApplicationContext.getSettings().getPdbLinkUrl() + pdbCode+"'>"+pdbCode+"</a>");
 				InformationPanel.assemblyInfoPanel.setHeadingHtml("General Information");			
 			}
 		}); 
