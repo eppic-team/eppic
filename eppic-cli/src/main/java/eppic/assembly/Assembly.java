@@ -915,17 +915,11 @@ public class Assembly {
 
 					atomId++;
 				}
-				for (Group altG:g.getAltLocs()) {
-					for (Atom a: altG.getAtoms()) {
-
-						if (symRelatedChainsExist)
-							atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId, atomId));
-						else
-							atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId));
-
-						atomId++;
-					}
-				}
+				// we intentionally not write altloc groups to be consistent with what we
+				// do for interfaces
+				// if we decide to write out altloc groups then #220 has to be taken into account
+				// and make sure that we eliminate duplicate atoms that can be present in biojava altloc groups
+				// see also https://github.com/biojava/biojava/issues/778
 			}
 		}
 
