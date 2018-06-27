@@ -21,7 +21,7 @@ public class GraphEdgeDB implements Serializable {
     private int xtalTransB;
     private int xtalTransC;
 
-    // instead of having references to the nodes (which in SQL would require an extra table for many-to-may relation)
+    // instead of having references to the nodes (which in SQL would require an extra table for many-to-many relation)
     // we just store the labels (chainId_operatorId)
     private String node1Label;
     private String node2Label;
