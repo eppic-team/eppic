@@ -23,6 +23,25 @@ public class GraphNodeDB implements Serializable {
     private double pos3dY;
     private double pos3dZ;
 
+    // rotation matrix
+    // Note 1: we could store as axis/angle or quaternion achieving some compression, but there are some ambiguities
+    // in the conversion that it's better not to have to deal with
+    private double rxx;
+    private double rxy;
+    private double rxz;
+    private double ryx;
+    private double ryy;
+    private double ryz;
+    private double rzx;
+    private double rzy;
+    private double rzz;
+
+    // translation
+    private double tx;
+    private double ty;
+    private double tz;
+
+
     public int getUid() {
         return uid;
     }
@@ -101,5 +120,101 @@ public class GraphNodeDB implements Serializable {
 
     public void setInGraph2d(boolean inGraph2d) {
         this.inGraph2d = inGraph2d;
+    }
+
+    public double getRxx() {
+        return rxx;
+    }
+
+    public void setRxx(double rxx) {
+        this.rxx = rxx;
+    }
+
+    public double getRxy() {
+        return rxy;
+    }
+
+    public void setRxy(double rxy) {
+        this.rxy = rxy;
+    }
+
+    public double getRxz() {
+        return rxz;
+    }
+
+    public void setRxz(double rxz) {
+        this.rxz = rxz;
+    }
+
+    public double getRyx() {
+        return ryx;
+    }
+
+    public void setRyx(double ryx) {
+        this.ryx = ryx;
+    }
+
+    public double getRyy() {
+        return ryy;
+    }
+
+    public void setRyy(double ryy) {
+        this.ryy = ryy;
+    }
+
+    public double getRyz() {
+        return ryz;
+    }
+
+    public void setRyz(double ryz) {
+        this.ryz = ryz;
+    }
+
+    public double getRzx() {
+        return rzx;
+    }
+
+    public void setRzx(double rzx) {
+        this.rzx = rzx;
+    }
+
+    public double getRzy() {
+        return rzy;
+    }
+
+    public void setRzy(double rzy) {
+        this.rzy = rzy;
+    }
+
+    public double getRzz() {
+        return rzz;
+    }
+
+    public void setRzz(double rzz) {
+        this.rzz = rzz;
+    }
+
+    public double getTx() {
+        return tx;
+    }
+
+    public void setTx(double tx) {
+        this.tx = tx;
+    }
+
+    public double getTy() {
+        return ty;
+    }
+
+    public void setTy(double ty) {
+        this.ty = ty;
+    }
+
+    public double getTz() {
+        return tz;
+    }
+
+    public void setTz(double tz) {
+        this.tz = tz;
     }
 }

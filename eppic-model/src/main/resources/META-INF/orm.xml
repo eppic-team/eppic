@@ -308,6 +308,32 @@
 			<basic name="pos3dZ">
 			</basic>
 
+			<basic name="rxx">
+			</basic>
+			<basic name="rxy">
+			</basic>
+			<basic name="rxz">
+			</basic>
+			<basic name="ryx">
+			</basic>
+			<basic name="ryy">
+			</basic>
+			<basic name="ryz">
+			</basic>
+			<basic name="rzx">
+			</basic>
+			<basic name="rzy">
+			</basic>
+			<basic name="rzz">
+			</basic>
+			<basic name="tx">
+			</basic>
+			<basic name="ty">
+			</basic>
+			<basic name="tz">
+			</basic>
+
+
 			<many-to-one name="assembly">
 			</many-to-one>
 
