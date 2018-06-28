@@ -12,12 +12,8 @@ import eppic.model.db.*;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.asa.GroupAsa;
 import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
-import org.biojava.nbio.structure.contact.AtomContact;
-import org.biojava.nbio.structure.contact.GroupContact;
-import org.biojava.nbio.structure.contact.GroupContactSet;
-import org.biojava.nbio.structure.contact.StructureInterface;
-import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
-import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.contact.*;
+import org.biojava.nbio.structure.jama.Matrix;
 import org.biojava.nbio.structure.quaternary.BioAssemblyInfo;
 import org.biojava.nbio.structure.quaternary.BiologicalAssemblyBuilder;
 import org.biojava.nbio.structure.quaternary.BiologicalAssemblyTransformation;
@@ -43,6 +39,7 @@ import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
 
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
 
 
@@ -570,7 +567,7 @@ public class DataModelAdaptor {
 		assembly.addAssemblyScore(as);
 
 		// set graph
-		setGraph(clusterIds, assembly, latticeGraph, true);
+		setGraph(clusterIds, assembly, latticeGraph, true, validAssembly);
 
 	}
 
@@ -609,7 +606,7 @@ public class DataModelAdaptor {
 
 		// no description, content or scores for this case
 
-		setGraph(null, unitcellAssembly, latticeGraph, false);
+		setGraph(null, unitcellAssembly, latticeGraph, false, null);
 	}
 
 	/**
@@ -618,8 +615,9 @@ public class DataModelAdaptor {
 	 * @param assemblyDB the assembly model bean
 	 * @param latticeGraph the lattice graph
 	 * @param add2dLayout whether to add 2D layout data or not
+     * @param assembly the assembly object
 	 */
-	private void setGraph(SortedSet<Integer> clusterIds, AssemblyDB assemblyDB, LatticeGraph3D latticeGraph, boolean add2dLayout) {
+	private void setGraph(SortedSet<Integer> clusterIds, AssemblyDB assemblyDB, LatticeGraph3D latticeGraph, boolean add2dLayout, Assembly assembly) {
 
 		List<GraphNodeDB> nodes = new ArrayList<>();
 		List<GraphEdgeDB> edges = new ArrayList<>();
@@ -637,6 +635,11 @@ public class DataModelAdaptor {
 		if (add2dLayout) {
 			graph2D = LayoutUtils.getGraph2D(latticeGraph.getGraph(), LayoutUtils.getDefaultLayout2D(latticeGraph.getCrystalCell()));
 		}
+
+		Map<ChainVertex, Matrix4d> allOps = null;
+		if (assembly!=null) {
+            allOps = assembly.getStructurePacked();
+        }
 
 		// vertices
 		for (ChainVertex3D v : graph.vertexSet()) {
@@ -668,6 +671,26 @@ public class DataModelAdaptor {
 			nodeDB.setPos3dY(center.y);
 			nodeDB.setPos3dZ(center.z);
 			nodeDB.setAssembly(assemblyDB);
+
+			// and finally the operator
+            if (allOps!=null) {
+                Matrix4d op = allOps.get(v);
+                nodeDB.setRxx(op.m00);
+                nodeDB.setRxy(op.m01);
+                nodeDB.setRxz(op.m02);
+                nodeDB.setRyx(op.m10);
+                nodeDB.setRyy(op.m11);
+                nodeDB.setRyz(op.m12);
+                nodeDB.setRzx(op.m20);
+                nodeDB.setRzy(op.m21);
+                nodeDB.setRzz(op.m22);
+                nodeDB.setTx(op.m03);
+                nodeDB.setTx(op.m13);
+                nodeDB.setTx(op.m23);
+            } else {
+                // TODO treat unitcell case
+            }
+
 			nodes.add(nodeDB);
 		}
 

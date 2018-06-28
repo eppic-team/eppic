@@ -349,7 +349,7 @@ public class Assembly {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
 
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
-			transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, chains);
+			transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, chains, new HashMap<>());
 		}
 		return chains;
 	}
@@ -370,15 +370,17 @@ public class Assembly {
 
 		List<List<ChainVertex>> components = new ArrayList<List<ChainVertex>>(assemblyGraph.getSubAssembliesGroupedByStoichiometries().size());
 
+		Map<ChainVertex, Matrix4d> opsMap = new HashMap<>();
+
 		for(List<SubAssembly> subgroup : assemblyGraph.getSubAssembliesGroupedByStoichiometries()) {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
 
 			// Position connected component to avoid wrapping
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
             List<ChainVertex> chains = new ArrayList<>();
-            List<Matrix4d> ops = transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, chains);
+            transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, chains, opsMap);
 
-			centerSymmetrically(cc, chains, ops);
+			centerSymmetrically(cc, chains, opsMap);
 
 			components.add(chains);
 		}
@@ -392,18 +394,15 @@ public class Assembly {
 	 * For each complex in the assembly, gather the subunits into a closed conformation,
 	 * align them in the XY plane with the major axis along Z, and pack multiple
 	 * complexes to avoid overlaps
-	 * @return An Entry object containing 1) a list of all vertices, with their Chain objects transformed to
-	 * the correct 3D positions, 2) a list of all the operators applied to those chains. (Entry is just a convenient
-	 * container for both objects)
+	 * @return A map of ChainVertices (with chains already transformed) to the transformations that were applied
 	 */
-	public Entry<List<ChainVertex>, List<Matrix4d>> getStructurePacked() {
-
+	public Map<ChainVertex, Matrix4d> getStructurePacked() {
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
 		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		List<Entry<Dimension2D, List<ChainVertex>>> boxes = new ArrayList<>();
-		List<List<Matrix4d>> opsPerBox = new ArrayList<>();
+		Map<ChainVertex, Matrix4d> opsMap = new HashMap<>();
 
 		for(List<SubAssembly> subgroup : assemblyGraph.getSubAssembliesGroupedByStoichiometries()) {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
@@ -411,10 +410,10 @@ public class Assembly {
 			// Position connected component to avoid wrapping
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
             List<ChainVertex> chains = new ArrayList<>();
-			List<Matrix4d> ops = transformChains(placements, crystalAssemblies.getStructure(), latticeGraph, cell, chains);
+			transformChains(placements, crystalAssemblies.getStructure(), latticeGraph, cell, chains, opsMap);
 
 			// Center at origin
-			Vector3d dim = centerSymmetrically(cc, chains, ops);
+			Vector3d dim = centerSymmetrically(cc, chains, opsMap);
 
 			// pad space around the protein and make it an even multiple
 			final double padding = 10;
@@ -422,7 +421,6 @@ public class Assembly {
 			int y = (int)(Math.ceil( dim.y * 2./padding + 1 )*padding);
 			Dimension2D dim2 = new Dimension(x,y);
 			boxes.add(new SimpleEntry<>(dim2,chains));
-			opsPerBox.add(ops);
 		}
 
 		// Pack complexes in XY plane
@@ -430,9 +428,6 @@ public class Assembly {
 		List<Entry<List<ChainVertex>, Rectangle2D>> placements = packer.getPlacements();
 		Rectangle2D container = packer.getBounds();
 
-		List<ChainVertex> allchains = new ArrayList<>();
-		List<Matrix4d> allOps = new ArrayList<>();
-		int i = 0;
 		for(Entry<List<ChainVertex>, Rectangle2D> entry : placements) {
 			List<ChainVertex> chains = entry.getKey();
 
@@ -441,32 +436,24 @@ public class Assembly {
 			double x = place.getX() + place.getWidth()/2. - container.getWidth()/2.;
 			double y = place.getY() + place.getHeight()/2. - container.getHeight()/2.;
 			Vector3d center = new Vector3d(x,y,0);
-
+			Matrix4d transOp = new Matrix4d();
+			transOp.set(1.0, center);
 			// Transform to XY location
 			for(ChainVertex chain : chains) {
 				Calc.translate(chain.getChain(), center);
-			}
-			allchains.addAll(chains);
-
-			// finally compose the operators to get the final list of operators
-			List<Matrix4d> ops = opsPerBox.get(i);
-			for (Matrix4d op : ops) {
-				Matrix4d transOp = new Matrix4d();
-				transOp.set(1.0, center);
-				// TODO check that the multiplication order is right
-				op.mul(transOp, op);
-				allOps.add(op);
+				// finally compose the operators to get the final list of operators
+				// TODO check order of multiplication is right
+				opsMap.get(chain).mul(transOp, opsMap.get(chain));
 			}
 
-			i++;
 		}
-		return new SimpleEntry<>(allchains, allOps);
+		return opsMap;
 	}
 
 	/**
 	 * Takes a graph representing a single complex. The vertex's chains should
 	 * be pre-transformed so that no edges wrap around the unit cell (i.e. with
-	 * {@link #transformChains(Map, Structure, LatticeGraph, CrystalCell, List)}).
+	 * {@link #transformChains(Map, Structure, LatticeGraph, CrystalCell, List, Map)}).
 	 * 
 	 * This method further transforms the chains of the vertices so that the
 	 * complex is centered at the origin and aligned the major symmetry axis.
@@ -478,9 +465,9 @@ public class Assembly {
 	 *  dimensions of the bounding polyhedron).
      * @throws IllegalArgumentException if chains and ops are not of same size
 	 */
-	private Vector3d centerSymmetrically(
+	private static Vector3d centerSymmetrically(
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc,
-			List<ChainVertex> chains, List<Matrix4d> ops) {
+			List<ChainVertex> chains, Map<ChainVertex, Matrix4d> ops) {
 
 	    if (ops.size() != chains.size()) {
 	        throw new IllegalArgumentException("The list of chains and operators must have same size (chains size "+chains.size()+", operators size "+ops.size()+")");
@@ -566,11 +553,10 @@ public class Assembly {
 		}
 
 		// Transform chains to the origin
-		for(int i = 0; i<chains.size(); i++) {
-			ChainVertex vert = chains.get(i);
+		for(ChainVertex vert : chains) {
 			Calc.transform(vert.getChain(), transformation);
 			// TODO double check that the order is right!
-			ops.get(i).mul(transformation, ops.get(i));
+			ops.get(vert).mul(transformation, ops.get(vert));
 		}
 		//TODO is this really half the bounding box?
 		return aligner.getDimension();
@@ -656,13 +642,12 @@ public class Assembly {
 	 * @param latticeGraph Root graph, for calculation of the starting chain positions
 	 * @param cell Unit cell
 	 * @param chains output list to insert transformed chains into
+	 * @param opsMap output map containing the operators applied per chainVertex
 	 * @return the list of operators applied, same length and order as the chains list
 	 */
-	private static List<Matrix4d> transformChains(Map<ChainVertex, Point3i> placements,
+	private static void transformChains(Map<ChainVertex, Point3i> placements,
 			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
-			CrystalCell cell, List<ChainVertex> chains) {
-
-	    List<Matrix4d> ops = new ArrayList<>();
+			CrystalCell cell, List<ChainVertex> chains, Map<ChainVertex, Matrix4d> opsMap) {
 
 		for(Entry<ChainVertex, Point3i> entry : placements.entrySet()) {
 			ChainVertex v = entry.getKey();
@@ -681,9 +666,8 @@ public class Assembly {
 			Chain chain = (Chain) structure.getPolyChainByPDB(v.getChainId()).clone();
 			Calc.transform(chain, transmat);
 			chains.add(new ChainVertex(chain,v.getOpId()));
-			ops.add(transmat);
+			opsMap.put(new ChainVertex(chain,v.getOpId()), transmat);
 		}
-		return ops;
 	}
 	
 	@SuppressWarnings("unused")
@@ -876,7 +860,7 @@ public class Assembly {
 	public void writeToPdbFile(File file) throws IOException {
 		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
 		int modelId = 1;
-		for (ChainVertex cv:getStructurePacked().getKey()) {
+		for (ChainVertex cv:getStructurePacked().keySet()) {
 			ps.println("MODEL"+String.format("%9d",modelId));
 			ps.print(cv.getChain().toPDB());
 			ps.println("TER");
@@ -906,7 +890,7 @@ public class Assembly {
 		// we only do renumbering in the case that there are sym-related chains in the assembly
 		// that way we stay as close to the original as possible
 		boolean symRelatedChainsExist = false;
-		List<ChainVertex> structure = getStructurePacked().getKey();
+		Collection<ChainVertex> structure = getStructurePacked().keySet();
 		int numChains = structure.size();
 		Set<String> uniqueChains = new HashSet<String>();
 		for (ChainVertex cv:structure) {
