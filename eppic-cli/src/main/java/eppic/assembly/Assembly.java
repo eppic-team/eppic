@@ -459,19 +459,14 @@ public class Assembly {
 	 * complex is centered at the origin and aligned the major symmetry axis.
 	 * @param cc the graph
 	 * @param chains the chains, transformed in place
-     * @param ops a list of already applied operators per chain (must be same length as chains list param).
-     *            Transformations applied in this method will be composed to the existing ones in ops in place.
+     * @param ops a map of already applied operators per chain.
+     *            Transformations applied in this method will be composed to the existing ones in ops (in place).
 	 * @return The extent of the bounding box for the complex (i.e. half the
 	 *  dimensions of the bounding polyhedron).
-     * @throws IllegalArgumentException if chains and ops are not of same size
 	 */
 	private static Vector3d centerSymmetrically(
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc,
 			List<ChainVertex> chains, Map<ChainVertex, Matrix4d> ops) {
-
-	    if (ops.size() != chains.size()) {
-	        throw new IllegalArgumentException("The list of chains and operators must have same size (chains size "+chains.size()+", operators size "+ops.size()+")");
-        }
 
 		// Transform to be centered with the major axis vertically
 		QuatSymmetryResults symm = getQuatSymm(chains);

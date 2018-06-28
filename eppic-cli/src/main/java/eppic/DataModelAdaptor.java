@@ -675,18 +675,27 @@ public class DataModelAdaptor {
 			// and finally the operator
             if (allOps!=null) {
                 Matrix4d op = allOps.get(v);
-                nodeDB.setRxx(op.m00);
-                nodeDB.setRxy(op.m01);
-                nodeDB.setRxz(op.m02);
-                nodeDB.setRyx(op.m10);
-                nodeDB.setRyy(op.m11);
-                nodeDB.setRyz(op.m12);
-                nodeDB.setRzx(op.m20);
-                nodeDB.setRzy(op.m21);
-                nodeDB.setRzz(op.m22);
-                nodeDB.setTx(op.m03);
-                nodeDB.setTx(op.m13);
-                nodeDB.setTx(op.m23);
+                if (op == null) {
+                    // this is a valid situation only one out of the many subgraphs is chosen for the laying out of the structure
+                    // it should be the same one as the one used for the 2d layout, let's double check
+                    if (nodeDB.isInGraph2d()) {
+                        LOGGER.warn("Operator is null for vertex {}, but it should not be null because this node is part of the chosen lay-out subgraph.", v.toString());
+                    }
+
+                } else {
+                    nodeDB.setRxx(op.m00);
+                    nodeDB.setRxy(op.m01);
+                    nodeDB.setRxz(op.m02);
+                    nodeDB.setRyx(op.m10);
+                    nodeDB.setRyy(op.m11);
+                    nodeDB.setRyz(op.m12);
+                    nodeDB.setRzx(op.m20);
+                    nodeDB.setRzy(op.m21);
+                    nodeDB.setRzz(op.m22);
+                    nodeDB.setTx(op.m03);
+                    nodeDB.setTx(op.m13);
+                    nodeDB.setTx(op.m23);
+                }
             } else {
                 // TODO treat unitcell case
             }
