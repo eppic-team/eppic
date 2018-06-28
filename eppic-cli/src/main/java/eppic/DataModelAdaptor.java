@@ -574,6 +574,7 @@ public class DataModelAdaptor {
 	/**
 	 * Set the extra artificial assembly containing the full unit cell graph. Needed in applications where full graph
 	 * is required, e.g. show full lattice graph of the unit cell.
+	 * The unit cell assembly has the special id {@value UNITCELL_ASSEMBLY_ID}
 	 * @param latticeGraph the lattice graph
 	 */
 	private void setUnitCellAssembly(LatticeGraph3D latticeGraph) {

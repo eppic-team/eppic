@@ -152,7 +152,7 @@ public class TestContractedAssemblyEnumeration {
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
 		
-		for (AssemblyDB a : pdbInfo.getAssemblies()) {
+		for (AssemblyDB a : pdbInfo.getValidAssemblies()) {
 			System.out.print("Assembly "+a.getId()+ ", " + a.getInterfaceClusterIds() + ": ");
 			AssemblyContentDB ac = null;
 			if (a.getAssemblyContents()!=null) ac = a.getAssemblyContents().get(0);
@@ -161,10 +161,10 @@ public class TestContractedAssemblyEnumeration {
 
 		
 		// there should be 3 assemblies: {} (trivial), {1} and {1,3} (in full graph notation, not in contracted graph notation)
-		assertEquals(3, pdbInfo.getAssemblies().size());
+		assertEquals(3, pdbInfo.getValidAssemblies().size());
 
 		// first assembly: trivial assembly {} (in full graph notation). 2 separate monomers
-		AssemblyDB a1 = pdbInfo.getAssemblies().get(0);
+		AssemblyDB a1 = pdbInfo.getValidAssemblies().get(0);
 		assertEquals(2, a1.getAssemblyContents().size());
 		assertEquals("C1", a1.getAssemblyContents().get(0).getSymmetry());
 		assertEquals("A", a1.getAssemblyContents().get(0).getStoichiometry());		
@@ -173,14 +173,14 @@ public class TestContractedAssemblyEnumeration {
 		
 		
 		// second assembly: heterodimer {1} (in full graph notation), this is the PDB biounit annotation (pdb1)
-		AssemblyDB a2 = pdbInfo.getAssemblies().get(1);
+		AssemblyDB a2 = pdbInfo.getValidAssemblies().get(1);
 		assertEquals(1, a2.getAssemblyContents().size());
 		assertEquals("C1", a2.getAssemblyContents().get(0).getSymmetry());
 		assertEquals("A B", a2.getAssemblyContents().get(0).getStoichiometry());		
 		
 		
 		// third assembly: C2 heterotetramer {1,3} (in full graph notation}
-		AssemblyDB a3 = pdbInfo.getAssemblies().get(2);
+		AssemblyDB a3 = pdbInfo.getValidAssemblies().get(2);
 		assertEquals(1, a3.getAssemblyContents().size());
 		assertEquals("C2", a3.getAssemblyContents().get(0).getSymmetry());
 		assertEquals("A(2) B(2)", a3.getAssemblyContents().get(0).getStoichiometry());		

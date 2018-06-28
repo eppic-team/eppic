@@ -47,7 +47,7 @@ public class TestInterfaceMatching {
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
-		for (AssemblyDB assembly : pdbInfo.getAssemblies()) {
+		for (AssemblyDB assembly : pdbInfo.getValidAssemblies()) {
 			
 			System.out.println("Assembly: "+ assemblyDbToString(assembly) + ", valid: "+assembly.isTopologicallyValid());
 			
@@ -56,10 +56,10 @@ public class TestInterfaceMatching {
 		}
 		
 		// there should be only 1 assembly
-		assertEquals(1, pdbInfo.getAssemblies().size());
+		assertEquals(1, pdbInfo.getValidAssemblies().size());
 		
 		// for the 1 assembly there should be 2 scores, one for our own assembly (eppic) and one for the pdb1 assembly
-		AssemblyDB assembly = pdbInfo.getAssemblies().get(0);
+		AssemblyDB assembly = pdbInfo.getValidAssemblies().get(0);
 		
 		int eppicAssemblies = 0;
 		int pdb1Assemblies = 0;

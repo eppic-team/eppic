@@ -127,7 +127,7 @@ public class TestLargeStructures {
 
 		assertEquals(10, pdbInfo.getInterfaceClusters().size());
 
-		assertEquals(4, pdbInfo.getAssemblies().size());
+		assertEquals(4, pdbInfo.getValidAssemblies().size());
 
 		// the cluster members should be reduced to NCS equivalents: it should be a low number
 		int count = 0;
@@ -151,7 +151,7 @@ public class TestLargeStructures {
 		assertEquals(count, files.length);
 
 		// test for issue #141
-		AssemblyDB icoAssembly = pdbInfo.getAssemblies().get(3);
+		AssemblyDB icoAssembly = pdbInfo.getValidAssemblies().get(3);
 		// check that this really is the icosahedral assembly
 		assertEquals("I", icoAssembly.getAssemblyContents().get(0).getSymmetry());
 		assertEquals(180, icoAssembly.getAssemblyContents().get(0).getMmSize());
