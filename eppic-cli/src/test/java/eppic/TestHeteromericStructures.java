@@ -46,7 +46,7 @@ public class TestHeteromericStructures {
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
-		System.out.println("Number of assemblies: " + pdbInfo.getAssemblies().size());
+		System.out.println("Number of assemblies: " + pdbInfo.getValidAssemblies().size());
 		
 		
 		outDir.delete();

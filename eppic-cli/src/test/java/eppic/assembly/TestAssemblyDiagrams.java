@@ -39,12 +39,12 @@ public class TestAssemblyDiagrams {
 
         File[] files = outDir.listFiles((d, name) -> (name.endsWith(".json") && name.contains(".diagram.") ));
         assertNotNull(files);
-        assertEquals(pdbInfo.getAssemblies().size(), files.length);
+        assertEquals(pdbInfo.getValidAssemblies().size(), files.length);
 
         files = outDir.listFiles((d, name) -> (name.endsWith(".json") && name.contains(".latticeGraph.") ));
         assertNotNull(files);
         // there's always 1 additional file for the whole unit cell (named with a "*")
-        assertEquals(pdbInfo.getAssemblies().size() + 1, files.length);
+        assertEquals(pdbInfo.getValidAssemblies().size() + 1, files.length);
 
 
         // delete all files and then the dir
