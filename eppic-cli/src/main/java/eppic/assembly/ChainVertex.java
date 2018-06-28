@@ -64,7 +64,7 @@ public class ChainVertex implements ChainVertexInterface {
 		return getChainId()+"_"+opId;
 	}
 	/**
-	 * Hash key based on chain and op
+	 * Hash key based on chain id and op
 	 */
 	@Override
 	public int hashCode() {
@@ -74,8 +74,9 @@ public class ChainVertex implements ChainVertexInterface {
 		result = prime * result + opId;
 		return result;
 	}
+
 	/**
-	 * Equality based on chain and op
+	 * Equality based on chain id and op
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -83,7 +84,8 @@ public class ChainVertex implements ChainVertexInterface {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		// important use instanceof instead of getClass so that this works for subclasses
+		if (! (obj instanceof ChainVertex))
 			return false;
 		ChainVertex other = (ChainVertex) obj;
 		if (getChainId() == null) {
