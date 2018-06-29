@@ -92,6 +92,11 @@ public class Main {
 		return pdb;
 	}
 
+	// needed for testing
+	protected CrystalAssemblies getCrystalAssemblies() {
+	    return validAssemblies;
+    }
+
 		
 	public void setUpLogging() {
 		
