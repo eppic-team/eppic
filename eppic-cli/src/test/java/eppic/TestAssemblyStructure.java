@@ -87,7 +87,7 @@ public class TestAssemblyStructure {
             SuperPosition superPosition = new SuperPositionQCP(false);
             double rmsd = superPosition.getRmsd(Calc.atomsToPoints(atomsFromAssemblyStruct), Calc.atomsToPoints(atomsFromFile));
 
-            assertEquals(pdbId + ", assembly id "+assemblyDB.getId()+": rmsd between struct from file and from operators should be 0", 0, rmsd, 0.0001);
+            assertEquals(pdbId + ", assembly id "+assemblyDB.getId()+": rmsd between struct from file and from operators should be 0", 0, rmsd, 0.001);
         }
 
     }
@@ -117,9 +117,12 @@ public class TestAssemblyStructure {
                 String[] labelTokens = nodeDB.getLabel().split("_");
                 String chainId = labelTokens[0];
                 //int opId = Integer.parseInt(labelTokens[1]);
-                Chain c = s.getPolyChainByPDB(chainId);
+                Chain c = (Chain)s.getPolyChainByPDB(chainId).clone();
                 Calc.transform(c, op);
                 assemblyStruct.addChain(c);
+
+                System.out.println("Operator for " + s.getPDBCode() +", assembly id "+assemblyDB.getId()+", chain id "+chainId+":");
+                System.out.println(op);
 
             }
         }
