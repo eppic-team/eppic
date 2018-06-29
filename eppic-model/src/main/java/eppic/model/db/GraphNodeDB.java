@@ -14,6 +14,9 @@ public class GraphNodeDB implements Serializable {
     private String label;
     private String color;
 
+    /**
+     * Whether the node is one of those chosen for laying out the 2D assembly graph.
+     */
     private boolean inGraph2d;
 
     private double pos2dX;
@@ -22,6 +25,12 @@ public class GraphNodeDB implements Serializable {
     private double pos3dX;
     private double pos3dY;
     private double pos3dZ;
+
+    /**
+     * Whether the node is one of those chosen for laying out the structure's assembly
+     * in 3D (not the 3D lattice graph but the assembly's structure).
+     */
+    private boolean in3dStructure;
 
     // rotation matrix
     // Note 1: we could store as axis/angle or quaternion achieving some compression, but there are some ambiguities
@@ -216,5 +225,13 @@ public class GraphNodeDB implements Serializable {
 
     public void setTz(double tz) {
         this.tz = tz;
+    }
+
+    public boolean isIn3dStructure() {
+        return in3dStructure;
+    }
+
+    public void setIn3dStructure(boolean in3dStructure) {
+        this.in3dStructure = in3dStructure;
     }
 }

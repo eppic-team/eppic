@@ -308,6 +308,9 @@
 			<basic name="pos3dZ">
 			</basic>
 
+			<basic name="in3dStructure">
+			</basic>
+
 			<basic name="rxx">
 			</basic>
 			<basic name="rxy">
