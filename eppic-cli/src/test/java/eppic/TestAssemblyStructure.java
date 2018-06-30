@@ -8,6 +8,7 @@ import eppic.model.db.PdbInfoDB;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.geometry.SuperPosition;
 import org.biojava.nbio.structure.geometry.SuperPositionQCP;
+import org.biojava.nbio.structure.io.EntityFinder;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import javax.vecmath.Matrix4d;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -80,8 +82,12 @@ public class TestAssemblyStructure {
 
             Structure structFromFile = structFromFiles.get(assemblyDB.getId());
 
+            assertEquals(structFromFile.getPolyChains().size(), assemblyStruct.getPolyChains().size());
+
             Atom[] atomsFromAssemblyStruct = getAllAtomArray(assemblyStruct);
             Atom[] atomsFromFile = getAllAtomArray(structFromFile);
+
+            assertEquals(atomsFromFile.length, atomsFromAssemblyStruct.length);
 
             SuperPosition superPosition = new SuperPositionQCP(false);
             double rmsd = superPosition.getRmsd(Calc.atomsToPoints(atomsFromAssemblyStruct), Calc.atomsToPoints(atomsFromFile));
@@ -116,8 +122,10 @@ public class TestAssemblyStructure {
 
                 String[] labelTokens = nodeDB.getLabel().split("_");
                 String chainId = labelTokens[0];
-                //int opId = Integer.parseInt(labelTokens[1]);
+                int opId = Integer.parseInt(labelTokens[1]);
                 Chain c = (Chain)s.getPolyChainByPDB(chainId).clone();
+                c.setName(chainId+"_"+opId);
+                c.setId(chainId+"_"+opId);
                 Calc.transform(c, op);
                 assemblyStruct.addChain(c);
 
@@ -125,8 +133,13 @@ public class TestAssemblyStructure {
                 System.out.println(op);
 
             }
-        }
 
+        }
+        List<List<Chain>> allModels = new ArrayList<>();
+        allModels.add(assemblyStruct.getPolyChains());
+        List<EntityInfo> entityInfos = EntityFinder.findPolyEntities(allModels);
+
+        assemblyStruct.setEntityInfos(entityInfos);
         return assemblyStruct;
     }
 
@@ -137,14 +150,16 @@ public class TestAssemblyStructure {
      * @return
      */
     public static Atom[] getAllAtomArray(Structure s) {
-        List<Atom> atoms = new ArrayList<Atom>();
+        List<Atom> atoms = new ArrayList<>();
 
-        Set<String> sortecChainIds = new TreeSet<>();
+        List<String> sortedChainIds = new ArrayList<>();
         for (Chain c : s.getPolyChains()) {
-            sortecChainIds.add(c.getName());
+            sortedChainIds.add(c.getName());
         }
+        sortedChainIds = sortedChainIds.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
 
-        for (String chainId : sortecChainIds) {
+
+        for (String chainId : sortedChainIds) {
             for (Group g : s.getPolyChainByPDB(chainId).getAtomGroups()) {
                 atoms.addAll(g.getAtoms());
             }
