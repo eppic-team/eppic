@@ -37,7 +37,7 @@ public class TestAssemblyStructure {
     private void testPdbId(String pdbId) throws IOException {
         File outDir = new File(TMPDIR, "eppicTestAssemblyStructure");
 
-        boolean couldMakeDir = outDir.mkdir();
+        outDir.mkdir();
         outDir.deleteOnExit();
         //assertTrue(couldMakeDir);
 
@@ -89,8 +89,8 @@ public class TestAssemblyStructure {
 
             assertEquals(atomsFromFile.length, atomsFromAssemblyStruct.length);
 
-            SuperPosition superPosition = new SuperPositionQCP(false);
-            double rmsd = superPosition.getRmsd(Calc.atomsToPoints(atomsFromAssemblyStruct), Calc.atomsToPoints(atomsFromFile));
+            // the rmsd should be 0 without need to superpose, the 2 structures must be exactly in same location
+            double rmsd = Calc.rmsd(atomsFromAssemblyStruct, atomsFromFile);
             String msg = pdbId + ", assembly id "+assemblyDB.getId()+": rmsd between struct from file and from operators should be 0";
             //System.out.println(msg);
             assertEquals(msg, 0, rmsd, 0.001);
