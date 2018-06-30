@@ -1,5 +1,6 @@
 package eppic.model.db;
 
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -177,6 +178,7 @@ public class PdbInfoDB implements Serializable {
 	 * id <0 represent topologically invalid assemblies (but annotated by PDB).
 	 * @return
 	 */
+	@Transient
 	public List<AssemblyDB> getValidAssemblies() {
 		List<AssemblyDB> validAssemblies = new ArrayList<AssemblyDB>();
 		for (AssemblyDB assemblyDB : assemblies) {
