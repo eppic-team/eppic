@@ -3,6 +3,10 @@ package eppic.assembly;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.ChainImpl;
 import org.junit.Test;
+
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Vector3d;
+
 import static org.junit.Assert.*;
 
 import java.util.HashMap;
@@ -32,5 +36,21 @@ public class TestChainVertex {
 
         value = map.get(v3);
         assertEquals(new Integer(1), value);
+    }
+
+    /**
+     * Making sure that matrix composition within a map works as expected
+     */
+    @Test
+    public void testMatrixMultInMap() {
+        Map<Integer, Matrix4d> map = new HashMap<>();
+        Matrix4d m = new Matrix4d();
+        m.set(1, new Vector3d(1,0,0));
+        map.put(1, m);
+        Matrix4d op = new Matrix4d();
+        op.set(1, new Vector3d(2, 0, 0));
+        map.get(1).mul(op, map.get(1));
+
+        assertEquals(3, map.get(1).m03, 0.000001);
     }
 }

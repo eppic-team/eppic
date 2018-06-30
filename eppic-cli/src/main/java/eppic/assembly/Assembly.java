@@ -630,7 +630,7 @@ public class Assembly {
 	/**
 	 * Takes a map of chain position from {@link #positionVertices(UndirectedGraph)}
 	 * and create a new set of ChainVertex objects with transformed chains, appending to
-     * the list passed as last parameter.
+     * the list passed as chains parameter.
 	 * The original ChainVertexes are not modified, but rather cloned.
 	 * 
 	 * @param placements Placement of each chain relative to the 0,0,0 unit cell
@@ -638,7 +638,6 @@ public class Assembly {
 	 * @param cell Unit cell
 	 * @param chains output list to insert transformed chains into
 	 * @param opsMap output map containing the operators applied per chainVertex
-	 * @return the list of operators applied, same length and order as the chains list
 	 */
 	private static void transformChains(Map<ChainVertex, Point3i> placements,
 			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
