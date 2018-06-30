@@ -442,7 +442,6 @@ public class Assembly {
 			for(ChainVertex chain : chains) {
 				Calc.translate(chain.getChain(), center);
 				// finally compose the operators to get the final list of operators
-				// TODO check order of multiplication is right
 				opsMap.get(chain).mul(transOp, opsMap.get(chain));
 			}
 
@@ -460,7 +459,8 @@ public class Assembly {
 	 * @param cc the graph
 	 * @param chains the chains, transformed in place
      * @param ops a map of already applied operators per chain.
-     *            Transformations applied in this method will be composed to the existing ones in ops (in place).
+     *            Transformations applied in this method will be composed to the
+	 *            existing ones in ops (in place).
 	 * @return The extent of the bounding box for the complex (i.e. half the
 	 *  dimensions of the bounding polyhedron).
 	 */
@@ -550,7 +550,6 @@ public class Assembly {
 		// Transform chains to the origin
 		for(ChainVertex vert : chains) {
 			Calc.transform(vert.getChain(), transformation);
-			// TODO double check that the order is right!
 			ops.get(vert).mul(transformation, ops.get(vert));
 		}
 		//TODO is this really half the bounding box?

@@ -26,6 +26,11 @@ public class TestAssemblyStructure {
 
     private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
+    /**
+     * Tests that applying operators extracted from {@link Assembly#getStructurePacked()} produces
+     * the same structures as output of {@link Assembly#writeToMmCifFile(File)}
+     * @throws IOException
+     */
     @Test
     public void testStructureLayout() throws IOException{
 
