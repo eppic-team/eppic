@@ -14,8 +14,7 @@ import org.junit.Test;
 
 import javax.vecmath.Matrix4d;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -81,13 +80,14 @@ public class TestAssemblyStructure {
 
             Structure structFromFile = structFromFiles.get(assemblyDB.getId());
 
-            Atom[] atomsFromAssemblyStruct = StructureTools.getAllAtomArray(assemblyStruct);
-            Atom[] atomsFromFile = StructureTools.getAllAtomArray(structFromFile);
+            Atom[] atomsFromAssemblyStruct = getAllAtomArray(assemblyStruct);
+            Atom[] atomsFromFile = getAllAtomArray(structFromFile);
 
             SuperPosition superPosition = new SuperPositionQCP(false);
             double rmsd = superPosition.getRmsd(Calc.atomsToPoints(atomsFromAssemblyStruct), Calc.atomsToPoints(atomsFromFile));
-
-            assertEquals(pdbId + ", assembly id "+assemblyDB.getId()+": rmsd between struct from file and from operators should be 0", 0, rmsd, 0.001);
+            String msg = pdbId + ", assembly id "+assemblyDB.getId()+": rmsd between struct from file and from operators should be 0";
+            //System.out.println(msg);
+            assertEquals(msg, 0, rmsd, 0.001);
         }
 
     }
@@ -130,4 +130,26 @@ public class TestAssemblyStructure {
         return assemblyStruct;
     }
 
+    /**
+     * A custom getAllAtomArray so that we always return the atoms in chainId alphabetical order,
+     * so that the rmsd calculation makes sense.
+     * @param s
+     * @return
+     */
+    public static Atom[] getAllAtomArray(Structure s) {
+        List<Atom> atoms = new ArrayList<Atom>();
+
+        Set<String> sortecChainIds = new TreeSet<>();
+        for (Chain c : s.getPolyChains()) {
+            sortecChainIds.add(c.getName());
+        }
+
+        for (String chainId : sortecChainIds) {
+            for (Group g : s.getPolyChainByPDB(chainId).getAtomGroups()) {
+                atoms.addAll(g.getAtoms());
+            }
+
+        }
+        return atoms.toArray(new Atom[atoms.size()]);
+    }
 }
