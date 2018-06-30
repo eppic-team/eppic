@@ -6,12 +6,12 @@ import eppic.model.db.AssemblyDB;
 import eppic.model.db.GraphNodeDB;
 import eppic.model.db.PdbInfoDB;
 import org.biojava.nbio.structure.*;
-import org.biojava.nbio.structure.geometry.SuperPosition;
-import org.biojava.nbio.structure.geometry.SuperPositionQCP;
 import org.biojava.nbio.structure.io.EntityFinder;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.vecmath.Matrix4d;
 import java.io.*;
@@ -24,6 +24,8 @@ import static org.junit.Assert.*;
 
 public class TestAssemblyStructure {
 
+    private static final Logger logger = LoggerFactory.getLogger(TestAssemblyStructure.class);
+
     private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
     /**
@@ -34,7 +36,7 @@ public class TestAssemblyStructure {
     @Test
     public void testStructureLayout() throws IOException{
 
-        testPdbId("1smt");
+        testPdbId("4ht5");
         testPdbId("5wjc");
 
     }
@@ -79,11 +81,13 @@ public class TestAssemblyStructure {
         for (AssemblyDB assemblyDB : pdbInfoDB.getValidAssemblies()) {
             Structure assemblyStruct = getAssemblyStructFromDbOps(assemblyDB, auStruct);
             // writing out the file (needed only for debugging)
-            File fileFromOps = new File(outDir, pdbId+".assembly_from_ops."+assemblyDB.getId()+".cif.gz");
-            fileFromOps.deleteOnExit();
-            PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(fileFromOps)));
-            ps.println(assemblyStruct.toMMCIF());
-            ps.close();
+            if (logger.isDebugEnabled()) {
+                File fileFromOps = new File(outDir, pdbId + ".assembly_from_ops." + assemblyDB.getId() + ".cif.gz");
+                fileFromOps.deleteOnExit();
+                PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(fileFromOps)));
+                ps.println(assemblyStruct.toMMCIF());
+                ps.close();
+            }
 
             Structure structFromFile = structFromFiles.get(assemblyDB.getId());
 
