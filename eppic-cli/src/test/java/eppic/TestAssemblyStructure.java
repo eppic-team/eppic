@@ -105,6 +105,43 @@ public class TestAssemblyStructure {
             assertEquals(msg, 0, rmsd, 0.001);
         }
 
+        // finally we test that the unit cell assembly has consistent operators
+        AssemblyDB assemblyDB = null;
+        for (AssemblyDB adb:pdbInfoDB.getAssemblies()) {
+            if (adb.getId()==0) assemblyDB = adb;
+        }
+        assertNotNull(assemblyDB);
+
+        // the reference node: 1st opId type seen
+        Map<Integer, GraphNodeDB> refNodeDBs = new HashMap<>();
+
+        for (GraphNodeDB nodeDB : assemblyDB.getGraphNodes()) {
+            // all same op ids should have same operators
+            int opId = Integer.parseInt(nodeDB.getLabel().split("_")[1]);
+            if (!refNodeDBs.containsKey(opId)) {
+                refNodeDBs.put(opId, nodeDB);
+            } else {
+                GraphNodeDB refNodeDB = refNodeDBs.get(opId);
+                assertEquals(refNodeDB.getRxx(), nodeDB.getRxx(), 0.0001);
+                assertEquals(refNodeDB.getRxy(), nodeDB.getRxy(), 0.0001);
+                assertEquals(refNodeDB.getRxz(), nodeDB.getRxz(), 0.0001);
+
+                assertEquals(refNodeDB.getRyx(), nodeDB.getRyx(), 0.0001);
+                assertEquals(refNodeDB.getRyy(), nodeDB.getRyy(), 0.0001);
+                assertEquals(refNodeDB.getRyz(), nodeDB.getRyz(), 0.0001);
+
+                assertEquals(refNodeDB.getRzx(), nodeDB.getRzx(), 0.0001);
+                assertEquals(refNodeDB.getRzy(), nodeDB.getRzy(), 0.0001);
+                assertEquals(refNodeDB.getRzz(), nodeDB.getRzz(), 0.0001);
+
+                assertEquals(refNodeDB.getTx(), nodeDB.getTx(), 0.0001);
+                assertEquals(refNodeDB.getTy(), nodeDB.getTy(), 0.0001);
+                assertEquals(refNodeDB.getTz(), nodeDB.getTz(), 0.0001);
+
+            }
+
+        }
+
     }
 
     private Structure getAssemblyStructFromDbOps(AssemblyDB assemblyDB, Structure s) {

@@ -700,8 +700,29 @@ public class DataModelAdaptor {
 
                     nodeDB.setIn3dStructure(true);
                 }
-            } else {
-                // TODO treat unitcell case
+            } else if (assembly==null) {
+                Matrix4d op = latticeGraph.getUnitCellTransformationOrthonormal(v.getChain().getName(), v.getOpId());
+
+                nodeDB.setRxx(op.m00);
+                nodeDB.setRxy(op.m01);
+                nodeDB.setRxz(op.m02);
+
+                nodeDB.setRyx(op.m10);
+                nodeDB.setRyy(op.m11);
+                nodeDB.setRyz(op.m12);
+
+                nodeDB.setRzx(op.m20);
+                nodeDB.setRzy(op.m21);
+                nodeDB.setRzz(op.m22);
+
+                nodeDB.setTx(op.m03);
+                nodeDB.setTy(op.m13);
+                nodeDB.setTz(op.m23);
+
+                nodeDB.setIn3dStructure(true);
+
+            }  else {
+                LOGGER.error("Operators are null in assemblies=null case. Something is wrong. Please report a bug.");
             }
 
 			nodes.add(nodeDB);
