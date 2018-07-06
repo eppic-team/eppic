@@ -15,7 +15,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,9 +153,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Assembly Diagram page.");
 			logger.error("Error during preparation of Assembly Diagram page.",e);
 		} catch(DaoException e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Assembly Diagram page.");
-			logger.error("Error during preparation of Assembly Diagram page.",e);
-		} catch (StructureException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Assembly Diagram page.");
 			logger.error("Error during preparation of Assembly Diagram page.",e);
 		} catch (Exception e) {

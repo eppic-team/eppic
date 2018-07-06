@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -16,7 +15,6 @@ import java.util.zip.GZIPInputStream;
 import org.biojava.nbio.structure.Atom;
 //import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.AtomContactSet;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
@@ -62,18 +60,17 @@ public class LatticeGraphPageGenerator {
 	 * @param strucURI URL to reach auCifFile within the browser
 	 * @param title Page title [default: structure name]
 	 * @param size the canvas size
-	 * @param jsonURI path to the json dataURL
+	 * @param jsonURL path to the json dataURL
 	 * @param interfaces List of all interfaces to build the latticegraph
 	 * @param requestedIfaces subset of the interfaces to display
 	 * @param out Stream to output the HTML page
 	 * @param urlMolViewer path to the libURL
 	 * @param webappRoot
-	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 */
 	public static void generateHTMLPage(File directory, String inputName, File strucFile,
 			String strucURI, String title, String size, String jsonURL, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer, String webappRoot) throws IOException, StructureException {
+			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer, String webappRoot) throws IOException {
 		logger.info("JSON URL for {}: {}",inputName,jsonURL);
 		logger.info("Structure URL for {}: {}",inputName,strucURI);
 		MustacheFactory mf = new DefaultMustacheFactory();
@@ -102,13 +99,12 @@ public class LatticeGraphPageGenerator {
 	 * @param interfaces List of all interfaces to build the latticegraph
 	 * @param requestedIfaces subset of the interfaces to display
 	 * @param out Stream to output the HTML page
-	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
 	public static void generateJSONPage(File directory, String inputName, File strucFile, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException, InterruptedException, ExecutionException {
+			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, InterruptedException, ExecutionException {
 		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 
 		Callable<String> computeJson = () -> {
@@ -215,12 +211,9 @@ public class LatticeGraphPageGenerator {
 	 * Loads a structure from given file path.
 	 * @param auFile
 	 * @return the parsed Structure
-	 * @throws FileNotFoundException
 	 * @throws IOException
-	 * @throws StructureException If inputName was neither a file nor a PDB code
 	 */
-	public static Structure readStructure(File auFile) throws FileNotFoundException, IOException,
-			StructureException {
+	public static Structure readStructure(File auFile) throws IOException {
 				
 		// Read input structure
 		Structure auStruct;

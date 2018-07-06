@@ -18,7 +18,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,9 +191,6 @@ public class LatticeGraphServlet extends BaseServlet
 		} catch(DaoException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Lattice Graph page.");
 			logger.error("Error during preparation of Lattice Graph page.",e);
-		} catch (StructureException e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Lattice Graph page.");
-			logger.error("Error during preparation of Lattice Graph page.",e);
 		} catch (Exception e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Lattice Graph page.");
 			logger.error("Error during preparation of Lattice Graph page.",e);
@@ -230,8 +226,8 @@ public class LatticeGraphServlet extends BaseServlet
 	
 	/**
 	 * Combines a list of clusters and a list of interfaces, taking the union.
-	 * @param requestedIfacesStr
-	 * @param requestedClusterStr
+	 * @param ifaceStr
+	 * @param clusterStr
 	 * @param ifaceList
 	 * @return
 	 */

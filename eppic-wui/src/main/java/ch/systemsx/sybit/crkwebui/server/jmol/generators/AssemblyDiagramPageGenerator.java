@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutionException;
 
 import eppic.assembly.LatticeGraph;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,20 +45,17 @@ public class AssemblyDiagramPageGenerator {
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
 	 * @param auFile the structure file containing the AU
-	 * @param title Page title [default: structure name]
-	 * @param size the canvas size 
 	 * @param interfaces List of all interfaces to build the latticegraph
 	 * @param requestedIfaces 
 	 * @param out
 	 * @return the HTML page
-	 * @throws StructureException For errors parsing the input structure
 	 * @throws IOException For errors reading or writing files
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
 	public static void generateJSONPage(File directory, String inputName, File auFile,
 			List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, StructureException, InterruptedException, ExecutionException {
+			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, InterruptedException, ExecutionException {
 		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 		Callable<String> computeJson = () -> {
 
@@ -101,7 +97,7 @@ public class AssemblyDiagramPageGenerator {
 	
 	public static void generateHTMLPage(  
 			String title, String size, String jsonURL, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out, String webappRoot) throws IOException, StructureException {
+			Collection<Integer> requestedIfaces, PrintWriter out, String webappRoot) throws IOException {
 		MustacheFactory mf = new DefaultMustacheFactory();
 		String template = LatticeGUIMustache.expandTemplatePath(TEMPLATE_ASSEMBLY_DIAGRAM_FULL_LAZY);
 		Mustache mustache = mf.compile(template);
