@@ -156,7 +156,7 @@ public class LatticeGraphServlet extends BaseServlet
 			
 			if(format != null && format.equalsIgnoreCase("json")) {
 				// important: input (second param) here must be the truncated input name or otherwise user jobs don't work - JD 2017-02-04
-				LatticeGraphPageGenerator.generateJSONPage(dir, inputPrefix, auFile, ifaceList, requestedIfaces, outputStream);
+				LatticeGraphPageGenerator.generateJSONPage(dir, inputPrefix, auFile, requestedIfaces, outputStream);
 			} else {
 				String nglJsUrl = properties.getProperty("urlNglJs");
 				if (nglJsUrl == null || nglJsUrl.equals("")) {
@@ -173,7 +173,7 @@ public class LatticeGraphServlet extends BaseServlet
 						.collect(Collectors.joining("&"))
 						);
 				String webappRoot = request.getContextPath();
-				LatticeGraphPageGenerator.generateHTMLPage(dir,inputPrefix, auFile, auURI, title, size, jsonURL.toString(), ifaceList, requestedIfaces, outputStream, nglJsUrl, webappRoot);
+				LatticeGraphPageGenerator.generateHTMLPage(inputPrefix, auURI, title, size, jsonURL.toString(), outputStream, nglJsUrl, webappRoot);
 				// TODO start generating JSON now, since we know that request is coming
 			}
 

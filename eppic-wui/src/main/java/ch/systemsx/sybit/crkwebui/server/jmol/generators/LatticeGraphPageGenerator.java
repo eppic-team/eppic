@@ -54,23 +54,19 @@ public class LatticeGraphPageGenerator {
 	/**
 	 * Generates html page containing the NGL canvas.
 	 * 
-	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
-	 * @param strucFile the file with the AU structure (can be cif or pdb and gzipped or not)
 	 * @param strucURI URL to reach auCifFile within the browser
 	 * @param title Page title [default: structure name]
 	 * @param size the canvas size
 	 * @param jsonURL path to the json dataURL
-	 * @param interfaces List of all interfaces to build the latticegraph
-	 * @param requestedIfaces subset of the interfaces to display
 	 * @param out Stream to output the HTML page
 	 * @param urlMolViewer path to the libURL
 	 * @param webappRoot
 	 * @throws IOException For errors reading or writing files
 	 */
-	public static void generateHTMLPage(File directory, String inputName, File strucFile,
-			String strucURI, String title, String size, String jsonURL, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out, String urlMolViewer, String webappRoot) throws IOException {
+	public static void generateHTMLPage(String inputName, String strucURI, String title, String size,
+										String jsonURL, PrintWriter out, String urlMolViewer, String webappRoot) throws IOException {
+
 		logger.info("JSON URL for {}: {}",inputName,jsonURL);
 		logger.info("Structure URL for {}: {}",inputName,strucURI);
 		MustacheFactory mf = new DefaultMustacheFactory();
@@ -88,6 +84,7 @@ public class LatticeGraphPageGenerator {
 				.flush();
 		} catch (IOException e) {
 			logger.error("Error generating output from template "+template,e);
+			throw e;
 		}
 	}
 	/**
@@ -96,14 +93,13 @@ public class LatticeGraphPageGenerator {
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
 	 * @param strucFile the file with the AU structure (can be cif or pdb and gzipped or not)
-	 * @param interfaces List of all interfaces to build the latticegraph
 	 * @param requestedIfaces subset of the interfaces to display
 	 * @param out Stream to output the HTML page
 	 * @throws IOException For errors reading or writing files
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	public static void generateJSONPage(File directory, String inputName, File strucFile, List<Interface> interfaces,
+	public static void generateJSONPage(File directory, String inputName, File strucFile,
 			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, InterruptedException, ExecutionException {
 		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 

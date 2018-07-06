@@ -45,8 +45,7 @@ public class AssemblyDiagramPageGenerator {
 	 * @param directory path to the job directory
 	 * @param inputName the input: either a PDB id or the file name as input by user
 	 * @param auFile the structure file containing the AU
-	 * @param interfaces List of all interfaces to build the latticegraph
-	 * @param requestedIfaces 
+	 * @param requestedIfaces
 	 * @param out
 	 * @return the HTML page
 	 * @throws IOException For errors reading or writing files
@@ -54,7 +53,6 @@ public class AssemblyDiagramPageGenerator {
 	 * @throws InterruptedException 
 	 */
 	public static void generateJSONPage(File directory, String inputName, File auFile,
-			List<Interface> interfaces,
 			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, InterruptedException, ExecutionException {
 		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
 		Callable<String> computeJson = () -> {
@@ -96,8 +94,8 @@ public class AssemblyDiagramPageGenerator {
 	}
 	
 	public static void generateHTMLPage(  
-			String title, String size, String jsonURL, List<Interface> interfaces,
-			Collection<Integer> requestedIfaces, PrintWriter out, String webappRoot) throws IOException {
+			String title, String size, String jsonURL, PrintWriter out, String webappRoot) throws IOException {
+
 		MustacheFactory mf = new DefaultMustacheFactory();
 		String template = LatticeGUIMustache.expandTemplatePath(TEMPLATE_ASSEMBLY_DIAGRAM_FULL_LAZY);
 		Mustache mustache = mf.compile(template);
@@ -110,6 +108,7 @@ public class AssemblyDiagramPageGenerator {
 			mustache.execute(out, page).flush();
 		} catch (IOException e) {
 			logger.error("Error generating output from template "+template,e);
+			throw e;
 		}
 	}
 
