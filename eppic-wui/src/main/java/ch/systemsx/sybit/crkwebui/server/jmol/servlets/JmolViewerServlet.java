@@ -193,7 +193,7 @@ public class JmolViewerServlet extends BaseServlet
 
 		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 		
-		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
+		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true, false);
 		
 		Assembly assembly = null;
 		for (Assembly a:assemblies) {

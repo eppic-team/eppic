@@ -17,7 +17,7 @@ import java.util.List;
 public class JobResource {
 
     @GET
-    @Path("/pdb/" + "{jobId}")
+    @Path("/pdb/{jobId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
     public Response getPdb(
             @Context UriInfo uriInfo,
@@ -35,7 +35,7 @@ public class JobResource {
     }
 
     @GET
-    @Path("/assemblies/" + "{jobId}")
+    @Path("/assemblies/{jobId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
     public Response getAssemblies(
             @Context UriInfo uriInfo,
@@ -55,7 +55,7 @@ public class JobResource {
     }
 
     @GET
-    @Path("/interfaceClusters/" + "{jobId}")
+    @Path("/interfaceClusters/{jobId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
     public Response getInterfaceClusters(
             @Context UriInfo uriInfo,
@@ -75,7 +75,7 @@ public class JobResource {
     }
 
     @GET
-    @Path("/interfaces/" + "{jobId}")
+    @Path("/interfaces/{jobId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
     public Response getInterfaces(
             @Context UriInfo uriInfo,
@@ -95,7 +95,7 @@ public class JobResource {
     }
 
     @GET
-    @Path("/sequences/" + "{jobId}")
+    @Path("/sequences/{jobId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
     public Response getSequences(
             @Context UriInfo uriInfo,
@@ -115,7 +115,7 @@ public class JobResource {
     }
 
     @GET
-    @Path("/interfaceResidues/" + "{jobId}/{interfId}")
+    @Path("/interfaceResidues/{jobId}/{interfId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
     public Response getInterfaceResidues(
             @Context UriInfo uriInfo,
@@ -137,7 +137,7 @@ public class JobResource {
     }
 
     @GET
-    @Path("/assembly/" + "{jobId}/{pdbAssemblyId}")
+    @Path("/assembly/{jobId}/{pdbAssemblyId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
     public Response getAssembly(
             @Context UriInfo uriInfo,
@@ -157,7 +157,7 @@ public class JobResource {
     }
 
     @GET
-    @Path("/contacts/" + "{jobId}/{interfId}")
+    @Path("/contacts/{jobId}/{interfId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
     public Response getContacts(
             @Context UriInfo uriInfo,

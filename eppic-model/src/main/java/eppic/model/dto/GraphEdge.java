@@ -1,14 +1,15 @@
-package eppic.model.db;
+package eppic.model.dto;
+
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.GraphEdgeDB;
 
 import java.io.Serializable;
 
-public class GraphEdgeDB implements Serializable {
+public class GraphEdge implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private int uid;
-
-    private AssemblyDB assembly;
 
     private int label;
     private String color;
@@ -19,8 +20,7 @@ public class GraphEdgeDB implements Serializable {
     private int xtalTransB;
     private int xtalTransC;
 
-    // instead of having references to the nodes (which in SQL would require an extra table for many-to-many relation)
-    // we just store the labels (chainId_operatorId)
+    // labels (chainId_operatorId)
     private String node1Label;
     private String node2Label;
 
@@ -30,14 +30,6 @@ public class GraphEdgeDB implements Serializable {
 
     public void setUid(int uid) {
         this.uid = uid;
-    }
-
-    public AssemblyDB getAssembly() {
-        return assembly;
-    }
-
-    public void setAssembly(AssemblyDB assembly) {
-        this.assembly = assembly;
     }
 
     public int getLabel() {
@@ -54,6 +46,14 @@ public class GraphEdgeDB implements Serializable {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public boolean isInGraph2d() {
+        return inGraph2d;
+    }
+
+    public void setInGraph2d(boolean inGraph2d) {
+        this.inGraph2d = inGraph2d;
     }
 
     public int getXtalTransA() {
@@ -96,11 +96,21 @@ public class GraphEdgeDB implements Serializable {
         this.node2Label = node2Label;
     }
 
-    public boolean isInGraph2d() {
-        return inGraph2d;
-    }
+    public static GraphEdge create(GraphEdgeDB graphEdgeDB) {
+        GraphEdge graphEdge = new GraphEdge();
 
-    public void setInGraph2d(boolean inGraph2d) {
-        this.inGraph2d = inGraph2d;
+        graphEdge.setUid(graphEdgeDB.getUid());
+        graphEdge.setColor(graphEdgeDB.getColor());
+        graphEdge.setInGraph2d(graphEdgeDB.isInGraph2d());
+        graphEdge.setLabel(graphEdgeDB.getLabel());
+
+        graphEdge.setNode1Label(graphEdgeDB.getNode1Label());
+        graphEdge.setNode2Label(graphEdgeDB.getNode2Label());
+
+        graphEdge.setXtalTransA(graphEdgeDB.getXtalTransA());
+        graphEdge.setXtalTransB(graphEdgeDB.getXtalTransB());
+        graphEdge.setXtalTransC(graphEdgeDB.getXtalTransC());
+
+        return graphEdge;
     }
 }

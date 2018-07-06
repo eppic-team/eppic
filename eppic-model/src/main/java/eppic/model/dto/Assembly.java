@@ -10,10 +10,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlTransient;
 
-import eppic.model.db.AssemblyContentDB;
-import eppic.model.db.AssemblyDB;
-import eppic.model.db.AssemblyScoreDB;
-import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Assembly implements Serializable  {
@@ -39,6 +36,10 @@ public class Assembly implements Serializable  {
 	private List<AssemblyContent> assemblyContents;
 
 	private String interfaceClusterIdsString;
+
+	private List<GraphNode> graphNodes;
+
+	private List<GraphEdge> graphEdges;
 		
 	public Assembly() {
 		this.interfaceClusters = new ArrayList<InterfaceCluster>();
@@ -109,7 +110,23 @@ public class Assembly implements Serializable  {
 	public void setInterfaceClusterIdsString(String interfaceClusterIdsString) {
 		this.interfaceClusterIdsString = interfaceClusterIdsString;
 	}
-	
+
+	public List<GraphNode> getGraphNodes() {
+		return graphNodes;
+	}
+
+	public void setGraphNodes(List<GraphNode> graphNodes) {
+		this.graphNodes = graphNodes;
+	}
+
+	public List<GraphEdge> getGraphEdges() {
+		return graphEdges;
+	}
+
+	public void setGraphEdges(List<GraphEdge> graphEdges) {
+		this.graphEdges = graphEdges;
+	}
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param assemblyDB model item to convert
@@ -162,10 +179,30 @@ public class Assembly implements Serializable  {
 			}
 			assembly.setInterfaceClusters(interfaceClusters);
 		}
-		
-		// The opposite relation (interfaceCluster to assembly) is not added here. 
+		// The opposite relation (interfaceCluster to assembly) is not added here.
 		// It could be added in the initialisation of InterfaceCluster if needed at some point
-		
+
+		if (assemblyDB.getGraphNodes()!=null) {
+			List<GraphNode> graphNodes = new ArrayList<GraphNode>();
+
+			for (GraphNodeDB graphNodeDB:assemblyDB.getGraphNodes()) {
+				graphNodes.add(GraphNode.create(graphNodeDB));
+			}
+
+			assembly.setGraphNodes(graphNodes);
+		}
+
+		if (assemblyDB.getGraphEdges()!=null) {
+			List<GraphEdge> graphEdges = new ArrayList<GraphEdge>();
+
+			for (GraphEdgeDB graphEdgeDB:assemblyDB.getGraphEdges()) {
+				graphEdges.add(GraphEdge.create(graphEdgeDB));
+			}
+
+			assembly.setGraphEdges(graphEdges);
+
+		}
+
 		return assembly;
 	}
 	

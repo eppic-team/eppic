@@ -19,7 +19,7 @@ import eppic.db.dao.DaoException;
 public class AssemblyDAOJpa implements AssemblyDAO {
 
 	@Override
-	public List<Assembly> getAssemblies(int pdbInfoUid, boolean withScores) throws DaoException {
+	public List<Assembly> getAssemblies(int pdbInfoUid, boolean withScores, boolean withGraph) throws DaoException {
 		EntityManager entityManager = null;
 
 		try
@@ -43,6 +43,11 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 				if (!withScores) {
 					assemblyDB.setAssemblyScores(null);
 				}
+
+				if (!withGraph) {
+					assemblyDB.setGraphNodes(null);
+					assemblyDB.setGraphEdges(null);
+				}
 				
 				result.add(Assembly.create(assemblyDB));
 			}
@@ -60,7 +65,7 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 	}
 
 	@Override
-	public Assembly getAssembly(int pdbInfoUid, int pdbAssemblyId) throws DaoException {
+	public Assembly getAssembly(int pdbInfoUid, int pdbAssemblyId, boolean withGraph) throws DaoException {
 		EntityManager entityManager = null;
 
 		try
@@ -83,6 +88,12 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 			for(AssemblyDB assemblyDB : assemblyDBs) {
 				for (AssemblyScoreDB asdb : assemblyDB.getAssemblyScores()) {
 					if (asdb.getMethod().equals(strPdbId) && asdb.getCallName().equals("bio")) {
+
+						if (!withGraph) {
+							assemblyDB.setGraphNodes(null);
+							assemblyDB.setGraphEdges(null);
+						}
+
 						return Assembly.create(assemblyDB);
 					}
 				}

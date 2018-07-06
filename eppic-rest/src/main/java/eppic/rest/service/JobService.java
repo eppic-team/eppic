@@ -85,7 +85,7 @@ public class JobService {
             // assemblies info
             AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 
-            List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
+            List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true, false);
 
             pdbInfo.setAssemblies(assemblies);
         } else {
@@ -109,7 +109,7 @@ public class JobService {
         // assemblies info
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 
-        return assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
+        return assemblyDAO.getAssemblies(pdbInfo.getUid(), true, true);
     }
 
     /**
@@ -210,7 +210,7 @@ public class JobService {
 
         // assemblies info
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
-        Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), pdbAssemblyId);
+        Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), pdbAssemblyId, true);
 
         // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null) {
