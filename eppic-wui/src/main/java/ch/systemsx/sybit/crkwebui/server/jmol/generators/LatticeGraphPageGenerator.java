@@ -6,10 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
 
 import org.biojava.nbio.structure.Atom;
@@ -27,7 +24,6 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileCache;
 import eppic.model.dto.Interface;
 
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -35,7 +31,6 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.google.gson.Gson;
 
-import eppic.EppicParams;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
 
@@ -86,74 +81,6 @@ public class LatticeGraphPageGenerator {
 			logger.error("Error generating output from template "+template,e);
 			throw e;
 		}
-	}
-	/**
-	 * Generates html page containing the NGL canvas.
-	 * 
-	 * @param directory path to the job directory
-	 * @param inputName the input: either a PDB id or the file name as input by user
-	 * @param strucFile the file with the AU structure (can be cif or pdb and gzipped or not)
-	 * @param requestedIfaces subset of the interfaces to display
-	 * @param out Stream to output the HTML page
-	 * @throws IOException For errors reading or writing files
-	 * @throws ExecutionException 
-	 * @throws InterruptedException 
-	 */
-	public static void generateJSONPage(File directory, String inputName, File strucFile,
-			Collection<Integer> requestedIfaces, PrintWriter out) throws IOException, InterruptedException, ExecutionException {
-		String jsonFilename = getJsonFilename(directory, inputName, requestedIfaces);
-
-		Callable<String> computeJson = () -> {
-			
-			logger.info("In computeJson");
-			
-			if( !strucFile.exists() ) {
-				// this shouldn't happen...
-				throw new IOException("Could not find input AU file "+ strucFile.toString());
-
-			}
-
-			// Read input structure
-
-			Structure struc = readStructure(strucFile);
-
-			// Read spacegroup
-			//PDBCrystallographicInfo crystInfo = struc
-			//		.getCrystallographicInfo();
-			//SpaceGroup sg = crystInfo.getSpaceGroup();
-
-			//List<StructureInterface> siList = createStructureInterfaces(interfaces, sg);
-
-			// Because of issue #159 we have to pass null for the interfaces here so that they are recalculated from 
-			// the passed struc, which makes this quite slow the first time it is called for a certain combination
-			// of interfaces - JD 2017-08-29
-			// This is ok since the json files for all valid assemblies are precalculated in CLI,
-			// this can only be called if a non-valid combination of interfaces is requested by crafting a URL
-			// TODO it'd be good to have a better solution by implementing a LatticeGraph constructor that
-			// takes Interface bean objects as input instead of converting the beans to full StructureInterface objects.
-			LatticeGraph3D graph = new LatticeGraph3D(struc, null);
-			if( requestedIfaces != null ) {
-				logger.info("Filtering LatticeGraph3D to edges {}",requestedIfaces);
-				graph.filterEngagedInterfaces(requestedIfaces);
-			}
-			graph.setHexColors();
-
-			String json = gson.toJson(graph);
-
-			logger.info("Caching LatticeGraph JSON at {}",jsonFilename);
-			return json;
-		};
-		FileCache cache = FileCache.getInstance();
-		String json = cache.getString(jsonFilename, computeJson);
-		out.println(json);
-	}
-	
-	private static String getJsonFilename(File directory, String inputName, Collection<Integer> requestedIfaces) {
-		File jsonFile = new File(directory, inputName + EppicParams.get3dLatticeGraphJsonFilenameSuffix(requestedIfaces));
-		
-		String jsonFilename = jsonFile.toString();
-		logger.info("The 3d lattice graph json file is {}. File exists={}", jsonFilename, jsonFile.exists());
-		return jsonFilename;
 	}
 
 	/**

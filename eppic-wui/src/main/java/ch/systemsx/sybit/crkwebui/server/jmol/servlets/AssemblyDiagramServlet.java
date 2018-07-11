@@ -117,31 +117,23 @@ public class AssemblyDiagramServlet extends BaseServlet
 				title += " for interfaces "+requestedIfacesStr;
 			}
 
-
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			if(format != null && format.equalsIgnoreCase("json")) {
-				File auFile = LatticeGraphServlet.getAuFileName(dir, input, atomCachePath);
-				// important: input (second param) here must be the truncated input name or otherwise user jobs don't work - JD 2017-02-04
-				AssemblyDiagramPageGenerator.generateJSONPage(dir,inputPrefix, auFile, requestedIfaces, outputStream);
-			} else {
-				// Request URL, with format=json
-				StringBuffer jsonURL = request.getRequestURL();
-				Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
-				query.put("format", new String[] {"json"});
-				jsonURL.append('?')
-				.append(
-						query.entrySet().stream()
-						.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
-						.collect(Collectors.joining("&"))
-						);
-				String webappRoot = request.getContextPath();
-				String servletPath = request.getServletPath();
-				logger.debug("Context path: {}, servlet path: {}", webappRoot, servletPath);
-				AssemblyDiagramPageGenerator.generateHTMLPage(title, size, jsonURL.toString(),outputStream, webappRoot);
-				// TODO start generating JSON now, since we know that request is coming
-			}
-
+			// TODO this URL needs to be pointed to the new REST API URL (or graphql)
+			// Request URL, with format=json
+			StringBuffer jsonURL = request.getRequestURL();
+			Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
+			query.put("format", new String[]{"json"});
+			jsonURL.append('?')
+					.append(
+							query.entrySet().stream()
+									.<String>flatMap(entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey() + "=" + s))
+									.collect(Collectors.joining("&"))
+					);
+			String webappRoot = request.getContextPath();
+			String servletPath = request.getServletPath();
+			logger.debug("Context path: {}, servlet path: {}", webappRoot, servletPath);
+			AssemblyDiagramPageGenerator.generateHTMLPage(title, size, jsonURL.toString(), outputStream, webappRoot);
 
 		}
 		catch(ValidationException e)

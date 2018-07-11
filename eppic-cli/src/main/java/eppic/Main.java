@@ -9,8 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -39,8 +37,6 @@ import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
 
 import eppic.assembly.gui.LatticeGUIMustache;
 import eppic.assembly.layout.LayoutUtils;
@@ -583,12 +579,10 @@ public class Main {
 			GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
 			String fileFormat = "png";
 			
-			// the gson object needed in step 3 below
-			Gson gson = LatticeGraph3D.createGson();
 
 			for (Assembly a:validAssemblies) {
 				
-				// 1. Generate the png with the assembly diagram via invoking the dot executable
+				// Generate the png with the assembly diagram via invoking the dot executable
 
 				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
@@ -632,62 +626,9 @@ public class Main {
 				} else {
 					runner.generateFromDot(guiThumb, pngFile, fileFormat);
 				}
-				
-				// 2. Generate the json file for the dynamic js graph in the wui
-				
-				guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, latticeGraph);
-				guiThumb.setLayout2D(LayoutUtils.getDefaultLayout2D(latticeGraph.getCrystalCell()));
-				String json;
-				// Hack to work around Mustache limitations which prevent generating valid JSON
-				try(StringWriter sw = new StringWriter();
-						PrintWriter pw = new PrintWriter(sw);
-						) {
 
-					// Construct page
-					guiThumb.execute(pw);
-
-					pw.flush();
-					sw.flush();
-					json = sw.toString();
-					// Remove all trailing commas from lists (invalid JSON)
-					json = json.replaceAll(",(?=\\s*[}\\]])","");
-											
-				}
-				File jsonAssemblyDiagramFile = params.getOutputFile(EppicParams.get2dDiagramJsonFilenameSuffix(interfaceIds));
-
-				PrintWriter pw = new PrintWriter(new FileWriter(jsonAssemblyDiagramFile));
-				pw.println(json);
-				pw.close();
-				
-				
-				// 3. Generate the json file for the 3d lattice graph in the wui (ngl based)
-								
-				latticeGraph.setHexColors();
-
-				json = gson.toJson(latticeGraph);
-
-				File jsonLatticeGraphFile = params.getOutputFile(EppicParams.get3dLatticeGraphJsonFilenameSuffix(interfaceIds));
-
-				pw = new PrintWriter(new FileWriter(jsonLatticeGraphFile));
-				pw.println(json);
-				pw.close();
-				
-				
 			}
-			
-			// additionally for the lattice graph 3d we need the full graph "*" file, i.e. all interfaces engaged
-			// used in "view unit cell"
-			
-			latticeGraph.filterEngagedClusters(null);
-			latticeGraph.setHexColors();
 
-			String json = gson.toJson(latticeGraph);
-
-			File jsonLatticeGraphFile = params.getOutputFile(EppicParams.get3dLatticeGraphJsonFilenameSuffix(null));
-
-			PrintWriter pw = new PrintWriter(new FileWriter(jsonLatticeGraphFile));
-			pw.println(json);
-			pw.close();
 			
 		} catch( IOException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);

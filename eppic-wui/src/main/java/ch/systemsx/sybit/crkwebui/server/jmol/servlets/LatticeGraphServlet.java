@@ -152,32 +152,25 @@ public class LatticeGraphServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 			//String molviewerurl = properties.getProperty("urlNglJs");
-			
-			
-			if(format != null && format.equalsIgnoreCase("json")) {
-				// important: input (second param) here must be the truncated input name or otherwise user jobs don't work - JD 2017-02-04
-				LatticeGraphPageGenerator.generateJSONPage(dir, inputPrefix, auFile, requestedIfaces, outputStream);
-			} else {
-				String nglJsUrl = properties.getProperty("urlNglJs");
-				if (nglJsUrl == null || nglJsUrl.equals("")) {
-					logger.warn("The URL for NGL js is not set in property 'urlNglJs' in config file! NGL won't work.");
-				}
-				// Request URL, with format=json
-				StringBuffer jsonURL = request.getRequestURL();
-				Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
-				query.put("format", new String[] {"json"});
-				jsonURL.append('?')
-				.append(
-						query.entrySet().stream()
-						.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
-						.collect(Collectors.joining("&"))
-						);
-				String webappRoot = request.getContextPath();
-				LatticeGraphPageGenerator.generateHTMLPage(inputPrefix, auURI, title, size, jsonURL.toString(), outputStream, nglJsUrl, webappRoot);
-				// TODO start generating JSON now, since we know that request is coming
+
+			String nglJsUrl = properties.getProperty("urlNglJs");
+			if (nglJsUrl == null || nglJsUrl.equals("")) {
+				logger.warn("The URL for NGL js is not set in property 'urlNglJs' in config file! NGL won't work.");
 			}
 
-
+			// TODO this URL needs to be switched to the new REST API URL or graphql
+			// Request URL, with format=json
+			StringBuffer jsonURL = request.getRequestURL();
+			Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
+			query.put("format", new String[]{"json"});
+			jsonURL.append('?')
+					.append(
+							query.entrySet().stream()
+									.<String>flatMap(entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey() + "=" + s))
+									.collect(Collectors.joining("&"))
+					);
+			String webappRoot = request.getContextPath();
+			LatticeGraphPageGenerator.generateHTMLPage(inputPrefix, auURI, title, size, jsonURL.toString(), outputStream, nglJsUrl, webappRoot);
 
 		}
 		catch(ValidationException e)
