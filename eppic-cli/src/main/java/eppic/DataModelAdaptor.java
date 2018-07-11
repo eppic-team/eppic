@@ -1569,7 +1569,8 @@ public class DataModelAdaptor {
 	
 	/**
 	 * Add to the pdbInfo member the cached warnings interfId2Warnings, compiled in
-	 * {@link #setGeometryScores(List)}, {@link #setCombinedPredictors(List)} and {@link #setEvolScores(InterfaceEvolContextList)} 
+	 * {@link #setGeometryScores(List, List)}, {@link #setCombinedPredictors(List, List)}
+	 * and {@link #setEvolScores(InterfaceEvolContextList)}
 	 */
 	public void setInterfaceWarnings() {
 		
