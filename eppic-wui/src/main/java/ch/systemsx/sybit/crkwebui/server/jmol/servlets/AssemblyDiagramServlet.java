@@ -1,6 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
@@ -19,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
-import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.AssemblyDiagramPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.AssemblyDiagramServletInputValidator;
@@ -55,9 +53,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramServlet.class);
 
-	//private String resultsLocation;
-	private String destination_path;
-	
 	private String atomCachePath;
 
 	@Override
@@ -66,7 +61,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 		super.init(config);
 
 		//resultsLocation = properties.getProperty("results_location");
-		destination_path = properties.getProperty("destination_path");
 		atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
 		
 		if (atomCachePath == null) 
@@ -100,11 +94,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr,format);
 
 			PdbInfo pdbInfo = LatticeGraphServlet.getPdbInfo(jobId);
-			String input = pdbInfo.getInputName();
-			String inputPrefix = pdbInfo.getTruncatedInputName();
-
-			// job directory on local filesystem
-			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
 			List<Interface> ifaceList = LatticeGraphServlet.getInterfaceList(pdbInfo);
 

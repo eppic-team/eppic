@@ -59,9 +59,6 @@ public class LatticeGUIMustache {
 	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_THUMB = expandTemplatePath("AssemblyDiagramThumb.dot.mustache");
 	public static final String TEMPLATE_3DMOL = LatticeGUIMustache3D.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUIMustache3D";
 	public static final String MUSTACHE_TEMPLATE_NGL = "mustache/eppic/assembly/gui/LatticeGUINgl.html.mustache";
-	
-	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_JSON = expandTemplatePath("AssemblyDiagramFull.json.mustache");
-
 
 
 	private final LatticeGraph3D latticeGraph;
