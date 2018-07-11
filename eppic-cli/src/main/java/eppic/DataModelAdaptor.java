@@ -732,7 +732,7 @@ public class DataModelAdaptor {
 		for (InterfaceEdge3D e : graph.edgeSet()) {
 			GraphEdgeDB edgeDB = new GraphEdgeDB();
 			edgeDB.setColor(e.getColorStr());
-			edgeDB.setLabel(e.getClusterId());
+			edgeDB.setLabel(e.getInterfaceId());
 
 			ChainVertex3D v1 = graph.getEdgeSource(e);
 			ChainVertex3D v2 = graph.getEdgeTarget(e);
