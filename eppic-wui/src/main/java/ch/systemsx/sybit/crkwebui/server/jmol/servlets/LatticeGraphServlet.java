@@ -68,7 +68,6 @@ public class LatticeGraphServlet extends BaseServlet
 
 	public static final String PARAM_INTERFACES = "interfaces";
 	public static final String PARAM_CLUSTERS = "clusters";
-	public static final String PARAM_FORMAT = "format";
 
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphServlet.class);
 
@@ -102,21 +101,20 @@ public class LatticeGraphServlet extends BaseServlet
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
-		String format = request.getParameter(PARAM_FORMAT);
-		
+
 		// setting a default size if not specified, #191
 		if (size == null || size.trim().isEmpty()) 
 			size = JmolViewerServlet.DEFAULT_SIZE;
 
 
-		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={},format={}",
-				jobId,requestedIfacesStr,requestedClusterStr,format);
+		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={}",
+				jobId,requestedIfacesStr,requestedClusterStr);
 
 		PrintWriter outputStream = null;
 
 		try
 		{
-			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr,format);
+			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr);
 
 			PdbInfo pdbInfo = getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();

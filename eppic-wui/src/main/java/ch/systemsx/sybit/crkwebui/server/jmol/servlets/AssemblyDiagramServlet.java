@@ -53,18 +53,11 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramServlet.class);
 
-	private String atomCachePath;
-
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
 		super.init(config);
 
-		//resultsLocation = properties.getProperty("results_location");
-		atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
-		
-		if (atomCachePath == null) 
-			logger.warn("ATOM_CACHE_PATH is not set in config file, will not be able to reuse cache for PDB cif.gz files!");
 	}
 
 	@Override
@@ -79,19 +72,18 @@ public class AssemblyDiagramServlet extends BaseServlet
 		String requestedIfacesStr = request.getParameter(LatticeGraphServlet.PARAM_INTERFACES);
 		String requestedClusterStr = request.getParameter(LatticeGraphServlet.PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
-		String format = request.getParameter(LatticeGraphServlet.PARAM_FORMAT);
-		
+
 		// setting a default size if not specified, #191
 		if (size == null || size.trim().isEmpty()) 
 			size = JmolViewerServlet.DEFAULT_SIZE;
 
-		logger.info("Requested assemblyDiagram page for jobId={},interfaces={},clusters={},format={}",jobId,requestedIfacesStr,requestedClusterStr,format);
+		logger.info("Requested assemblyDiagram page for jobId={},interfaces={},clusters={}",jobId,requestedIfacesStr,requestedClusterStr);
 
 		PrintWriter outputStream = null;
 
 		try
 		{
-			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr,format);
+			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr);
 
 			PdbInfo pdbInfo = LatticeGraphServlet.getPdbInfo(jobId);
 

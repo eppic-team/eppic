@@ -11,13 +11,14 @@ public class AssemblyDiagramServletInputValidator
 	 * Validates correctness of input data necessary to run jmol viewer.
 	 * @param jobId identifier of the job
 	 * @param interfaces list of interface identifiers
+	 * @param clusters
 	 * @throws ValidationException when validation fails
 	 */
 	public static void validateLatticeGraphInput(String jobId,
-			String interfaces, String clusters, String format) throws ValidationException
+			String interfaces, String clusters) throws ValidationException
 	{
 		// Same parameters as the LatticeGraph
-		LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId, interfaces, clusters, format);
+		LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId, interfaces, clusters);
 	}
 }
  
