@@ -13,10 +13,11 @@ public class LatticeGraphServletInputValidator
 	 * @param jobId identifier of the job
 	 * @param interfaces list of interface identifiers
 	 * @param clusters
+	 * @param assembly
 	 * @throws ValidationException when validation fails
 	 */
 	public static void validateLatticeGraphInput(String jobId,
-			String interfaces, String clusters) throws ValidationException
+			String interfaces, String clusters, String assembly) throws ValidationException
 	{
 		if(jobId == null) {
 			throw new ValidationException("Job identifier is not specified.");
@@ -25,6 +26,7 @@ public class LatticeGraphServletInputValidator
 		RunJobDataValidator.validateJobId(jobId);
 		validateInterfaceList(interfaces);
 		validateInterfaceList(clusters); // same format as interfaces
+		validateAssemblyId(assembly);
 	}
 
 	/**
@@ -37,9 +39,14 @@ public class LatticeGraphServletInputValidator
 		// Either '*' or a non-whitespace version of IntervalSet.isValidSelectionString(interfaces);
 		if(interfaces != null && !interfaces.matches("^(\\*?|\\d+(-\\d+)?(,\\d+(-\\d+)?)*)$"))
 		{
-			throw new ValidationException( "Invalid interfaces ({}). Expected '*' or comma-separated list of integers");
+			throw new ValidationException( "Invalid interfaces ("+interfaces+"). Expected '*' or comma-separated list of integers");
 		}
 	}
 
+	public static void validateAssemblyId(String assembly) throws ValidationException {
+		if (assembly!=null && !assembly.matches("^\\d+$")) {
+			throw new ValidationException( "Invalid assembly id ("+assembly+"). Expected integer.");
+		}
+	}
 }
  

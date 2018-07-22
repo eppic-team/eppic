@@ -67,6 +67,7 @@ public class LatticeGraphServlet extends BaseServlet
 	public static final String SERVLET_NAME = "latticeGraph";
 
 	public static final String PARAM_INTERFACES = "interfaces";
+	public static final String PARAM_ASSEMBLY = "assembly";
 	public static final String PARAM_CLUSTERS = "clusters";
 
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraphServlet.class);
@@ -94,12 +95,10 @@ public class LatticeGraphServlet extends BaseServlet
 			HttpServletResponse response) throws ServletException, IOException
 	{
 
-		//TODO add type=interface/assembly as parameter, so that assemblies can also be supported
-
-
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
 		String requestedIfacesStr = request.getParameter(PARAM_INTERFACES);
 		String requestedClusterStr = request.getParameter(PARAM_CLUSTERS);
+		String requestedAssemblyStr = request.getParameter(LatticeGraphServlet.PARAM_ASSEMBLY);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
 
 		// setting a default size if not specified, #191
@@ -107,14 +106,17 @@ public class LatticeGraphServlet extends BaseServlet
 			size = JmolViewerServlet.DEFAULT_SIZE;
 
 
-		logger.info("Requested Lattice Graph page for jobId={},interfaces={},clusters={}",
-				jobId,requestedIfacesStr,requestedClusterStr);
+		logger.info("Requested Lattice Graph page for jobId={}, interfaces={}, clusters={}, assembly={}",
+				jobId,requestedIfacesStr,requestedClusterStr, requestedAssemblyStr);
 
 		PrintWriter outputStream = null;
 
 		try
 		{
-			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr);
+			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr, requestedAssemblyStr);
+
+			// should be no risk because validator checked for number
+			int assemblyId = Integer.parseInt(requestedAssemblyStr);
 
 			PdbInfo pdbInfo = getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
@@ -136,6 +138,8 @@ public class LatticeGraphServlet extends BaseServlet
 			// the URL has no gz at the end because it's served as plain text via content-encoding: gzip
 			String auURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputFileNameNoGz;
 
+			// TODO no interfaces data should be needed here, data should come from rest api
+			// TODO at the moment input from interfaces does not work, implement
 			List<Interface> ifaceList = getInterfaceList(pdbInfo);
 
 			//TODO better to filter interfaces here before construction, or afterwards?
@@ -156,19 +160,13 @@ public class LatticeGraphServlet extends BaseServlet
 				logger.warn("The URL for NGL js is not set in property 'urlNglJs' in config file! NGL won't work.");
 			}
 
-			// TODO this URL needs to be switched to the new REST API URL or graphql
-			// Request URL, with format=json
-			StringBuffer jsonURL = request.getRequestURL();
-			Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
-			query.put("format", new String[]{"json"});
-			jsonURL.append('?')
-					.append(
-							query.entrySet().stream()
-									.<String>flatMap(entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey() + "=" + s))
-									.collect(Collectors.joining("&"))
-					);
+			// the json data URL from REST API
+			// TODO make constant or property for api URL
+			// TODO make api endpoint for 1 assembly id providing all interfaces data
+			String jsonURL = "/rest/api/v3/job/assembly/" + jobId + "/" + assemblyId;
+
 			String webappRoot = request.getContextPath();
-			LatticeGraphPageGenerator.generateHTMLPage(inputPrefix, auURI, title, size, jsonURL.toString(), outputStream, nglJsUrl, webappRoot);
+			LatticeGraphPageGenerator.generateHTMLPage(inputPrefix, auURI, title, size, jsonURL, outputStream, nglJsUrl, webappRoot);
 
 		}
 		catch(ValidationException e)

@@ -2,12 +2,8 @@ package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -64,12 +60,9 @@ public class AssemblyDiagramServlet extends BaseServlet
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException
 	{
-
-		//TODO add type=interface/assembly as parameter, so that assemblies can also be supported
-
-
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
 		String requestedIfacesStr = request.getParameter(LatticeGraphServlet.PARAM_INTERFACES);
+		String requestedAssemblyStr = request.getParameter(LatticeGraphServlet.PARAM_ASSEMBLY);
 		String requestedClusterStr = request.getParameter(LatticeGraphServlet.PARAM_CLUSTERS);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
 
@@ -77,19 +70,21 @@ public class AssemblyDiagramServlet extends BaseServlet
 		if (size == null || size.trim().isEmpty()) 
 			size = JmolViewerServlet.DEFAULT_SIZE;
 
-		logger.info("Requested assemblyDiagram page for jobId={},interfaces={},clusters={}",jobId,requestedIfacesStr,requestedClusterStr);
+		logger.info("Requested assemblyDiagram page for jobId={}, interfaces={}, clusters={}, assembly={}",
+				jobId,requestedIfacesStr,requestedClusterStr, requestedAssemblyStr);
 
 		PrintWriter outputStream = null;
 
 		try
 		{
-			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr);
+			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId, requestedIfacesStr, requestedClusterStr, requestedAssemblyStr);
 
 			PdbInfo pdbInfo = LatticeGraphServlet.getPdbInfo(jobId);
 
 			List<Interface> ifaceList = LatticeGraphServlet.getInterfaceList(pdbInfo);
 
-			//TODO better to filter interfaces here before construction, or afterwards?
+			// TODO no interfaces data should be needed here, data should come from rest api
+			// TODO at the moment input from interfaces does not work, implement
 			IntervalSet requestedIntervals = LatticeGraphServlet.parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);
 			Collection<Integer> requestedIfaces = requestedIntervals.getIntegerSet();
 
@@ -100,21 +95,15 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			// TODO this URL needs to be pointed to the new REST API URL (or graphql)
-			// Request URL, with format=json
-			StringBuffer jsonURL = request.getRequestURL();
-			Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
-			query.put("format", new String[]{"json"});
-			jsonURL.append('?')
-					.append(
-							query.entrySet().stream()
-									.<String>flatMap(entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey() + "=" + s))
-									.collect(Collectors.joining("&"))
-					);
+			// the json data URL from REST API
+			// TODO make constant or property for api URL
+			// TODO make api endpoint for 1 assembly id providing all interfaces data
+			// TODO this might need to be graphql (?), we need naming as vis.js wants
+			String jsonURL = "/rest/api/v3/job/assemblies/";
+
 			String webappRoot = request.getContextPath();
-			String servletPath = request.getServletPath();
-			logger.debug("Context path: {}, servlet path: {}", webappRoot, servletPath);
-			AssemblyDiagramPageGenerator.generateHTMLPage(title, size, jsonURL.toString(), outputStream, webappRoot);
+			logger.debug("Context path: {}", webappRoot);
+			AssemblyDiagramPageGenerator.generateHTMLPage(title, size, jsonURL, outputStream, webappRoot);
 
 		}
 		catch(ValidationException e)

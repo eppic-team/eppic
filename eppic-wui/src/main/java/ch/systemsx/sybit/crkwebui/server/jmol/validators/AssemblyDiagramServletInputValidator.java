@@ -12,13 +12,14 @@ public class AssemblyDiagramServletInputValidator
 	 * @param jobId identifier of the job
 	 * @param interfaces list of interface identifiers
 	 * @param clusters
+	 * @param assembly
 	 * @throws ValidationException when validation fails
 	 */
 	public static void validateLatticeGraphInput(String jobId,
-			String interfaces, String clusters) throws ValidationException
+			String interfaces, String clusters, String assembly) throws ValidationException
 	{
 		// Same parameters as the LatticeGraph
-		LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId, interfaces, clusters);
+		LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId, interfaces, clusters, assembly);
 	}
 }
  
