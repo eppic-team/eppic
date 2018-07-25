@@ -65,7 +65,7 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 	}
 
 	@Override
-	public Assembly getAssembly(int pdbInfoUid, int pdbAssemblyId, boolean withGraph) throws DaoException {
+	public Assembly getAssemblyByPdbAssemblyId(int pdbInfoUid, int pdbAssemblyId, boolean withGraph) throws DaoException {
 		EntityManager entityManager = null;
 
 		try
@@ -113,5 +113,49 @@ public class AssemblyDAOJpa implements AssemblyDAO {
 		}
 	}
 
+	@Override
+	public Assembly getAssembly(int pdbInfoUid, int assemblyId, boolean withGraph) throws DaoException {
+		EntityManager entityManager = null;
+
+		try
+		{
+
+			entityManager = EntityManagerHandler.getEntityManager();
+
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<AssemblyDB> criteriaQuery = criteriaBuilder.createQuery(AssemblyDB.class);
+
+			Root<AssemblyDB> root = criteriaQuery.from(AssemblyDB.class);
+			Path<PdbInfoDB> pdbInfoDB = root.get(AssemblyDB_.pdbInfo);
+			criteriaQuery.where(criteriaBuilder.equal(pdbInfoDB.get(PdbInfoDB_.uid), pdbInfoUid));
+
+			TypedQuery<AssemblyDB> query = entityManager.createQuery(criteriaQuery);
+
+			List<AssemblyDB> assemblyDBs = query.getResultList();
+
+			for(AssemblyDB assemblyDB : assemblyDBs) {
+				if (assemblyDB.getId() == assemblyId) {
+					if (!withGraph) {
+						assemblyDB.setGraphNodes(null);
+						assemblyDB.setGraphEdges(null);
+					}
+
+					return Assembly.create(assemblyDB);
+				}
+
+			}
+			// not found
+			return null;
+		}
+		catch(Throwable e)
+		{
+			throw new DaoException(e);
+		}
+		finally
+		{
+			if (entityManager!=null)
+				entityManager.close();
+		}
+	}
 
 }

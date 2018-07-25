@@ -79,6 +79,9 @@ public class AssemblyDiagramServlet extends BaseServlet
 		{
 			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId, requestedIfacesStr, requestedClusterStr, requestedAssemblyStr);
 
+			// should be no risk because validator checked for number
+			int assemblyId = Integer.parseInt(requestedAssemblyStr);
+
 			PdbInfo pdbInfo = LatticeGraphServlet.getPdbInfo(jobId);
 
 			List<Interface> ifaceList = LatticeGraphServlet.getInterfaceList(pdbInfo);
@@ -96,10 +99,8 @@ public class AssemblyDiagramServlet extends BaseServlet
 			outputStream = new PrintWriter(response.getOutputStream());
 
 			// the json data URL from REST API
-			// TODO make constant or property for api URL
-			// TODO make api endpoint for 1 assembly id providing all interfaces data
-			// TODO this might need to be graphql (?), we need naming as vis.js wants
-			String jsonURL = "/rest/api/v3/job/assemblies/";
+			// TODO construct from constant or property for api URL
+			String jsonURL = "/rest/api/v3/job/assemblyDiagram/" + jobId + "/" + assemblyId;
 
 			String webappRoot = request.getContextPath();
 			logger.debug("Context path: {}", webappRoot);

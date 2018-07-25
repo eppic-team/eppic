@@ -2,6 +2,7 @@ package eppic.rest.endpoints;
 
 import eppic.db.dao.DaoException;
 import eppic.model.dto.*;
+import eppic.model.dto.views.LatticeGraph;
 import eppic.rest.service.JobService;
 import io.swagger.annotations.Api;
 
@@ -30,26 +31,6 @@ public class JobResource {
                 .status(Response.Status.OK)
                 .type(getMediaType(uriInfo))
                 .entity(pdbInfo);
-
-        return responseBuilder.build();
-    }
-
-    @GET
-    @Path("/assemblies/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
-    public Response getAssemblies(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId) throws DaoException {
-
-
-        List<Assembly> assemblies = JobService.getAssemblyData(jobId);
-        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Assembly>> entity = new GenericEntity<List<Assembly>>(assemblies){};
-
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
-                .entity(entity);
 
         return responseBuilder.build();
     }
@@ -137,21 +118,21 @@ public class JobResource {
     }
 
     @GET
-    @Path("/assembly/{jobId}/{pdbAssemblyId}")
+    @Path("/assemblies/{jobId}")
     @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
-    public Response getAssembly(
+    public Response getAssemblies(
             @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
-            @PathParam("pdbAssemblyId") String pdbAssemblyId) throws DaoException {
+            @PathParam("jobId") String jobId) throws DaoException {
 
-        // TODO validate pdbAssemblyId is int
 
-        Assembly assembly = JobService.getAssemblyData(jobId, Integer.parseInt(pdbAssemblyId));
+        List<Assembly> assemblies = JobService.getAssemblyDataByPdbAssemblyId(jobId);
+        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
+        GenericEntity<List<Assembly>> entity = new GenericEntity<List<Assembly>>(assemblies){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
                 .type(getMediaType(uriInfo))
-                .entity(assembly);
+                .entity(entity);
 
         return responseBuilder.build();
     }
@@ -176,6 +157,88 @@ public class JobResource {
                 .entity(entity);
 
         return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/assemblyByPdbId/{jobId}/{pdbAssemblyId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getAssemblyByPdbId(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("pdbAssemblyId") String pdbAssemblyId) throws DaoException {
+
+        // TODO validate pdbAssemblyId is int
+
+        Assembly assembly = JobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(assembly);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/assembly/{jobId}/{assemblyId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getAssembly(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("assemblyId") String assemblyId) throws DaoException {
+
+        // TODO validate assemblyId is int
+
+        Assembly assembly = JobService.getAssemblyData(jobId, Integer.parseInt(assemblyId));
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(assembly);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/latticeGraph/{jobId}/{assemblyId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getLatticeGraph(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("assemblyId") String assemblyId) throws DaoException {
+
+        // TODO validate assemblyId is int
+
+        LatticeGraph latticeGraph = JobService.getLatticeGraphData(jobId, Integer.parseInt(assemblyId));
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(latticeGraph);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/assemblyDiagram/{jobId}/{assemblyId}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getAssemblyDiagram(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("assemblyId") String pdbAssemblyId) throws DaoException {
+
+        // TODO validate assemblyId is int
+
+        // TODO implement!
+        //Assembly assembly = JobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
+
+        //Response.ResponseBuilder responseBuilder =  Response
+        //        .status(Response.Status.OK)
+        //        .type(getMediaType(uriInfo))
+        //        .entity(assembly);
+
+        //return responseBuilder.build();
+        return null;
     }
 
     /**

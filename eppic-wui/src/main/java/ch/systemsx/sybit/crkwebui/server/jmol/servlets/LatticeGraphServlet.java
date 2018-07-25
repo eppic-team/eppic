@@ -161,9 +161,8 @@ public class LatticeGraphServlet extends BaseServlet
 			}
 
 			// the json data URL from REST API
-			// TODO make constant or property for api URL
-			// TODO make api endpoint for 1 assembly id providing all interfaces data
-			String jsonURL = "/rest/api/v3/job/assembly/" + jobId + "/" + assemblyId;
+			// TODO construct from constant or property for api URL
+			String jsonURL = "/rest/api/v3/job/latticeGraph/" + jobId + "/" + assemblyId;
 
 			String webappRoot = request.getContextPath();
 			LatticeGraphPageGenerator.generateHTMLPage(inputPrefix, auURI, title, size, jsonURL, outputStream, nglJsUrl, webappRoot);
