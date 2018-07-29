@@ -4,14 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -28,16 +20,11 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadS
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.LatticeGraphPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.LatticeGraphServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import eppic.model.dto.Interface;
 import eppic.model.dto.PdbInfo;
 import eppic.assembly.gui.LatticeGUI;
-import eppic.commons.util.Interval;
-import eppic.commons.util.IntervalSet;
 import eppic.db.dao.DaoException;
-import eppic.db.dao.InterfaceDAO;
 import eppic.db.dao.JobDAO;
 import eppic.db.dao.PDBInfoDAO;
-import eppic.db.dao.jpa.InterfaceDAOJpa;
 import eppic.db.dao.jpa.JobDAOJpa;
 import eppic.db.dao.jpa.PDBInfoDAOJpa;
 import eppic.model.db.JobDB;
@@ -51,6 +38,7 @@ import eppic.model.db.JobDB;
  * Parameter name 					Parameter value
  * --------------					---------------
  * id								String (the jobId hash)
+ * assembly							String (the eppic assembly id)
  * interfaces						String (comma-separated list of interface ids)
  * clusters							String (comma-separated list of interface cluster ids). Superseded by interfaces.
  *
@@ -115,12 +103,8 @@ public class LatticeGraphServlet extends BaseServlet
 		{
 			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr, requestedAssemblyStr);
 
-			// should be no risk because validator checked for number
-			int assemblyId = Integer.parseInt(requestedAssemblyStr);
-
 			PdbInfo pdbInfo = getPdbInfo(jobId);
 			String input = pdbInfo.getInputName();
-			String inputPrefix = pdbInfo.getTruncatedInputName();
 
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
@@ -138,20 +122,6 @@ public class LatticeGraphServlet extends BaseServlet
 			// the URL has no gz at the end because it's served as plain text via content-encoding: gzip
 			String auURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputFileNameNoGz;
 
-			// TODO no interfaces data should be needed here, data should come from rest api
-			// TODO at the moment input from interfaces does not work, implement
-			List<Interface> ifaceList = getInterfaceList(pdbInfo);
-
-			//TODO better to filter interfaces here before construction, or afterwards?
-			IntervalSet requestedIntervals = parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);
-			Collection<Integer> requestedIfaces = requestedIntervals.getIntegerSet();
-
-			String title = jobId + " - Lattice Graph";
-			if(requestedIfaces != null && !requestedIfaces.isEmpty()) {
-				title += " for interfaces "+requestedIfacesStr;
-			}
-
-
 			outputStream = new PrintWriter(response.getOutputStream());
 			//String molviewerurl = properties.getProperty("urlNglJs");
 
@@ -162,10 +132,30 @@ public class LatticeGraphServlet extends BaseServlet
 
 			// the json data URL from REST API
 			// TODO construct from constant or property for api URL
-			String jsonURL = "/rest/api/v3/job/latticeGraph/" + jobId + "/" + assemblyId;
+            String REST_PREFIX = "/rest/api/v3/job";
+
+			String jsonURL = null;
+            String title = jobId + " - Lattice Graph";
+
+            if (requestedAssemblyStr != null) {
+                // should be no risk because validator checked for number
+                int assemblyId = Integer.parseInt(requestedAssemblyStr);
+                jsonURL = REST_PREFIX + "/latticeGraph/" + jobId + "/" + assemblyId;
+                title += " for assembly " + requestedAssemblyStr;
+            }
+
+			if (requestedIfacesStr != null) {
+			    jsonURL = REST_PREFIX + "/latticeGraphByInterfaceIds/" + jobId + "/" + requestedIfacesStr;
+			    title += " for interfaces " + requestedIfacesStr;
+            }
+
+            if (requestedClusterStr != null) {
+                jsonURL = REST_PREFIX + "/latticeGraphByInterfaceClusterIds/" + jobId + "/" + requestedClusterStr;
+                title += " for interface clusters " + requestedClusterStr;
+            }
 
 			String webappRoot = request.getContextPath();
-			LatticeGraphPageGenerator.generateHTMLPage(inputPrefix, auURI, title, size, jsonURL, outputStream, nglJsUrl, webappRoot);
+			LatticeGraphPageGenerator.generateHTMLPage(auURI, title, size, jsonURL, outputStream, nglJsUrl, webappRoot);
 
 		}
 		catch(ValidationException e)
@@ -207,68 +197,6 @@ public class LatticeGraphServlet extends BaseServlet
 		return pdbinfo;
 	}
 
-	static List<Interface> getInterfaceList(PdbInfo pdbInfo) throws DaoException {
-		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-			return interfaceDAO.getInterfacesByPdbUid(pdbInfo.getUid(), false, false);
-	}
-	
-	/**
-	 * Combines a list of clusters and a list of interfaces, taking the union.
-	 * @param ifaceStr
-	 * @param clusterStr
-	 * @param ifaceList
-	 * @return
-	 */
-	public static IntervalSet parseInterfaceListWithClusters(
-			String ifaceStr, String clusterStr,
-			List<Interface> ifaceList) {
-		// If one of interfaces and clusters is specified, return it
-		// If either are '*', return null (all)
-		// If both are specified, return their union
-		if( ifaceStr == null ) {
-			if(clusterStr == null ) {
-				// If neither are specified, return all
-				return new IntervalSet(Interval.INFINITE_INTERVAL);
-			}
-			// Only clusters specified
-			if(clusterStr.equals('*'))
-				return new IntervalSet(Interval.INFINITE_INTERVAL);
-
-			IntervalSet clusterSet = new IntervalSet(clusterStr);
-			return mapClusters(clusterSet,ifaceList);
-		} else {
-			if(clusterStr == null ) {
-				// Only interfaces specified
-				return new IntervalSet(ifaceStr);
-			}
-			// Both specified
-			if(ifaceStr.equals('*') || clusterStr.equals('*') )
-				return new IntervalSet(Interval.INFINITE_INTERVAL);
-			IntervalSet clusterSet = new IntervalSet(clusterStr);
-			IntervalSet interfaces = mapClusters(clusterSet,ifaceList);
-			interfaces.addAll(new IntervalSet(ifaceStr));
-			return interfaces.getMergedIntervalSet();
-		}
-	}
-
-	/**
-	 * Expand a list of interface cluster numbers to a full list of interfaces
-	 * @param clusters
-	 * @param ifaceList
-	 * @return
-	 */
-	private static IntervalSet mapClusters(IntervalSet clusters,
-			Collection<Interface> ifaceList) {
-		SortedSet<Integer> interfaces = new TreeSet<>();
-		for(Interface iface : ifaceList) {
-			if(clusters.contains(iface.getClusterId())) {
-				// Only interfaces specified
-				interfaces.add(iface.getInterfaceId());
-			}
-		}
-		return new IntervalSet(interfaces);
-	}
-	
 	/**
 	 * Returns the file name of the input structure: if user job it returns 
 	 * the path to the file in the job dir, if precomputed it finds the file path

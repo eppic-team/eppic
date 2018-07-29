@@ -1,6 +1,5 @@
 package eppic.model.dto;
 
-import eppic.model.db.AssemblyDB;
 import eppic.model.db.GraphNodeDB;
 
 import java.io.Serializable;

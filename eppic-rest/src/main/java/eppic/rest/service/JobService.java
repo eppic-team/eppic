@@ -260,12 +260,86 @@ public class JobService {
         Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
 
         // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
-        if (assembly==null) {
+        if (assembly==null || unitcellAssembly == null) {
             throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
 
         return ViewsAdaptor.getLatticeGraphView(assembly, unitcellAssembly);
     }
 
+    /**
+     * Retrieves lattice graph data for job and eppic interface ids
+     * string (comma separated and possibly with hyphens).
+     * @param jobId job identifier
+     * @param interfaceIds the eppic interface ids, if null all interfaces are assumed
+     * @return lattice graph data
+     * @throws DaoException
+     */
+    public static LatticeGraph getLatticeGraphDataByInterfaceIds(String jobId, Set<Integer> interfaceIds) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+
+        List<GraphEdge> graphEdges = new ArrayList<>();
+
+        Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (unitcellAssembly == null) {
+            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+        }
+
+        if (interfaceIds == null) {
+            graphEdges = unitcellAssembly.getGraphEdges();
+        } else {
+            for (GraphEdge edge : unitcellAssembly.getGraphEdges()) {
+                int interfaceId = edge.getInterfaceId();
+                if (interfaceIds.contains(interfaceId)) {
+                    graphEdges.add(edge);
+                }
+            }
+        }
+
+        return ViewsAdaptor.getLatticeGraphView(graphEdges, unitcellAssembly);
+    }
+
+    /**
+     * Retrieves lattice graph data for job and eppic interface cluster ids
+     * string (comma separated and possibly with hyphens).
+     * @param jobId job identifier
+     * @param interfaceClusterIds the eppic interface cluster ids, if null all interface clusters are assumed
+     * @return lattice graph data
+     * @throws DaoException
+     */
+    public static LatticeGraph getLatticeGraphDataByInterfaceClusterIds(String jobId, Set<Integer> interfaceClusterIds) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+
+        List<GraphEdge> graphEdges = new ArrayList<>();
+
+        Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (unitcellAssembly == null) {
+            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+        }
+
+        if (interfaceClusterIds == null) {
+            graphEdges = unitcellAssembly.getGraphEdges();
+        } else {
+            for (GraphEdge edge : unitcellAssembly.getGraphEdges()) {
+                int interfaceClusterId = edge.getInterfaceClusterId();
+                if (interfaceClusterIds.contains(interfaceClusterId)) {
+                    graphEdges.add(edge);
+                }
+            }
+        }
+        return ViewsAdaptor.getLatticeGraphView(graphEdges, unitcellAssembly);
+    }
 
 }

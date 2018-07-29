@@ -22,14 +22,14 @@ import java.util.Map;
 public class ViewsAdaptor {
 
     /**
-     * Convert an Assembly dto object into a LatticeGraph dto view object.
+     * Convert Assembly/GraphEdge dto objects into a LatticeGraph dto view object.
      * Serves as a bridge between assembly REST service and the view REST service latticeGraph.
-     * @param assembly the assembly dto object, used to extract edges information
+     * @param graphEdges the edges to display
      * @param unitcellAssembly the special unit cell assembly containing the whole unit cell,
-     *                         used to extract nodes information 
+     *                         used to extract nodes information
      * @return the lattice graph view object
      */
-    public static LatticeGraph getLatticeGraphView(Assembly assembly, Assembly unitcellAssembly) {
+    public static LatticeGraph getLatticeGraphView(List<GraphEdge> graphEdges, Assembly unitcellAssembly) {
         LatticeGraph latticeGraph = new LatticeGraph();
         Map<String, GraphNode> nodeLookup = new HashMap<>();
 
@@ -76,13 +76,12 @@ public class ViewsAdaptor {
 
         List<LatticeGraphEdge> lgEdges =  new ArrayList<>();
         // edges
-        for (GraphEdge edge : assembly.getGraphEdges()) {
+        for (GraphEdge edge : graphEdges) {
             LatticeGraphEdge lgEdge = new LatticeGraphEdge();
             lgEdge.setColor(edge.getColor());
             lgEdge.setXtalTrans("("+edge.getXtalTransA()+","+edge.getXtalTransB()+","+edge.getXtalTransC()+")");
-            lgEdge.setInterfaceId(edge.getLabel());
-            // we don't have cluster id readily available yet
-            lgEdge.setClusterId(-1);
+            lgEdge.setInterfaceId(edge.getInterfaceId());
+            lgEdge.setClusterId(edge.getInterfaceClusterId());
 
             List<Segment> segments = new ArrayList<>();
             Segment segment = new Segment();
@@ -118,5 +117,18 @@ public class ViewsAdaptor {
         latticeGraph.setUnitCellTransforms(unitCellTransforms);
 
         return latticeGraph;
+    }
+
+    /**
+     * Convert Assembly dto objects into a LatticeGraph dto view object.
+     * Serves as a bridge between assembly REST service and the view REST service latticeGraph.
+     * @param assembly the assembly dto object, used to extract edges information
+     * @param unitcellAssembly the special unit cell assembly containing the whole unit cell,
+     *                         used to extract nodes information
+     * @return the lattice graph view object
+     */
+    public static LatticeGraph getLatticeGraphView(Assembly assembly, Assembly unitcellAssembly) {
+        List<GraphEdge> graphEdges = assembly.getGraphEdges();
+        return getLatticeGraphView(graphEdges, unitcellAssembly);
     }
 }

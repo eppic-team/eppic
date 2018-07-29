@@ -10,7 +10,12 @@ public class GraphEdgeDB implements Serializable {
 
     private AssemblyDB assembly;
 
-    private int label;
+    // by convention the interface id
+    private String label;
+
+    private int interfaceId;
+    private int interfaceClusterId;
+
     private String color;
 
     private boolean inGraph2d;
@@ -40,11 +45,11 @@ public class GraphEdgeDB implements Serializable {
         this.assembly = assembly;
     }
 
-    public int getLabel() {
+    public String getLabel() {
         return label;
     }
 
-    public void setLabel(int label) {
+    public void setLabel(String label) {
         this.label = label;
     }
 
@@ -102,5 +107,21 @@ public class GraphEdgeDB implements Serializable {
 
     public void setInGraph2d(boolean inGraph2d) {
         this.inGraph2d = inGraph2d;
+    }
+
+    public int getInterfaceId() {
+        return interfaceId;
+    }
+
+    public void setInterfaceId(int interfaceId) {
+        this.interfaceId = interfaceId;
+    }
+
+    public int getInterfaceClusterId() {
+        return interfaceClusterId;
+    }
+
+    public void setInterfaceClusterId(int interfaceClusterId) {
+        this.interfaceClusterId = interfaceClusterId;
     }
 }

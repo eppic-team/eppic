@@ -3,6 +3,7 @@ package eppic.rest.endpoints;
 import eppic.db.dao.DaoException;
 import eppic.model.dto.*;
 import eppic.model.dto.views.LatticeGraph;
+import eppic.rest.commons.Utils;
 import eppic.rest.service.JobService;
 import io.swagger.annotations.Api;
 
@@ -12,6 +13,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.*;
 import java.util.List;
+import java.util.SortedSet;
 
 @Path("/job")
 @Api(tags = {"job"})
@@ -210,6 +212,46 @@ public class JobResource {
         // TODO validate assemblyId is int
 
         LatticeGraph latticeGraph = JobService.getLatticeGraphData(jobId, Integer.parseInt(assemblyId));
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(latticeGraph);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/latticeGraphByInterfaceIds/{jobId}/{interfaceIds}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getLatticeGraphByInterfaceIdList(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("interfaceIds") String interfaceIdString) throws DaoException {
+
+        // TODO convert interfaceIdsString to list
+        SortedSet<Integer> interfaceIds = Utils.parseIdsString(interfaceIdString);
+        LatticeGraph latticeGraph = JobService.getLatticeGraphDataByInterfaceIds(jobId, interfaceIds);
+
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(latticeGraph);
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/latticeGraphByInterfaceClusterIds/{jobId}/{interfaceClusterIds}")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    public Response getLatticeGraphByInterfaceClusterIdList(
+            @Context UriInfo uriInfo,
+            @PathParam("jobId") String jobId,
+            @PathParam("interfaceClusterIds") String interfaceClusterIdString) throws DaoException {
+
+        // TODO convert interfaceIdsString to list
+        SortedSet<Integer> interfaceClusterIds = Utils.parseIdsString(interfaceClusterIdString);
+        LatticeGraph latticeGraph = JobService.getLatticeGraphDataByInterfaceClusterIds(jobId, interfaceClusterIds);
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)

@@ -1,6 +1,5 @@
 package eppic.model.dto;
 
-import eppic.model.db.AssemblyDB;
 import eppic.model.db.GraphEdgeDB;
 
 import java.io.Serializable;
@@ -11,7 +10,11 @@ public class GraphEdge implements Serializable {
 
     private int uid;
 
-    private int label;
+    private String label;
+
+    private int interfaceId;
+    private int interfaceClusterId;
+
     private String color;
 
     private boolean inGraph2d;
@@ -32,11 +35,11 @@ public class GraphEdge implements Serializable {
         this.uid = uid;
     }
 
-    public int getLabel() {
+    public String getLabel() {
         return label;
     }
 
-    public void setLabel(int label) {
+    public void setLabel(String label) {
         this.label = label;
     }
 
@@ -96,6 +99,22 @@ public class GraphEdge implements Serializable {
         this.node2Label = node2Label;
     }
 
+    public int getInterfaceId() {
+        return interfaceId;
+    }
+
+    public void setInterfaceId(int interfaceId) {
+        this.interfaceId = interfaceId;
+    }
+
+    public int getInterfaceClusterId() {
+        return interfaceClusterId;
+    }
+
+    public void setInterfaceClusterId(int interfaceClusterId) {
+        this.interfaceClusterId = interfaceClusterId;
+    }
+
     public static GraphEdge create(GraphEdgeDB graphEdgeDB) {
         GraphEdge graphEdge = new GraphEdge();
 
@@ -103,6 +122,9 @@ public class GraphEdge implements Serializable {
         graphEdge.setColor(graphEdgeDB.getColor());
         graphEdge.setInGraph2d(graphEdgeDB.isInGraph2d());
         graphEdge.setLabel(graphEdgeDB.getLabel());
+
+        graphEdge.setInterfaceId(graphEdgeDB.getInterfaceId());
+        graphEdge.setInterfaceClusterId(graphEdgeDB.getInterfaceClusterId());
 
         graphEdge.setNode1Label(graphEdgeDB.getNode1Label());
         graphEdge.setNode2Label(graphEdgeDB.getNode2Label());

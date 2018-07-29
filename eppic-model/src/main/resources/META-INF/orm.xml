@@ -353,6 +353,12 @@
 			<basic name="label">
 			</basic>
 
+			<basic name="interfaceId">
+			</basic>
+
+			<basic name="interfaceClusterId">
+			</basic>
+
 			<basic name="color">
 				<column length="6"/>
 			</basic>
