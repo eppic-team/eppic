@@ -342,4 +342,27 @@ public class JobService {
         return ViewsAdaptor.getLatticeGraphView(graphEdges, unitcellAssembly);
     }
 
+    /**
+     * Retrieces assembly diagram data for job id and eppic assembly id.
+     * @param jobId job identifier
+     * @param assemblyId the eppic assembly id
+     * @return
+     * @throws DaoException
+     */
+    public static AssemblyDiagram getAssemblyDiagram(String jobId, int assemblyId) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+        Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (assembly==null) {
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+        }
+
+        return ViewsAdaptor.getAssemblyDiagram(assembly);
+    }
+
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 /**
  * A bean to represent the data needed to render the lattice graph view.
+ * @since 3.1.0
  */
 public class LatticeGraph implements Serializable {
 

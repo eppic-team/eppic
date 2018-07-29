@@ -131,4 +131,46 @@ public class ViewsAdaptor {
         List<GraphEdge> graphEdges = assembly.getGraphEdges();
         return getLatticeGraphView(graphEdges, unitcellAssembly);
     }
+
+    /**
+     * Convert Assembly dto object into an AssemblyDiagram dto view object.
+     * Serves as a bridge between assembly REST service and the view REST service assemblyDiagram.
+     * @param assembly the assembly dto object
+     * @return
+     */
+    public static AssemblyDiagram getAssemblyDiagram(Assembly assembly) {
+
+        AssemblyDiagram assemblyDiagram = new AssemblyDiagram();
+        List<AssemblyDiagramNode> nodes = new ArrayList<>();
+        List<AssemblyDiagramEdge> edges = new ArrayList<>();
+        assemblyDiagram.setNodes(nodes);
+        assemblyDiagram.setEdges(edges);
+
+        for (GraphNode graphNode : assembly.getGraphNodes()) {
+            if (graphNode.isInGraph2d()) {
+                AssemblyDiagramNode node = new AssemblyDiagramNode();
+                node.setId(graphNode.getLabel());
+                node.setLabel(graphNode.getLabel());
+                node.setColor("#" + graphNode.getColor());
+                node.setX(graphNode.getPos2dX());
+                node.setY(graphNode.getPos2dY());
+
+                nodes.add(node);
+            }
+        }
+
+        for (GraphEdge graphEdge : assembly.getGraphEdges()) {
+            if (graphEdge.isInGraph2d()) {
+                AssemblyDiagramEdge edge = new AssemblyDiagramEdge();
+                edge.setColor("#" + graphEdge.getColor());
+                edge.setFrom(graphEdge.getNode1Label());
+                edge.setTo(graphEdge.getNode2Label());
+                edge.setLabel(graphEdge.getInterfaceId() + "(" + graphEdge.getInterfaceClusterId() + ")");
+                edge.setTitle("(" + graphEdge.getXtalTransA() + "," + graphEdge.getXtalTransB() + "," + graphEdge.getXtalTransC() + ")");
+
+                edges.add(edge);
+            }
+        }
+        return assemblyDiagram;
+    }
 }

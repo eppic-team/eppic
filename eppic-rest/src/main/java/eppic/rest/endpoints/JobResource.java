@@ -2,6 +2,7 @@ package eppic.rest.endpoints;
 
 import eppic.db.dao.DaoException;
 import eppic.model.dto.*;
+import eppic.model.dto.views.AssemblyDiagram;
 import eppic.model.dto.views.LatticeGraph;
 import eppic.rest.commons.Utils;
 import eppic.rest.service.JobService;
@@ -267,20 +268,18 @@ public class JobResource {
     public Response getAssemblyDiagram(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
-            @PathParam("assemblyId") String pdbAssemblyId) throws DaoException {
+            @PathParam("assemblyId") String assemblyId) throws DaoException {
 
         // TODO validate assemblyId is int
 
-        // TODO implement!
-        //Assembly assembly = JobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
+        AssemblyDiagram assemblyDiagram = JobService.getAssemblyDiagram(jobId, Integer.parseInt(assemblyId));
 
-        //Response.ResponseBuilder responseBuilder =  Response
-        //        .status(Response.Status.OK)
-        //        .type(getMediaType(uriInfo))
-        //        .entity(assembly);
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(getMediaType(uriInfo))
+                .entity(assemblyDiagram);
 
-        //return responseBuilder.build();
-        return null;
+        return responseBuilder.build();
     }
 
     /**
