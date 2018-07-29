@@ -24,17 +24,19 @@ public class ViewsAdaptor {
     /**
      * Convert an Assembly dto object into a LatticeGraph dto view object.
      * Serves as a bridge between assembly REST service and the view REST service latticeGraph.
-     * @param assembly the assembly dto object
+     * @param assembly the assembly dto object, used to extract edges information
+     * @param unitcellAssembly the special unit cell assembly containing the whole unit cell,
+     *                         used to extract nodes information 
      * @return the lattice graph view object
      */
-    public static LatticeGraph getLatticeGraphView(Assembly assembly) {
+    public static LatticeGraph getLatticeGraphView(Assembly assembly, Assembly unitcellAssembly) {
         LatticeGraph latticeGraph = new LatticeGraph();
         Map<String, GraphNode> nodeLookup = new HashMap<>();
 
         // nodes
         List<LatticeGraphVertex> vertices = new ArrayList<>();
         List<UnitCellTransform> unitCellTransforms = new ArrayList<>();
-        for (GraphNode node : assembly.getGraphNodes()) {
+        for (GraphNode node : unitcellAssembly.getGraphNodes()) {
             nodeLookup.put(node.getLabel(), node);
             LatticeGraphVertex vertex = new LatticeGraphVertex();
             vertex.setChainId(node.getLabel().split("_")[0]);

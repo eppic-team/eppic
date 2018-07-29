@@ -257,13 +257,14 @@ public class JobService {
         // assemblies info
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
         Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
+        Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
 
         // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null) {
             throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
 
-        return ViewsAdaptor.getLatticeGraphView(assembly);
+        return ViewsAdaptor.getLatticeGraphView(assembly, unitcellAssembly);
     }
 
 
