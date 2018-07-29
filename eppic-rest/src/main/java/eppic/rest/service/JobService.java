@@ -4,8 +4,9 @@ import java.util.*;
 
 import javax.persistence.PersistenceContext;
 
+import eppic.db.adaptors.ViewsAdaptor;
 import eppic.model.dto.*;
-import eppic.model.dto.views.LatticeGraph;
+import eppic.model.dto.views.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -257,12 +258,13 @@ public class JobService {
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
         Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
 
-        // TODO convert to LatticeGraph bean
-
         // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null) {
             throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
-        return null;
+
+        return ViewsAdaptor.getLatticeGraphView(assembly);
     }
+
+
 }

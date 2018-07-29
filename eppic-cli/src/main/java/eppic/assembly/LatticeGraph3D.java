@@ -51,8 +51,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph3D.class);
 
-	private final double defaultInterfaceRadius = 2.5;
-	private final double defaultArcHeight = 4;
+	public static final double defaultInterfaceRadius = 2.5;
+	public static final double defaultArcHeight = 4;
 	//private final double defaultArrowOffset = 6;
 
 	public enum WrappingPolicy {
@@ -342,7 +342,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Takes a list of lists. For each row, assigns a color to all list members.
 	 * Returns a map from the list members to the color
-	 * @param inputs Collection of clustered objects which should be colored alike
+	 * @param clusters Collection of clustered objects which should be colored alike
 	 * @param palette Defaults to Dark2 if null
 	 * @return
 	 */
@@ -369,7 +369,6 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * For each vertex and edge, set the colorStr property to the hex value of the color.
 	 * 
-	 * @param graph
 	 */
 	public void setHexColors() {
 		for(ChainVertex3D v : graph.vertexSet()) {
