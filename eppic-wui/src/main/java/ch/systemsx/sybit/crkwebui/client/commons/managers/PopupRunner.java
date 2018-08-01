@@ -27,7 +27,7 @@ public class PopupRunner
 	/**
 	 * A constant to use for when all interfaces and not only those of a particular assembly should be shown.
 	 */
-	public static final String ALL_INTERFACES = "*";
+	public static final String ALL_INTERFACES = "0";
 	
 	/**
 	 * Open
@@ -145,22 +145,6 @@ public class PopupRunner
 				ApplicationContext.getWindowData().getWindowWidth());
 
 		int canvasSize = size - VIEWER_SIZE_OFFSET;
-
-		// TODO doing the assembly diagram via assembly id we lose capability of showing any graph. We need to bring that back
-//		String interfaceids = null;
-//
-//		if (assemblyId == null || assemblyId.equals(ALL_INTERFACES)) {
-//			interfaceids = "*";
-//
-//		} else {
-//
-//			List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
-//			for(Assembly a : assemblies){
-//				if((a.getId()+"").equals(assemblyId)){
-//					interfaceids = joinInterfaceIds( a.getInterfaces() );
-//				}
-//			}
-//		}
 
 		String url = GWT.getModuleBaseURL() + servlet;
 		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
