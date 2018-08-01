@@ -146,25 +146,25 @@ public class PopupRunner
 
 		int canvasSize = size - VIEWER_SIZE_OFFSET;
 
-		
-		String interfaceids = null;
-
-		if (assemblyId == null || assemblyId.equals(ALL_INTERFACES)) {
-			interfaceids = "*";
-			
-		} else {
-
-			List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
-			for(Assembly a : assemblies){
-				if((a.getId()+"").equals(assemblyId)){
-					interfaceids = joinInterfaceIds( a.getInterfaces() );
-				}
-			}
-		}
+		// TODO doing the assembly diagram via assembly id we lose capability of showing any graph. We need to bring that back
+//		String interfaceids = null;
+//
+//		if (assemblyId == null || assemblyId.equals(ALL_INTERFACES)) {
+//			interfaceids = "*";
+//
+//		} else {
+//
+//			List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
+//			for(Assembly a : assemblies){
+//				if((a.getId()+"").equals(assemblyId)){
+//					interfaceids = joinInterfaceIds( a.getInterfaces() );
+//				}
+//			}
+//		}
 
 		String url = GWT.getModuleBaseURL() + servlet;
 		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
-				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=" + interfaceids +
+				"&" + LatticeGraphServlet.PARAM_ASSEMBLY + "=" + assemblyId +
 				"&" + JmolViewerServlet.PARAM_SIZE+"=" + canvasSize;
 
 		
