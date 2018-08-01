@@ -8,10 +8,7 @@ import eppic.model.dto.views.*;
 
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Adaptor of dto classes to dto view classes.
@@ -35,7 +32,7 @@ public class ViewsAdaptor {
 
         // nodes
         List<LatticeGraphVertex> vertices = new ArrayList<>();
-        List<UnitCellTransform> unitCellTransforms = new ArrayList<>();
+        Map<Integer, UnitCellTransform> uniqueTransforms = new TreeMap<>();
         for (GraphNode node : unitcellAssembly.getGraphNodes()) {
             nodeLookup.put(node.getLabel(), node);
             LatticeGraphVertex vertex = new LatticeGraphVertex();
@@ -45,7 +42,11 @@ public class ViewsAdaptor {
             vertex.setColor(node.getColor());
             vertex.setLabel(node.getLabel());
             vertices.add(vertex);
-            if (node.getLabel().split("_")[1].equals("0")) {
+
+            // the transforms are redundant (repeated for each chain), like this we get just one 1 per operator id
+            int opId = Integer.parseInt(node.getLabel().split("_")[1]);
+            if (!uniqueTransforms.containsKey(opId)) {
+
                 UnitCellTransform unitCellTransform = new UnitCellTransform();
                 unitCellTransform.setM00(node.getRxx());
                 unitCellTransform.setM01(node.getRxy());
@@ -68,11 +69,13 @@ public class ViewsAdaptor {
                 unitCellTransform.setM32(0);
                 unitCellTransform.setM33(1);
 
-                unitCellTransforms.add(unitCellTransform);
+                uniqueTransforms.put(opId, unitCellTransform);
             }
 
         }
         latticeGraph.setVertices(vertices);
+        List<UnitCellTransform> unitCellTransforms = new ArrayList<>(uniqueTransforms.values());
+        latticeGraph.setUnitCellTransforms(unitCellTransforms);
 
         List<LatticeGraphEdge> lgEdges =  new ArrayList<>();
         // edges
@@ -113,8 +116,6 @@ public class ViewsAdaptor {
             lgEdges.add(lgEdge);
         }
         latticeGraph.setEdges(lgEdges);
-
-        latticeGraph.setUnitCellTransforms(unitCellTransforms);
 
         return latticeGraph;
     }
