@@ -36,15 +36,6 @@ import org.jcolorbrewer.ColorBrewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import eppic.assembly.gui.InterfaceEdge3DSourced;
-import eppic.assembly.json.ChainVertex3DJsonAdapter;
-import eppic.assembly.json.InterfaceEdge3DJsonAdapter;
-import eppic.assembly.json.InterfaceEdge3DSourcedJsonAdapter;
-import eppic.assembly.json.LatticeGraph3DJson;
-import eppic.assembly.json.ParametricCircularArcJsonAdapter;
 import eppic.commons.util.GeomTools;
 
 public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> {
@@ -139,7 +130,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Calculate vertex positions and colors
 	 */
-	private final void positionVertices() {
+	private void positionVertices() {
 
 		Set<ChainVertex3D> vertices = graph.vertexSet();
 		for(ChainVertex3D v : vertices) {
@@ -154,7 +145,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	 * Initialize edge positions. Should be called during initialization after
 	 * {@link #positionVertices()}.
 	 */
-	private final void positionEdges() {
+	private void positionEdges() {
 		Set<InterfaceEdge3D> edges = graph.edgeSet();
 		for(InterfaceEdge3D edge : edges) {
 			ChainVertex3D source = graph.getEdgeSource(edge);
@@ -622,18 +613,5 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		return center;
 	}
 	
-	/**
-	 * Create a Gson object that can serialize LatticeGraph3D objects
-	 * @return
-	 */
-	public static Gson createGson() {
-		return new GsonBuilder()
-			.registerTypeAdapter(LatticeGraph3D.class, new LatticeGraph3DJson())
-			.registerTypeAdapter(ChainVertex3D.class, new ChainVertex3DJsonAdapter())
-			.registerTypeAdapter(InterfaceEdge3DSourced.class, new InterfaceEdge3DSourcedJsonAdapter())
-			.registerTypeAdapter(InterfaceEdge3D.class, new InterfaceEdge3DJsonAdapter())
-			.registerTypeAdapter(ParametricCircularArc.class, new ParametricCircularArcJsonAdapter())
-			.setPrettyPrinting()
-			.create();
-	}
+
 }

@@ -195,11 +195,11 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	}
 
 	/**
-	 * Get the set of transformations (in orthonormal coordinates) needed
+	 * Get the transformation (in orthonormal coordinates) needed
 	 * to transform the specified chain to the specified position in the unit cell
 	 * @param chainId Chain ID
 	 * @param opId operator number, relative to the space group transformations
-	 * @return An array of transformation matrices
+	 * @return a transformation matrix
 	 */
 	public Matrix4d getUnitCellTransformationOrthonormal(String chainId, int opId) {
 		return getUnitCellTransformationsOrthonormal(chainId)[opId];
@@ -210,7 +210,7 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param chainId Chain ID
 	 * @return An array of transformation matrices
 	 */
-	public Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) {
+	private Matrix4d[] getUnitCellTransformationsOrthonormal(String chainId) {
 		
 		CrystalCell cell = getCrystalCell(structure);
 
@@ -224,13 +224,13 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 		return orthoTrnsf;
 	}
 	/**
-	 * Get the set of transformations (in crystal coordinates) needed
+	 * Get the transformation (in crystal coordinates) needed
 	 * to transform the specified chain to the specified position in the unit cell
 	 * @param chainId Chain ID
 	 * @param opId operator number, relative to the space group transformations
-	 * @return An array of transformation matrices
+	 * @return a transformation matrix
 	 */
-	public Matrix4d getUnitCellTransformationCrystal(String chainId, int opId) {
+	private Matrix4d getUnitCellTransformationCrystal(String chainId, int opId) {
 		return getUnitCellTransformationsCrystal(chainId)[opId];
 	}
 	/**
@@ -239,33 +239,33 @@ public class LatticeGraph<V extends ChainVertex,E extends InterfaceEdge> {
 	 * @param chainId Chain ID
 	 * @return An array of transformation matrices
 	 */
-	public Matrix4d[] getUnitCellTransformationsCrystal(String chainId) {
+	private Matrix4d[] getUnitCellTransformationsCrystal(String chainId) {
 		Matrix4d[] chainTransformations;
-		synchronized(unitCellOperators) {
-			if( ! unitCellOperators.containsKey(chainId) ) {
-				
-				SpaceGroup sg = getSpaceGroup(structure);
-				CrystalCell cell = getCrystalCell(structure);
-				
-				// Transformations in crystal coords
-				Matrix4d[] transfs = new Matrix4d[sg.getNumOperators()];
-				for (int i=0;i<sg.getNumOperators();i++) {
-					transfs[i] = sg.getTransformation(i);
-				}
 
+		if (!unitCellOperators.containsKey(chainId)) {
 
-				// Reference in crystal coords
-				Point3d reference = new Point3d(getReferenceCoordinate(chainId));
-				cell.transfToCrystal(reference);
+			SpaceGroup sg = getSpaceGroup(structure);
+			CrystalCell cell = getCrystalCell(structure);
 
-				// TODO transfToOriginCellCrystal seems to be like a static function (doesn't use any data from cell), we should make it static! - JD 2016-12-06
-				chainTransformations = cell.transfToOriginCellCrystal(transfs, reference);
-				
-				unitCellOperators.put(chainId, chainTransformations);
-			} else {
-				chainTransformations = unitCellOperators.get(chainId);
+			// Transformations in crystal coords
+			Matrix4d[] transfs = new Matrix4d[sg.getNumOperators()];
+			for (int i = 0; i < sg.getNumOperators(); i++) {
+				transfs[i] = sg.getTransformation(i);
 			}
+
+
+			// Reference in crystal coords
+			Point3d reference = new Point3d(getReferenceCoordinate(chainId));
+			cell.transfToCrystal(reference);
+
+			// TODO transfToOriginCellCrystal seems to be like a static function (doesn't use any data from cell), we should make it static! - JD 2016-12-06
+			chainTransformations = cell.transfToOriginCellCrystal(transfs, reference);
+
+			unitCellOperators.put(chainId, chainTransformations);
+		} else {
+			chainTransformations = unitCellOperators.get(chainId);
 		}
+
 		return chainTransformations;
 	}
 
