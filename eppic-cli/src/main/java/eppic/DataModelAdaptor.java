@@ -745,22 +745,17 @@ public class DataModelAdaptor {
 			// because of wrapping (some nodes don't actually exist because they are in next unit cell)
 			// we need explicit 3D positions for edges start/end
 
-			// the code here is copy/paste from LatticeGraph3D.positionEdges()
-			Point3d sourcePos = latticeGraph.getPosition(v1);
-			Point3d unwrappedTarget = new Point3d(v2.getCenter());
-			Matrix4d transB = e.getInterface().getTransforms().getSecond().getMatTransform();
-			CrystalCell cell = latticeGraph.getCrystalCell();
-			Matrix4d transBOrtho = cell.transfToOrthonormal(transB);
-			transBOrtho.transform(unwrappedTarget);
-			latticeGraph.getUnitCellTransformationOrthonormal(v1.getChainId(), v1.getOpId()).transform(unwrappedTarget);
+			// TODO in some cases there can be more than 1 segment, don't understand why (see LatticeGraph3D.positionEdges). What to do then?
+			Point3d edgeStartPos = e.getSegments().get(0).getStart();
+			Point3d edgeEndPos = e.getSegments().get(0).getEnd();
 
-			edgeDB.setStartPos3dX(sourcePos.x);
-			edgeDB.setStartPos3dY(sourcePos.y);
-			edgeDB.setStartPos3dZ(sourcePos.z);
+			edgeDB.setStartPos3dX(edgeStartPos.x);
+			edgeDB.setStartPos3dY(edgeStartPos.y);
+			edgeDB.setStartPos3dZ(edgeStartPos.z);
 
-			edgeDB.setEndPos3dX(unwrappedTarget.x);
-			edgeDB.setEndPos3dY(unwrappedTarget.y);
-			edgeDB.setEndPos3dZ(unwrappedTarget.z);
+			edgeDB.setEndPos3dX(edgeEndPos.x);
+			edgeDB.setEndPos3dY(edgeEndPos.y);
+			edgeDB.setEndPos3dZ(edgeEndPos.z);
 
 			if (add2dLayout) {
 				if (getCorrespondingEdge(graph2D, e, v1, v2) == null) {

@@ -76,7 +76,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		this.policy = WrappingPolicy.DUPLICATE;
 
 		// Compute centroids in AU
-		chainCentroid = new HashMap<String,Point3d>();
+		chainCentroid = new HashMap<>();
 		for(Chain c: structure.getPolyChains() ) {
 			chainCentroid.put(c.getId(), GeomTools.getCentroid(c));
 		}
@@ -237,7 +237,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	}
 
 	
-	public Point3d getPosition(ChainVertex3D v) {
+	private Point3d getPosition(ChainVertex3D v) {
 		String chainId = v.getChainId();
 		int au = v.getOpId();
 
