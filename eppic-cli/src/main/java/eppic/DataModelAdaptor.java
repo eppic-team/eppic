@@ -741,6 +741,27 @@ public class DataModelAdaptor {
 			edgeDB.setNode1Label(v1.getChainId()+"_"+v1.getOpId());
 			edgeDB.setNode2Label(v2.getChainId()+"_"+v2.getOpId());
 
+			// setting the start/end position of the edges
+			// because of wrapping (some nodes don't actually exist because they are in next unit cell)
+			// we need explicit 3D positions for edges start/end
+
+			// the code here is copy/paste from LatticeGraph3D.positionEdges()
+			Point3d sourcePos = latticeGraph.getPosition(v1);
+			Point3d unwrappedTarget = v2.getCenter();
+			Matrix4d transB = e.getInterface().getTransforms().getSecond().getMatTransform();
+			CrystalCell cell = latticeGraph.getCrystalCell();
+			Matrix4d transBOrtho = cell.transfToOrthonormal(transB);
+			transBOrtho.transform(unwrappedTarget);
+			latticeGraph.getUnitCellTransformationOrthonormal(v1.getChainId(), v1.getOpId()).transform(unwrappedTarget);
+
+			edgeDB.setStartPos3dX(sourcePos.x);
+			edgeDB.setStartPos3dY(sourcePos.y);
+			edgeDB.setStartPos3dZ(sourcePos.z);
+
+			edgeDB.setEndPos3dX(unwrappedTarget.x);
+			edgeDB.setEndPos3dY(unwrappedTarget.y);
+			edgeDB.setEndPos3dZ(unwrappedTarget.z);
+
 			if (add2dLayout) {
 				if (getCorrespondingEdge(graph2D, e, v1, v2) == null) {
 					// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever

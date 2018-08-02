@@ -237,7 +237,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	}
 
 	
-	private Point3d getPosition(ChainVertex3D v) {
+	public Point3d getPosition(ChainVertex3D v) {
 		String chainId = v.getChainId();
 		int au = v.getOpId();
 

@@ -27,6 +27,14 @@ public class GraphEdge implements Serializable {
     private String node1Label;
     private String node2Label;
 
+    private double startPos3dX;
+    private double startPos3dY;
+    private double startPos3dZ;
+
+    private double endPos3dX;
+    private double endPos3dY;
+    private double endPos3dZ;
+
     public int getUid() {
         return uid;
     }
@@ -115,6 +123,54 @@ public class GraphEdge implements Serializable {
         this.interfaceClusterId = interfaceClusterId;
     }
 
+    public double getStartPos3dX() {
+        return startPos3dX;
+    }
+
+    public void setStartPos3dX(double startPos3dX) {
+        this.startPos3dX = startPos3dX;
+    }
+
+    public double getStartPos3dY() {
+        return startPos3dY;
+    }
+
+    public void setStartPos3dY(double startPos3dY) {
+        this.startPos3dY = startPos3dY;
+    }
+
+    public double getStartPos3dZ() {
+        return startPos3dZ;
+    }
+
+    public void setStartPos3dZ(double startPos3dZ) {
+        this.startPos3dZ = startPos3dZ;
+    }
+
+    public double getEndPos3dX() {
+        return endPos3dX;
+    }
+
+    public void setEndPos3dX(double endPos3dX) {
+        this.endPos3dX = endPos3dX;
+    }
+
+    public double getEndPos3dY() {
+        return endPos3dY;
+    }
+
+    public void setEndPos3dY(double endPos3dY) {
+        this.endPos3dY = endPos3dY;
+    }
+
+    public double getEndPos3dZ() {
+        return endPos3dZ;
+    }
+
+    public void setEndPos3dZ(double endPos3dZ) {
+        this.endPos3dZ = endPos3dZ;
+    }
+
     public static GraphEdge create(GraphEdgeDB graphEdgeDB) {
         GraphEdge graphEdge = new GraphEdge();
 
@@ -132,6 +188,14 @@ public class GraphEdge implements Serializable {
         graphEdge.setXtalTransA(graphEdgeDB.getXtalTransA());
         graphEdge.setXtalTransB(graphEdgeDB.getXtalTransB());
         graphEdge.setXtalTransC(graphEdgeDB.getXtalTransC());
+
+        graphEdge.setStartPos3dX(graphEdgeDB.getStartPos3dX());
+        graphEdge.setStartPos3dY(graphEdgeDB.getStartPos3dY());
+        graphEdge.setStartPos3dZ(graphEdgeDB.getStartPos3dZ());
+
+        graphEdge.setEndPos3dX(graphEdgeDB.getEndPos3dX());
+        graphEdge.setEndPos3dY(graphEdgeDB.getEndPos3dY());
+        graphEdge.setEndPos3dZ(graphEdgeDB.getEndPos3dZ());
 
         return graphEdge;
     }

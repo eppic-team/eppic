@@ -28,13 +28,11 @@ public class ViewsAdaptor {
      */
     public static LatticeGraph getLatticeGraphView(List<GraphEdge> graphEdges, Assembly unitcellAssembly) {
         LatticeGraph latticeGraph = new LatticeGraph();
-        Map<String, GraphNode> nodeLookup = new HashMap<>();
 
         // nodes
         List<LatticeGraphVertex> vertices = new ArrayList<>();
         Map<Integer, UnitCellTransform> uniqueTransforms = new TreeMap<>();
         for (GraphNode node : unitcellAssembly.getGraphNodes()) {
-            nodeLookup.put(node.getLabel(), node);
             LatticeGraphVertex vertex = new LatticeGraphVertex();
             vertex.setChainId(node.getLabel().split("_")[0]);
             vertex.setOpId(Integer.parseInt(node.getLabel().split("_")[1]));
@@ -88,10 +86,8 @@ public class ViewsAdaptor {
 
             List<Segment> segments = new ArrayList<>();
             Segment segment = new Segment();
-            GraphNode node1 = nodeLookup.get(edge.getNode1Label());
-            GraphNode node2 = nodeLookup.get(edge.getNode2Label());
-            segment.setStart(new Point3D(node1.getPos3dX(), node1.getPos3dY(), node1.getPos3dZ()));
-            segment.setEnd(new Point3D(node2.getPos3dX(), node2.getPos3dY(), node2.getPos3dZ()));
+            segment.setStart(new Point3D(edge.getStartPos3dX(), edge.getStartPos3dY(), edge.getStartPos3dZ()));
+            segment.setEnd(new Point3D(edge.getEndPos3dX(), edge.getEndPos3dY(), edge.getEndPos3dZ()));
             // not setting angles and mid point, they aren't needed
             segments.add(segment);
             lgEdge.setSegments(segments);
@@ -99,8 +95,8 @@ public class ViewsAdaptor {
             List<Circle> circles = new ArrayList<>();
             Circle circle = new Circle();
             // calculating midpoint
-            Point3d start = new Point3d(node1.getPos3dX(), node1.getPos3dY(), node1.getPos3dZ());
-            Point3d end = new Point3d(node2.getPos3dX(), node2.getPos3dY(), node2.getPos3dZ());
+            Point3d start = new Point3d(edge.getStartPos3dX(), edge.getStartPos3dY(), edge.getStartPos3dZ());
+            Point3d end = new Point3d(edge.getEndPos3dX(), edge.getEndPos3dY(), edge.getEndPos3dZ());
             Vector3d vec = new Vector3d(end);
             vec.sub(start);
             vec.scale(0.5);
