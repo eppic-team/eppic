@@ -747,7 +747,7 @@ public class DataModelAdaptor {
 
 			// the code here is copy/paste from LatticeGraph3D.positionEdges()
 			Point3d sourcePos = latticeGraph.getPosition(v1);
-			Point3d unwrappedTarget = v2.getCenter();
+			Point3d unwrappedTarget = new Point3d(v2.getCenter());
 			Matrix4d transB = e.getInterface().getTransforms().getSecond().getMatTransform();
 			CrystalCell cell = latticeGraph.getCrystalCell();
 			Matrix4d transBOrtho = cell.transfToOrthonormal(transB);
