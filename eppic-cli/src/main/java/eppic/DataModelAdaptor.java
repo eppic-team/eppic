@@ -741,21 +741,52 @@ public class DataModelAdaptor {
 			edgeDB.setNode1Label(v1.getChainId()+"_"+v1.getOpId());
 			edgeDB.setNode2Label(v2.getChainId()+"_"+v2.getOpId());
 
+			edgeDB.setXtalTransA(e.getXtalTrans().x);
+			edgeDB.setXtalTransB(e.getXtalTrans().y);
+			edgeDB.setXtalTransC(e.getXtalTrans().z);
+
+			edgeDB.setAssembly(assemblyDB);
+
 			// setting the start/end position of the edges
 			// because of wrapping (some nodes don't actually exist because they are in next unit cell)
 			// we need explicit 3D positions for edges start/end
 
-			// TODO in some cases there can be more than 1 segment, don't understand why (see LatticeGraph3D.positionEdges). What to do then?
-			Point3d edgeStartPos = e.getSegments().get(0).getStart();
-			Point3d edgeEndPos = e.getSegments().get(0).getEnd();
+			List<ParametricCircularArc> segments = e.getSegments();
 
-			edgeDB.setStartPos3dX(edgeStartPos.x);
-			edgeDB.setStartPos3dY(edgeStartPos.y);
-			edgeDB.setStartPos3dZ(edgeStartPos.z);
+			for (int i = 0; i<segments.size(); i++) {
+				Point3d edgeStartPos = segments.get(i).getStart();
+				Point3d edgeEndPos = segments.get(i).getEnd();
 
-			edgeDB.setEndPos3dX(edgeEndPos.x);
-			edgeDB.setEndPos3dY(edgeEndPos.y);
-			edgeDB.setEndPos3dZ(edgeEndPos.z);
+				GraphEdgeDB currentEdgeDB;
+
+				if (i==0) {
+					currentEdgeDB = edgeDB;
+				} else {
+					// in db we store the segments as duplicate edges (or otherwise we'd need a separate table to store segments)
+					currentEdgeDB = new GraphEdgeDB();
+					currentEdgeDB.setColor(edgeDB.getColor());
+					currentEdgeDB.setLabel(edgeDB.getLabel());
+					currentEdgeDB.setInterfaceId(edgeDB.getInterfaceId());
+					currentEdgeDB.setInterfaceClusterId(edgeDB.getInterfaceClusterId());
+					currentEdgeDB.setNode1Label(edgeDB.getNode1Label());
+					currentEdgeDB.setNode2Label(edgeDB.getNode2Label());
+					// TODO does it make sense to set the xtal trans to this repeated edge?
+					//currentEdgeDB.setXtalTransA(edgeDB.getXtalTransA());
+					//currentEdgeDB.setXtalTransB(edgeDB.getXtalTransB());
+					//currentEdgeDB.setXtalTransC(edgeDB.getXtalTransC());
+					currentEdgeDB.setAssembly(edgeDB.getAssembly());
+					edges.add(currentEdgeDB);
+				}
+				currentEdgeDB.setStartPos3dX(edgeStartPos.x);
+				currentEdgeDB.setStartPos3dY(edgeStartPos.y);
+				currentEdgeDB.setStartPos3dZ(edgeStartPos.z);
+
+				currentEdgeDB.setEndPos3dX(edgeEndPos.x);
+				currentEdgeDB.setEndPos3dY(edgeEndPos.y);
+				currentEdgeDB.setEndPos3dZ(edgeEndPos.z);
+
+			}
+
 
 			if (add2dLayout) {
 				if (getCorrespondingEdge(graph2D, e, v1, v2) == null) {
@@ -770,11 +801,6 @@ public class DataModelAdaptor {
 				edgeDB.setInGraph2d(false);
 			}
 
-			edgeDB.setXtalTransA(e.getXtalTrans().x);
-			edgeDB.setXtalTransB(e.getXtalTrans().y);
-			edgeDB.setXtalTransC(e.getXtalTrans().z);
-
-			edgeDB.setAssembly(assemblyDB);
 			edges.add(edgeDB);
 		}
 
