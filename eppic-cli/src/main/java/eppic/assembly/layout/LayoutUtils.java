@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A bunch of utilities for laying out assembly graphs.
+ * @since 3.1.0
+ */
 public class LayoutUtils {
 
     /**
@@ -70,7 +74,7 @@ public class LayoutUtils {
         return graph2d;
     }
 
-    public static UndirectedGraph<ChainVertex3D, InterfaceEdge3D> cloneGraph3D(
+    private static UndirectedGraph<ChainVertex3D, InterfaceEdge3D> cloneGraph3D(
             UndirectedGraph<ChainVertex3D, InterfaceEdge3D> oldGraph) {
         // Mappings from old graph to new
         Map<ChainVertex3D,ChainVertex3D> newVertices = new HashMap<>(oldGraph.vertexSet().size());

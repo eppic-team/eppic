@@ -360,31 +360,6 @@ public class LatticeGUIMustache {
 		this.layout2d = layout2d;
 		
 	}
-
-	/**
-	 * Get a version of the graph where all 3D coordinates have z=0.
-	 * This is achieved by performing a stereographic projection of the 3D
-	 * coordinates.
-	 * TODO replace by LayoutUtils.getGraph2D()
-	 * @return
-	 */
-	public UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> getGraph2D() {
-		if( graph2d == null) {
-			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph3d = getGraph().getGraph();
-			//clone
-			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = LayoutUtils.cloneGraph3D(graph3d);
-			//Filter duplicate components
-			graph2dUnsorced = LatticeGraph.filterUniqueStoichiometries(graph2dUnsorced);
-			//Layout
-			if(layout2d == null) {
-				logger.warn("No 2D layout set for calculating the 2D graph. Defaulting to z-projection");
-			} else {
-				layout2d.projectLatticeGraph(graph2dUnsorced);
-			}
-			graph2d = InterfaceEdge3DSourced.addSources(graph2dUnsorced);
-		}
-		return graph2d;
-	}
 	
 	public static void main(String[] args) throws IOException, StructureException {
 		final String usage = String.format("Usage: %s template structure output [interfacelist]",LatticeGUIMustache.class.getSimpleName());
