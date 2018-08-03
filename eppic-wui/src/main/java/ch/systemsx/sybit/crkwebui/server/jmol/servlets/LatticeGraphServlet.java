@@ -65,6 +65,8 @@ public class LatticeGraphServlet extends BaseServlet
 	
 	private String atomCachePath;
 
+	private String restPrefix;
+
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
@@ -73,6 +75,8 @@ public class LatticeGraphServlet extends BaseServlet
 		resultsLocation = properties.getProperty("results_location");
 		destination_path = properties.getProperty("destination_path");
 		atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
+		restPrefix = properties.getProperty("rest_prefix");
+
 		
 		if (atomCachePath == null) 
 			logger.warn("ATOM_CACHE_PATH is not set in config file, will not be able to reuse cache for PDB cif.gz files!");
@@ -131,8 +135,6 @@ public class LatticeGraphServlet extends BaseServlet
 			}
 
 			// the json data URL from REST API
-			// TODO construct from constant or property for api URL
-            String REST_PREFIX = "/rest/api/v3/job";
 
 			String jsonURL = null;
             String title = jobId + " - Lattice Graph";
@@ -140,17 +142,17 @@ public class LatticeGraphServlet extends BaseServlet
             if (requestedAssemblyStr != null) {
                 // should be no risk because validator checked for number
                 int assemblyId = Integer.parseInt(requestedAssemblyStr);
-                jsonURL = REST_PREFIX + "/latticeGraph/" + jobId + "/" + assemblyId;
+                jsonURL = restPrefix + "/latticeGraph/" + jobId + "/" + assemblyId;
                 title += " for assembly " + requestedAssemblyStr;
             }
 
 			if (requestedIfacesStr != null) {
-			    jsonURL = REST_PREFIX + "/latticeGraphByInterfaceIds/" + jobId + "/" + requestedIfacesStr;
+			    jsonURL = restPrefix + "/latticeGraphByInterfaceIds/" + jobId + "/" + requestedIfacesStr;
 			    title += " for interfaces " + requestedIfacesStr;
             }
 
             if (requestedClusterStr != null) {
-                jsonURL = REST_PREFIX + "/latticeGraphByInterfaceClusterIds/" + jobId + "/" + requestedClusterStr;
+                jsonURL = restPrefix + "/latticeGraphByInterfaceClusterIds/" + jobId + "/" + requestedClusterStr;
                 title += " for interface clusters " + requestedClusterStr;
             }
 

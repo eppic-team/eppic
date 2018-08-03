@@ -44,11 +44,14 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramServlet.class);
 
+	private String restPrefix;
+
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
 		super.init(config);
 
+		restPrefix = properties.getProperty("rest_prefix");
 	}
 
 	@Override
@@ -74,15 +77,12 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			// TODO construct from constant or property for api URL
-			String REST_PREFIX = "/rest/api/v3/job";
-
 			String title = jobId + " - Assembly Diagram";
 
 			// should be no risk because validator checked for number and null
 			int assemblyId = Integer.parseInt(requestedAssemblyStr);
 			// the json data URL from REST API
-			String jsonURL = REST_PREFIX + "/assemblyDiagram/" + jobId + "/" + assemblyId;
+			String jsonURL = restPrefix + "/assemblyDiagram/" + jobId + "/" + assemblyId;
 			title += " for assembly " + requestedAssemblyStr;
 
 			// TODO should we support interfaceId list and interfaceClusterId list too? Problem is we can't do that from db data only. Projection needs to be calculated for each case
