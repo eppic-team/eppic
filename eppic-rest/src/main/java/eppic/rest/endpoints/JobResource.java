@@ -22,7 +22,7 @@ public class JobResource {
 
     @GET
     @Path("/pdb/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getPdb(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -32,7 +32,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(pdbInfo);
 
         return responseBuilder.build();
@@ -40,7 +40,7 @@ public class JobResource {
 
     @GET
     @Path("/interfaceClusters/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getInterfaceClusters(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -52,7 +52,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(entity);
 
         return responseBuilder.build();
@@ -60,7 +60,7 @@ public class JobResource {
 
     @GET
     @Path("/interfaces/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getInterfaces(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -72,7 +72,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(entity);
 
         return responseBuilder.build();
@@ -80,7 +80,7 @@ public class JobResource {
 
     @GET
     @Path("/sequences/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getSequences(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -92,7 +92,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(entity);
 
         return responseBuilder.build();
@@ -100,7 +100,7 @@ public class JobResource {
 
     @GET
     @Path("/interfaceResidues/{jobId}/{interfId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getInterfaceResidues(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -114,7 +114,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(entity);
 
         return responseBuilder.build();
@@ -122,7 +122,7 @@ public class JobResource {
 
     @GET
     @Path("/assemblies/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getAssemblies(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -134,7 +134,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(entity);
 
         return responseBuilder.build();
@@ -142,7 +142,7 @@ public class JobResource {
 
     @GET
     @Path("/contacts/{jobId}/{interfId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getContacts(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -156,7 +156,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(entity);
 
         return responseBuilder.build();
@@ -164,7 +164,7 @@ public class JobResource {
 
     @GET
     @Path("/assemblyByPdbId/{jobId}/{pdbAssemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getAssemblyByPdbId(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -176,7 +176,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(assembly);
 
         return responseBuilder.build();
@@ -184,7 +184,7 @@ public class JobResource {
 
     @GET
     @Path("/assembly/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getAssembly(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -196,7 +196,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(assembly);
 
         return responseBuilder.build();
@@ -204,7 +204,7 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraph/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getLatticeGraph(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -216,7 +216,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(latticeGraph);
 
         return responseBuilder.build();
@@ -224,7 +224,7 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraphByInterfaceIds/{jobId}/{interfaceIds}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getLatticeGraphByInterfaceIdList(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -236,7 +236,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(latticeGraph);
 
         return responseBuilder.build();
@@ -244,7 +244,7 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraphByInterfaceClusterIds/{jobId}/{interfaceClusterIds}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getLatticeGraphByInterfaceClusterIdList(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -256,7 +256,7 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(latticeGraph);
 
         return responseBuilder.build();
@@ -264,7 +264,7 @@ public class JobResource {
 
     @GET
     @Path("/assemblyDiagram/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8", MediaType.APPLICATION_XML + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
     public Response getAssemblyDiagram(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -276,24 +276,9 @@ public class JobResource {
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
-                .type(getMediaType(uriInfo))
+                .type(MediaType.APPLICATION_JSON)
                 .entity(assemblyDiagram);
 
         return responseBuilder.build();
-    }
-
-    /**
-     * Checks the format url parameter and returns the right mime type (either json or xml).
-     * If no format parameter present, then json is returned.
-     * @param uriInfo
-     * @return
-     */
-    private static String getMediaType(UriInfo uriInfo) {
-        String mediaType = MediaType.APPLICATION_JSON;
-        String format = uriInfo.getQueryParameters().getFirst("format");
-        if (format!=null && format.equalsIgnoreCase("xml")) {
-            mediaType = MediaType.APPLICATION_XML;
-        }
-        return mediaType;
     }
 }
