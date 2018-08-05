@@ -89,12 +89,10 @@ public class FileDownloadServlet extends BaseServlet
 	public static final String TYPE_VALUE_INTERFACE = "interface";
 	public static final String TYPE_VALUE_ASSEMBLY = "assembly";
 	public static final String TYPE_VALUE_MSA = "msa"; // was "fasta"
-	public static final String TYPE_VALUE_ENTROPIESPSE = "entropiespse";
-	
+
 	// the values for PARAM_COORDS_FORMAT
 	public static final String COORDS_FORMAT_VALUE_PDB = "pdb";
 	public static final String COORDS_FORMAT_VALUE_CIF = "cif";
-	public static final String COORDS_FORMAT_VALUE_PSE = "pse";
 	public static final String COORDS_FORMAT_VALUE_PDBGZ = "pdbgz";
 	public static final String COORDS_FORMAT_VALUE_CIFGZ = "cifgz";
 	
