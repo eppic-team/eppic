@@ -434,7 +434,10 @@ public class ChainEvolContextList implements Serializable {
 	public void openConnections(EppicParams params) throws EppicException {
 		if (useLocalUniprot) {
 			try {
-				this.uniprotLocalConn = new UniprotLocalConnection(params.getLocalUniprotDbName());
+				this.uniprotLocalConn = new UniprotLocalConnection(
+						params.getLocalUniprotDbName(), params.getLocalUniprotDbHost(),
+						params.getLocalUniprotDbPort(), params.getLocalUniprotDbUser(),
+						params.getLocalUniprotDbPwd());
 				LOGGER.info("Opening local UniProt connection to retrieve UniProtKB data. Local database: "+params.getLocalUniprotDbName());
 			} catch (SQLException e) {
 				throw new EppicException(e, "Could not open connection to local UniProt database " + params.getLocalUniprotDbName(), true);
@@ -446,9 +449,13 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void closeConnections() {
-		if (useLocalUniprot) {			
-			this.uniprotLocalConn.close();
-			LOGGER.info("Connection to local UniProt database closed");
+		if (useLocalUniprot) {
+			try {
+				this.uniprotLocalConn.close();
+				LOGGER.info("Connection to local UniProt database closed");
+			} catch (SQLException e) {
+				LOGGER.warn("Could not close MySQL connection to UniProt local database. Error: " + e.getMessage());
+			}
 		} else {
 			this.uniprotJapiConn.close();
 			LOGGER.info("Connection to UniProt JAPI closed");

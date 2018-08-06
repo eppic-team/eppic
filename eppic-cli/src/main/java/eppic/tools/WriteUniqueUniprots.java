@@ -1,6 +1,3 @@
-/**
- * 
- */
 package eppic.tools;
 
 import java.io.File;
@@ -10,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import eppic.EppicParams;
 import eppic.commons.sequence.NoMatchFoundException;
 import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.UniprotLocalConnection;
@@ -27,9 +25,9 @@ public class WriteUniqueUniprots {
 	public SiftsConnection sc;
 	public UniprotLocalConnection uniLC;
 	
-	public WriteUniqueUniprots(String scPath, String uniprotdb) throws IOException, SQLException{
+	public WriteUniqueUniprots(String scPath, String uniprotdb, String dbHost, String dbPort, String dbUser, String dbPwd) throws IOException, SQLException{
 			sc = new SiftsConnection(scPath);
-			uniLC = new UniprotLocalConnection(uniprotdb);
+			uniLC = new UniprotLocalConnection(uniprotdb, dbHost, dbPort, dbUser, dbPwd);
 	}
 	
 	/**
@@ -42,19 +40,23 @@ public class WriteUniqueUniprots {
 	 */
 	public static void main(String[] args) throws IOException, SQLException, NoMatchFoundException {
 		
-		String help = 
+		String help =
 				"Usage: WriteUniqueUnirots\n" +
-				"Creates fasta (.fa) files of unique mapings of PDB to Uniprot\n" +
-				" -s <dir>  	: Sifts Connection file path \n" +
-				" -u <dbName>    : Uniprot Database Name \n" +
-				" [-o <dir>] 	: Directory where output files are to be written\n";
+						"Creates fasta (.fa) files of unique mapings of PDB to Uniprot\n" +
+						" -s <dir>  	: Sifts Connection file path \n" +
+						" -u <dbName>   : Uniprot Database Name \n" +
+						" [-o <dir>] 	: Directory where output files are to be written\n" +
+						" [-g <file>]   : an eppic-cli configuration file with config parameters \n" +
+						"                 for uniprot local db connection. If not provided it will \n" +
+						"                 be read from ~/.eppic.conf \n";
 		
-		Getopt g = new Getopt("UploadToDB", args, "s:u:o:h?");
+		Getopt g = new Getopt("UploadToDB", args, "s:u:o:g:h?");
 		
 		String scFilePath = null;
 		String uniprotdbName = null;
 		String outdirPath = "";
 		boolean ifOutdir = false;
+		File configFile = null;
 		
 		int c;
 		while ((c = g.getopt()) != -1) {
@@ -68,6 +70,9 @@ public class WriteUniqueUniprots {
 			case 'o':
 				ifOutdir = true;
 				outdirPath = g.getOptarg();
+				break;
+			case 'g':
+				configFile = new File(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -102,11 +107,18 @@ public class WriteUniqueUniprots {
 			System.err.println(help);
 			System.exit(1);
 		}
-		
+
+		EppicParams params = new EppicParams();
+		if (configFile == null) {
+			configFile = new File(System.getProperty("user.home"), EppicParams.CONFIG_FILE_NAME);
+		}
+		params.readConfigFile(configFile);
 		
 		//Initialize the variable
 		try{
-			WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath, uniprotdbName);
+			WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath, uniprotdbName,
+					params.getLocalUniprotDbHost(), params.getLocalUniprotDbPort(),
+					params.getLocalUniprotDbUser(), params.getLocalUniprotDbPwd());
 			HashMap<String, ArrayList<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
 			PrintWriter outList = new PrintWriter(new File (outdirPath, "queries.list"));
 		
