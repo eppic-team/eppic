@@ -56,7 +56,7 @@ public class GraphvizRunner {
 	 * 
 	 * This avoids writing the dot file to disk.
 	 * 
-	 * @param dotFile Input dot file
+	 * @param gui Input dot file
 	 * @param outfile output filename
 	 * @param format output format (png, svg, etc.)
 	 * @throws IOException
