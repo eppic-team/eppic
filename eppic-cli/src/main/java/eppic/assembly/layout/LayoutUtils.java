@@ -74,7 +74,7 @@ public class LayoutUtils {
         return graph2d;
     }
 
-    private static UndirectedGraph<ChainVertex3D, InterfaceEdge3D> cloneGraph3D(
+    public static UndirectedGraph<ChainVertex3D, InterfaceEdge3D> cloneGraph3D(
             UndirectedGraph<ChainVertex3D, InterfaceEdge3D> oldGraph) {
         // Mappings from old graph to new
         Map<ChainVertex3D,ChainVertex3D> newVertices = new HashMap<>(oldGraph.vertexSet().size());
