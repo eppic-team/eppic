@@ -1,0 +1,189 @@
+package eppic;
+
+import eppic.commons.util.FileTypeGuesser;
+import eppic.model.db.*;
+import org.biojava.nbio.structure.*;
+import org.biojava.nbio.structure.io.FileParsingParameters;
+import org.biojava.nbio.structure.io.PDBFileParser;
+import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
+import org.biojava.nbio.structure.io.mmcif.MMcifParser;
+import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
+import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
+import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.vecmath.Matrix4d;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Adaptor of db data models to produce coordinate mmcif files for
+ * assemblies and interfaces.
+ *
+ * @author Jose Duarte
+ * @since 3.1.0
+ */
+public class CoordFilesAdaptor {
+
+    private static final Logger logger = LoggerFactory.getLogger(CoordFilesAdaptor.class);
+
+
+    /**
+     * Given an input stream with coordinates of an AU in mmCIF format produces
+     * an mmCIF format output stream representing the given assembly db model object
+     * with b-factors set to the evolutionary scores from the db model objects.
+     *
+     * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
+     * @param os the output stream with the assembly in mmCIF format
+     * @param pdbInfoDB the pdb data with chain clusters
+     * @param assemblyDB the db model data with assembly and residue info data
+     * @throws IOException
+     */
+    public void getAssemblyCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB) throws IOException {
+
+        Structure s = readCoords(auFile);
+
+        List<AtomSite> atomSiteList = new ArrayList<>();
+
+        for (GraphNodeDB node : assemblyDB.getGraphNodes()) {
+
+            if (!node.isIn3dStructure())
+                continue;
+
+            String chainName = node.getLabel().split("_")[0];
+
+            Chain c = s.getPolyChainByPDB(chainName);
+            List<Chain> nonPolyChains = s.getNonPolyChainsByPDB(chainName);
+
+            addEvolutionaryScores(c, pdbInfoDB.getChainCluster(c.getEntityInfo().getRepresentative().getName()));
+
+            Matrix4d transform = new Matrix4d(
+                    node.getRxx(), node.getRxy(), node.getRxz(), node.getTx(),
+                    node.getRyx(), node.getRyy(), node.getRyz(), node.getTy(),
+                    node.getRzx(), node.getRzy(), node.getRzz(), node.getTz(),
+                    0, 0, 0, 1);
+
+            Calc.transform(c, transform);
+
+            nonPolyChains.forEach(nonPolyChain -> Calc.transform(nonPolyChain, transform));
+
+            addAtomSites(c, atomSiteList);
+            nonPolyChains.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList));
+
+        }
+
+        // TODO check what's the right charset to use
+        os.write(MMCIFFileTools.toMMCIF(atomSiteList, AtomSite.class).getBytes());
+    }
+
+    /**
+     *
+     * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
+     * @param os the output stream with the assembly in mmCIF format
+     * @param pdbInfoDB the pdb data with chain clusters
+     * @param interfaceDB the interface data
+     * @throws IOException
+     */
+    public void getInterfaceCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB) throws IOException {
+
+        Structure s = readCoords(auFile);
+
+        List<AtomSite> atomSiteList = new ArrayList<>();
+
+        String chainName1 = interfaceDB.getChain1();
+        String chainName2 = interfaceDB.getChain2();
+
+        Chain c1 = s.getPolyChainByPDB(chainName1);
+        Chain c2 = s.getPolyChainByPDB(chainName2);
+        List<Chain> nonPolyChains1 = s.getNonPolyChainsByPDB(chainName1);
+        List<Chain> nonPolyChains2 = s.getNonPolyChainsByPDB(chainName2);
+
+        addEvolutionaryScores(c1, pdbInfoDB.getChainCluster(c1.getEntityInfo().getRepresentative().getName()));
+        addEvolutionaryScores(c2, pdbInfoDB.getChainCluster(c2.getEntityInfo().getRepresentative().getName()));
+
+        Matrix4d tranform = SpaceGroup.getMatrixFromAlgebraic(interfaceDB.getOperator());
+        Calc.transform(c2, tranform);
+        nonPolyChains2.forEach(nonPolyChain -> Calc.transform(nonPolyChain, tranform));
+
+        addAtomSites(c1, atomSiteList);
+        addAtomSites(c2, atomSiteList);
+        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList));
+        nonPolyChains2.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList));
+
+        // TODO check what's the right charset to use
+        os.write(MMCIFFileTools.toMMCIF(atomSiteList, AtomSite.class).getBytes());
+
+    }
+
+    private Structure readCoords(File auFile) throws IOException {
+
+        long start = System.currentTimeMillis();
+
+        Structure structure;
+
+        int fileType = FileTypeGuesser.guessFileType(auFile);
+
+        FileParsingParameters fileParsingParams = new FileParsingParameters();
+        fileParsingParams.setAlignSeqRes(true);
+
+        if (fileType==FileTypeGuesser.CIF_FILE) {
+
+            MMcifParser parser = new SimpleMMcifParser();
+            SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+
+            consumer.setFileParsingParameters(fileParsingParams);
+
+            parser.addMMcifConsumer(consumer);
+
+            parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(auFile))));
+
+            structure = consumer.getStructure();
+        } else if (fileType == FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
+            PDBFileParser parser = new PDBFileParser();
+
+            parser.setFileParsingParameters(fileParsingParams);
+
+            structure = parser.parsePDBFile(new FileInputStream(auFile));
+
+        } else {
+            // TODO support mmtf, add it to file type guesser
+            throw new IOException("AU coordinate file "+auFile.toString()+" does not seem to be in one of the supported formats");
+        }
+
+        long end = System.currentTimeMillis();
+
+        logger.info("Time needed to parse file {}: {} ms", auFile.toString(), end-start);
+
+        return structure;
+    }
+
+    private void addEvolutionaryScores(Chain c, ChainClusterDB chainClusterDB) {
+
+        for (Group g : c.getAtomGroups()) {
+            int resSerial = c.getEntityInfo().getAlignedResIndex(g, c);
+            ResidueInfoDB res = chainClusterDB.getResidue(resSerial);
+            final double entropy;
+            if (res != null) {
+                entropy = res.getEntropyScore();
+            } else {
+                entropy = 0;
+                logger.warn("Residue info could not be found from data in db: res serial {}, chain asym id {}. Setting entropy to 0", resSerial, c.getId());
+            }
+            g.getAtoms().forEach(a -> a.setTempFactor((float) entropy));
+
+        }
+    }
+
+    private void addAtomSites(Chain c, List<AtomSite> atomSites) {
+        // TODO set atom ids to be unique throughout (problem for sym mates)
+        for (Group g : c.getAtomGroups()) {
+            for (Atom a : g.getAtoms()) {
+                atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, c.getName(), c.getId()));
+            }
+            // TODO how about alt locs?
+        }
+    }
+ }
