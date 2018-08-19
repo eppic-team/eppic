@@ -3,6 +3,7 @@ package eppic;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.model.db.*;
 import org.biojava.nbio.structure.*;
+import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.FileParsingParameters;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
@@ -30,9 +31,8 @@ public class CoordFilesAdaptor {
 
     private static final Logger logger = LoggerFactory.getLogger(CoordFilesAdaptor.class);
 
-
     /**
-     * Given an input stream with coordinates of an AU in mmCIF format produces
+     * Given an input file with coordinates of an AU in mmCIF format produces
      * an mmCIF format output stream representing the given assembly db model object
      * with b-factors set to the evolutionary scores from the db model objects.
      *
@@ -43,8 +43,22 @@ public class CoordFilesAdaptor {
      * @throws IOException
      */
     public void getAssemblyCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB) throws IOException {
-
         Structure s = readCoords(auFile);
+        getAssemblyCoordsMmcif(s, os, pdbInfoDB, assemblyDB);
+    }
+
+    /**
+     * Given an input file with coordinates of an AU in mmCIF format produces
+     * an mmCIF format output stream representing the given assembly db model object
+     * with b-factors set to the evolutionary scores from the db model objects.
+     *
+     * @param s          the input structure with a PDB structure (AU)
+     * @param os         the output stream with the assembly in mmCIF format
+     * @param pdbInfoDB  the pdb data with chain clusters
+     * @param assemblyDB the db model data with assembly and residue info data
+     * @throws IOException
+     */
+    public void getAssemblyCoordsMmcif(Structure s, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB) throws IOException {
 
         List<AtomSite> atomSiteList = new ArrayList<>();
 
@@ -54,6 +68,7 @@ public class CoordFilesAdaptor {
                 continue;
 
             String chainName = node.getLabel().split("_")[0];
+            String opId = node.getLabel().split("_")[1];
 
             Chain c = s.getPolyChainByPDB(chainName);
             List<Chain> nonPolyChains = s.getNonPolyChainsByPDB(chainName);
@@ -70,12 +85,18 @@ public class CoordFilesAdaptor {
 
             nonPolyChains.forEach(nonPolyChain -> Calc.transform(nonPolyChain, transform));
 
-            addAtomSites(c, atomSiteList);
-            nonPolyChains.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList));
+            addAtomSites(c, atomSiteList, opId);
+            nonPolyChains.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, opId));
 
         }
 
         // TODO check what's the right charset to use
+
+        // writing header
+        os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_assembly\n").getBytes());
+        os.write(FileConvert.getAtomSiteHeader().getBytes());
+
+        // writing content
         os.write(MMCIFFileTools.toMMCIF(atomSiteList, AtomSite.class).getBytes());
     }
 
@@ -88,8 +109,19 @@ public class CoordFilesAdaptor {
      * @throws IOException
      */
     public void getInterfaceCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB) throws IOException {
-
         Structure s = readCoords(auFile);
+        getInterfaceCoordsMmcif(s, os, pdbInfoDB, interfaceDB);
+    }
+
+    /**
+     *
+     * @param s the input structure with a PDB structure (AU)
+     * @param os the output stream with the assembly in mmCIF format
+     * @param pdbInfoDB the pdb data with chain clusters
+     * @param interfaceDB the interface data
+     * @throws IOException
+     */
+    public void getInterfaceCoordsMmcif(Structure s, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB) throws IOException {
 
         List<AtomSite> atomSiteList = new ArrayList<>();
 
@@ -108,12 +140,18 @@ public class CoordFilesAdaptor {
         Calc.transform(c2, tranform);
         nonPolyChains2.forEach(nonPolyChain -> Calc.transform(nonPolyChain, tranform));
 
-        addAtomSites(c1, atomSiteList);
-        addAtomSites(c2, atomSiteList);
-        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList));
-        nonPolyChains2.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList));
+        addAtomSites(c1, atomSiteList, "0");
+        // TODO we need to assing the correct opId here instead of 1
+        addAtomSites(c2, atomSiteList, "1");
+        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, "0"));
+        // TODO we need to assing the correct opId here instead of 1
+        nonPolyChains2.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, "1"));
 
         // TODO check what's the right charset to use
+        // writing header
+        os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_interface\n").getBytes());
+        os.write(FileConvert.getAtomSiteHeader().getBytes());
+        // writing content
         os.write(MMCIFFileTools.toMMCIF(atomSiteList, AtomSite.class).getBytes());
 
     }
@@ -177,11 +215,11 @@ public class CoordFilesAdaptor {
         }
     }
 
-    private void addAtomSites(Chain c, List<AtomSite> atomSites) {
+    private void addAtomSites(Chain c, List<AtomSite> atomSites, String opId) {
         // TODO set atom ids to be unique throughout (problem for sym mates)
         for (Group g : c.getAtomGroups()) {
             for (Atom a : g.getAtoms()) {
-                atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, c.getName(), c.getId()));
+                atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, c.getName() + "_" +opId, c.getId() + "_" + opId));
             }
             // TODO how about alt locs?
         }
