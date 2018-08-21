@@ -12,7 +12,6 @@ import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
-import org.jmol.util.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,10 +164,10 @@ public class CoordFilesAdaptor {
         nonPolyChains2.forEach(nonPolyChain -> Calc.transform(nonPolyChain, tranform));
 
         addAtomSites(c1, atomSiteList, "0");
-        // TODO we need to assing the correct opId here instead of 1
+        // TODO we need to assign the correct opId here instead of 1
         addAtomSites(c2, atomSiteList, "1");
         nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, "0"));
-        // TODO we need to assing the correct opId here instead of 1
+        // TODO we need to assign the correct opId here instead of 1
         nonPolyChains2.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, "1"));
 
         // TODO check what's the right charset to use

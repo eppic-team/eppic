@@ -237,6 +237,7 @@ public class TestAssemblyStructure {
 
         testCoordFilesAdaptorForPdbId("4ht5");
         testCoordFilesAdaptorForPdbId("5wjc");
+        //testCoordFilesAdaptorForPdbId("4hhb");
 
     }
 
@@ -289,6 +290,27 @@ public class TestAssemblyStructure {
             Structure structFromFile = structFromFiles.get(assemblyDB.getId());
 
             assertEquals(structFromFile.getPolyChains().size(), structFromAdaptor.getPolyChains().size());
+            assertEquals(structFromFile.getNonPolyChains().size(), structFromAdaptor.getNonPolyChains().size());
+
+            List<Chain> polyChainsFromFile = new ArrayList<>(structFromFile.getPolyChains());
+            List<Chain> polyChainsFromAdaptor = new ArrayList<>(structFromAdaptor.getPolyChains());
+            sortById(polyChainsFromFile);
+            sortById(polyChainsFromAdaptor);
+
+            for (int i = 0; i<polyChainsFromFile.size(); i++) {
+                assertEquals(polyChainsFromFile.get(i).getId(), polyChainsFromAdaptor.get(i).getId());
+                assertEquals(polyChainsFromFile.get(i).getName(), polyChainsFromAdaptor.get(i).getName());
+            }
+
+            List<Chain> nonPolyChainsFromFile = new ArrayList<>(structFromFile.getNonPolyChains());
+            List<Chain> nonPolyChainsFromAdaptor = new ArrayList<>(structFromAdaptor.getNonPolyChains());
+            sortById(nonPolyChainsFromFile);
+            sortById(nonPolyChainsFromAdaptor);
+
+            for (int i = 0; i<nonPolyChainsFromFile.size(); i++) {
+                assertEquals(nonPolyChainsFromFile.get(i).getId(), nonPolyChainsFromAdaptor.get(i).getId());
+                assertEquals(nonPolyChainsFromFile.get(i).getName(), nonPolyChainsFromAdaptor.get(i).getName());
+            }
 
             Atom[] atomsFromAdaptor = getAllAtomArray(structFromAdaptor);
             Atom[] atomsFromFile = getAllAtomArray(structFromFile);
@@ -302,8 +324,10 @@ public class TestAssemblyStructure {
             assertEquals(msg, 0, rmsd, 0.001);
         }
 
-        System.out.println("end");
+    }
 
+    private void sortById(List<Chain> chains) {
+        chains.sort(Comparator.comparing(Chain::getId));
     }
 
 }
