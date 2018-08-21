@@ -196,7 +196,9 @@ public class MainController
 					PDBIdentifierPanel.informationLabel.setHTML("Assembly Analysis of: ");
 					//only show a link for precomputed jobs
 					if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
-						PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getPdbInfo().getInputName()+"'>"+ApplicationContext.getPdbInfo().getInputName()+"</a>");
+						PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='" +
+								ApplicationContext.getSettings().getPdbLinkUrl() +
+								ApplicationContext.getPdbInfo().getInputName() + "'>" + ApplicationContext.getPdbInfo().getInputName()+"</a>");
 					else if(ApplicationContext.getPdbInfo().getInputType() == InputType.FILE.getIndex()) //user uploaded jobs
 						PDBIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getInputName());						
 					InformationPanel.assemblyInfoPanel.setHeadingHtml("General Information");											
@@ -218,7 +220,9 @@ public class MainController
 						PDBIdentifierPanel.informationLabel.setHTML("All Interfaces of: ");
 						//only show a link for precomputed jobs
 						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
-							PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getSelectedJobId()+"'>"+ApplicationContext.getPdbInfo().getInputName()+"</a>");
+							PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='" +
+									ApplicationContext.getSettings().getPdbLinkUrl() +
+									ApplicationContext.getSelectedJobId() + "'>" + ApplicationContext.getPdbInfo().getInputName()+"</a>");
 						else if(ApplicationContext.getPdbInfo().getInputType() == InputType.FILE.getIndex()) //user uploaded jobs
 							PDBIdentifierPanel.pdbNameLabel.setHTML(ApplicationContext.getPdbInfo().getInputName());							
 						InformationPanel.assemblyInfoPanel.setHeadingHtml("General Information");				
@@ -256,7 +260,9 @@ public class MainController
 						int assemblyID = ApplicationContext.getSelectedAssemblyId();
 						PDBIdentifierPanel.informationLabel.setHTML("Interface Analysis of: Assembly " + ApplicationContext.getSelectedAssemblyId() + " in ");
 						if(ApplicationContext.getPdbInfo().getInputType() == InputType.PDBCODE.getIndex()) //precomputed
-							PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='http://www.pdb.org/pdb/explore/explore.do?structureId="+ApplicationContext.getSelectedJobId()+"'>"+event.getPdbScoreItem().getInputName()+"</a>");
+							PDBIdentifierPanel.pdbNameLabel.setHTML("<a target='_blank' href='" +
+									ApplicationContext.getSettings().getPdbLinkUrl() +
+									ApplicationContext.getSelectedJobId() + "'>" + event.getPdbScoreItem().getInputName()+"</a>");
 						else if(ApplicationContext.getPdbInfo().getInputType() == InputType.FILE.getIndex()) //user uploaded jobs
 							PDBIdentifierPanel.pdbNameLabel.setHTML(event.getPdbScoreItem().getInputName());
 						List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
@@ -884,7 +890,9 @@ public class MainController
 	
 	/**
 	 * Displays search panel.
-	 * @param string 
+	 * @param pdbCode
+	 * @param chain
+	 * @param resultList
 	 */
 	private void displaySearchView(String pdbCode, String chain, List<PDBSearchResult> resultList)
 	{
