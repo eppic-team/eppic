@@ -12,6 +12,7 @@ import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.jmol.util.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,20 +71,39 @@ public class CoordFilesAdaptor {
             String chainName = node.getLabel().split("_")[0];
             String opId = node.getLabel().split("_")[1];
 
-            Chain c = s.getPolyChainByPDB(chainName);
-            List<Chain> nonPolyChains = s.getNonPolyChainsByPDB(chainName);
+            Chain c = (Chain) s.getPolyChainByPDB(chainName).clone();
+            List<Chain> nonPolyChains = new ArrayList<>();
+            for (Chain nonPolyChain: s.getNonPolyChainsByPDB(chainName)) {
+                nonPolyChains.add((Chain) nonPolyChain.clone());
+            }
 
             addEvolutionaryScores(c, pdbInfoDB.getChainCluster(c.getEntityInfo().getRepresentative().getName()));
 
-            Matrix4d transform = new Matrix4d(
-                    node.getRxx(), node.getRxy(), node.getRxz(), node.getTx(),
-                    node.getRyx(), node.getRyy(), node.getRyz(), node.getTy(),
-                    node.getRzx(), node.getRzy(), node.getRzz(), node.getTz(),
-                    0, 0, 0, 1);
+            Matrix4d op = new Matrix4d();
+            op.m00 = node.getRxx();
+            op.m01 = node.getRxy();
+            op.m02 = node.getRxz();
 
-            Calc.transform(c, transform);
+            op.m10 = node.getRyx();
+            op.m11 = node.getRyy();
+            op.m12 = node.getRyz();
 
-            nonPolyChains.forEach(nonPolyChain -> Calc.transform(nonPolyChain, transform));
+            op.m20 = node.getRzx();
+            op.m21 = node.getRzy();
+            op.m22 = node.getRzz();
+
+            op.m03 = node.getTx();
+            op.m13 = node.getTy();
+            op.m23 = node.getTz();
+
+            op.m30 = 0;
+            op.m31 = 0;
+            op.m32 = 0;
+            op.m33 = 1;
+
+            Calc.transform(c, op);
+
+            nonPolyChains.forEach(nonPolyChain -> Calc.transform(nonPolyChain, op));
 
             addAtomSites(c, atomSiteList, opId);
             nonPolyChains.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, opId));
@@ -130,9 +150,12 @@ public class CoordFilesAdaptor {
         String chainName2 = interfaceDB.getChain2();
 
         Chain c1 = s.getPolyChainByPDB(chainName1);
-        Chain c2 = s.getPolyChainByPDB(chainName2);
+        Chain c2 = (Chain) s.getPolyChainByPDB(chainName2).clone();
         List<Chain> nonPolyChains1 = s.getNonPolyChainsByPDB(chainName1);
-        List<Chain> nonPolyChains2 = s.getNonPolyChainsByPDB(chainName2);
+        List<Chain> nonPolyChains2 = new ArrayList<>();
+        for (Chain nonPolyChain : s.getNonPolyChainsByPDB(chainName2)) {
+            nonPolyChains2.add((Chain)nonPolyChain.clone());
+        }
 
         addEvolutionaryScores(c1, pdbInfoDB.getChainCluster(c1.getEntityInfo().getRepresentative().getName()));
         addEvolutionaryScores(c2, pdbInfoDB.getChainCluster(c2.getEntityInfo().getRepresentative().getName()));
