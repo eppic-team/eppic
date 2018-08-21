@@ -269,9 +269,12 @@ public class TestAssemblyStructure {
 
             coordFilesAdaptor.getAssemblyCoordsMmcif(auStruct, os, pdbInfoDB, assemblyDB);
 
-            //FileOutputStream fos = new FileOutputStream(new File("/Users/jose/test.cif"));
-            //fos.write(os.toByteArray());
-            //fos.close();
+            // for debugging: we write file out
+            File file = new File(outDir, pdbId +".assemblyFromAdaptor."+assemblyDB.getId()+".cif");
+            file.deleteOnExit();
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(os.toByteArray());
+            fos.close();
 
             SimpleMMcifParser parser = new SimpleMMcifParser();
             SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();

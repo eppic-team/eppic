@@ -93,7 +93,8 @@ public class CoordFilesAdaptor {
         // TODO check what's the right charset to use
 
         // writing header
-        os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_assembly\n").getBytes());
+        String jobId = pdbInfoDB.getJob()==null?"unknown":pdbInfoDB.getJob().getJobId();
+        os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_jobId_" + jobId + "_assemblyId_" + assemblyDB.getId()+ "\n").getBytes());
         os.write(FileConvert.getAtomSiteHeader().getBytes());
 
         // writing content
@@ -149,7 +150,8 @@ public class CoordFilesAdaptor {
 
         // TODO check what's the right charset to use
         // writing header
-        os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_interface\n").getBytes());
+        String jobId = pdbInfoDB.getJob()==null?"unknown":pdbInfoDB.getJob().getJobId();
+        os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_jobId_" + jobId + "_interfaceId_" + interfaceDB.getInterfaceId()+ "\n" ).getBytes());
         os.write(FileConvert.getAtomSiteHeader().getBytes());
         // writing content
         os.write(MMCIFFileTools.toMMCIF(atomSiteList, AtomSite.class).getBytes());
