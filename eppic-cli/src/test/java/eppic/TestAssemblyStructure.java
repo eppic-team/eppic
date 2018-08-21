@@ -2,10 +2,10 @@ package eppic;
 
 import eppic.assembly.Assembly;
 import eppic.assembly.CrystalAssemblies;
-import eppic.model.db.AssemblyDB;
-import eppic.model.db.GraphNodeDB;
-import eppic.model.db.PdbInfoDB;
+import eppic.model.db.*;
 import org.biojava.nbio.structure.*;
+import org.biojava.nbio.structure.contact.StructureInterface;
+import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.EntityFinder;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
@@ -27,6 +27,7 @@ public class TestAssemblyStructure {
     private static final Logger logger = LoggerFactory.getLogger(TestAssemblyStructure.class);
 
     private static final String TMPDIR = System.getProperty("java.io.tmpdir");
+    private static final File outDir = new File(TMPDIR, "eppicTestAssemblyStructure");
 
     /**
      * Tests that applying operators extracted from {@link Assembly#getStructurePacked()} produces
@@ -34,15 +35,14 @@ public class TestAssemblyStructure {
      * @throws IOException
      */
     @Test
-    public void testStructureLayout() throws IOException{
+    public void testAssemblyStructureLayout() throws IOException{
 
-        testPdbId("4ht5");
-        testPdbId("5wjc");
+        testAssemblyLayoutForPdbId("4ht5");
+        testAssemblyLayoutForPdbId("5wjc");
 
     }
 
-    private void testPdbId(String pdbId) throws IOException {
-        File outDir = new File(TMPDIR, "eppicTestAssemblyStructure");
+    private void testAssemblyLayoutForPdbId(String pdbId) throws IOException {
 
         outDir.mkdir();
         outDir.deleteOnExit();
@@ -60,7 +60,7 @@ public class TestAssemblyStructure {
         CrystalAssemblies validAssemblies = m.getCrystalAssemblies();
         PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
 
-        Map<Integer, Structure> structFromFiles = writeStructFiles(validAssemblies, pdbId, outDir);
+        Map<Integer, Structure> structFromFiles = writeAssemblyStructFiles(validAssemblies, pdbId, outDir);
 
         for (AssemblyDB assemblyDB : pdbInfoDB.getValidAssemblies()) {
             Structure assemblyStruct = getAssemblyStructFromDbOps(assemblyDB, auStruct);
@@ -206,7 +206,7 @@ public class TestAssemblyStructure {
      * @return a map of assembly ids to parsed (from output files) structures
      * @throws IOException
      */
-    private Map<Integer, Structure> writeStructFiles(CrystalAssemblies validAssemblies, String pdbId, File outDir) throws IOException {
+    private Map<Integer, Structure> writeAssemblyStructFiles(CrystalAssemblies validAssemblies, String pdbId, File outDir) throws IOException {
         Map<Integer, Structure> structFromFiles = new HashMap<>();
         for (Assembly a:validAssemblies) {
             File structFile = new File(outDir, pdbId+".assembly." +a.getId()+".cif.gz");
@@ -227,22 +227,44 @@ public class TestAssemblyStructure {
         return structFromFiles;
     }
 
+    private Map<Integer, Structure> writeInterfaceStructFiles(StructureInterfaceList interfaces, String pdbId, File outDir) throws IOException {
+        Map<Integer, Structure> structFromFiles = new HashMap<>();
+        for (StructureInterface interf : interfaces) {
+            File structFile = new File(outDir, pdbId+".interface." +interf.getId()+".cif.gz");
+            structFile.deleteOnExit();
+            PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(structFile)));
+            ps.print(interf.toMMCIF());
+            ps.close();
+
+            // parse file
+            SimpleMMcifParser parser = new SimpleMMcifParser();
+            SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+            parser.addMMcifConsumer(consumer);
+            BufferedReader buf = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(structFile))));
+            parser.parse(buf);
+            buf.close();
+            Structure s = consumer.getStructure();
+
+            structFromFiles.put(interf.getId(), s);
+        }
+        return structFromFiles;
+    }
+
     /**
      * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(File, OutputStream, PdbInfoDB, AssemblyDB)} produces
      * the same structures as output of {@link Assembly#writeToMmCifFile(File)}
      * @throws IOException
      */
     @Test
-    public void testCoordFilesAdaptor() throws IOException{
+    public void testAssembliesCoordFilesAdaptor() throws IOException{
 
-        testCoordFilesAdaptorForPdbId("4ht5");
-        testCoordFilesAdaptorForPdbId("5wjc");
-        testCoordFilesAdaptorForPdbId("4hhb");
+        testAssembliesCoordFilesAdaptorForPdbId("4ht5");
+        testAssembliesCoordFilesAdaptorForPdbId("5wjc");
+        testAssembliesCoordFilesAdaptorForPdbId("4hhb");
 
     }
 
-    private void testCoordFilesAdaptorForPdbId(String pdbId) throws IOException {
-        File outDir = new File(TMPDIR, "eppicTestAssemblyStructure");
+    private void testAssembliesCoordFilesAdaptorForPdbId(String pdbId) throws IOException {
 
         outDir.mkdir();
         outDir.deleteOnExit();
@@ -260,7 +282,7 @@ public class TestAssemblyStructure {
         CrystalAssemblies validAssemblies = m.getCrystalAssemblies();
         PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
 
-        Map<Integer, Structure> structFromFiles = writeStructFiles(validAssemblies, pdbId, outDir);
+        Map<Integer, Structure> structFromFiles = writeAssemblyStructFiles(validAssemblies, pdbId, outDir);
 
         CoordFilesAdaptor coordFilesAdaptor = new CoordFilesAdaptor();
 
@@ -330,6 +352,94 @@ public class TestAssemblyStructure {
 
     private void sortById(List<Chain> chains) {
         chains.sort(Comparator.comparing(Chain::getId));
+    }
+
+    /**
+     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(File, OutputStream, PdbInfoDB, AssemblyDB)} produces
+     * the same structures as output of {@link Assembly#writeToMmCifFile(File)}
+     * @throws IOException
+     */
+    @Test
+    public void testInterfacesCoordFilesAdaptor() throws IOException{
+
+        testInterfacesCoordFilesAdaptorForPdbId("4ht5");
+        testInterfacesCoordFilesAdaptorForPdbId("5wjc");
+        testInterfacesCoordFilesAdaptorForPdbId("4hhb");
+
+    }
+
+    private void testInterfacesCoordFilesAdaptorForPdbId(String pdbId) throws IOException {
+
+        outDir.mkdir();
+        outDir.deleteOnExit();
+        //assertTrue(couldMakeDir);
+
+        assertTrue(outDir.isDirectory());
+
+        EppicParams params = Utils.generateEppicParams(pdbId, outDir);
+
+        Main m = new Main();
+
+        m.run(params);
+        Structure auStruct = m.getStructure();
+
+        StructureInterfaceList interfaces = m.getInterfaces();
+        PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
+
+        Map<Integer, Structure> structFromFiles = writeInterfaceStructFiles(interfaces, pdbId, outDir);
+
+        CoordFilesAdaptor coordFilesAdaptor = new CoordFilesAdaptor();
+
+        for (InterfaceClusterDB interfaceClusterDB : pdbInfoDB.getInterfaceClusters()) {
+            for (InterfaceDB interf : interfaceClusterDB.getInterfaces()) {
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+                coordFilesAdaptor.getInterfaceCoordsMmcif(auStruct, os, pdbInfoDB, interf);
+
+                //if (logger.isDebugEnabled()) {
+                    // for debugging: we write file out
+                    File file = new File(outDir, pdbId + ".interfaceFromAdaptor." + interf.getInterfaceId() + ".cif");
+                    file.deleteOnExit();
+                    FileOutputStream fos = new FileOutputStream(file);
+                    fos.write(os.toByteArray());
+                    fos.close();
+                //}
+
+                SimpleMMcifParser parser = new SimpleMMcifParser();
+                SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+                parser.addMMcifConsumer(consumer);
+                BufferedReader buf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
+                parser.parse(buf);
+                buf.close();
+
+                Structure structFromAdaptor = consumer.getStructure();
+                Structure structFromFile = structFromFiles.get(interf.getInterfaceId());
+
+                assertEquals(2, structFromFile.getPolyChains().size());
+                assertEquals(structFromFile.getPolyChains().size(), structFromAdaptor.getPolyChains().size());
+
+                assertFalse(structFromAdaptor.getPolyChains().get(0).getId().contains("_"));
+
+                assertEquals(structFromFile.getPolyChains().get(0).getId(), structFromAdaptor.getPolyChains().get(0).getId());
+                assertEquals(structFromFile.getPolyChains().get(0).getName(), structFromAdaptor.getPolyChains().get(0).getName());
+
+                // note we can't compare the opIds because the strategy of CoordFilesAdaptor is slightly different from that in BioJava's StructureInterface.toMmcif
+                assertEquals(structFromFile.getPolyChains().get(1).getId().split("_")[0], structFromAdaptor.getPolyChains().get(1).getId().split("_")[0]);
+                assertEquals(structFromFile.getPolyChains().get(1).getName().split("_")[0], structFromAdaptor.getPolyChains().get(1).getName().split("_")[0]);
+
+                Atom[] atomsFromAdaptor = getAllAtomArray(structFromAdaptor);
+                Atom[] atomsFromFile = getAllAtomArray(structFromFile);
+
+                assertEquals(atomsFromFile.length, atomsFromAdaptor.length);
+
+                // the rmsd should be 0 without need to superpose, the 2 structures must be exactly in same location
+                double rmsd = Calc.rmsd(atomsFromAdaptor, atomsFromFile);
+                String msg = pdbId + ", interface id "+interf.getInterfaceId()+": rmsd between struct from file and from coords adaptor should be 0";
+                //System.out.println(msg);
+                assertEquals(msg, 0, rmsd, 0.001);
+            }
+
+        }
     }
 
 }

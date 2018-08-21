@@ -93,6 +93,11 @@ public class Main {
 	    return validAssemblies;
     }
 
+	// needed for testing
+    protected StructureInterfaceList getInterfaces() {
+		return interfaces;
+	}
+
 		
 	public void setUpLogging() {
 		

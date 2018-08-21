@@ -11,6 +11,7 @@ import org.biojava.nbio.structure.io.mmcif.MMcifParser;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
 import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
 import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
+import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,15 +161,26 @@ public class CoordFilesAdaptor {
         addEvolutionaryScores(c2, pdbInfoDB.getChainCluster(c2.getEntityInfo().getRepresentative().getName()));
 
         Matrix4d tranform = SpaceGroup.getMatrixFromAlgebraic(interfaceDB.getOperator());
+        CrystalCell cell = s.getPDBHeader().getCrystallographicInfo().getCrystalCell();
+        if (cell!=null) {
+            tranform = cell.transfToOrthonormal(tranform);
+        }
         Calc.transform(c2, tranform);
-        nonPolyChains2.forEach(nonPolyChain -> Calc.transform(nonPolyChain, tranform));
+        for (Chain nonPolyChain : nonPolyChains2) {
+            Calc.transform(nonPolyChain, tranform);
+        }
 
-        addAtomSites(c1, atomSiteList, "0");
-        // TODO we need to assign the correct opId here instead of 1
-        addAtomSites(c2, atomSiteList, "1");
-        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, "0"));
-        // TODO we need to assign the correct opId here instead of 1
-        nonPolyChains2.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, "1"));
+        addAtomSites(c1, atomSiteList, null);
+        // Note here we deviate from what StructureInterface.toMmcif in biojava does:
+        // here we add the second opId whenever not in AU case. In BioJava it was whenever the 2 chains had same id.
+        String secondOpId = null;
+        if (!interfaceDB.getOperatorType().equals("AU"))
+            secondOpId = String.valueOf(interfaceDB.getOperatorId());
+        addAtomSites(c2, atomSiteList, secondOpId);
+        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, null));
+        for (Chain nonPolyChain : nonPolyChains2) {
+            addAtomSites(nonPolyChain, atomSiteList, secondOpId);
+        }
 
         // TODO check what's the right charset to use
         // writing header
@@ -243,7 +255,9 @@ public class CoordFilesAdaptor {
         // TODO set atom ids to be unique throughout (problem for sym mates)
         for (Group g : c.getAtomGroups()) {
             for (Atom a : g.getAtoms()) {
-                atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, c.getName() + "_" +opId, c.getId() + "_" + opId));
+                String chainId = c.getId() + ((opId==null)?"":"_" + opId);
+                String chainName = c.getName() + ((opId==null)?"":"_" + opId);
+                atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainName, chainId));
             }
             // we intentionally not write altloc groups
             // if we decide to write out altloc groups then #220 has to be taken into account
