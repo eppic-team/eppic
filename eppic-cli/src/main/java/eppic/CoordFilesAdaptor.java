@@ -245,7 +245,10 @@ public class CoordFilesAdaptor {
             for (Atom a : g.getAtoms()) {
                 atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, c.getName() + "_" +opId, c.getId() + "_" + opId));
             }
-            // TODO how about alt locs?
+            // we intentionally not write altloc groups
+            // if we decide to write out altloc groups then #220 has to be taken into account
+            // and make sure that we eliminate duplicate atoms that can be present in biojava altloc groups
+            // see also https://github.com/biojava/biojava/issues/778
         }
     }
  }
