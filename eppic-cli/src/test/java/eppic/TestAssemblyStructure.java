@@ -3,6 +3,9 @@ package eppic;
 import eppic.assembly.Assembly;
 import eppic.assembly.CrystalAssemblies;
 import eppic.model.db.*;
+import eppic.model.dto.Interface;
+import eppic.model.dto.InterfaceCluster;
+import eppic.model.dto.PdbInfo;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -251,7 +254,7 @@ public class TestAssemblyStructure {
     }
 
     /**
-     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(File, OutputStream, PdbInfoDB, AssemblyDB, boolean)} produces
+     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(String, File, OutputStream, PdbInfo, eppic.model.dto.Assembly, boolean)} produces
      * the same structures as output of {@link Assembly#writeToMmCifFile(File)}
      * @throws IOException
      */
@@ -280,17 +283,17 @@ public class TestAssemblyStructure {
         Structure auStruct = m.getStructure();
 
         CrystalAssemblies validAssemblies = m.getCrystalAssemblies();
-        PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
+        PdbInfo pdbInfoDB = PdbInfo.create(m.getDataModelAdaptor().getPdbInfo());
 
         Map<Integer, Structure> structFromFiles = writeAssemblyStructFiles(validAssemblies, pdbId, outDir);
 
         CoordFilesAdaptor coordFilesAdaptor = new CoordFilesAdaptor();
 
-        for (AssemblyDB assemblyDB : pdbInfoDB.getValidAssemblies()) {
+        for (eppic.model.dto.Assembly assemblyDB : pdbInfoDB.getValidAssemblies()) {
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-            coordFilesAdaptor.getAssemblyCoordsMmcif(auStruct, os, pdbInfoDB, assemblyDB, false);
+            coordFilesAdaptor.getAssemblyCoordsMmcif(null, auStruct, os, pdbInfoDB, assemblyDB, false);
 
             if (logger.isDebugEnabled()) {
                 // for debugging: we write file out
@@ -355,7 +358,7 @@ public class TestAssemblyStructure {
     }
 
     /**
-     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(File, OutputStream, PdbInfoDB, AssemblyDB, boolean)} produces
+     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(String, File, OutputStream, PdbInfo, eppic.model.dto.Assembly, boolean)} produces
      * the same structures as output of {@link Assembly#writeToMmCifFile(File)}
      * @throws IOException
      */
@@ -384,17 +387,17 @@ public class TestAssemblyStructure {
         Structure auStruct = m.getStructure();
 
         StructureInterfaceList interfaces = m.getInterfaces();
-        PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
+        PdbInfo pdbInfoDB = PdbInfo.create(m.getDataModelAdaptor().getPdbInfo());
 
         Map<Integer, Structure> structFromFiles = writeInterfaceStructFiles(interfaces, pdbId, outDir);
 
         CoordFilesAdaptor coordFilesAdaptor = new CoordFilesAdaptor();
 
-        for (InterfaceClusterDB interfaceClusterDB : pdbInfoDB.getInterfaceClusters()) {
-            for (InterfaceDB interf : interfaceClusterDB.getInterfaces()) {
+        for (InterfaceCluster interfaceClusterDB : pdbInfoDB.getInterfaceClusters()) {
+            for (Interface interf : interfaceClusterDB.getInterfaces()) {
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-                coordFilesAdaptor.getInterfaceCoordsMmcif(auStruct, os, pdbInfoDB, interf, false);
+                coordFilesAdaptor.getInterfaceCoordsMmcif(null, auStruct, os, pdbInfoDB, interf, false);
 
                 //if (logger.isDebugEnabled()) {
                     // for debugging: we write file out

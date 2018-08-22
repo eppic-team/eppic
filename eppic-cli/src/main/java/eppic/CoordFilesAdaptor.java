@@ -1,7 +1,8 @@
 package eppic;
 
 import eppic.commons.util.FileTypeGuesser;
-import eppic.model.db.*;
+import eppic.model.dto.*;
+import org.biojava.nbio.core.sequence.io.util.IOUtils;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.FileParsingParameters;
@@ -15,6 +16,7 @@ import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.nio.ch.IOUtil;
 
 import javax.vecmath.Matrix4d;
 import java.io.*;
@@ -37,6 +39,7 @@ public class CoordFilesAdaptor {
      * an mmCIF format output stream representing the given assembly db model object
      * with b-factors set to the evolutionary scores from the db model objects.
      *
+     * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
      * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
@@ -44,9 +47,9 @@ public class CoordFilesAdaptor {
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB, boolean withEvolScores) throws IOException {
+    public void getAssemblyCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfo pdbInfoDB, Assembly assemblyDB, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getAssemblyCoordsMmcif(s, os, pdbInfoDB, assemblyDB, withEvolScores);
+        getAssemblyCoordsMmcif(jobId, s, os, pdbInfoDB, assemblyDB, withEvolScores);
     }
 
     /**
@@ -54,6 +57,7 @@ public class CoordFilesAdaptor {
      * an mmCIF format output stream representing the given assembly db model object
      * with b-factors set to the evolutionary scores from the db model objects.
      *
+     * @param jobId      the job identifier to write in output stream, can be null if unavailable from caller
      * @param s          the input structure with a PDB structure (AU)
      * @param os         the output stream with the assembly in mmCIF format
      * @param pdbInfoDB  the pdb data with chain clusters
@@ -61,11 +65,11 @@ public class CoordFilesAdaptor {
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(Structure s, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB, boolean withEvolScores) throws IOException {
+    public void getAssemblyCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfo pdbInfoDB, Assembly assemblyDB, boolean withEvolScores) throws IOException {
 
         List<AtomSite> atomSiteList = new ArrayList<>();
 
-        for (GraphNodeDB node : assemblyDB.getGraphNodes()) {
+        for (GraphNode node : assemblyDB.getGraphNodes()) {
 
             if (!node.isIn3dStructure())
                 continue;
@@ -80,7 +84,7 @@ public class CoordFilesAdaptor {
             }
 
             if (withEvolScores)
-                addEvolutionaryScores(c, pdbInfoDB.getChainCluster(c.getEntityInfo().getRepresentative().getName()));
+                addEvolutionaryScores(c, getChainCluster(pdbInfoDB, c.getEntityInfo().getRepresentative().getName()));
 
             Matrix4d op = new Matrix4d();
             op.m00 = node.getRxx();
@@ -116,7 +120,6 @@ public class CoordFilesAdaptor {
         // TODO check what's the right charset to use
 
         // writing header
-        String jobId = pdbInfoDB.getJob()==null?"unknown":pdbInfoDB.getJob().getJobId();
         os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_jobId_" + jobId + "_assemblyId_" + assemblyDB.getId()+ "\n").getBytes());
         os.write(FileConvert.getAtomSiteHeader().getBytes());
 
@@ -126,6 +129,7 @@ public class CoordFilesAdaptor {
 
     /**
      *
+     * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
      * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
@@ -133,13 +137,14 @@ public class CoordFilesAdaptor {
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB, boolean withEvolScores) throws IOException {
+    public void getInterfaceCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfo pdbInfoDB, Interface interfaceDB, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getInterfaceCoordsMmcif(s, os, pdbInfoDB, interfaceDB, withEvolScores);
+        getInterfaceCoordsMmcif(jobId, s, os, pdbInfoDB, interfaceDB, withEvolScores);
     }
 
     /**
      *
+     * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
      * @param s the input structure with a PDB structure (AU)
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
@@ -147,7 +152,7 @@ public class CoordFilesAdaptor {
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(Structure s, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB, boolean withEvolScores) throws IOException {
+    public void getInterfaceCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfo pdbInfoDB, Interface interfaceDB, boolean withEvolScores) throws IOException {
 
         List<AtomSite> atomSiteList = new ArrayList<>();
 
@@ -163,8 +168,8 @@ public class CoordFilesAdaptor {
         }
 
         if (withEvolScores) {
-            addEvolutionaryScores(c1, pdbInfoDB.getChainCluster(c1.getEntityInfo().getRepresentative().getName()));
-            addEvolutionaryScores(c2, pdbInfoDB.getChainCluster(c2.getEntityInfo().getRepresentative().getName()));
+            addEvolutionaryScores(c1, getChainCluster(pdbInfoDB, c1.getEntityInfo().getRepresentative().getName()));
+            addEvolutionaryScores(c2, getChainCluster(pdbInfoDB, c2.getEntityInfo().getRepresentative().getName()));
         }
 
         Matrix4d tranform = SpaceGroup.getMatrixFromAlgebraic(interfaceDB.getOperator());
@@ -191,7 +196,6 @@ public class CoordFilesAdaptor {
 
         // TODO check what's the right charset to use
         // writing header
-        String jobId = pdbInfoDB.getJob()==null?"unknown":pdbInfoDB.getJob().getJobId();
         os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_jobId_" + jobId + "_interfaceId_" + interfaceDB.getInterfaceId()+ "\n" ).getBytes());
         os.write(FileConvert.getAtomSiteHeader().getBytes());
         // writing content
@@ -219,7 +223,7 @@ public class CoordFilesAdaptor {
 
             parser.addMMcifConsumer(consumer);
 
-            parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(auFile))));
+            parser.parse(new BufferedReader(new InputStreamReader(IOUtils.openFile(auFile))));
 
             structure = consumer.getStructure();
         } else if (fileType == FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
@@ -227,7 +231,7 @@ public class CoordFilesAdaptor {
 
             parser.setFileParsingParameters(fileParsingParams);
 
-            structure = parser.parsePDBFile(new FileInputStream(auFile));
+            structure = parser.parsePDBFile(IOUtils.openFile(auFile));
 
         } else {
             // TODO support mmtf, add it to file type guesser
@@ -241,11 +245,11 @@ public class CoordFilesAdaptor {
         return structure;
     }
 
-    private void addEvolutionaryScores(Chain c, ChainClusterDB chainClusterDB) {
+    private void addEvolutionaryScores(Chain c, ChainCluster chainClusterDB) {
 
         for (Group g : c.getAtomGroups()) {
             int resSerial = c.getEntityInfo().getAlignedResIndex(g, c);
-            ResidueInfoDB res = chainClusterDB.getResidue(resSerial);
+            ResidueInfo res = getResidue(chainClusterDB, resSerial);
             final double entropy;
             if (res != null) {
                 entropy = res.getEntropyScore();
@@ -271,5 +275,24 @@ public class CoordFilesAdaptor {
             // and make sure that we eliminate duplicate atoms that can be present in biojava altloc groups
             // see also https://github.com/biojava/biojava/issues/778
         }
+    }
+
+    private ChainCluster getChainCluster(PdbInfo pdbInfo, String chainName) {
+        for (ChainCluster chainCluster : pdbInfo.getChainClusters()) {
+            if (chainCluster.getRepChain().equals(chainName)) {
+                return chainCluster;
+            }
+        }
+
+        return null;
+    }
+
+    private ResidueInfo getResidue(ChainCluster chainCluster, int resSerial) {
+        for (ResidueInfo residueInfo : chainCluster.getResidueInfos()) {
+            if (residueInfo.getResidueNumber() == resSerial) {
+                return residueInfo;
+            }
+        }
+        return null;
     }
  }

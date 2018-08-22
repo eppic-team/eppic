@@ -223,6 +223,8 @@ public class LatticeGraphServlet extends BaseServlet
 								+ "like a PDB id. Can't produce the lattice graph page!",
 								structFile, inputName));
 			} else {
+
+				// TODO make CLI write the AU file, we don't want to be writing and moving files around at request time
 				
 				// it is like a PDB id, leave it to AtomCache
 				AtomCache atomCache = null;

@@ -29,8 +29,7 @@ public class ResponseUtil {
 
 			int length;
 
-			while ((input != null)
-					&& ((length = input.read(buffer)) != -1)) {
+			while ((length = input.read(buffer)) != -1) {
 				output.write(buffer, 0, length);
 			}
 		}
@@ -55,7 +54,7 @@ public class ResponseUtil {
 		
 		if((isContentGzipped) && (!acceptGzipEncoding))
 		{
-			throw new ValidationException("No support for gzip encoding - please use the browser supporting Content-Encoding:gzip");
+			throw new ValidationException("No support for gzip encoding - please use a browser supporting Content-Encoding:gzip");
 		}
 		
 		return isContentGzipped;

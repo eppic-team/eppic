@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.files.downloader.servlets;
 import java.io.File;
 import java.io.IOException;
 
+import javax.persistence.NoResultException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +21,18 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.FileDownloa
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.FileToDownloadLocationValidator;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.FileToDownloadNameSuffixValidator;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.FileToDownloadValidator;
+import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
+import eppic.CoordFilesAdaptor;
+import eppic.db.dao.*;
+import eppic.db.dao.jpa.AssemblyDAOJpa;
+import eppic.db.dao.jpa.InterfaceDAOJpa;
+import eppic.db.dao.jpa.JobDAOJpa;
+import eppic.db.dao.jpa.PDBInfoDAOJpa;
+import eppic.model.dto.Assembly;
+import eppic.model.dto.InputWithType;
+import eppic.model.dto.Interface;
+import eppic.model.dto.PdbInfo;
 
 /**
  * Servlet used to download files stored in the server.
@@ -80,7 +92,7 @@ public class FileDownloadServlet extends BaseServlet
 	
 	/**
 	 * The file format for the coordinate files requested with {@value #PARAM_TYPE}="interface","assembly"
-	 * Valid values are pdb, cif, pse, pdb.gz, cif.gz
+	 * Valid values are {@value #COORDS_FORMAT_VALUE_CIF}, {@value #COORDS_FORMAT_VALUE_PDB}
 	 */
 	public static final String PARAM_COORDS_FORMAT = "coordsFormat";
 	
@@ -93,9 +105,7 @@ public class FileDownloadServlet extends BaseServlet
 	// the values for PARAM_COORDS_FORMAT
 	public static final String COORDS_FORMAT_VALUE_PDB = "pdb";
 	public static final String COORDS_FORMAT_VALUE_CIF = "cif";
-	public static final String COORDS_FORMAT_VALUE_PDBGZ = "pdbgz";
-	public static final String COORDS_FORMAT_VALUE_CIFGZ = "cifgz";
-	
+
 	
 	
 	
@@ -132,7 +142,13 @@ public class FileDownloadServlet extends BaseServlet
 			FileToDownloadNameSuffixValidator.validateSuffix(suffix);
 			
 			boolean isContentGzipped = ResponseUtil.checkIfDoGzipEncoding(acceptGzipEncoding, suffix);
-			
+
+			if (type.equals(TYPE_VALUE_ASSEMBLY) || type.equals(TYPE_VALUE_INTERFACE)) {
+			    // TODO at the moment PDB format is not supported, we could try a best-effort implementation at some point (https://github.com/eppic-team/eppic/issues/185)
+				produceCoordsFileResponse(response, type, jobId, interfaceId, assemblyId, fileToDownloadLocation);
+				return;
+			}
+
 			File fileToDownload = DirectoryContentReader.getFileFromDirectoryWithSpecifiedSuffix(fileToDownloadLocation, suffix);
 			FileToDownloadValidator.validateFile(fileToDownload);
 
@@ -146,6 +162,13 @@ public class FileDownloadServlet extends BaseServlet
 		catch(IOException e)
 		{
 			response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error while trying to download the file: " + e.getMessage());
+		}
+		catch(DaoException e) {
+			if (e.getCause() instanceof NoResultException) {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Error while trying to download the file: " + e.getMessage());
+			} else {
+				response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error while trying to download the file: " + e.getMessage());
+			}
 		}
 	}
 	
@@ -175,5 +198,33 @@ public class FileDownloadServlet extends BaseServlet
 		
 //				response.setContentLength((int) resultFile.length());
 		response.setHeader("Content-Disposition", "attachment; filename=\"" + processedFileName + "\"");
+	}
+
+	private void produceCoordsFileResponse(HttpServletResponse response, String type, String jobId, String interfaceId, String assemblyId, File jobDir) throws DaoException, ValidationException, IOException {
+
+		PDBInfoDAO dao = new PDBInfoDAOJpa();
+		PdbInfo pdbInfo = dao.getPDBInfo(jobId, true);
+
+		JobDAO jobDAO = new JobDAOJpa();
+		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
+
+		String atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
+		File auFile = LatticeGraphServlet.getAuFileName(jobDir, input.getInputName(), atomCachePath);
+
+		CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
+
+		if (type.equals(TYPE_VALUE_ASSEMBLY)) {
+			AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+			Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), Integer.parseInt(assemblyId), true);
+			adaptor.getAssemblyCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, assembly, true);
+		} else if (type.equals(TYPE_VALUE_INTERFACE)) {
+			InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
+			Interface interf = interfaceDAO.getInterface(pdbInfo.getUid(), Integer.parseInt(interfaceId), false, false);
+			adaptor.getInterfaceCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, interf, true);
+		} else {
+			// should not happen, the validation took care of this
+			throw new ValidationException("Unsupported file type " + type);
+		}
+
 	}
 }

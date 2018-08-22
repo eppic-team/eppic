@@ -40,7 +40,7 @@ public class DirectoryContentReader
 	
 	/**
 	 * Retrieves first file in the directory matching specified suffix.
-	 * @param directory directory from which file is to be retrieved
+	 * @param resultFileDirectory directory from which file is to be retrieved
 	 * @param suffix suffix to match
 	 * @return file with specified suffix
 	 */
