@@ -41,11 +41,12 @@ public class CoordFilesAdaptor {
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
      * @param assemblyDB the db model data with assembly and residue info data
+     * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB) throws IOException {
+    public void getAssemblyCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getAssemblyCoordsMmcif(s, os, pdbInfoDB, assemblyDB);
+        getAssemblyCoordsMmcif(s, os, pdbInfoDB, assemblyDB, withEvolScores);
     }
 
     /**
@@ -57,9 +58,10 @@ public class CoordFilesAdaptor {
      * @param os         the output stream with the assembly in mmCIF format
      * @param pdbInfoDB  the pdb data with chain clusters
      * @param assemblyDB the db model data with assembly and residue info data
+     * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(Structure s, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB) throws IOException {
+    public void getAssemblyCoordsMmcif(Structure s, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB, boolean withEvolScores) throws IOException {
 
         List<AtomSite> atomSiteList = new ArrayList<>();
 
@@ -77,7 +79,8 @@ public class CoordFilesAdaptor {
                 nonPolyChains.add((Chain) nonPolyChain.clone());
             }
 
-            addEvolutionaryScores(c, pdbInfoDB.getChainCluster(c.getEntityInfo().getRepresentative().getName()));
+            if (withEvolScores)
+                addEvolutionaryScores(c, pdbInfoDB.getChainCluster(c.getEntityInfo().getRepresentative().getName()));
 
             Matrix4d op = new Matrix4d();
             op.m00 = node.getRxx();
@@ -127,11 +130,12 @@ public class CoordFilesAdaptor {
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
      * @param interfaceDB the interface data
+     * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB) throws IOException {
+    public void getInterfaceCoordsMmcif(File auFile, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getInterfaceCoordsMmcif(s, os, pdbInfoDB, interfaceDB);
+        getInterfaceCoordsMmcif(s, os, pdbInfoDB, interfaceDB, withEvolScores);
     }
 
     /**
@@ -140,9 +144,10 @@ public class CoordFilesAdaptor {
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
      * @param interfaceDB the interface data
+     * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(Structure s, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB) throws IOException {
+    public void getInterfaceCoordsMmcif(Structure s, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB, boolean withEvolScores) throws IOException {
 
         List<AtomSite> atomSiteList = new ArrayList<>();
 
@@ -157,8 +162,10 @@ public class CoordFilesAdaptor {
             nonPolyChains2.add((Chain)nonPolyChain.clone());
         }
 
-        addEvolutionaryScores(c1, pdbInfoDB.getChainCluster(c1.getEntityInfo().getRepresentative().getName()));
-        addEvolutionaryScores(c2, pdbInfoDB.getChainCluster(c2.getEntityInfo().getRepresentative().getName()));
+        if (withEvolScores) {
+            addEvolutionaryScores(c1, pdbInfoDB.getChainCluster(c1.getEntityInfo().getRepresentative().getName()));
+            addEvolutionaryScores(c2, pdbInfoDB.getChainCluster(c2.getEntityInfo().getRepresentative().getName()));
+        }
 
         Matrix4d tranform = SpaceGroup.getMatrixFromAlgebraic(interfaceDB.getOperator());
         CrystalCell cell = s.getPDBHeader().getCrystallographicInfo().getCrystalCell();
