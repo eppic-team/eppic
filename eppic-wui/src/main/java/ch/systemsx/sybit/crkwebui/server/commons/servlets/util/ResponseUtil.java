@@ -22,45 +22,16 @@ public class ResponseUtil {
 										  		HttpServletResponse response) throws IOException
 	{
 		byte[] buffer = new byte[1024];
-		DataInputStream input = null;
-		ServletOutputStream output = null;
-		
-		try
-		{
-			input = new DataInputStream(new FileInputStream(resultFile));
-			output = response.getOutputStream();
-			
+
+		try (
+				DataInputStream input = new DataInputStream(new FileInputStream(resultFile));
+				ServletOutputStream output = response.getOutputStream()) {
+
 			int length;
 
 			while ((input != null)
-					&& ((length = input.read(buffer)) != -1)) 
-			{
+					&& ((length = input.read(buffer)) != -1)) {
 				output.write(buffer, 0, length);
-			}
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-			throw e;
-		}
-		finally
-		{
-			if(input != null)
-			{
-				try
-				{
-					input.close();
-				}
-				catch(Exception ex) {}
-			}
-			
-			if(output != null)
-			{
-				try
-				{
-					output.close();
-				}
-				catch(Exception ex) {}
 			}
 		}
 	}
