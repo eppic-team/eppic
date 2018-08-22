@@ -38,7 +38,7 @@ public class AssemblyInfoPanel extends FieldSet {
 		for(InterfaceCluster ic : clusters){
 			num_interfaces += ic.getInterfaces().size();
 		}
-    	assembly_info = new HTML("Number of assemblies: " + ApplicationContext.getPdbInfo().getAssemblies().size() + "<br>Number of interfaces: " + num_interfaces + "<br>Number of interface clusters: " + ApplicationContext.getPdbInfo().getInterfaceClusters().size());
+    	assembly_info = new HTML("Number of assemblies: " + ApplicationContext.getPdbInfo().getValidAssemblies().size() + "<br>Number of interfaces: " + num_interfaces + "<br>Number of interface clusters: " + ApplicationContext.getPdbInfo().getInterfaceClusters().size());
 
     	mainContainer.add(assembly_info);
     	
