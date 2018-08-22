@@ -24,7 +24,6 @@ import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.FileConvert;
@@ -37,23 +36,14 @@ import org.jcolorbrewer.ColorBrewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import eppic.assembly.gui.InterfaceEdge3DSourced;
-import eppic.assembly.json.ChainVertex3DJsonAdapter;
-import eppic.assembly.json.InterfaceEdge3DJsonAdapter;
-import eppic.assembly.json.InterfaceEdge3DSourcedJsonAdapter;
-import eppic.assembly.json.LatticeGraph3DJson;
-import eppic.assembly.json.ParametricCircularArcJsonAdapter;
 import eppic.commons.util.GeomTools;
 
 public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> {
 
 	private static final Logger logger = LoggerFactory.getLogger(LatticeGraph3D.class);
 
-	private final double defaultInterfaceRadius = 2.5;
-	private final double defaultArcHeight = 4;
+	public static final double defaultInterfaceRadius = 2.5;
+	public static final double defaultArcHeight = 4;
 	//private final double defaultArrowOffset = 6;
 
 	public enum WrappingPolicy {
@@ -70,9 +60,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Create the graph after calculating the interfaces
 	 * @param struc
-	 * @throws StructureException
 	 */
-	public LatticeGraph3D(Structure struc) throws StructureException {
+	public LatticeGraph3D(Structure struc) {
 		this(struc,null);
 	}
 	/**
@@ -80,15 +69,14 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	 * @param struc Structure, which must include crystallographic info
 	 * @param interfaces (Optional) list of interfaces from struct. If null, will
 	 *  be calculated from the structure (slow).
-	 * @throws StructureException
 	 */
-	public LatticeGraph3D(Structure struc, List<StructureInterface> interfaces) throws StructureException {
+	public LatticeGraph3D(Structure struc, List<StructureInterface> interfaces) {
 		super(struc,interfaces,ChainVertex3D.class, InterfaceEdge3D.class);
 		
 		this.policy = WrappingPolicy.DUPLICATE;
 
 		// Compute centroids in AU
-		chainCentroid = new HashMap<String,Point3d>();
+		chainCentroid = new HashMap<>();
 		for(Chain c: structure.getPolyChains() ) {
 			chainCentroid.put(c.getId(), GeomTools.getCentroid(c));
 		}
@@ -116,9 +104,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Copy the other LatticeGraph. Recalculates all 3D position information
 	 * @param other
-	 * @throws StructureException
 	 */
-	public LatticeGraph3D(LatticeGraph<? extends ChainVertex, ? extends InterfaceEdge> other) throws StructureException {
+	public LatticeGraph3D(LatticeGraph<? extends ChainVertex, ? extends InterfaceEdge> other) {
 		// Clone graph & basic properties
 		super(other,ChainVertex3D.class,InterfaceEdge3D.class);
 		
@@ -142,9 +129,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 	/**
 	 * Calculate vertex positions and colors
-	 * @throws StructureException
 	 */
-	private final void positionVertices() throws StructureException {
+	private void positionVertices() {
 
 		Set<ChainVertex3D> vertices = graph.vertexSet();
 		for(ChainVertex3D v : vertices) {
@@ -158,9 +144,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Initialize edge positions. Should be called during initialization after
 	 * {@link #positionVertices()}.
-	 * @throws StructureException
 	 */
-	private final void positionEdges() throws StructureException {
+	private void positionEdges() {
 		Set<InterfaceEdge3D> edges = graph.edgeSet();
 		for(InterfaceEdge3D edge : edges) {
 			ChainVertex3D source = graph.getEdgeSource(edge);
@@ -252,7 +237,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	}
 
 	
-	private Point3d getPosition(ChainVertex3D v) throws StructureException {
+	private Point3d getPosition(ChainVertex3D v) {
 		String chainId = v.getChainId();
 		int au = v.getOpId();
 
@@ -348,7 +333,7 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Takes a list of lists. For each row, assigns a color to all list members.
 	 * Returns a map from the list members to the color
-	 * @param inputs Collection of clustered objects which should be colored alike
+	 * @param clusters Collection of clustered objects which should be colored alike
 	 * @param palette Defaults to Dark2 if null
 	 * @return
 	 */
@@ -375,7 +360,6 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * For each vertex and edge, set the colorStr property to the hex value of the color.
 	 * 
-	 * @param graph
 	 */
 	public void setHexColors() {
 		for(ChainVertex3D v : graph.vertexSet()) {
@@ -444,9 +428,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	 * Note that PyMOL supports multi-letter chain ids only from 1.7.4
 	 * @param out the writer to write the mmCIF data to
 	 * @throws IOException
-	 * @throws StructureException
 	 */
-	public void writeCellToMmCifFile(PrintWriter out) throws IOException, StructureException {
+	public void writeCellToMmCifFile(PrintWriter out) throws IOException {
 		
 		// Some molecular viewers like 3Dmol.js need globally unique atom identifiers (across chains)
 		// With the approach below we add an offset to atom ids of sym-related molecules to avoid repeating atom ids
@@ -513,9 +496,8 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 	/**
 	 * Returns a set of all unique transformations needed to create the unit cell (one per vertex in lattice graph).
 	 * @return
-	 * @throws StructureException if problems occur calculating centroids
 	 */
-	public Set<Matrix4d> getUnitCellTransforms() throws StructureException {
+	public Set<Matrix4d> getUnitCellTransforms() {
 		Set<Matrix4d> transforms = new HashSet<>();
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
 			Matrix4d m = getUnitCellTransformationOrthonormal(cv.getChain().getName(), cv.getOpId());
@@ -625,18 +607,5 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		return center;
 	}
 	
-	/**
-	 * Create a Gson object that can serialize LatticeGraph3D objects
-	 * @return
-	 */
-	public static Gson createGson() {
-		return new GsonBuilder()
-			.registerTypeAdapter(LatticeGraph3D.class, new LatticeGraph3DJson())
-			.registerTypeAdapter(ChainVertex3D.class, new ChainVertex3DJsonAdapter())
-			.registerTypeAdapter(InterfaceEdge3DSourced.class, new InterfaceEdge3DSourcedJsonAdapter())
-			.registerTypeAdapter(InterfaceEdge3D.class, new InterfaceEdge3DJsonAdapter())
-			.registerTypeAdapter(ParametricCircularArc.class, new ParametricCircularArcJsonAdapter())
-			.setPrettyPrinting()
-			.create();
-	}
+
 }

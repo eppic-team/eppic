@@ -221,7 +221,7 @@ public class DataDownloadServlet extends BaseServlet{
 		// assemblies info
 		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 
-		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
+		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true, false);
 		// filtering out if a list of ids provided
 		if (assemblyIdList!=null) {
 			assemblies = assemblies.stream().filter(a -> assemblyIdList.contains(a.getId())).collect(Collectors.toList());

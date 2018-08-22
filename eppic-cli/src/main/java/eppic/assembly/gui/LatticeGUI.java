@@ -110,10 +110,10 @@ public class LatticeGUI {
 	private Map<ChainVertex,Color> vertexColors = null;
 	private Map<InterfaceEdge,Color> edgeColors = null;
 
-	public LatticeGUI(Structure struc) throws StructureException {
+	public LatticeGUI(Structure struc) {
 		this(struc,null);
 	}
-	public LatticeGUI(Structure struc, StructureInterfaceList interfaces) throws StructureException {
+	public LatticeGUI(Structure struc, StructureInterfaceList interfaces) {
 		this.structure = struc;
 		this.policy = WrappingPolicy.DUPLICATE;
 
@@ -179,7 +179,7 @@ public class LatticeGUI {
 		return interfaces;
 	}
 
-	public BiojavaJmol display(String filename) throws StructureException {
+	public BiojavaJmol display(String filename) {
 		BiojavaJmol jmol = new BiojavaJmol();
 		jmol.setTitle(filename);
 		//jmol.setStructure(struc);
@@ -258,7 +258,7 @@ public class LatticeGUI {
 		frame.setVisible(true);
 	}
 
-	private String drawEdges() throws StructureException {
+	private String drawEdges() {
 		StringBuilder jmol = new StringBuilder();
 
 		jmol.append( "set defaultDrawArrowScale 8\n");
@@ -504,7 +504,7 @@ public class LatticeGUI {
 		}
 		return uid;
 	}
-	private String drawVertices() throws StructureException {
+	private String drawVertices() {
 		StringBuilder jmol = new StringBuilder();
 
 		Set<ChainVertex> vertices = graph.getGraph().vertexSet();
@@ -529,7 +529,7 @@ public class LatticeGUI {
 	}
 
 
-	private Point3d getPosition(ChainVertex v) throws StructureException {
+	private Point3d getPosition(ChainVertex v) {
 		String chainId = v.getChainId();
 		int au = v.getOpId();
 

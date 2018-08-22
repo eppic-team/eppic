@@ -9,14 +9,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
+import eppic.assembly.*;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import org.apache.logging.log4j.LogManager;
@@ -39,13 +38,8 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
-import eppic.assembly.Assembly;
-import eppic.assembly.CrystalAssemblies;
-import eppic.assembly.GraphUtils;
-import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.gui.LatticeGUIMustache;
+import eppic.assembly.layout.LayoutUtils;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
@@ -93,6 +87,11 @@ public class Main {
 	protected Structure getStructure() {
 		return pdb;
 	}
+
+	// needed for testing
+	protected CrystalAssemblies getCrystalAssemblies() {
+	    return validAssemblies;
+    }
 
 		
 	public void setUpLogging() {
@@ -549,18 +548,12 @@ public class Main {
 			for (Assembly a:validAssemblies) {
 
 				File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
-
-				try {
-					LOGGER.info("Writing assembly {} to {}",a.getId(),outputFile);
-					a.writeToMmCifFile(outputFile);
-					if (params.isGeneratePdbFiles()) {
-						outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() +  EppicParams.PDB_FILE_EXTENSION);
-						a.writeToPdbFile(outputFile);
-					}
-
-				} catch (StructureException e) {
-					LOGGER.error("Could not write assembly coordinates file {}: {}",a.getId(),e.getMessage());
-					continue;
+				
+				LOGGER.info("Writing assembly {} to {}", a.getId(), outputFile);
+				a.writeToMmCifFile(outputFile);
+				if (params.isGeneratePdbFiles()) {
+					outputFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + a.getId() + EppicParams.PDB_FILE_EXTENSION);
+					a.writeToPdbFile(outputFile);
 				}
 
 			}
@@ -586,12 +579,10 @@ public class Main {
 			GraphvizRunner runner = new GraphvizRunner(params.getGraphvizExe());
 			String fileFormat = "png";
 			
-			// the gson object needed in step 3 below
-			Gson gson = LatticeGraph3D.createGson();
 
 			for (Assembly a:validAssemblies) {
 				
-				// 1. Generate the png with the assembly diagram via invoking the dot executable
+				// Generate the png with the assembly diagram via invoking the dot executable
 
 				File pngFile= params.getOutputFile(EppicParams.ASSEMBLIES_DIAGRAM_FILES_SUFFIX+"." + a.getId() + "."+EppicParams.THUMBNAILS_SIZE+"x"+EppicParams.THUMBNAILS_SIZE+"."+fileFormat);
 
@@ -614,7 +605,7 @@ public class Main {
 				latticeGraph.filterEngagedClusters(clusterIds);
 					
 				LatticeGUIMustache guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_THUMB, latticeGraph);
-				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
+				guiThumb.setLayout2D(LayoutUtils.getDefaultLayout2D(latticeGraph.getCrystalCell()));
 				guiThumb.setTitle("Assembly "+a.getId());
 				guiThumb.setPdbId(pdb.getPDBCode());
 				int dpi = 72; // 72 dots per inch for output
@@ -635,64 +626,11 @@ public class Main {
 				} else {
 					runner.generateFromDot(guiThumb, pngFile, fileFormat);
 				}
-				
-				// 2. Generate the json file for the dynamic js graph in the wui
-				
-				guiThumb = new LatticeGUIMustache(LatticeGUIMustache.TEMPLATE_ASSEMBLY_DIAGRAM_JSON, latticeGraph);
-				guiThumb.setLayout2D(LatticeGUIMustache.getDefaultLayout2D(pdb));
-				String json;
-				// Hack to work around Mustache limitations which prevent generating valid JSON
-				try(StringWriter sw = new StringWriter();
-						PrintWriter pw = new PrintWriter(sw);
-						) {
 
-					// Construct page
-					guiThumb.execute(pw);
-
-					pw.flush();
-					sw.flush();
-					json = sw.toString();
-					// Remove all trailing commas from lists (invalid JSON)
-					json = json.replaceAll(",(?=\\s*[}\\]])","");
-											
-				}
-				File jsonAssemblyDiagramFile = params.getOutputFile(EppicParams.get2dDiagramJsonFilenameSuffix(interfaceIds));
-
-				PrintWriter pw = new PrintWriter(new FileWriter(jsonAssemblyDiagramFile));
-				pw.println(json);
-				pw.close();
-				
-				
-				// 3. Generate the json file for the 3d lattice graph in the wui (ngl based)
-								
-				latticeGraph.setHexColors();
-
-				json = gson.toJson(latticeGraph);
-
-				File jsonLatticeGraphFile = params.getOutputFile(EppicParams.get3dLatticeGraphJsonFilenameSuffix(interfaceIds));
-
-				pw = new PrintWriter(new FileWriter(jsonLatticeGraphFile));
-				pw.println(json);
-				pw.close();
-				
-				
 			}
-			
-			// additionally for the lattice graph 3d we need the full graph "*" file, i.e. all interfaces engaged
-			// used in "view unit cell"
-			
-			latticeGraph.filterEngagedClusters(null);
-			latticeGraph.setHexColors();
 
-			String json = gson.toJson(latticeGraph);
-
-			File jsonLatticeGraphFile = params.getOutputFile(EppicParams.get3dLatticeGraphJsonFilenameSuffix(null));
-
-			PrintWriter pw = new PrintWriter(new FileWriter(jsonLatticeGraphFile));
-			pw.println(json);
-			pw.close();
 			
-		} catch( IOException|StructureException|InterruptedException e) {
+		} catch( IOException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
 		}
 	}

@@ -496,7 +496,7 @@ public class TextOutputWriter {
 		for (AssemblyDB assembly:pdbInfo.getAssemblies()) {
 			if (assembly.isTopologicallyValid()) {
 				printAssemblyInfo(ps, assembly);
-			} else {
+			} else if (assembly.getId()!=0) { // assembly id=0 corresponds to the unit cell assembly
 				hasTopInvalidAssemblies = true;
 			}
 		}
@@ -507,7 +507,7 @@ public class TextOutputWriter {
 
 
 			for (AssemblyDB assembly:pdbInfo.getAssemblies()) {
-				if (!assembly.isTopologicallyValid()) {
+				if (!assembly.isTopologicallyValid() && assembly.getId()!=0) {
 					printAssemblyInfo(ps, assembly);
 				}
 			}

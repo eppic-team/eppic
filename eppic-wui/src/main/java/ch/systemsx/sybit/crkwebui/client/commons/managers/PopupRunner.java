@@ -27,7 +27,7 @@ public class PopupRunner
 	/**
 	 * A constant to use for when all interfaces and not only those of a particular assembly should be shown.
 	 */
-	public static final String ALL_INTERFACES = "*";
+	public static final String ALL_INTERFACES = "0";
 	
 	/**
 	 * Open
@@ -146,25 +146,9 @@ public class PopupRunner
 
 		int canvasSize = size - VIEWER_SIZE_OFFSET;
 
-		
-		String interfaceids = null;
-
-		if (assemblyId == null || assemblyId.equals(ALL_INTERFACES)) {
-			interfaceids = "*";
-			
-		} else {
-
-			List<Assembly> assemblies = ApplicationContext.getPdbInfo().getAssemblies();
-			for(Assembly a : assemblies){
-				if((a.getId()+"").equals(assemblyId)){
-					interfaceids = joinInterfaceIds( a.getInterfaces() );
-				}
-			}
-		}
-
 		String url = GWT.getModuleBaseURL() + servlet;
 		url +=  "?" + FileDownloadServlet.PARAM_ID + "=" + ApplicationContext.getPdbInfo().getJobId() +
-				"&" + LatticeGraphServlet.PARAM_INTERFACES + "=" + interfaceids +
+				"&" + LatticeGraphServlet.PARAM_ASSEMBLY + "=" + assemblyId +
 				"&" + JmolViewerServlet.PARAM_SIZE+"=" + canvasSize;
 
 		

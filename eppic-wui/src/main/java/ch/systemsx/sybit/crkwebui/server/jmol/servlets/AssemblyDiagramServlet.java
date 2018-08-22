@@ -1,34 +1,22 @@
 package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.biojava.nbio.structure.StructureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
-import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.AssemblyDiagramPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.AssemblyDiagramServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import eppic.model.dto.Interface;
-import eppic.model.dto.PdbInfo;
-import eppic.commons.util.IntervalSet;
-import eppic.db.dao.DaoException;
 
 /**
  * Servlet used to display an AssemblyDiagram page.
@@ -39,10 +27,10 @@ import eppic.db.dao.DaoException;
  * Parameter name 					Parameter value
  * --------------					---------------
  * id								String (the jobId hash)
- * interfaces						String (comma-separated list of interface ids)
- * clusters							String (comma-separated list of interface cluster ids). Superseded by interfaces.
+ * assembly							String (the eppic assembly id)
  *
  * @author Spencer Bliven
+ * @author Jose Duarte
  */
 public class AssemblyDiagramServlet extends BaseServlet
 {
@@ -56,93 +44,52 @@ public class AssemblyDiagramServlet extends BaseServlet
 
 	private static final Logger logger = LoggerFactory.getLogger(AssemblyDiagramServlet.class);
 
-	//private String resultsLocation;
-	private String destination_path;
-	
-	private String atomCachePath;
+	private String restPrefix;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException
 	{
 		super.init(config);
 
-		//resultsLocation = properties.getProperty("results_location");
-		destination_path = properties.getProperty("destination_path");
-		atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
-		
-		if (atomCachePath == null) 
-			logger.warn("ATOM_CACHE_PATH is not set in config file, will not be able to reuse cache for PDB cif.gz files!");
+		restPrefix = properties.getProperty("rest_prefix");
 	}
 
 	@Override
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException
 	{
-
-		//TODO add type=interface/assembly as parameter, so that assemblies can also be supported
-
-
 		String jobId = request.getParameter(FileDownloadServlet.PARAM_ID);
-		String requestedIfacesStr = request.getParameter(LatticeGraphServlet.PARAM_INTERFACES);
-		String requestedClusterStr = request.getParameter(LatticeGraphServlet.PARAM_CLUSTERS);
+		String requestedAssemblyStr = request.getParameter(LatticeGraphServlet.PARAM_ASSEMBLY);
 		String size = request.getParameter(JmolViewerServlet.PARAM_SIZE);
-		String format = request.getParameter(LatticeGraphServlet.PARAM_FORMAT);
-		
+
 		// setting a default size if not specified, #191
 		if (size == null || size.trim().isEmpty()) 
 			size = JmolViewerServlet.DEFAULT_SIZE;
 
-		logger.info("Requested assemblyDiagram page for jobId={},interfaces={},clusters={},format={}",jobId,requestedIfacesStr,requestedClusterStr,format);
+		logger.info("Requested assemblyDiagram page for jobId={}, assembly={}",
+				jobId, requestedAssemblyStr);
 
 		PrintWriter outputStream = null;
 
 		try
 		{
-			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr,format);
-
-			PdbInfo pdbInfo = LatticeGraphServlet.getPdbInfo(jobId);
-			String input = pdbInfo.getInputName();
-			String inputPrefix = pdbInfo.getTruncatedInputName();
-
-			// job directory on local filesystem
-			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
-
-			List<Interface> ifaceList = LatticeGraphServlet.getInterfaceList(pdbInfo);
-
-			//TODO better to filter interfaces here before construction, or afterwards?
-			IntervalSet requestedIntervals = LatticeGraphServlet.parseInterfaceListWithClusters(requestedIfacesStr,requestedClusterStr,ifaceList);
-			Collection<Integer> requestedIfaces = requestedIntervals.getIntegerSet();
-
-			String title = jobId + " - Assembly Diagram";
-			if(requestedIfaces != null && !requestedIfaces.isEmpty()) {
-				title += " for interfaces "+requestedIfacesStr;
-			}
-
+			AssemblyDiagramServletInputValidator.validateLatticeGraphInput(jobId, null, null, requestedAssemblyStr);
 
 			outputStream = new PrintWriter(response.getOutputStream());
 
-			if(format != null && format.equalsIgnoreCase("json")) {
-				File auFile = LatticeGraphServlet.getAuFileName(dir, input, atomCachePath);
-				// important: input (second param) here must be the truncated input name or otherwise user jobs don't work - JD 2017-02-04
-				AssemblyDiagramPageGenerator.generateJSONPage(dir,inputPrefix, auFile, ifaceList, requestedIfaces,outputStream);
-			} else {
-				// Request URL, with format=json
-				StringBuffer jsonURL = request.getRequestURL();
-				Map<String, String[]> query = new LinkedHashMap<>(request.getParameterMap());
-				query.put("format", new String[] {"json"});
-				jsonURL.append('?')
-				.append(
-						query.entrySet().stream()
-						.<String>flatMap( entry -> Arrays.stream(entry.getValue()).map(s -> entry.getKey()+"="+s) )
-						.collect(Collectors.joining("&"))
-						);
-				String webappRoot = request.getContextPath();
-				String servletPath = request.getServletPath();
-				logger.debug("Context path: {}, servlet path: {}", webappRoot, servletPath);
-				AssemblyDiagramPageGenerator.generateHTMLPage(title, size, jsonURL.toString(), ifaceList, requestedIfaces,outputStream, webappRoot);
-				// TODO start generating JSON now, since we know that request is coming
-			}
+			String title = jobId + " - Assembly Diagram";
 
+			// should be no risk because validator checked for number and null
+			int assemblyId = Integer.parseInt(requestedAssemblyStr);
+			// the json data URL from REST API
+			String jsonURL = restPrefix + "/assemblyDiagram/" + jobId + "/" + assemblyId;
+			title += " for assembly " + requestedAssemblyStr;
+
+			// TODO should we support interfaceId list and interfaceClusterId list too? Problem is we can't do that from db data only. Projection needs to be calculated for each case
+
+			String webappRoot = request.getContextPath();
+			logger.debug("Context path: {}", webappRoot);
+			AssemblyDiagramPageGenerator.generateHTMLPage(title, size, jsonURL, outputStream, webappRoot);
 
 		}
 		catch(ValidationException e)
@@ -151,12 +98,6 @@ public class AssemblyDiagramServlet extends BaseServlet
 		}
 		catch(IOException e)
 		{
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Assembly Diagram page.");
-			logger.error("Error during preparation of Assembly Diagram page.",e);
-		} catch(DaoException e) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Assembly Diagram page.");
-			logger.error("Error during preparation of Assembly Diagram page.",e);
-		} catch (StructureException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during preparation of Assembly Diagram page.");
 			logger.error("Error during preparation of Assembly Diagram page.",e);
 		} catch (Exception e) {

@@ -66,7 +66,7 @@ public class LatticeGUIJGraph {
 	
 	private String name = "JGraph";
 
-	public LatticeGUIJGraph(Structure struc) throws StructureException {
+	public LatticeGUIJGraph(Structure struc) {
 		this(new LatticeGraph3D(struc).getGraph());
 	}
 	public LatticeGUIJGraph(Graph<ChainVertex3D, InterfaceEdge3D> graph) {

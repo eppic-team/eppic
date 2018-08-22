@@ -1,5 +1,6 @@
 package eppic.model.db;
 
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -143,7 +144,7 @@ public class PdbInfoDB implements Serializable {
 	
 	/**
 	 * Returns the InterfaceClusterDB corresponding to the given clusterId or null if no such clusterId exists
-	 * @param interfaceId
+	 * @param clusterId
 	 * @return
 	 */
 	public InterfaceClusterDB getInterfaceCluster(int clusterId) {
@@ -169,6 +170,24 @@ public class PdbInfoDB implements Serializable {
 	
 	public List<AssemblyDB> getAssemblies() {
 		return assemblies;
+	}
+
+	/**
+	 * Get the list of valid assemblies, i.e. those with id larger than 0.
+	 * Assemblies with id=0 represent the full unit cell, whilst assemblies with
+	 * id <0 represent topologically invalid assemblies (but annotated by PDB).
+	 * @return a list of topologically valid assemblies
+	 * @since 3.1.0
+	 */
+	@Transient
+	public List<AssemblyDB> getValidAssemblies() {
+		List<AssemblyDB> validAssemblies = new ArrayList<AssemblyDB>();
+		for (AssemblyDB assemblyDB : assemblies) {
+			if (assemblyDB.getId()>0) {
+				validAssemblies.add(assemblyDB);
+			}
+		}
+		return validAssemblies;
 	}
 
 	public void setAssemblies(List<AssemblyDB> assemblies) {

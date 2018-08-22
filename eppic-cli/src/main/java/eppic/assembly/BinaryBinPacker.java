@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -110,7 +109,6 @@ public class BinaryBinPacker<T> {
 		 * Splits a container horizontally with the box in the top left and
 		 * adds the contents.
 		 * Assumes that the box fits.
-		 * @param node
 		 * @param box
 		 * @param contents
 		 * @return
@@ -172,7 +170,7 @@ public class BinaryBinPacker<T> {
 	/**
 	 * The arguments will be sorted by dimension
 	 * @param boxes
-	 * @param contents
+	 * @return
 	 */
 	public BinaryBinPacker(List<Entry<Dimension2D, T>> boxes) {
 		this(boxes,0,0);
@@ -221,7 +219,7 @@ public class BinaryBinPacker<T> {
 
 	/**
 	 * Add a box to the first available bin.
-	 * This is most effective if boxes are added in decreasing order, as with {@link #addAll(Map)}.
+	 * This is most effective if boxes are added in decreasing order, as with {@link #addAll(List)}.
 	 * @param box
 	 * @param contents
 	 */
@@ -243,7 +241,6 @@ public class BinaryBinPacker<T> {
 	/**
 	 * Resizes the root to make a place for the box. Doesn't add anything.
 	 * @param box
-	 * @param contents
 	 * @return the bin with room for the box
 	 */
 	private Bin growNode(Dimension2D box) {

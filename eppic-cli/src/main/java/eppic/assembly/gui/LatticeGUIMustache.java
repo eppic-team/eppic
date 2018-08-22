@@ -10,12 +10,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -24,13 +21,13 @@ import java.util.stream.Stream;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+import eppic.assembly.layout.*;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.core.util.FileDownloadUtils;
 import org.jgrapht.UndirectedGraph;
-import org.jgrapht.graph.Pseudograph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +40,6 @@ import eppic.assembly.InterfaceEdge3D;
 import eppic.assembly.LatticeGraph;
 import eppic.assembly.LatticeGraph3D;
 import eppic.assembly.OrientedCircle;
-import eppic.assembly.layout.ComboLayout;
-import eppic.assembly.layout.ConnectedComponentLayout;
-import eppic.assembly.layout.GraphLayout;
-import eppic.assembly.layout.QuaternaryOrientationLayout;
-import eppic.assembly.layout.UnitCellLayout;
-import eppic.assembly.layout.VertexPositioner;
 import eppic.commons.util.IntervalSet;
 
 /**
@@ -68,9 +59,6 @@ public class LatticeGUIMustache {
 	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_THUMB = expandTemplatePath("AssemblyDiagramThumb.dot.mustache");
 	public static final String TEMPLATE_3DMOL = LatticeGUIMustache3D.MUSTACHE_TEMPLATE_3DMOL;//"LatticeGUIMustache3D";
 	public static final String MUSTACHE_TEMPLATE_NGL = "mustache/eppic/assembly/gui/LatticeGUINgl.html.mustache";
-	
-	public static final String TEMPLATE_ASSEMBLY_DIAGRAM_JSON = expandTemplatePath("AssemblyDiagramFull.json.mustache");
-
 
 
 	private final LatticeGraph3D latticeGraph;
@@ -99,10 +87,9 @@ public class LatticeGUIMustache {
 	 * @param struc
 	 * @param interfaceIds
 	 * @return
-	 * @throws StructureException 
 	 * @throws IllegalArgumentException if the template couldn't be found or was ambiguous
 	 */
-	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds) throws StructureException {
+	public static LatticeGUIMustache createLatticeGUIMustache(String template,Structure struc,Collection<Integer> interfaceIds) {
 		String templatePath = expandTemplatePath(template);
 		logger.info("Loading mustache template from {}",templatePath);
 
@@ -202,9 +189,8 @@ public class LatticeGUIMustache {
 	 * @param template Path to the template file. Short names are supported for templates in the MUSTACHE_TEMPLATE_DIR
 	 * @param struc Structure used to create the graph (must have cell info)
 	 * @param interfaceIds List of interface numbers, or null for all interfaces
-	 * @throws StructureException For errors parsing the structure
 	 */
-	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds) throws StructureException {
+	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds) {
 		this(template,struc,interfaceIds,null);
 	}
 	/**
@@ -214,9 +200,8 @@ public class LatticeGUIMustache {
 	 * @param interfaceIds
 	 * @param allInterfaces (Optional) List of interfaces for this structure.
 	 *  If not null it avoids recalculating the full list.
-	 * @throws StructureException
 	 */
-	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds, List<StructureInterface> allInterfaces) throws StructureException {
+	public LatticeGUIMustache(String template, Structure struc,Collection<Integer> interfaceIds, List<StructureInterface> allInterfaces) {
 		this(template,new LatticeGraph3D(struc,allInterfaces));
 
 		if( interfaceIds != null ) {
@@ -225,7 +210,12 @@ public class LatticeGUIMustache {
 		}
 
 		if (struc.getStructureIdentifier()!=null ) {
-			pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+			try {
+				pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+			} catch (StructureException e) {
+				logger.warn("Couldn't get PDB id. Error: {}", e.getMessage());
+				pdbId = null;
+			}
 		}
 		if(pdbId == null || pdbId.length() != 4) {
 			pdbId = struc.getName();
@@ -243,9 +233,8 @@ public class LatticeGUIMustache {
 	 * properties should be set manually as well.
 	 * @param template
 	 * @param latticeGraph
-	 * @throws StructureException
 	 */
-	public LatticeGUIMustache(String template, LatticeGraph3D latticeGraph) throws StructureException {
+	public LatticeGUIMustache(String template, LatticeGraph3D latticeGraph) {
 		this.latticeGraph = latticeGraph;
 		this.template = template;
 
@@ -349,9 +338,8 @@ public class LatticeGUIMustache {
 	 * Write a cif file containing the unit cell.
 	 * @param out
 	 * @throws IOException
-	 * @throws StructureException
 	 */
-	public void writeCIFfile(PrintWriter out) throws IOException, StructureException {
+	public void writeCIFfile(PrintWriter out) throws IOException {
 		latticeGraph.writeCellToMmCifFile(out);
 	}
 	
@@ -372,19 +360,21 @@ public class LatticeGUIMustache {
 		this.layout2d = layout2d;
 		
 	}
-
+	
 	/**
 	 * Get a version of the graph where all 3D coordinates have z=0.
 	 * This is achieved by performing a stereographic projection of the 3D
 	 * coordinates.
-	 * @param layout
+	 * TODO replace by LayoutUtils.getGraph2D()
+	 * NOTE this method is used implicitly by the mustache template AssemblyDiagramThumb.dot.mustache.
+	 * Do not remove or otherwise the assembly diagram png generation via dot will stop working.
 	 * @return
 	 */
 	public UndirectedGraph<ChainVertex3D, InterfaceEdge3DSourced<ChainVertex3D>> getGraph2D() {
 		if( graph2d == null) {
 			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph3d = getGraph().getGraph();
 			//clone
-			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = cloneGraph3D(graph3d);
+			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph2dUnsorced = LayoutUtils.cloneGraph3D(graph3d);
 			//Filter duplicate components
 			graph2dUnsorced = LatticeGraph.filterUniqueStoichiometries(graph2dUnsorced);
 			//Layout
@@ -398,34 +388,6 @@ public class LatticeGUIMustache {
 		return graph2d;
 	}
 
-	private static UndirectedGraph<ChainVertex3D, InterfaceEdge3D> cloneGraph3D(
-			UndirectedGraph<ChainVertex3D, InterfaceEdge3D> oldGraph) {
-		// Mappings from old graph to new
-		Map<ChainVertex3D,ChainVertex3D> newVertices = new HashMap<>(oldGraph.vertexSet().size());
-		Map<InterfaceEdge3D,InterfaceEdge3D> newEdges = new HashMap<>(oldGraph.edgeSet().size());
-		for(ChainVertex3D vert : oldGraph.vertexSet()) {
-			ChainVertex3D newVert = new ChainVertex3D(vert);
-			newVertices.put(vert,newVert);
-		}
-		for(InterfaceEdge3D edge :oldGraph.edgeSet()) {
-			InterfaceEdge3D newEdge = new InterfaceEdge3D(edge);
-			newEdges.put(edge, newEdge);
-		}
-		// convert old graph to new one
-		UndirectedGraph<ChainVertex3D,InterfaceEdge3D> newGraph = new Pseudograph<>(InterfaceEdge3D.class);
-		for(ChainVertex3D vert : newVertices.values()) {
-			newGraph.addVertex(vert);
-		}
-		for(InterfaceEdge3D edge : oldGraph.edgeSet()) {
-			ChainVertex3D source = newVertices.get( oldGraph.getEdgeSource(edge) );
-			ChainVertex3D target = newVertices.get( oldGraph.getEdgeTarget(edge) );
-			InterfaceEdge3D newEdge = newEdges.get( edge );
-			newGraph.addEdge(source, target, newEdge);
-		}
-		return newGraph;
-	}
-
-	
 	public static void main(String[] args) throws IOException, StructureException {
 		final String usage = String.format("Usage: %s template structure output [interfacelist]",LatticeGUIMustache.class.getSimpleName());
 		if (args.length<2) {
@@ -480,7 +442,7 @@ public class LatticeGUIMustache {
 			System.exit(1); return;
 		}
 
-		gui.setLayout2D( getDefaultLayout2D(struc) );
+		gui.setLayout2D(LayoutUtils.getDefaultLayout2D(LatticeGraph.getCrystalCell(struc)) );
 		gui.execute(mainOut);
 
 		if( !output.equals("-")) {
@@ -488,22 +450,5 @@ public class LatticeGUIMustache {
 		}
 	}
 
-	public static GraphLayout<ChainVertex3D, InterfaceEdge3D> getDefaultLayout2D(
-			Structure struc) {
-		VertexPositioner<ChainVertex3D> vertexPositioner = ChainVertex3D.getVertexPositioner();
-		List<GraphLayout<ChainVertex3D,InterfaceEdge3D>> layouts = new ArrayList<>();
 
-		layouts.add( new UnitCellLayout<>(vertexPositioner, LatticeGraph.getCrystalCell(struc)));
-		QuaternaryOrientationLayout<ChainVertex3D,InterfaceEdge3D> stereo = new QuaternaryOrientationLayout<>(vertexPositioner);
-
-//		Point3d center = new Point3d();
-//		Point3d zenith = new Point3d(0,0,1);
-//		StereographicLayout<ChainVertex3D,InterfaceEdge3D> stereo = new StereographicLayout<>(vertexPositioner , center , zenith));
-		layouts.add(stereo);
-
-		ConnectedComponentLayout<ChainVertex3D, InterfaceEdge3D> packer = new ConnectedComponentLayout<>(vertexPositioner);
-		packer.setPadding(100);
-		layouts.add(packer);
-		return new ComboLayout<>(layouts);
-	}
 }

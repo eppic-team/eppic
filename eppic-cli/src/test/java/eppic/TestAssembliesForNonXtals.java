@@ -42,16 +42,16 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
 		// 2 assemblies: the monomeric (2 disjoint monomers) and the heterodimeric
-		assertEquals(2, pdbInfo.getAssemblies().size());
+		assertEquals(2, pdbInfo.getValidAssemblies().size());
 		
-		AssemblyDB assembly1 = pdbInfo.getAssemblies().get(0);
+		AssemblyDB assembly1 = pdbInfo.getValidAssemblies().get(0);
 		
 		assertEquals(1, assembly1.getAssemblyContents().get(0).getMmSize());
 		assertEquals(1, assembly1.getAssemblyContents().get(1).getMmSize());
 		assertEquals("C1", assembly1.getAssemblyContents().get(0).getSymmetry());
 		
 		
-		AssemblyDB assembly2 = pdbInfo.getAssemblies().get(1);
+		AssemblyDB assembly2 = pdbInfo.getValidAssemblies().get(1);
 		
 		assertEquals(2, assembly2.getAssemblyContents().get(0).getMmSize());
 		assertEquals("C1", assembly2.getAssemblyContents().get(0).getSymmetry());
@@ -87,9 +87,9 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
 		// 1 assembly: monomeric
-		assertEquals(1, pdbInfo.getAssemblies().size());
+		assertEquals(1, pdbInfo.getValidAssemblies().size());
 		
-		AssemblyDB assembly1 = pdbInfo.getAssemblies().get(0);
+		AssemblyDB assembly1 = pdbInfo.getValidAssemblies().get(0);
 		
 		assertEquals(1, assembly1.getAssemblyContents().get(0).getMmSize());
 		assertEquals("C1", assembly1.getAssemblyContents().get(0).getSymmetry());
@@ -126,14 +126,14 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
 		// 2 assemblies: monomer and dimer
-		assertEquals(2, pdbInfo.getAssemblies().size());
+		assertEquals(2, pdbInfo.getValidAssemblies().size());
 		
-		AssemblyDB assembly1 = pdbInfo.getAssemblies().get(0);
+		AssemblyDB assembly1 = pdbInfo.getValidAssemblies().get(0);
 		
 		assertEquals(1, assembly1.getAssemblyContents().get(0).getMmSize());
 		assertEquals("C1", assembly1.getAssemblyContents().get(0).getSymmetry());
 		
-		AssemblyDB assembly2 = pdbInfo.getAssemblies().get(1);
+		AssemblyDB assembly2 = pdbInfo.getValidAssemblies().get(1);
 		
 		assertEquals(2, assembly2.getAssemblyContents().get(0).getMmSize());
 		assertEquals("C2", assembly2.getAssemblyContents().get(0).getSymmetry());

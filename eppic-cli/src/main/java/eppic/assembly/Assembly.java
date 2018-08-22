@@ -36,7 +36,6 @@ import org.biojava.nbio.structure.Calc;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.Structure;
-import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.cluster.Subunit;
 import org.biojava.nbio.structure.cluster.SubunitClusterer;
@@ -338,11 +337,10 @@ public class Assembly {
 	 * the output will not be read correctly by other software since it will contain
 	 * duplicate chain identifiers.
 	 * @return
-	 * @throws StructureException 
 	 */
-	public List<ChainVertex> getStructure() throws StructureException {
+	public List<ChainVertex> getStructure() {
 		// Place chains within unit cell
-		List<ChainVertex> chains = new ArrayList<ChainVertex>();
+		List<ChainVertex> chains = new ArrayList<>();
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
 		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
@@ -351,7 +349,7 @@ public class Assembly {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
 
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
-			transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, chains);
+			transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, chains, new HashMap<>());
 		}
 		return chains;
 	}
@@ -364,23 +362,25 @@ public class Assembly {
 	 * to avoid this.
 	 * @return For each connected component in the assembly, give a list of
 	 *  vertices with transformed chains.
-	 * @throws StructureException
 	 */
-	public List<List<ChainVertex>> getStructureCentered() throws StructureException {
+	public List<List<ChainVertex>> getStructureCentered() {
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
 		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
 		List<List<ChainVertex>> components = new ArrayList<List<ChainVertex>>(assemblyGraph.getSubAssembliesGroupedByStoichiometries().size());
 
+		Map<ChainVertex, Matrix4d> opsMap = new HashMap<>();
+
 		for(List<SubAssembly> subgroup : assemblyGraph.getSubAssembliesGroupedByStoichiometries()) {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
 
 			// Position connected component to avoid wrapping
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
-			List<ChainVertex> chains = transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, null);
+            List<ChainVertex> chains = new ArrayList<>();
+            transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, chains, opsMap);
 
-			centerSymmetrically(cc, chains);
+			centerSymmetrically(cc, chains, opsMap);
 
 			components.add(chains);
 		}
@@ -394,42 +394,40 @@ public class Assembly {
 	 * For each complex in the assembly, gather the subunits into a closed conformation,
 	 * align them in the XY plane with the major axis along Z, and pack multiple
 	 * complexes to avoid overlaps
-	 * @return A list of all vertices, with their Chain objects transformed to
-	 *  the correct 3D positions
-	 * @throws StructureException
+	 * @return A map of ChainVertices (with chains already transformed) to the transformations that were applied
 	 */
-	public List<ChainVertex> getStructurePacked() throws StructureException {
-
+	public Map<ChainVertex, Matrix4d> getStructurePacked() {
 
 		LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph = crystalAssemblies.getLatticeGraph();
 		CrystalCell cell = LatticeGraph.getCrystalCell(crystalAssemblies.getStructure());
 
-		List<Entry<Dimension2D, List<ChainVertex>>> boxes = new ArrayList<Map.Entry<Dimension2D,List<ChainVertex>>>();
+		List<Entry<Dimension2D, List<ChainVertex>>> boxes = new ArrayList<>();
+		Map<ChainVertex, Matrix4d> opsMap = new HashMap<>();
 
 		for(List<SubAssembly> subgroup : assemblyGraph.getSubAssembliesGroupedByStoichiometries()) {
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc = subgroup.get(0).getConnectedGraph();
 
 			// Position connected component to avoid wrapping
 			Map<ChainVertex, Point3i> placements = positionVertices(cc);
-			List<ChainVertex> chains = transformChains(placements, crystalAssemblies.getStructure(),latticeGraph, cell, null);
+            List<ChainVertex> chains = new ArrayList<>();
+			transformChains(placements, crystalAssemblies.getStructure(), latticeGraph, cell, chains, opsMap);
 
 			// Center at origin
-			Vector3d dim = centerSymmetrically(cc, chains);
+			Vector3d dim = centerSymmetrically(cc, chains, opsMap);
 
 			// pad space around the protein and make it an even multiple
 			final double padding = 10;
 			int x = (int)(Math.ceil( dim.x * 2./padding + 1 )*padding);
 			int y = (int)(Math.ceil( dim.y * 2./padding + 1 )*padding);
 			Dimension2D dim2 = new Dimension(x,y);
-			boxes.add(new SimpleEntry<Dimension2D,List<ChainVertex>>(dim2,chains));
+			boxes.add(new SimpleEntry<>(dim2,chains));
 		}
 
 		// Pack complexes in XY plane
-		BinaryBinPacker<List<ChainVertex>> packer = new BinaryBinPacker<List<ChainVertex>>(boxes);
+		BinaryBinPacker<List<ChainVertex>> packer = new BinaryBinPacker<>(boxes);
 		List<Entry<List<ChainVertex>, Rectangle2D>> placements = packer.getPlacements();
 		Rectangle2D container = packer.getBounds();
 
-		List<ChainVertex> allchains = new ArrayList<ChainVertex>();
 		for(Entry<List<ChainVertex>, Rectangle2D> entry : placements) {
 			List<ChainVertex> chains = entry.getKey();
 
@@ -438,31 +436,38 @@ public class Assembly {
 			double x = place.getX() + place.getWidth()/2. - container.getWidth()/2.;
 			double y = place.getY() + place.getHeight()/2. - container.getHeight()/2.;
 			Vector3d center = new Vector3d(x,y,0);
-
+			Matrix4d transOp = new Matrix4d();
+			transOp.set(1.0, center);
 			// Transform to XY location
 			for(ChainVertex chain : chains) {
 				Calc.translate(chain.getChain(), center);
+				// finally compose the operators to get the final list of operators
+				opsMap.get(chain).mul(transOp, opsMap.get(chain));
 			}
-			allchains.addAll(chains);
+
 		}
-		return allchains;
+		return opsMap;
 	}
 
 	/**
 	 * Takes a graph representing a single complex. The vertex's chains should
 	 * be pre-transformed so that no edges wrap around the unit cell (i.e. with
-	 * {@link #transformChains(Map, Structure, LatticeGraph, CrystalCell, List)}).
+	 * {@link #transformChains(Map, Structure, LatticeGraph, CrystalCell, List, Map)}).
 	 * 
 	 * This method further transforms the chains of the vertices so that the
 	 * complex is centered at the origin and aligned the major symmetry axis.
-	 * @param cc
-	 * @param chains
+	 * @param cc the graph
+	 * @param chains the chains, transformed in place
+     * @param ops a map of already applied operators per chain.
+     *            Transformations applied in this method will be composed to the
+	 *            existing ones in ops (in place).
 	 * @return The extent of the bounding box for the complex (i.e. half the
 	 *  dimensions of the bounding polyhedron).
 	 */
-	private Vector3d centerSymmetrically(
+	private static Vector3d centerSymmetrically(
 			UndirectedGraph<ChainVertex, InterfaceEdge> cc,
-			List<ChainVertex> chains) {
+			List<ChainVertex> chains, Map<ChainVertex, Matrix4d> ops) {
+
 		// Transform to be centered with the major axis vertically
 		QuatSymmetryResults symm = getQuatSymm(chains);
 		RotationGroup pointgroup = symm.getRotationGroup();
@@ -543,8 +548,9 @@ public class Assembly {
 		}
 
 		// Transform chains to the origin
-		for(ChainVertex vert:chains) {
+		for(ChainVertex vert : chains) {
 			Calc.transform(vert.getChain(), transformation);
+			ops.get(vert).mul(transformation, ops.get(vert));
 		}
 		//TODO is this really half the bounding box?
 		return aligner.getDimension();
@@ -622,24 +628,20 @@ public class Assembly {
 
 	/**
 	 * Takes a map of chain position from {@link #positionVertices(UndirectedGraph)}
-	 * and create a new set of ChainVertex objects with transformed chains.
+	 * and create a new set of ChainVertex objects with transformed chains, appending to
+     * the list passed as chains parameter.
 	 * The original ChainVertexes are not modified, but rather cloned.
 	 * 
 	 * @param placements Placement of each chain relative to the 0,0,0 unit cell
 	 * @param latticeGraph Root graph, for calculation of the starting chain positions
 	 * @param cell Unit cell
-	 * @param chains (Optional) Output list to insert transformed chains into
-	 * @return chains with appended elements, or a new list of transformed Chain objects if chains was null
-	 * @throws StructureException
+	 * @param chains output list to insert transformed chains into
+	 * @param opsMap output map containing the operators applied per chainVertex
 	 */
-	private static List<ChainVertex> transformChains(Map<ChainVertex, Point3i> placements,
+	private static void transformChains(Map<ChainVertex, Point3i> placements,
 			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
-			CrystalCell cell, List<ChainVertex> chains)
-			throws StructureException
-	{
-		if( chains == null) {
-			chains = new ArrayList<ChainVertex>();
-		}
+			CrystalCell cell, List<ChainVertex> chains, Map<ChainVertex, Matrix4d> opsMap) {
+
 		for(Entry<ChainVertex, Point3i> entry : placements.entrySet()) {
 			ChainVertex v = entry.getKey();
 
@@ -657,15 +659,14 @@ public class Assembly {
 			Chain chain = (Chain) structure.getPolyChainByPDB(v.getChainId()).clone();
 			Calc.transform(chain, transmat);
 			chains.add(new ChainVertex(chain,v.getOpId()));
+			opsMap.put(new ChainVertex(chain,v.getOpId()), transmat);
 		}
-		return chains;
 	}
 	
 	@SuppressWarnings("unused")
 	private static void transformChainsInPlace(Map<ChainVertex, Point3i> placements,
 			Structure structure, LatticeGraph<ChainVertex, InterfaceEdge> latticeGraph,
 			CrystalCell cell)
-					throws StructureException
 	{
 		for(Entry<ChainVertex, Point3i> entry : placements.entrySet()) {
 			ChainVertex v = entry.getKey();
@@ -796,7 +797,6 @@ public class Assembly {
 
 				@Override
 				public void edgeTraversed(EdgeTraversalEvent<E> event) {
-					// TODO Auto-generated method stub
 					E edge = event.getEdge();
 					// Undirected edge, so source and target may be swapped
 					V s = graph.getEdgeSource(edge);
@@ -848,13 +848,12 @@ public class Assembly {
 	/**
 	 * Writes this Assembly to PDB file (gzipped) with a model per chain.
 	 * @param file
-	 * @throws StructureException
 	 * @throws IOException
 	 */
-	public void writeToPdbFile(File file) throws StructureException, IOException {
+	public void writeToPdbFile(File file) throws IOException {
 		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
 		int modelId = 1;
-		for (ChainVertex cv:getStructurePacked()) {
+		for (ChainVertex cv:getStructurePacked().keySet()) {
 			ps.println("MODEL"+String.format("%9d",modelId));
 			ps.print(cv.getChain().toPDB());
 			ps.println("TER");
@@ -875,9 +874,8 @@ public class Assembly {
 	 * Note that PyMOL supports multi-letter chain ids only from 1.7.4
 	 * @param file
 	 * @throws IOException
-	 * @throws StructureException
 	 */
-	public void writeToMmCifFile(File file) throws IOException, StructureException {
+	public void writeToMmCifFile(File file) throws IOException {
 
 		// Some molecular viewers like 3Dmol.js need globally unique atom identifiers (across chains)
 		// With the approach below we add an offset to atom ids of sym-related molecules to avoid repeating atom ids
@@ -885,7 +883,7 @@ public class Assembly {
 		// we only do renumbering in the case that there are sym-related chains in the assembly
 		// that way we stay as close to the original as possible
 		boolean symRelatedChainsExist = false;
-		List<ChainVertex> structure = getStructurePacked();
+		Collection<ChainVertex> structure = getStructurePacked().keySet();
 		int numChains = structure.size();
 		Set<String> uniqueChains = new HashSet<String>();
 		for (ChainVertex cv:structure) {

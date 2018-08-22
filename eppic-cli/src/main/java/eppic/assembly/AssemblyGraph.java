@@ -48,7 +48,6 @@ public class AssemblyGraph {
 	/**
 	 * Initialises the subgraph containing only this assembly's engaged interface clusters.
 	 * This initialises both the subgraph and connectedComponents members
-	 * @param clusterId
 	 * @return
 	 */
 	private void init() {		
@@ -159,7 +158,7 @@ public class AssemblyGraph {
 	/**
 	 * Returns true if all stoichiometries of this AssemblyGraph are even
 	 * @return
-	 * @see {@link Stoichiometry#isEven()}
+	 * @see Stoichiometry#isEven()
 	 */
 	public boolean isStoichiometryEven() {
 		for (List<SubAssembly> group : subAssembliesGroupedByStoichiometries) {
@@ -173,7 +172,7 @@ public class AssemblyGraph {
 	 * Returns true if this AssemblyGraph is composed of only 1 unique 
 	 * stoichiometry covering all entities in crystal.
 	 * @return
-	 * @see {@link Stoichiometry#isFullyCovering()}
+	 * @see Stoichiometry#isFullyCovering()
 	 */
 	public boolean isFullyCovering() {
 		if (subAssembliesGroupedByStoichiometries.size()>1) return false; 
@@ -242,7 +241,7 @@ public class AssemblyGraph {
 	/**
 	 * Checks that this AssemblyGraph is automorphic, which happens iff 
 	 * all its subassemblies are automorphic
-	 * @see {@link SubAssembly#isAutomorphic()}
+	 * @see SubAssembly#isAutomorphic()
 	 * @return
 	 */
 	public boolean isAutomorphic() {

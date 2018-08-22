@@ -40,7 +40,7 @@ public class TestMultiPdbBiounits {
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
 		// assembly 7 is a tetramer and has a PDB biounit annotation (pdb1)
-		AssemblyDB assembly7 = pdbInfo.getAssemblies().get(6);		
+		AssemblyDB assembly7 = pdbInfo.getValidAssemblies().get(6);
 		assertEquals(4, assembly7.getAssemblyContents().get(0).getMmSize());
 		assertEquals("{1,2,3}", assembly7.getInterfaceClusterIds());
 		
@@ -54,7 +54,7 @@ public class TestMultiPdbBiounits {
 		assertNull(pdbBiounit2);
 		
 		// assembly 8 is a tetramer and has a PDB biounit annotation (pdb2)
-		AssemblyDB assembly8 = pdbInfo.getAssemblies().get(7);
+		AssemblyDB assembly8 = pdbInfo.getValidAssemblies().get(7);
 		assertEquals(4, assembly8.getAssemblyContents().get(0).getMmSize());
 		assertEquals("{2,4,8}", assembly8.getInterfaceClusterIds());
 		
@@ -97,7 +97,7 @@ public class TestMultiPdbBiounits {
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
 		// assembly 2 is a dimer and has several PDB biounits redundant annotation (pdb1, pdb2, pdb3)
-		AssemblyDB assembly2 = pdbInfo.getAssemblies().get(1);		
+		AssemblyDB assembly2 = pdbInfo.getValidAssemblies().get(1);
 		assertEquals(2, assembly2.getAssemblyContents().get(0).getMmSize());
 		assertEquals("{1}", assembly2.getInterfaceClusterIds());
 		

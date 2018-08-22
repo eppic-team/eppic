@@ -4,7 +4,9 @@ import java.util.*;
 
 import javax.persistence.PersistenceContext;
 
+import eppic.db.adaptors.ViewsAdaptor;
 import eppic.model.dto.*;
+import eppic.model.dto.views.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +87,7 @@ public class JobService {
             // assemblies info
             AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 
-            List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
+            List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true, false);
 
             pdbInfo.setAssemblies(assemblies);
         } else {
@@ -101,7 +103,7 @@ public class JobService {
      * @return assembly data corresponding to job id
      * @throws DaoException when can not retrieve result of the job
      */
-    public static List<Assembly> getAssemblyData(String jobId) throws DaoException {
+    public static List<Assembly> getAssemblyDataByPdbAssemblyId(String jobId) throws DaoException {
 
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
         PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
@@ -109,7 +111,7 @@ public class JobService {
         // assemblies info
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
 
-        return assemblyDAO.getAssemblies(pdbInfo.getUid(), true);
+        return assemblyDAO.getAssemblies(pdbInfo.getUid(), true, true);
     }
 
     /**
@@ -204,13 +206,13 @@ public class JobService {
      * @return assembly data
      * @throws DaoException
      */
-    public static Assembly getAssemblyData(String jobId, int pdbAssemblyId) throws DaoException {
+    public static Assembly getAssemblyDataByPdbAssemblyId(String jobId, int pdbAssemblyId) throws DaoException {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
         PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         // assemblies info
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
-        Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), pdbAssemblyId);
+        Assembly assembly = assemblyDAO.getAssemblyByPdbAssemblyId(pdbInfo.getUid(), pdbAssemblyId, true);
 
         // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null) {
@@ -218,4 +220,149 @@ public class JobService {
         }
         return assembly;
     }
+
+    /**
+     * Retrieves assembly data for job and eppic assembly id
+     * @param jobId job identifier
+     * @param assemblyId the eppic assembly id
+     * @return assembly data
+     * @throws DaoException
+     */
+    public static Assembly getAssemblyData(String jobId, int assemblyId) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+        Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (assembly==null) {
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+        }
+        return assembly;
+    }
+
+    /**
+     * Retrieves lattice graph data for job and eppic assembly id
+     * @param jobId job identifier
+     * @param assemblyId the eppic assembly id
+     * @return lattice graph data
+     * @throws DaoException
+     */
+    public static LatticeGraph getLatticeGraphData(String jobId, int assemblyId) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+        Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
+        Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (assembly==null || unitcellAssembly == null) {
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+        }
+
+        return ViewsAdaptor.getLatticeGraphView(assembly, unitcellAssembly);
+    }
+
+    /**
+     * Retrieves lattice graph data for job and eppic interface ids
+     * string (comma separated and possibly with hyphens).
+     * @param jobId job identifier
+     * @param interfaceIds the eppic interface ids, if null all interfaces are assumed
+     * @return lattice graph data
+     * @throws DaoException
+     */
+    public static LatticeGraph getLatticeGraphDataByInterfaceIds(String jobId, Set<Integer> interfaceIds) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+
+        List<GraphEdge> graphEdges = new ArrayList<>();
+
+        Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (unitcellAssembly == null) {
+            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+        }
+
+        if (interfaceIds == null) {
+            graphEdges = unitcellAssembly.getGraphEdges();
+        } else {
+            for (GraphEdge edge : unitcellAssembly.getGraphEdges()) {
+                int interfaceId = edge.getInterfaceId();
+                if (interfaceIds.contains(interfaceId)) {
+                    graphEdges.add(edge);
+                }
+            }
+        }
+
+        return ViewsAdaptor.getLatticeGraphView(graphEdges, unitcellAssembly);
+    }
+
+    /**
+     * Retrieves lattice graph data for job and eppic interface cluster ids
+     * string (comma separated and possibly with hyphens).
+     * @param jobId job identifier
+     * @param interfaceClusterIds the eppic interface cluster ids, if null all interface clusters are assumed
+     * @return lattice graph data
+     * @throws DaoException
+     */
+    public static LatticeGraph getLatticeGraphDataByInterfaceClusterIds(String jobId, Set<Integer> interfaceClusterIds) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+
+        List<GraphEdge> graphEdges = new ArrayList<>();
+
+        Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (unitcellAssembly == null) {
+            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+        }
+
+        if (interfaceClusterIds == null) {
+            graphEdges = unitcellAssembly.getGraphEdges();
+        } else {
+            for (GraphEdge edge : unitcellAssembly.getGraphEdges()) {
+                int interfaceClusterId = edge.getInterfaceClusterId();
+                if (interfaceClusterIds.contains(interfaceClusterId)) {
+                    graphEdges.add(edge);
+                }
+            }
+        }
+        return ViewsAdaptor.getLatticeGraphView(graphEdges, unitcellAssembly);
+    }
+
+    /**
+     * Retrieces assembly diagram data for job id and eppic assembly id.
+     * @param jobId job identifier
+     * @param assemblyId the eppic assembly id
+     * @return
+     * @throws DaoException
+     */
+    public static AssemblyDiagram getAssemblyDiagram(String jobId, int assemblyId) throws DaoException {
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
+        PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+
+        // assemblies info
+        AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+        Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
+
+        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
+        if (assembly==null) {
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+        }
+
+        return ViewsAdaptor.getAssemblyDiagram(assembly);
+    }
+
 }

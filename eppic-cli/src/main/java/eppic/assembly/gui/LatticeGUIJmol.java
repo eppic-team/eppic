@@ -54,7 +54,7 @@ public class LatticeGUIJmol {
 	 * @param strucFile Path to the structure of the asymmetric unit.
 	 * @throws StructureException
 	 */
-	public LatticeGUIJmol(Structure struc, File strucFile) throws StructureException {
+	public LatticeGUIJmol(Structure struc, File strucFile) {
 		this.latticeGraph = new LatticeGraph3D(struc);
 		UndirectedGraph<ChainVertex3D, InterfaceEdge3D> graph = latticeGraph.getGraph();
 
