@@ -532,7 +532,7 @@ public class MainController
 		token = token.replaceAll(" ", "");
 		EventBusManager.EVENT_BUS.fireEvent(new HideAllWindowsEvent());
 		EventBusManager.EVENT_BUS.fireEvent(new ShowTopPanelSearchBoxEvent());
-		if ((token != null) && (token.length() > 3) && (token.startsWith("id")))
+		if ((token.length() > 3) && (token.startsWith("id")))
 				//|| (token.startsWith("assembly") && (ApplicationContext.getSelectedAssemblyId() == 0)))//main results screen - show list of assemblies
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
@@ -543,7 +543,7 @@ public class MainController
 		}
 		//this is renamed!!!
 		//else if ((token != null) && (token.length() > 10) && (token.startsWith("interfaces"))) //show list of interfaces belonging to assembly x
-		else if ((token != null) && (token.length() > 8) && (token.startsWith("assembly"))) //show list of interfaces belonging to assembly x
+		else if ((token.length() > 8) && (token.startsWith("assembly"))) //show list of interfaces belonging to assembly x
 		{
 			ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
@@ -557,7 +557,7 @@ public class MainController
 				ApplicationContext.setSelectedJobId(token.substring(9));
 			int assemblyId = -1;
 			int from = token.lastIndexOf("/");
-			String idString = token.substring(from+1,token.length());
+			String idString = token.substring(from+1);
 			try {
 				assemblyId = Integer.parseInt(idString);
 			} catch (Exception e) {}
@@ -569,7 +569,7 @@ public class MainController
 			ResultsGridPanel.clusterIdColumn.setHidden(true);
 		}
 		//this is "new"!!!
-		else if ((token != null) && (token.length() > 11) && (token.startsWith("interfaces"))) //show list of interfaces belonging to assembly x
+		else if ((token.length() > 11) && (token.startsWith("interfaces"))) //show list of interfaces belonging to assembly x
 		{
 			ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
@@ -581,7 +581,7 @@ public class MainController
 			//int assemblyId = -1;
 			int interfaceId = -1;
 			int from = token.lastIndexOf("/");
-			String idString = token.substring(from+1,token.length());
+			String idString = token.substring(from+1);
 			try {
 				interfaceId = Integer.parseInt(idString);
 			} catch (Exception e) {}
@@ -593,7 +593,7 @@ public class MainController
 			ResultsGridPanel.clusterIdColumn.setHidden(true);
 		}
 		
-		else if ((token != null) && (token.length() > 8) && (token.startsWith("clusters"))) //show list of interfaces (clusters view) belonging to assembly x
+		else if ((token.length() > 8) && (token.startsWith("clusters"))) //show list of interfaces (clusters view) belonging to assembly x
 		{
 			ApplicationContext.setSelectedViewType(ResultsPanel.INTERFACES_VIEW);
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_loading());
@@ -604,7 +604,7 @@ public class MainController
 			else
 				ApplicationContext.setSelectedJobId(token.substring(9));
 			int assemblyId = -1;
-			String idString = token.substring(14,token.length());
+			String idString = token.substring(14);
 			try {
 				assemblyId = Integer.parseInt(idString);
 			} catch (Exception e) {}
@@ -615,42 +615,42 @@ public class MainController
 			ResultsGridPanel.clustersViewButton.setValue(true);
 			ResultsGridPanel.clustersView.groupBy(ResultsGridPanel.clusterIdColumn);
 		}		
-		else if ((token != null) && (token.length() > 14) && (token.startsWith("searchUniprot")))
+		else if ((token.length() > 14) && (token.startsWith("searchUniprot")))
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_searching());
 			displayUniprotSearch(token.substring(14));
 		}
-		else if ((token != null) && (token.length() > 10) && (token.startsWith("searchPdb")))
+		else if ((token.length() > 10) && (token.startsWith("searchPdb")))
 		{
 			Window.setTitle(AppPropertiesManager.CONSTANTS.window_title_searching());
 			String[] tokenParts = token.split("/");
 			displayPdbSearch(tokenParts[1], tokenParts[2]);
 		}
-		else if((token != null) && (token.equals("help") || token.equals("!help")))
+		else if((token.equals("help") || token.equals("!help")))
 		{
 			displayHelp();
 		}
-		else if((token != null) && (token.equals("downloads") || token.equals("!downloads")))
+		else if((token.equals("downloads") || token.equals("!downloads")))
 		{
 			displayDownloads();
 		}
-		else if((token != null) && (token.equals("releases") || token.equals("!releases")))
+		else if((token.equals("releases") || token.equals("!releases")))
 		{
 			displayReleases();
 		}
-		else if((token != null) && (token.equals("publications") || token.equals("!publications")))
+		else if((token.equals("publications") || token.equals("!publications")))
 		{
 			displayPublications();
 		}
-		else if((token != null) && (token.equals("statistics") || token.equals("!statistics")))
+		else if((token.equals("statistics") || token.equals("!statistics")))
 		{
 			displayStatistics();
 		}
-		else if((token != null) && (token.equals("faq") || token.equals("!faq")))
+		else if((token.equals("faq") || token.equals("!faq")))
 		{
 			displayFAQ();
 		}
-		else if((token != null) && (token.equals("advancedsearch") || token.equals("!advancedsearch")))
+		else if((token.equals("advancedsearch") || token.equals("!advancedsearch")))
 		{
 			displayEppicExplorer();
 		}

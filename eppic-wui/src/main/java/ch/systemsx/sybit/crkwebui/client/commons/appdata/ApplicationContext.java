@@ -118,9 +118,9 @@ public class ApplicationContext
 	 * Sets selected pdb score item.
 	 * @param pdbInfo selected pdb score item
 	 */
-	public static void setPdbScoreItem(PdbInfo pdbScoreItem) {
-		ApplicationContext.pdbInfo = pdbScoreItem;
-		Collections.sort(pdbScoreItem.getInterfaceClusters());
+	public static void setPdbScoreItem(PdbInfo pdbInfo) {
+		ApplicationContext.pdbInfo = pdbInfo;
+		Collections.sort(pdbInfo.getInterfaceClusters());
 	}
 	
 	/**
@@ -153,6 +153,10 @@ public class ApplicationContext
 	 * @param selectedJobId job identifier
 	 */
 	public static void setSelectedJobId(String selectedJobId) {
+		// if PDB id, then lower case. See issue https://github.com/eppic-team/eppic/issues/219
+		if (selectedJobId.length() == 4) {
+			selectedJobId = selectedJobId.toLowerCase();
+		}
 		ApplicationContext.selectedJobId = selectedJobId;
 	}
 	
@@ -275,7 +279,7 @@ public class ApplicationContext
 	
 	/**
 	 * Sets adjusted main application window data.
-	 * @param windowData adjusted main application window data
+	 * @param adjustedWindowData adjusted main application window data
 	 */
 	public static void setAdjustedWindowData(WindowData adjustedWindowData) {
 		ApplicationContext.adjustedWindowData = adjustedWindowData;
