@@ -167,7 +167,7 @@ public class FileDownloadServlet extends BaseServlet
 			if (e.getCause() instanceof NoResultException) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Error while trying to download the file: " + e.getMessage());
 			} else {
-				response.sendError(HttpServletResponse.SC_NO_CONTENT, "Error while trying to download the file: " + e.getMessage());
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while trying to download the file: " + e.getMessage());
 			}
 		}
 	}
@@ -196,12 +196,27 @@ public class FileDownloadServlet extends BaseServlet
 			response.setHeader("Content-Encoding", "gzip");
 		}
 		
-//				response.setContentLength((int) resultFile.length());
 		response.setHeader("Content-Disposition", "attachment; filename=\"" + processedFileName + "\"");
 	}
 
 	private void produceCoordsFileResponse(HttpServletResponse response, String type, String jobId, String interfaceId, String assemblyId, File jobDir) throws DaoException, ValidationException, IOException {
 
+		// prepare response
+		response.setContentType("chemical/x-cif");
+		// Important: we must NOT set gzip content-encoding here, jetty configuration takes care of that
+		//response.setHeader("Content-Encoding", "gzip");
+
+		// Otherwise with explicit gzip content-encoding here, tools like 'curl --compressed' complain
+		// At the same time, wget (wget --header="accept-encoding: gzip") behaves weirdly without the explicit gzip
+		// content-encoding here, downloading file but returning a compressed file
+		// The wget problem seems to be a weird implementation by wget. Firefox, chrome and curl all behave well
+		// downloading to an uncompressed file (with transmission compressed).
+
+		String outputFileName = jobId + "." + type + "." + ((assemblyId==null)?interfaceId:assemblyId) + ".cif";
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + outputFileName + "\"");
+
+
+		// get data and produce file
 		PDBInfoDAO dao = new PDBInfoDAOJpa();
 		PdbInfo pdbInfo = dao.getPDBInfo(jobId, true);
 
