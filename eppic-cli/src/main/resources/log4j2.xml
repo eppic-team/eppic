@@ -13,5 +13,13 @@
 			<appender-ref ref="ConsoleStdErr" level="warn"/>
 			<appender-ref ref="EppicLogFile" level="info"/>
 		</root>
+
+		<!-- Avoiding some too verbose biojava logging to console -->
+		<Logger name="org.biojava.nbio.structure.symmetry.axis.RotationAxisAligner" level="error" additivity="false">
+			<appender-ref ref="ConsoleStdErr"/>
+		</Logger>
+
 	</loggers>
+
+
 </configuration>

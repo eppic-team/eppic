@@ -350,6 +350,11 @@ public class EppicParams {
 	private String   blastDb;    // no default
 	
 	private String   localUniprotDbName; // no default
+	private String   localUniprotDbHost;
+	private String   localUniprotDbPort;
+	private String   localUniprotDbUser;
+	private String   localUniprotDbPwd;
+
 	private File 	 hbplusExe;
 	
 	/**
@@ -925,6 +930,10 @@ public class EppicParams {
 			blastDb        	= p.getProperty("BLAST_DB");
 			
 			localUniprotDbName = p.getProperty("LOCAL_UNIPROT_DB_NAME");
+			localUniprotDbHost = p.getProperty("LOCAL_UNIPROT_DB_HOST");
+			localUniprotDbPort = p.getProperty("LOCAL_UNIPROT_DB_PORT");
+			localUniprotDbUser = p.getProperty("LOCAL_UNIPROT_DB_USER");
+			localUniprotDbPwd  = p.getProperty("LOCAL_UNIPROT_DB_PWD");
 
 			atomCachePath      = p.getProperty("ATOM_CACHE_PATH");
 						
@@ -1081,6 +1090,22 @@ public class EppicParams {
 	
 	public String getLocalUniprotDbName() {
 		return localUniprotDbName;
+	}
+
+	public String getLocalUniprotDbHost() {
+		return localUniprotDbHost;
+	}
+
+	public String getLocalUniprotDbPort() {
+		return localUniprotDbPort;
+	}
+
+	public String getLocalUniprotDbUser() {
+		return localUniprotDbUser;
+	}
+
+	public String getLocalUniprotDbPwd() {
+		return localUniprotDbPwd;
 	}
 	
 	public boolean isUseUniparc() {

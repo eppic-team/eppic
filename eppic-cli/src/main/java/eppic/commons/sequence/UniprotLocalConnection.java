@@ -3,9 +3,7 @@ package eppic.commons.sequence;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,8 +11,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import eppic.commons.util.MySQLConnection;
 
 
 /**
@@ -40,6 +36,8 @@ import eppic.commons.util.MySQLConnection;
  */
 public class UniprotLocalConnection {
 
+	private static final Logger logger = LoggerFactory.getLogger(UniprotLocalConnection.class);
+
 	private static final String DATA_TABLE = "uniprot"; 
 	private static final String CLUSTERS_TABLE = "uniprot_clusters";
 	private static final String TAX_TABLE = "taxonomy";
@@ -59,16 +57,16 @@ public class UniprotLocalConnection {
 	
 	
 	
-	private MySQLConnection conn;
+	private Connection conn;
 	private String dbName;
 	private String uniprotVer;
 	
 	private HashSet<String> nonReturnedIdsLastMultipleRequest;
 	
-	public UniprotLocalConnection(String dbName) throws SQLException {
-		
-		conn = new MySQLConnection();
-		
+	public UniprotLocalConnection(String dbName, String dbHost, String dbPort, String dbUser, String dbPwd) throws SQLException {
+
+		initMySQLConnection(dbHost, dbPort, dbUser, dbPwd, dbName);
+
 		this.dbName = dbName;
 		
 		// TODO we need to write the uniprot version in a table in the db so that we can get it here - JD 2017-09-01
@@ -77,12 +75,27 @@ public class UniprotLocalConnection {
 		this.uniprotVer = "UNKNOWN";
 		
 	}
-	
+
+	private void initMySQLConnection(String dbHost, String dbPort, String dbUser, String dbPwd, String dbName) throws SQLException {
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+		} catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {
+			// this would indicate some problem with packaging, we can't really continue if this happens
+			String msg = "Could not instantiate MySQL driver: " + e.getMessage() + ". Problem with app packaging?";
+			logger.error(msg);
+			throw new RuntimeException(msg);
+		}
+
+		String connStr="jdbc:mysql://"+dbHost+":"+dbPort+"/"+dbName;
+
+		conn = DriverManager.getConnection(connStr, dbUser, dbPwd);
+	}
+
 	public String getVersion() {
 		return uniprotVer;
 	}
 	
-	public void close() {
+	public void close() throws SQLException {
 		this.conn.close();
 	}
 	
@@ -296,11 +309,11 @@ public class UniprotLocalConnection {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws SQLException, IOException {
-		if (args.length<2) {
-			System.err.println("Usage: UniprotLocalConnection <database name> <file to dump fasta sequences>");
+		if (args.length<6) {
+			System.err.println("Usage: UniprotLocalConnection <file to dump fasta sequences> <database name> <db host> <db port> <db user> <db pwd>");
 			System.exit(1);
 		}
-		UniprotLocalConnection upl = new UniprotLocalConnection(args[0]);
-		upl.dumpToFasta(new File(args[1]));
+		UniprotLocalConnection upl = new UniprotLocalConnection(args[1], args[2], args[3], args[4], args[5]);
+		upl.dumpToFasta(new File(args[0]));
 	}
 }

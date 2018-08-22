@@ -11,10 +11,18 @@
 		<img class="eppic-iframe-top-img"
 			src="resources/images/eppic-logo.png">
 
-		<h2>Downloading data in XML or JSON format</h2>
+
+		<h2>Downloading data</h2>
 		<p>
-			From version 3.1.0 on, it is possible to download the results data in XML or JSON format
-			which can then be parsed and used for further analysis.
+			From version 3.1.0 on, a <a href="/rest" target="_blank">REST API</a> has been added for ease of data retrieval.
+			Endpoints exist for	the different data objects that can be retrieved (interfaces, assemblies, residues etc).
+			The data provided by REST services is offered in JSON format only.
+		</p>
+		<p>
+			It is possible to download all data related to a given PDB id or user job in a single XML
+			file. Please note that this service will be deprecated in favor of the REST API in future versions.
+		</p>
+		<p>
 			Simply click on the "Download XML" link in any result page and you will get the XML data.
 			To download data in bulk you will just need to use this kind of URL:
 		</p>

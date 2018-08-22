@@ -72,8 +72,6 @@ public class FileToDownloadNameSuffixGenerator
 				pattern = EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + ".pdb";
 			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF)) {
 				pattern = EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + ".cif";
-			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PSE)) {
-				pattern = EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interfaceId + ".pse";
 			} else {
 				// default pdb to be backwards compatible 
 				logger.info("No format specified for type=interface, using pdb as default format");
@@ -86,8 +84,6 @@ public class FileToDownloadNameSuffixGenerator
 				pattern = EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + assemblyId + ".pdb";
 			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF)) {
 				pattern = EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + assemblyId + ".cif";
-			} else if (format.equals(FileDownloadServlet.COORDS_FORMAT_VALUE_PSE)) {
-				pattern = EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + assemblyId + ".pse";
 			} else {
 				// default pdb to be backwards compatible 
 				logger.info("No format specified for type=assembly, using pdb as default format");
@@ -96,9 +92,6 @@ public class FileToDownloadNameSuffixGenerator
 		}
 		else if(type.equals(FileDownloadServlet.TYPE_VALUE_MSA)) {
 			pattern = "." + repChainId + ".aln";
-		}
-		else if(type.equals(FileDownloadServlet.TYPE_VALUE_ENTROPIESPSE)) {
-			pattern = "." + repChainId + ".entropies.pse";
 		}
 		
 		return pattern;

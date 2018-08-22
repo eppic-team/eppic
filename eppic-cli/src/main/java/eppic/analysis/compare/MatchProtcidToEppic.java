@@ -1,14 +1,16 @@
 package eppic.analysis.compare;
 
 import eppic.commons.util.Goodies;
-import eppic.commons.util.MySQLConnection;
 import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,10 +64,10 @@ public class MatchProtcidToEppic {
 			System.err.println(help);
 			System.exit(1);
 		}
-		
-		
-		MySQLConnection conn = new MySQLConnection();
-		
+
+		// TODO if we ever need to use this script again, we need to pass the db connection params somehow
+		Connection conn = initMySQLConnection(null, null, null, null, null);
+
 		java.sql.Statement st = conn.createStatement();
 		String sql = "select pdbCode, interfaceId, chain1, chain2, dn_op1, dn_op2, dn_area from "+table;
 		ResultSet rs = st.executeQuery(sql);
@@ -129,4 +131,17 @@ public class MatchProtcidToEppic {
 		return (PdbInfoDB)Goodies.readFromFile(webuidatFile);
 	}
 
+	private static Connection initMySQLConnection(String dbHost, String dbPort, String dbUser, String dbPwd, String dbName) throws SQLException {
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+		} catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {
+			// this would indicate some problem with packaging, we can't really continue if this happens
+			String msg = "Could not instantiate MySQL driver: " + e.getMessage() + ". Problem with app packaging?";
+			throw new RuntimeException(msg);
+		}
+
+		String connStr="jdbc:mysql://"+dbHost+":"+dbPort+"/"+dbName;
+
+		return DriverManager.getConnection(connStr, dbUser, dbPwd);
+	}
 }
