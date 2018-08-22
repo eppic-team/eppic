@@ -197,6 +197,23 @@ public class PdbInfo implements Serializable, ProcessingData
 		return assemblies;
 	}
 
+	/**
+	 * Get the list of valid assemblies, i.e. those with id larger than 0.
+	 * Assemblies with id=0 represent the full unit cell, whilst assemblies with
+	 * id <0 represent topologically invalid assemblies (but annotated by PDB).
+	 * @return a list of topologically valid assemblies
+	 * @since 3.1.0
+	 */
+	public List<Assembly> getValidAssemblies() {
+		List<Assembly> validAssemblies = new ArrayList<Assembly>();
+		for (Assembly assembly : assemblies) {
+			if (assembly.getId()>0) {
+				validAssemblies.add(assembly);
+			}
+		}
+		return validAssemblies;
+	}
+
 	public void setAssemblies(List<Assembly> assemblies) {
 		this.assemblies = assemblies;
 	}
