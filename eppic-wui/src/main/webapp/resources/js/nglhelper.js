@@ -56,7 +56,7 @@ function onInit() {
 	stage = new NGL.Stage("viewport");
 	stage.setParameters({ backgroundColor:"white", theme:"light"} );
 	stage.loadFile(inputFile, {
-		defaultRepresentation : false
+		defaultRepresentation : false, ext: 'cif' // if the file is not suffixed with .cif, it won't recognize it, thus the need of this
 	}).then(function(structComp) {
 		initRepr(structComp)
 	});
