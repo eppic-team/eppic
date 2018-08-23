@@ -84,8 +84,7 @@ public class TestJmolPageGenerator {
 		
 		StringWriter out = new StringWriter();
 		try( PrintWriter pw = new PrintWriter(out) ) {
-			JmolPageGenerator.generatePage("test title", "200", "http://myserver",
-					"../files", "1smt.cif", interfData, assemblyData,
+			JmolPageGenerator.generatePage("test title", "200", "1smt", "http://localhost:8080/", "1smt.cif", interfData, assemblyData,
 					"/ngl.embedded.min.js",pw, "/");
 		}
 		out.flush();
@@ -96,6 +95,8 @@ public class TestJmolPageGenerator {
 		
 		// checking that nothing is null
 		assertFalse(thepage.contains("null"));
+
+		assertFalse(thepage.contains("&amp;"));
 		
 		
 

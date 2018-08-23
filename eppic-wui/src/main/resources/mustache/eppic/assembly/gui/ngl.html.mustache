@@ -14,7 +14,7 @@
 	<script>
 
 // note that variable names must match those in file resources/js/nglhelper.js
-var inputFile = "{{fileURL}}";
+var inputFile = "{{{fileURL}}}";{{! Note that the 3 curly brackets is to avoid ampersand escaping }}
 var maxEntropy = {{maxEntropy}};
 
 {{{jsVariables}}}
