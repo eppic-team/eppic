@@ -74,16 +74,15 @@ public class JmolPageGenerator
 
 		if (assemblyData!=null) {
 			fileUrl.append(FileDownloadServlet.TYPE_VALUE_ASSEMBLY).append("&").append(FileDownloadServlet.PARAM_ID).append("=").append(jobId)
-					.append("&").append(FileDownloadServlet.PARAM_ASSEMBLY_ID).append("=").append(assemblyData.getId())
-					.append("&").append(FileDownloadServlet.PARAM_COORDS_FORMAT).append("=").append(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
+					.append("&").append(FileDownloadServlet.PARAM_ASSEMBLY_ID).append("=").append(assemblyData.getId());
 		} else if (interfData != null) {
 			fileUrl.append(FileDownloadServlet.TYPE_VALUE_INTERFACE).append("&").append(FileDownloadServlet.PARAM_ID).append("=").append(jobId)
-					.append("&").append(FileDownloadServlet.PARAM_INTERFACE_ID).append("=").append(interfData.getInterfaceId())
-					.append("&").append(FileDownloadServlet.PARAM_COORDS_FORMAT).append("=").append(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
-
+					.append("&").append(FileDownloadServlet.PARAM_INTERFACE_ID).append("=").append(interfData.getInterfaceId());
 		} else {
 			logger.error("Illegal state. Either assembly or interface data must be not null");
 		}
+
+		fileUrl.append("&").append(FileDownloadServlet.PARAM_COORDS_FORMAT).append("=").append(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
 
 		Map<String,Object> page = new HashMap<>();
 		page.put("title", title);

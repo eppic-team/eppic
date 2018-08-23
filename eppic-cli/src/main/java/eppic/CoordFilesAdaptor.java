@@ -1,5 +1,6 @@
 package eppic;
 
+import eppic.commons.sequence.AAAlphabet;
 import eppic.commons.util.FileTypeGuesser;
 import eppic.model.dto.*;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
@@ -84,7 +85,7 @@ public class CoordFilesAdaptor {
             }
 
             if (withEvolScores)
-                addEvolutionaryScores(c, getChainCluster(pdbInfoDB, c.getEntityInfo().getRepresentative().getName()));
+                addEvolutionaryScores(c, pdbInfoDB);
 
             Matrix4d op = new Matrix4d();
             op.m00 = node.getRxx();
@@ -168,8 +169,8 @@ public class CoordFilesAdaptor {
         }
 
         if (withEvolScores) {
-            addEvolutionaryScores(c1, getChainCluster(pdbInfoDB, c1.getEntityInfo().getRepresentative().getName()));
-            addEvolutionaryScores(c2, getChainCluster(pdbInfoDB, c2.getEntityInfo().getRepresentative().getName()));
+            addEvolutionaryScores(c1, pdbInfoDB);
+            addEvolutionaryScores(c2, pdbInfoDB);
         }
 
         Matrix4d tranform = SpaceGroup.getMatrixFromAlgebraic(interfaceDB.getOperator());
@@ -245,19 +246,35 @@ public class CoordFilesAdaptor {
         return structure;
     }
 
-    private void addEvolutionaryScores(Chain c, ChainCluster chainClusterDB) {
+    private void addEvolutionaryScores(Chain c, PdbInfo pdbInfoDB) {
+
+        ChainCluster chainClusterDB = getChainCluster(pdbInfoDB, c.getEntityInfo().getRepresentative().getName());
+
+        if (chainClusterDB == null) {
+            logger.warn("Could not find ChainCluster for job {} and representative chain {}", pdbInfoDB.getJobId(), c.getEntityInfo().getRepresentative().getName());
+            return;
+        }
+
+        AAAlphabet alphabet = new AAAlphabet(pdbInfoDB.getRunParameters().getAlphabet());
+        double maxEntropy = Math.log(alphabet.getNumLetters()) / Math.log(2);
 
         for (Group g : c.getAtomGroups()) {
             int resSerial = c.getEntityInfo().getAlignedResIndex(g, c);
             ResidueInfo res = getResidue(chainClusterDB, resSerial);
-            final double entropy;
+            double entropy;
             if (res != null) {
                 entropy = res.getEntropyScore();
+                if (Double.isNaN(entropy)) {
+                    entropy = maxEntropy;
+                }
+
             } else {
-                entropy = 0;
+                entropy = maxEntropy;
                 logger.warn("Residue info could not be found from data in db: res serial {}, chain asym id {}. Setting entropy to 0", resSerial, c.getId());
             }
-            g.getAtoms().forEach(a -> a.setTempFactor((float) entropy));
+            for (Atom a : g.getAtoms()) {
+                a.setTempFactor((float) entropy);
+            }
 
         }
     }
