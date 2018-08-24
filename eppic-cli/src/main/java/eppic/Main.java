@@ -529,20 +529,8 @@ public class Main {
 
 		if (!params.isGenerateOutputCoordFiles()) return;
 		
-		if (params.isGenerateModelSerializedFile()) {
-			LOGGER.info("Not writing coordinate files because we are in -w mode.");
-			return;
-		}
-		
 		try {
-			if (params.isDoEvolScoring() && iecList!=null) { //iecList can be null if there are no interfaces (e.g. NMR monomers)
-				// we set the entropies as bfactors in case we are in evol scoring (-s)
-				// this will reset the bfactors in the Chain objects of the StructureInterface objects
-				// so both interfaces and assembly files will be written with reset bfactors
-				for (InterfaceEvolContext iec:iecList) {				
-					iec.setConservationScoresAsBfactors();
-				}
-			}
+			// since 3.1.0 there's no need to write the evol scores out to files
 			
 			// INTERFACE files
 			for (StructureInterface interf : interfaces) {
@@ -555,12 +543,25 @@ public class Main {
 				PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));				
 				ps.print(interf.toMMCIF());
 				ps.close();
+
+				if (params.isGenerateModelSerializedFile()) {
+					// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
+					// TODO find a way to pass the structures to PyMOL as a stream, so we can stop writing coord files
+					outputFile.deleteOnExit();
+				}
+
 				if (params.isGeneratePdbFiles()) { 
 					outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.PDB_FILE_EXTENSION);
 					ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));
 					ps.print(interf.toPDB());
 					ps.close();
-				}				
+					if (params.isGenerateModelSerializedFile()) {
+						// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
+						outputFile.deleteOnExit();
+					}
+				}
+
+
 			}
 				
 			// ASSEMBLY files
@@ -570,9 +571,19 @@ public class Main {
 				
 				LOGGER.info("Writing assembly {} to {}", a.getId(), outputFile);
 				a.writeToMmCifFile(outputFile);
+				if (params.isGenerateModelSerializedFile()) {
+					// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
+					// TODO find a way to pass the structures to PyMOL as a stream, so we can stop writing coord files
+					outputFile.deleteOnExit();
+				}
+
 				if (params.isGeneratePdbFiles()) {
 					outputFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + a.getId() + EppicParams.PDB_FILE_EXTENSION);
 					a.writeToPdbFile(outputFile);
+					if (params.isGenerateModelSerializedFile()) {
+						// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
+						outputFile.deleteOnExit();
+					}
 				}
 
 			}
