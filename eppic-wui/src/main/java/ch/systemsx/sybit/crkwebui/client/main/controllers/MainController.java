@@ -290,7 +290,7 @@ public class MainController
 							}
 						}
 						AssemblyInfoPanel.assembly_info.setHTML(assembly_string);
-						InformationPanel.assemblyInfoPanel.setHeadingHtml("Assembly " + assemblyID + " of " + assemblies.size());
+						InformationPanel.assemblyInfoPanel.setHeadingHtml("Assembly " + assemblyID + " of " + ApplicationContext.getPdbInfo().getValidAssemblies().size());
 						ResultsPanel.informationPanel.addTopologyPanel(ApplicationContext.getPdbInfo());						
 						setExperimentalInfo();	
 					}
