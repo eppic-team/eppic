@@ -50,20 +50,21 @@ public class PymolRunner {
 	 * coloring each chain with a color as set in {@link #setColors(String[], String)} and 
 	 * through {@link #readColorsFromPropertiesFile(InputStream)}
 	 * NOTE that multi-chain letters only work from PyMOL 1.7.4+
-	 * @param interf
-	 * @param mmcifFile
-	 * @param base
+	 * @param interf the interface
+	 * @param mmcifFile the input cif or cif.gz file
+	 * @param outDir the output dir for png files
+	 * @param base the basename of the output files
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	public void generateInterfacePng(StructureInterface interf, File mmcifFile, String base) 
+	public void generateInterfacePng(StructureInterface interf, File mmcifFile, File outDir, String base)
 	throws IOException, InterruptedException {
 		
 		String molecName = getPymolMolecName(mmcifFile);
 
 		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
 		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
-			pngFiles[i] = new File(mmcifFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
+			pngFiles[i] = new File(outDir,base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
 		}
 		
 		String chain1 = interf.getMoleculeIds().getFirst();
@@ -154,13 +155,13 @@ public class PymolRunner {
 		}
 	}
 
-	public void generateAssemblyPng(Assembly a, File mmcifFile, String base) throws IOException, InterruptedException {
+	public void generateAssemblyPng(Assembly a, File mmcifFile, File outDir, String base) throws IOException, InterruptedException {
 
 		String molecName = getPymolMolecName(mmcifFile);
 
 		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
 		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
-			pngFiles[i] = new File(mmcifFile.getParent(),base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
+			pngFiles[i] = new File(outDir,base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
 		}
 
 		List<String> chains = new ArrayList<String>();

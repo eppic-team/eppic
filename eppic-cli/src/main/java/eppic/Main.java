@@ -555,7 +555,7 @@ public class Main {
 				ps.close();
 
 				if (params.isGenerateThumbnails()) {
-					pr.generateInterfacePng(interf, outputFile,
+					pr.generateInterfacePng(interf, outputFile, params.getOutDir(),
 							params.getBaseName() + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId());
 					LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				}
@@ -585,7 +585,7 @@ public class Main {
 				a.writeToMmCifFile(outputFile);
 
 				if (params.isGenerateThumbnails()) {
-					pr.generateAssemblyPng(a, outputFile,
+					pr.generateAssemblyPng(a, outputFile, params.getOutDir(),
 							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
 					LOGGER.info("Generated PyMOL files for assembly "+a.getId());
 				}
