@@ -421,14 +421,10 @@ public class TestAssemblyStructure {
                 assertEquals(2, structFromFile.getPolyChains().size());
                 assertEquals(structFromFile.getPolyChains().size(), structFromAdaptor.getPolyChains().size());
 
-                assertFalse(structFromAdaptor.getPolyChains().get(0).getId().contains("_"));
-
                 assertEquals(structFromFile.getPolyChains().get(0).getId(), structFromAdaptor.getPolyChains().get(0).getId());
                 assertEquals(structFromFile.getPolyChains().get(0).getName(), structFromAdaptor.getPolyChains().get(0).getName());
-
-                // note we can't compare the opIds because the strategy of CoordFilesAdaptor is slightly different from that in BioJava's StructureInterface.toMmcif
-                assertEquals(structFromFile.getPolyChains().get(1).getId().split("_")[0], structFromAdaptor.getPolyChains().get(1).getId().split("_")[0]);
-                assertEquals(structFromFile.getPolyChains().get(1).getName().split("_")[0], structFromAdaptor.getPolyChains().get(1).getName().split("_")[0]);
+                assertEquals(structFromFile.getPolyChains().get(1).getId(), structFromAdaptor.getPolyChains().get(1).getId());
+                assertEquals(structFromFile.getPolyChains().get(1).getName(), structFromAdaptor.getPolyChains().get(1).getName());
 
                 Atom[] atomsFromAdaptor = getAllAtomArray(structFromAdaptor);
                 Atom[] atomsFromFile = getAllAtomArray(structFromFile);

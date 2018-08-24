@@ -184,14 +184,14 @@ public class CoordFilesAdaptor {
         }
 
         // 1: all atoms (poly and non-poly) of first chain
-        String opId1 = "0";
-        addAtomSites(c1, atomSiteList, opId1);
-        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, opId1));
+        addAtomSites(c1, atomSiteList, null);
+        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, null));
 
         // 2: all atoms (poly and non-poly) of second chain
-        // Note here we deviate from what StructureInterface.toMmcif in biojava does:
-        // here we add the second opId whenever not in AU case. In BioJava it was whenever the 2 chains had same id.
-        String opId2 = String.valueOf(interfaceDB.getOperatorId());
+        String opId2 = null;
+        if (c1.getId().equals(c2.getId())) {
+            opId2 = String.valueOf(interfaceDB.getOperatorId());
+        }
         addAtomSites(c2, atomSiteList, opId2);
         for (Chain nonPolyChain : nonPolyChains2) {
             addAtomSites(nonPolyChain, atomSiteList, opId2);
