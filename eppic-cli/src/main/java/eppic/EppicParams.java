@@ -53,7 +53,7 @@ public class EppicParams {
 	
 	public static final String	   FINISHED_FILE_NAME = "finished";
 	
-	protected static final String  MMCIF_FILE_EXTENSION = ".cif.gz";
+	public static final String  MMCIF_FILE_EXTENSION = ".cif.gz";
 	protected static final String  PDB_FILE_EXTENSION   = ".pdb.gz";
 	
 	public static final String     ENTROPIES_FILE_SUFFIX = ".entropies";

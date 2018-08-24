@@ -223,8 +223,7 @@ public class FileDownloadServlet extends BaseServlet
 		JobDAO jobDAO = new JobDAOJpa();
 		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
 
-		String atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
-		File auFile = LatticeGraphServlet.getAuFileName(jobDir, input.getInputName(), atomCachePath);
+		File auFile = LatticeGraphServlet.getAuFileName(jobDir, input.getInputName());
 
 		CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
 

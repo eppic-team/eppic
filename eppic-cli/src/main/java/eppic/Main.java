@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
@@ -27,6 +28,7 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
+import org.biojava.nbio.structure.io.MMCIFFileReader;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.io.mmcif.ChemCompGroupFactory;
 import org.biojava.nbio.structure.io.mmcif.DownloadChemCompProvider;
@@ -200,6 +202,15 @@ public class Main {
 				
 				try {
 					pdb = StructureIO.getStructure(params.getPdbCode());
+
+					// now we get the file and copy it to the output dir if in -w mode
+					if (params.isGenerateModelSerializedFile()) {
+						MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
+						reader.setFetchBehavior(cache.getFetchBehavior());
+						reader.setObsoleteBehavior(cache.getObsoleteBehavior());
+						File file = reader.getLocalFile(params.getPdbCode());
+						Files.copy(file.toPath(), params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION).toPath());
+					}
 				} catch(IOException e) {
 					throw new EppicException(e,"Couldn't get cif file from AtomCache for code "+params.getPdbCode()+". Error: "+e.getMessage(),true);
 				}
