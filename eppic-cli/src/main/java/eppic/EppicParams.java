@@ -274,6 +274,7 @@ public class EppicParams {
 	private double coreSurfScoreCutoff;
 	
 	private boolean generateOutputCoordFiles;
+	private File tempCoordFilesDir;
 	private boolean generateThumbnails;
 	private boolean generateDiagrams;
 	
@@ -374,6 +375,7 @@ public class EppicParams {
 		this.homIdStep = DEF_HOM_ID_STEP;
 		this.baseName = null;
 		this.outDir = new File(DEF_OUT_DIR);
+		this.tempCoordFilesDir = null;
 		this.numThreads = DEF_NUMTHREADS;
 		this.caCutoffForGeom = DEF_CA_CUTOFF_FOR_GEOM;
 		this.caCutoffForRimCore = DEF_CA_CUTOFF_FOR_RIMCORE;
@@ -454,6 +456,9 @@ public class EppicParams {
 				break;
 			case 'p':
 				generateOutputCoordFiles = true;
+				break;
+			case 't':
+				tempCoordFilesDir = new File(g.getOptarg());
 				break;
 			case 'P':
 				generateDiagrams = true;
@@ -537,14 +542,18 @@ public class EppicParams {
 		"                  life as query\n"+
 		"  [-p]         :  if specified coordinate files (gzipped mmCIF) for each interface and assembly will \n"+
 		"                  be generated\n"+
+		"  [-t <dir>]   :  a temporary directory where to write output gzipped mmCIF files (-p) for PyMOL files \n" +
+		"                  generation (-l). Useful in -w mode to specify a fast in memory storage for writing the temp\n" +
+		"                  cif.gz files\n" +
 		"                  Use -f as well to additionally generate PDB files (backwards compatibility)\n"+
 		"  [-P]         :  Generate assembly diagram images and thumbnails.\n"+
-		"  [-l]         :  if specified PyMOL files (thumbnail pngs, pse files) will be generated \n"+ 
-		"                  for each interface and for each chain cluster (requires PyMOL).\n"+
+		"  [-l]         :  if specified PyMOL files (thumbnail pngs) will be generated \n"+
+		"                  for each interface and for each assembly (requires PyMOL).\n"+
 		"                  This option will force the -p option\n" +
 		"  [-f]         :  if specified together with -p, coordinate output will also be produced in \n"+
 		"                  PDB (gzipped) format as well as mmCIF format\n"+
-		"  [-w]         :  if specified a serialized webui.dat file will be produced\n" +
+		"  [-w]         :  if specified a serialized webui.dat file will be produced. Coordinate files are removed in \n" +
+        "                  this mode, so the -p option will have no effect.\n" +
 		"  [-B]         :  if specified no blasting will be performed at all: a) UniProt references are taken\n"+
 		"                  from SIFTS only, b) only blast cache files are used.\n"+
 		"                  Useful for precomputation from scratch to avoid the dependency on\n"+
@@ -604,6 +613,10 @@ public class EppicParams {
 			homHardIdCutoff = homSoftIdCutoff;
 		}
 
+		if (tempCoordFilesDir == null) {
+			// if no temp coords file dir specified (-t), then write them to outDir
+			tempCoordFilesDir = outDir;
+		}
 
 	}
 	
@@ -705,6 +718,10 @@ public class EppicParams {
 	}
 	
 	public File getOutputFile(String suffix) {
+		return getOutputFile(outDir, suffix);
+	}
+
+	public File getOutputFile(File outDir, String suffix) {
 		return new File(outDir,baseName+suffix);
 	}
 	
@@ -858,6 +875,14 @@ public class EppicParams {
 
 	public void setGenerateOutputCoordFiles(boolean generateOutputCoordFiles) {
 		this.generateOutputCoordFiles = generateOutputCoordFiles;
+	}
+
+	public File getTempCoordFilesDir() {
+		return tempCoordFilesDir;
+	}
+
+	public void setTempCoordFilesDir(File tempCoordFilesDir) {
+		this.tempCoordFilesDir = tempCoordFilesDir;
 	}
 	
 	public boolean isGenerateThumbnails() {

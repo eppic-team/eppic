@@ -527,9 +527,18 @@ public class Main {
 	
 	public void doWriteCoordFiles() throws EppicException {
 
-		if (!params.isGenerateOutputCoordFiles()) return;
-		
+		if (!params.isGenerateOutputCoordFiles()) return; // no -p or -l specified: nothing to do
+
+		if (params.isGenerateThumbnails()) {
+			params.getProgressLog().println("Writing PyMOL files");
+			writeStep("Generating Thumbnails and PyMOL Files");
+			LOGGER.info("Generating PyMOL files");
+		}
+
 		try {
+
+			PymolRunner pr = new PymolRunner(params.getPymolExe());
+
 			// since 3.1.0 there's no need to write the evol scores out to files
 			
 			// INTERFACE files
@@ -539,15 +548,21 @@ public class Main {
 					LOGGER.info("Skipping generation of interface coordinate file for redundant NCS interface {}", interf.getId());
 					continue;
 				}
-				File outputFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
+				// note that tempCoordsDir will only be different from outDir if -t option was specified (so that we can specify a fast in memory storage dir in precomputation)
+				File outputFile = params.getOutputFile(params.getTempCoordFilesDir(), EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 				PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));				
 				ps.print(interf.toMMCIF());
 				ps.close();
 
+				if (params.isGenerateThumbnails()) {
+					pr.generateInterfacePng(interf, outputFile,
+							params.getBaseName() + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId());
+					LOGGER.info("Generated PyMOL files for interface "+interf.getId());
+				}
+
 				if (params.isGenerateModelSerializedFile()) {
 					// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
-					// TODO find a way to pass the structures to PyMOL as a stream, so we can stop writing coord files
-					outputFile.deleteOnExit();
+					outputFile.delete();
 				}
 
 				if (params.isGeneratePdbFiles()) { 
@@ -555,10 +570,6 @@ public class Main {
 					ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(outputFile)));
 					ps.print(interf.toPDB());
 					ps.close();
-					if (params.isGenerateModelSerializedFile()) {
-						// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
-						outputFile.deleteOnExit();
-					}
 				}
 
 
@@ -567,30 +578,35 @@ public class Main {
 			// ASSEMBLY files
 			for (Assembly a:validAssemblies) {
 
-				File outputFile= params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
+				// note that tempCoordsDir will only be different from outDir if -t option was specified (so that we can specify a fast in memory storage dir in precomputation)
+				File outputFile= params.getOutputFile(params.getTempCoordFilesDir(), EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"." + a.getId() + EppicParams.MMCIF_FILE_EXTENSION);
 				
 				LOGGER.info("Writing assembly {} to {}", a.getId(), outputFile);
 				a.writeToMmCifFile(outputFile);
+
+				if (params.isGenerateThumbnails()) {
+					pr.generateAssemblyPng(a, outputFile,
+							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
+					LOGGER.info("Generated PyMOL files for assembly "+a.getId());
+				}
+
 				if (params.isGenerateModelSerializedFile()) {
 					// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
-					// TODO find a way to pass the structures to PyMOL as a stream, so we can stop writing coord files
-					outputFile.deleteOnExit();
+					outputFile.delete();
 				}
 
 				if (params.isGeneratePdbFiles()) {
 					outputFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX + "." + a.getId() + EppicParams.PDB_FILE_EXTENSION);
 					a.writeToPdbFile(outputFile);
-					if (params.isGenerateModelSerializedFile()) {
-						// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
-						outputFile.deleteOnExit();
-					}
 				}
 
 			}
 			
 		} catch (IOException e) {
-			throw new EppicException(e, "Couldn't write interface PDB files. " + e.getMessage(), true);
-		} 
+			throw new EppicException(e, "Couldn't write interface coordinate files or PyMOL png files. " + e.getMessage(), true);
+		} catch (InterruptedException e) {
+			throw new EppicException(e, "Couldn't generate PyMOL png files, PyMOL thread interrupted: "+e.getMessage(),true);
+		}
 	}
 
 	public void doWriteAssemblyDiagrams() throws EppicException {
@@ -702,47 +718,7 @@ public class Main {
 //			LOGGER.info("HBPlus is not set or set to an invalid path. Will do H-bond calculation with internal algorithm.");
 //		}
 //	}
-	
 
-	public void doWritePymolFiles() throws EppicException {
-		
-		if (!params.isGenerateThumbnails()) return;
-		
-		params.getProgressLog().println("Writing PyMOL files");
-		writeStep("Generating Thumbnails and PyMOL Files");
-		LOGGER.info("Generating PyMOL files");
-
-		PymolRunner pr = new PymolRunner(params.getPymolExe());
-
-		try {
-			for (StructureInterface interf:interfaces) {
-				// a hack necessary to handle reduced redundancy in structures with NCS
-				if (modelAdaptor.getPdbInfo().isNcsOpsPresent() && modelAdaptor.getPdbInfo().getInterface(interf.getId())==null) {
-					LOGGER.info("Skipping generation of PyMOL interface files for redundant NCS interface {}", interf.getId());
-					continue;
-				}
-				File cifFile = params.getOutputFile(EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
-				pr.generateInterfacePng(interf, 
-						cifFile, 
-						params.getBaseName()+EppicParams.INTERFACES_COORD_FILES_SUFFIX+"."+interf.getId()	);
-				LOGGER.info("Generated PyMOL files for interface "+interf.getId());
-				
-			}
-
-			for (Assembly a:validAssemblies) {
-				File cifFile = params.getOutputFile(EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId()+ EppicParams.MMCIF_FILE_EXTENSION);
-
-				pr.generateAssemblyPng(a, cifFile,  
-						params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
-			}
-			
-		} catch (IOException e) {
-			throw new EppicException(e, "Couldn't write thumbnails, PyMOL pse/pml files. "+e.getMessage(),true);
-		} catch (InterruptedException e) {
-			throw new EppicException(e, "Couldn't generate thumbnails, PyMOL pse/pml files, PyMOL thread interrupted: "+e.getMessage(),true);
-		}
-
-	}
 
 	public void doWriteFinalFiles() throws EppicException {
 		
@@ -982,16 +958,13 @@ public class Main {
 			// 7 write TSV files (only if not in -w) 	
 			doWriteTextOutputFiles();
 			
-			// 8 write coordinate files (only if in -l)
+			// 8 write coordinate files (in -p or -l) and pymol png files (-l)
 			doWriteCoordFiles();
 			
 			// 9 write assembly diagrams (only if in -P)
 			doWriteAssemblyDiagrams();
 			
-			// 10 writing pymol files (only if in -l)
-			doWritePymolFiles();
-			
-			// 11 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			// 10 writing out the model serialized file and "finish" file for web ui (only if in -w)
 			doWriteFinalFiles();
 
 			
