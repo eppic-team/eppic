@@ -401,7 +401,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:OpPlfwBL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
