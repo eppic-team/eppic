@@ -380,6 +380,19 @@
 				<column length="10"/>
 			</basic>
 
+			<basic name="startPos3dX">
+			</basic>
+			<basic name="endPos3dX">
+			</basic>
+			<basic name="startPos3dY">
+			</basic>
+			<basic name="endPos3dY">
+			</basic>
+			<basic name="startPos3dZ">
+			</basic>
+			<basic name="endPos3dZ">
+			</basic>
+
 			<many-to-one name="assembly">
 			</many-to-one>
 
