@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,16 +40,15 @@ public class JmolPageGenerator
     /**
      * Generates html page containing the 3D viewer.
      * @param title title of the page
-     * @param size 
-     * @param serverUrl url to the server where jmol and results are stored
-     * @param resultsLocation path to results on the server
+     * @param size the browser window size
+     * @param jobId the job identifier
+	 * @param serverUrl the server url prefix, e.g. http://eppic-web.org/
      * @param fileName name of the cif file
-     * @param interfData 
+     * @param interfData interface data
      * @param nglJsUrl
      * @param webappRoot
-     * @return html page with jmol aplet
      */
-	public static void generatePage(String title, String size, String serverUrl, String resultsLocation,
+	public static void generatePage(String title, String size, String jobId, String serverUrl,
 			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl, PrintWriter out, String webappRoot)  {
 		
 		
@@ -64,17 +64,32 @@ public class JmolPageGenerator
 		// we assume that the alphabet is the default (since in wui there's no way that user can change it)
 		double maxEntropy = Math.log(EppicParams.DEF_ENTROPY_ALPHABET.getNumLetters()) / Math.log(2);
 
-		if (!resultsLocation.startsWith("/"))
-			resultsLocation = "/" + resultsLocation;
-		String fileUrl = serverUrl + resultsLocation + "/" + fileName;
+		if (!webappRoot.endsWith("/")) webappRoot = webappRoot + "/";
+
+		// url of file download servlet, e.g. http://eppic-web.org/ewui/ewui/fileDownload?type=assembly&id=4ht5&assemblyId=4&coordsFormat=cif
+		StringBuilder fileUrl = new StringBuilder();
+		// the "ewui" bit is as in web.xml file (fileDownloadServlet)
+		fileUrl.append(serverUrl).append(webappRoot).append("ewui/").append(FileDownloadServlet.SERVLET_NAME).append("?")
+				.append(FileDownloadServlet.PARAM_TYPE).append("=");
+
+		if (assemblyData!=null) {
+			fileUrl.append(FileDownloadServlet.TYPE_VALUE_ASSEMBLY).append("&").append(FileDownloadServlet.PARAM_ID).append("=").append(jobId)
+					.append("&").append(FileDownloadServlet.PARAM_ASSEMBLY_ID).append("=").append(assemblyData.getId());
+		} else if (interfData != null) {
+			fileUrl.append(FileDownloadServlet.TYPE_VALUE_INTERFACE).append("&").append(FileDownloadServlet.PARAM_ID).append("=").append(jobId)
+					.append("&").append(FileDownloadServlet.PARAM_INTERFACE_ID).append("=").append(interfData.getInterfaceId());
+		} else {
+			logger.error("Illegal state. Either assembly or interface data must be not null");
+		}
+
+		fileUrl.append("&").append(FileDownloadServlet.PARAM_COORDS_FORMAT).append("=").append(FileDownloadServlet.COORDS_FORMAT_VALUE_CIF);
 
 		Map<String,Object> page = new HashMap<>();
 		page.put("title", title);
 		page.put("libURL", nglJsUrl);
-		if (!webappRoot.endsWith("/")) webappRoot = webappRoot + "/"; 
 		page.put("jsURL", webappRoot + EPPIC_NGL_JS_FUNCTIONS);
 		page.put("cssUrl", webappRoot + CSSFILE);
-		page.put("fileURL", fileUrl);
+		page.put("fileURL", fileUrl.toString());
 		page.put("jsVariables", jsVariables);
 		page.put("maxEntropy", String.format("%.4f",maxEntropy));
 		page.put("size", size);
@@ -138,14 +153,16 @@ public class JmolPageGenerator
 			String chain1 = interfData.getChain1();		
 			String chain2 = interfData.getChain2(); 
 			///boolean isSymRelated = false;
-			
+
+			if (isCif) {
+				// exactly as in CoordsFileAdaptor.getInterfaceCoordsMmcif() and deviating from StructureInterface.toMmcif in biojava
+				chain1 = chain1 + "_0";
+				chain2 = chain2 +"_"+ interfData.getOperatorId();
+			}
 
 			if (chain1.equals(chain2)) {
 				//isSymRelated = true;
-				if (isCif) {
-					// exactly as done in StructureInterface.toMMCIF()
-					chain2 = chain2 +"_"+ interfData.getOperatorId();
-				} else {
+				if (!isCif) {
 					// exactly as done in StructureInterface.toPDB()
 					// NOTE this won't work with chain ids of more than 1 char
 					chain2 = Character.toString(MolViewersHelper.getNextLetter(chain1.charAt(0)));

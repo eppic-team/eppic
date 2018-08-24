@@ -60,11 +60,17 @@
 				<code>http://www.eppic-web.org/ewui/ewui/fileDownload?type=assembly&amp;id=&lt;PDB_code&gt;&amp;assemblyId=&lt;Assembly_id&gt;&amp;coordsFormat=cif</code>
 			</p>
 		<p>
-			Please note that the server uses gzip encoding. Thus if you use wget, you will need the following syntax:
+			Please note that the server uses gzip encoding. If you use wget, you will need the following syntax:
 		</p>
 		<p>
 			<code>wget --header="accept-encoding: gzip" "http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=&lt;PDB_code&gt;&amp;interfaceId=&lt;Interface_id&gt;&amp;coordsFormat=cif"
-			-O PDB_code_Interface_id.pdb.gz</code>
+			-O PDB_code.interface.interface_id.cif.gz</code>
+		</p>
+		<p>
+			With curl the behaviour is slightly different in that it stores the file in plain text while doing the transmission compressed. This is the curl syntax:
+		</p>
+		<p>
+			<code>curl --compressed "http://www.eppic-web.org/ewui/ewui/fileDownload?type=interface&amp;id=&lt;PDB_code&gt;&amp;interfaceId=&lt;Interface_id&gt;&amp;coordsFormat=cif"  > PDB_code.interface.interface_id.cif</code>
 		</p>
 		<p>
 			The interface ids are those calculated by EPPIC from largest (1) to smallest (n). The assembly ids

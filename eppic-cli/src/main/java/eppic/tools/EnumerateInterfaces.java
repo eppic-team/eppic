@@ -339,7 +339,7 @@ public class EnumerateInterfaces {
 				interfPdbFiles[i] = pdbFile; 
 				if (generatePngs) {
 					// TODO this expects now a mmcif file...
-					pr.generateInterfacePng(interf, pdbFile, outBaseName);
+					pr.generateInterfacePng(interf, pdbFile, pdbFile.getParentFile(), outBaseName);
 				}
 			}
 		}

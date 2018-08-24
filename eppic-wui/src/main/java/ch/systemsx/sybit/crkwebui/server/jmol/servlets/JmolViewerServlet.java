@@ -51,7 +51,6 @@ public class JmolViewerServlet extends BaseServlet
 	
 	private static final Logger logger = LoggerFactory.getLogger(JmolViewerServlet.class);
 	
-	private String resultsLocation;
 	private String protocol;
 	
 
@@ -59,8 +58,6 @@ public class JmolViewerServlet extends BaseServlet
 	public void init(ServletConfig config) throws ServletException
 	{
 		super.init(config);
-
-		resultsLocation = properties.getProperty("results_location");
 
 		protocol = "http";
 		if(properties.getProperty("protocol") != null)
@@ -153,8 +150,7 @@ public class JmolViewerServlet extends BaseServlet
 			String webappRoot = request.getContextPath();
 			
 			JmolPageGenerator.generatePage(title, 
-					size, serverUrl,
-					DirLocatorUtil.getJobUrlPath(resultsLocation, jobId), 
+					size, jobId, serverUrl,
 					fileName,   
 					interfData,
 					assemblyData,

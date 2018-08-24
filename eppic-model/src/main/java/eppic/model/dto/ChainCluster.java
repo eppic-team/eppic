@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 
 import eppic.model.db.HomologDB;
 import eppic.model.db.ChainClusterDB;
+import eppic.model.db.ResidueInfoDB;
 import eppic.model.db.UniProtRefWarningDB;
 
 /**
@@ -57,6 +58,8 @@ public class ChainCluster implements Serializable {
 	private String pdbCode;
 	
 	private SeqCluster seqCluster;
+
+	private List<ResidueInfo> residueInfos;
 	
 	public ChainCluster() {
 		
@@ -297,7 +300,15 @@ public class ChainCluster implements Serializable {
 	public void setSeqCluster(SeqCluster seqCluster) {
 		this.seqCluster = seqCluster;
 	}
-	
+
+	public List<ResidueInfo> getResidueInfos() {
+		return residueInfos;
+	}
+
+	public void setResidueInfos(List<ResidueInfo> residueInfos) {
+		this.residueInfos = residueInfos;
+	}
+
 	/**
 	 * Converts DB model item into DTO one.
 	 * @param chainClusterDB model item to convert
@@ -361,7 +372,15 @@ public class ChainCluster implements Serializable {
 		if (chainClusterDB.getSeqCluster()!=null) {
 			chainCluster.setSeqCluster(SeqCluster.create(chainClusterDB.getSeqCluster()));
 		}
-		
+
+		List<ResidueInfo> residueInfos = new ArrayList<ResidueInfo>();
+		if (chainClusterDB.getResidueInfos()!=null) {
+			for (ResidueInfoDB residueInfoDB : chainClusterDB.getResidueInfos()) {
+				residueInfos.add(ResidueInfo.create(residueInfoDB));
+			}
+		}
+		chainCluster.setResidueInfos(residueInfos);
+
 		return chainCluster;
 	}
 

@@ -3,14 +3,13 @@ package ch.systemsx.sybit.crkwebui.server.jmol.servlets;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.biojava.nbio.structure.align.util.AtomCache;
+import eppic.EppicParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,6 @@ import ch.systemsx.sybit.crkwebui.server.jmol.generators.LatticeGraphPageGenerat
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.LatticeGraphServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import eppic.model.dto.PdbInfo;
-import eppic.assembly.gui.LatticeGUI;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
 import eppic.db.dao.PDBInfoDAO;
@@ -63,7 +61,6 @@ public class LatticeGraphServlet extends BaseServlet
 	private String resultsLocation;
 	private String destination_path;
 	
-	private String atomCachePath;
 
 	private String restPrefix;
 
@@ -74,12 +71,7 @@ public class LatticeGraphServlet extends BaseServlet
 
 		resultsLocation = properties.getProperty("results_location");
 		destination_path = properties.getProperty("destination_path");
-		atomCachePath = propertiesCli.getProperty("ATOM_CACHE_PATH");
 		restPrefix = properties.getProperty("rest_prefix");
-
-		
-		if (atomCachePath == null) 
-			logger.warn("ATOM_CACHE_PATH is not set in config file, will not be able to reuse cache for PDB cif.gz files!");
 	}
 
 	@Override
@@ -114,7 +106,7 @@ public class LatticeGraphServlet extends BaseServlet
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
 
 			// Construct filename for AU cif file
-			File auFile = getAuFileName(dir, input, atomCachePath);
+			File auFile = getAuFileName(dir, input);
 			
 			String inputFileNameNoGz = auFile.getName();
 			if (auFile.getName().endsWith(".gz")) {
@@ -200,17 +192,15 @@ public class LatticeGraphServlet extends BaseServlet
 	}
 
 	/**
-	 * Returns the file name of the input structure: if user job it returns 
-	 * the path to the file in the job dir, if precomputed it finds the file path
-	 * in the local atom cache and creates a symbolic link to it in the job dir
+	 * Returns the file name of the input structure: it returns
+	 * the path to the file in the job dir
 	 * @param directory Directory to search for the file
 	 * @param inputName either the input file name, or a PDB code
-	 * @param atomCachePath Path for downloaded CIF files
 	 * @return the path to the AU structure file in the job dir
 	 * @throws IOException if file is a user job file and can't be found, 
 	 * or if the input is a pdb id and its file can't be found in atom cache
 	 */
-	public static File getAuFileName(File directory, String inputName, String atomCachePath) throws IOException {
+	public static File getAuFileName(File directory, String inputName) throws IOException {
 		
 		// inputName will be the full file name in user jobs and the pdbId for precomputed jobs
 		File structFile = new File(directory,inputName);
@@ -223,41 +213,11 @@ public class LatticeGraphServlet extends BaseServlet
 								+ "like a PDB id. Can't produce the lattice graph page!",
 								structFile, inputName));
 			} else {
-				
-				// it is like a PDB id, leave it to AtomCache
-				AtomCache atomCache = null;
-				if (atomCachePath ==null) {
-					atomCache = new AtomCache();
-					logger.warn("Defaulting to downloading structures to {}. Please set the ATOM_CACHE_PATH property.",atomCache.getCachePath());
+				// since 3.1.0 the file is written by CLI run when in -w
+				structFile = new File(directory, inputName + EppicParams.MMCIF_FILE_EXTENSION);
+				if (!structFile.exists()) {
+					throw new IOException("Could not find the AU file '"+structFile.toString()+"' in job dir. Something is wrong!");
 				}
-				else {
-					atomCache = new AtomCache(atomCachePath);
-				}
-
-				atomCache.setUseMmCif(true);
-
-				structFile = LatticeGUI.getFile(atomCache, inputName);
-				
-				if (structFile == null || !structFile.exists()) {
-					logger.error("The structure file {} does not exist in atom cache! Will not be able to display lattice graph", structFile);
-					throw new IOException("Structure file " + structFile+" does not exist in atom cache");
-				}
-
-				File sLink = new File(directory, structFile.getName());
-				if (!sLink.exists()) {
-					
-					// TODO downloading symlinks don't work with current server configuration, 
-					// TODO for now resorting to copy: must fix server config and do it with symlinks!
-					
-					logger.info("Copying to {} from file {}", sLink.toString(), structFile.toString());
-					Files.copy(structFile.toPath(), sLink.toPath() );
-					
-					// we create a symbolic link to the file in the atomcache dir
-					//logger.info("Creating symbolic link {} to file {}", sLink.toString(), structFile.toString());
-					//Files.createSymbolicLink(sLink.toPath(), structFile.toPath());
-				}
-				// and finally if no exception is thrown we return the symbolic link
-				structFile = sLink;
 			}
 		}
 		
