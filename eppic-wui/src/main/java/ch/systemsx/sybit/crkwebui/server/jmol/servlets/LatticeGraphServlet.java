@@ -216,7 +216,7 @@ public class LatticeGraphServlet extends BaseServlet
 				// since 3.1.0 the file is written by CLI run when in -w
 				structFile = new File(directory, inputName + EppicParams.MMCIF_FILE_EXTENSION);
 				if (!structFile.exists()) {
-					throw new IOException("Could not find the AU file in job dir. Something is wrong!");
+					throw new IOException("Could not find the AU file '"+structFile.toString()+"' in job dir. Something is wrong!");
 				}
 			}
 		}
