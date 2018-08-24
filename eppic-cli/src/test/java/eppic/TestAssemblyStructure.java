@@ -399,14 +399,14 @@ public class TestAssemblyStructure {
 
                 coordFilesAdaptor.getInterfaceCoordsMmcif(null, auStruct, os, pdbInfoDB, interf, false);
 
-                //if (logger.isDebugEnabled()) {
+                if (logger.isDebugEnabled()) {
                     // for debugging: we write file out
                     File file = new File(outDir, pdbId + ".interfaceFromAdaptor." + interf.getInterfaceId() + ".cif");
                     file.deleteOnExit();
                     FileOutputStream fos = new FileOutputStream(file);
                     fos.write(os.toByteArray());
                     fos.close();
-                //}
+                }
 
                 SimpleMMcifParser parser = new SimpleMMcifParser();
                 SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();

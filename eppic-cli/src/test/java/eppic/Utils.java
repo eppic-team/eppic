@@ -9,6 +9,7 @@ public class Utils {
 		params.setInputStr(pdbId);
 		params.setInput();
 		params.setOutDir(outDir);
+		params.setTempCoordFilesDir(outDir);
 		params.setAlphabet(EppicParams.DEF_ENTROPY_ALPHABET);
 		params.setnSpherePointsASAcalc(100);
 		return params;
