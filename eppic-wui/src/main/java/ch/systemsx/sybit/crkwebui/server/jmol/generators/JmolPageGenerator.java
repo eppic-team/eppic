@@ -153,14 +153,16 @@ public class JmolPageGenerator
 			String chain1 = interfData.getChain1();		
 			String chain2 = interfData.getChain2(); 
 			///boolean isSymRelated = false;
-			
+
+			if (isCif) {
+				// exactly as in CoordsFileAdaptor.getInterfaceCoordsMmcif() and deviating from StructureInterface.toMmcif in biojava
+				chain1 = chain1 + "_0";
+				chain2 = chain2 +"_"+ interfData.getOperatorId();
+			}
 
 			if (chain1.equals(chain2)) {
 				//isSymRelated = true;
-				if (isCif) {
-					// exactly as done in StructureInterface.toMMCIF()
-					chain2 = chain2 +"_"+ interfData.getOperatorId();
-				} else {
+				if (!isCif) {
 					// exactly as done in StructureInterface.toPDB()
 					// NOTE this won't work with chain ids of more than 1 char
 					chain2 = Character.toString(MolViewersHelper.getNextLetter(chain1.charAt(0)));
