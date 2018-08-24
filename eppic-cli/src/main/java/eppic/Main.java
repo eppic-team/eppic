@@ -529,7 +529,10 @@ public class Main {
 
 		if (!params.isGenerateOutputCoordFiles()) return;
 		
-		
+		if (params.isGenerateModelSerializedFile()) {
+			LOGGER.info("Not writing coordinate files because we are in -w mode.");
+			return;
+		}
 		
 		try {
 			if (params.isDoEvolScoring() && iecList!=null) { //iecList can be null if there are no interfaces (e.g. NMR monomers)
