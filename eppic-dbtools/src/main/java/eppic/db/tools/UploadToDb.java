@@ -162,6 +162,7 @@ public class UploadToDb {
 		int setSize = jobsDirectories.length / numWorkers;
 		int remainder = jobsDirectories.length % numWorkers;
 		int j = 0;
+		int offset = 0;
 
 		for (int i=0; i<numWorkers; i++) {
 			if (i == numWorkers-1) {
@@ -169,10 +170,11 @@ public class UploadToDb {
 			}
 			File[] singleSet = new File[setSize];
 			int k = 0;
-			for (; j<setSize; j++) {
+			for (; j<offset + setSize; j++) {
 				singleSet[k] = jobsDirectories[j];
 				k++;
 			}
+			offset = j;
 
 			System.out.printf("Proceeding to submit to worker %d, set of size %d\n", i, singleSet.length);
 
