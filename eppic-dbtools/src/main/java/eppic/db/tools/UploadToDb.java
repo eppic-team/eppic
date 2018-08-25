@@ -2,6 +2,8 @@ package eppic.db.tools;
 
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,6 +22,8 @@ import javax.persistence.EntityManager;
 
 
 public class UploadToDb {
+
+    private static final Logger logger = LoggerFactory.getLogger(UploadToDb.class);
 
 	// the name of the dir that is the root of the divided dirs (indexed by the pdbCode middle 2-letters) 
 	private static final String DIVIDED_ROOT = "divided";
@@ -172,8 +176,7 @@ public class UploadToDb {
 
 			System.out.printf("Proceeding to submit to worker %d, set of size %d\n", i, singleSet.length);
 
-			final int workerId = i;
-			Future<Stats> future = executorService.submit(() -> loadSet(singleSet, workerId));
+			Future<Stats> future = executorService.submit(() -> loadSet(singleSet));
 			allResults.add(future);
 		}
 
@@ -278,7 +281,7 @@ public class UploadToDb {
 		return pdbCodes;
 	}
 
-	private static Stats loadSet(File[] jobsDirectories, int workerId) {
+	private static Stats loadSet(File[] jobsDirectories) {
 		DBHandler dbh = new DBHandler(dbName, configFile);
 
 		// Start the Process
@@ -298,24 +301,20 @@ public class UploadToDb {
 			//Check if it really is a directory
 			if (!jobDirectory.isDirectory()){
 				if(choosefromFile!=null)
-					System.err.println("Worker " +workerId+ ". Warning: "+jobDirectory.getName()+" specified in list file (-f), " +
+					logger.warn(jobDirectory.getName()+" specified in list file (-f), " +
 							"but directory "+jobDirectory+"is not present, Skipping");
 				continue;
 			}
 
 			//Check for 4 letter code directories starting with a number
 			if (!jobDirectory.getName().matches("^\\d\\w\\w\\w$")){
-				System.out.println("Worker " +workerId+ ". Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
+				logger.info("Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
 				continue;
 			}
-
-
-			System.out.print(jobDirectory.getName()+" ");
 
 			long start = System.currentTimeMillis();
 
 			String currentPDB = jobDirectory.getName();
-
 
 			// Get the PDB-Score Item to be read
 			File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
@@ -323,12 +322,13 @@ public class UploadToDb {
 
 			try {
 
+			    String msg = "";
 
 				//MODE FORCE
 				if (modeEverything) {
 					boolean ifRemoved = dbh.removeJob(currentPDB);
-					if (ifRemoved) System.out.print("Worker " +workerId+". Found.. Removing and Updating.. ");
-					else System.out.print("Worker " +workerId+". Not Found.. Adding.. ");
+					if (ifRemoved) msg = "Found.. Removing and Updating.. ";
+					else msg = "Not Found.. Adding.. ";
 					if(isSerializedFilePresent) {
 						PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
 						// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
@@ -346,7 +346,7 @@ public class UploadToDb {
 				if (modeNew){
 					int isPresent = dbh.checkJobExist(currentPDB);
 					if(isPresent == 0){ // not present
-						System.out.print("Worker " +workerId+". Not Present.. Adding.. ");
+						msg = "Not Present.. Adding.. ";
 						if(isSerializedFilePresent) {
 							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
 							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
@@ -362,9 +362,9 @@ public class UploadToDb {
 					} else if (isPresent ==2) {
 						// already present but as an error, we have to remove and reinsert
 						boolean ifRemoved = dbh.removeJob(currentPDB);
-						if (ifRemoved) System.out.print("Worker " +workerId+". Found as error.. Removing and Updating.. ");
+						if (ifRemoved) msg = "Found as error.. Removing and Updating.. ";
 						else {
-							System.err.print("Worker " +workerId+ ". Warning! Not Found, but there should be an error job. Skipping..");
+							logger.warn("{} Not Found, but there should be an error job. Skipping..", currentPDB);
 							continue;
 						}
 
@@ -384,7 +384,7 @@ public class UploadToDb {
 					} else {
 						// already present and is not an error
 						stats.countPresent++;
-						System.out.print("Worker " +workerId+". Already Present.. Skipping.. ");
+						msg = "Already Present.. Skipping.. ";
 					}
 					//continue;
 				}
@@ -393,23 +393,23 @@ public class UploadToDb {
 				if (modeRemove) {
 					boolean ifRemoved = dbh.removeJob(currentPDB);
 					if (ifRemoved) {
-						System.out.print("Worker " +workerId+". Removed.. ");
+						msg = "Removed.. ";
 						stats.countRemoved++;
 					}
 					else {
-						System.out.print("Worker " +workerId+". Not Found.. ");
+						msg = "Not Found.. ";
 					}
 					//continue;
 				}
 
 				long end = System.currentTimeMillis();
-				System.out.print(((end-start)/1000)+"s\n");
+                logger.info("{} {} : {} s", currentPDB, msg, ((end-start)/1000));
 
 				if (i%TIME_STATS_EVERY1==0) {
 					avgTimeEnd1 = System.currentTimeMillis();
 
 					if (i!=0) // no statistics before starting
-						System.out.println("Worker " +workerId+". Last "+TIME_STATS_EVERY1+" entries in "+((avgTimeEnd1-avgTimeStart1)/1000)+" s");
+                        logger.info("Last "+TIME_STATS_EVERY1+" entries in "+((avgTimeEnd1-avgTimeStart1)/1000)+" s");
 
 					avgTimeStart1 = System.currentTimeMillis();
 				}
@@ -418,7 +418,7 @@ public class UploadToDb {
 					avgTimeEnd2 = System.currentTimeMillis();
 
 					if (i!=0) // no statistics before starting
-						System.out.println("Worker " +workerId+ ". Last "+TIME_STATS_EVERY2+" entries in "+((avgTimeEnd2-avgTimeStart2)/1000)+" s");
+						logger.info("Last "+TIME_STATS_EVERY2+" entries in "+((avgTimeEnd2-avgTimeStart2)/1000)+" s");
 
 					avgTimeStart2 = System.currentTimeMillis();
 				}
@@ -428,7 +428,7 @@ public class UploadToDb {
 				if (em.getTransaction().isActive()) {
 					em.getTransaction().rollback();
 				}
-				System.err.println("Worker " +workerId+". WARNING: problems while inserting "+currentPDB+". Error: "+e.getMessage());
+				logger.warn("Problems while inserting "+currentPDB+". Error: "+e.getMessage());
 				stats.pdbsWithWarnings.add(currentPDB);
 			}
 		}
