@@ -17,15 +17,20 @@ import javax.persistence.EntityManager;
 
 public class UploadToDb {
 
-	private static DBHandler dbh;
-	
 	// the name of the dir that is the root of the divided dirs (indexed by the pdbCode middle 2-letters) 
 	private static final String DIVIDED_ROOT = "divided";
 	
 	// after this number of entry uploads time statistics will be produced
 	private static final int TIME_STATS_EVERY1 = 100;
 	private static final int TIME_STATS_EVERY2 = 1000;
-	
+
+	private static boolean modeNew = true;
+	private static boolean modeEverything = false;
+	private static boolean modeRemove = false;
+	private static String dbName = null;
+	private static File configFile = null;
+	private static File choosefromFile = null;
+
 	public static void main(String[] args) {
 		
 		String help = 
@@ -48,15 +53,7 @@ public class UploadToDb {
 		boolean isDividedLayout = false;
 		
 		File jobDirectoriesRoot = null;
-		File choosefromFile = null;		
-		
-		boolean modeNew = true;
-		boolean modeEverything = false;
-		boolean modeRemove = false;
-		
-		String dbName = null;
-		File configFile = null;
-		
+
 		Getopt g = new Getopt("UploadToDB", args, "D:d:lf:g:Frh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
@@ -122,7 +119,7 @@ public class UploadToDb {
 		File[] jobsDirectories;
 		if(choosefromFile!=null){
 			List<String> pdbCodes = readListFile(choosefromFile);
-			List<File> chosenFilesList = new ArrayList<File>();
+			List<File> chosenFilesList = new ArrayList<>();
 			for (String pdbCode:pdbCodes) {
 				chosenFilesList.add(getDirectory(isDividedLayout, jobDirectoriesRoot, pdbCode));
 			}
@@ -142,178 +139,22 @@ public class UploadToDb {
 		} else {
 			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to be PDB codes directly, no PDB divided layout will be used. ");
 		}
-		
-		dbh = new DBHandler(dbName, configFile);
-		
-		List<String> pdbsWithWarnings = new ArrayList<String>();
-		
-		// Start the Process
-		int i = -1;
-		long avgTimeStart1 = 0;
-		long avgTimeEnd1 = 0;
-		long avgTimeStart2 = 0;
-		long avgTimeEnd2 = 0;
-		
+
+
+		List<String> pdbsWithWarnings = new ArrayList<>();
+
 		long totalStart = System.currentTimeMillis();
-		
-		EntityManager em = dbh.getEntityManager();
-		
-		int countPresent = 0;
-		int countUploaded = 0;
-		int countRemoved = 0;
-		int countErrorJob = 0;
-		
-		for (File jobDirectory : jobsDirectories) {
-			i++;
-			
-			//Check if it really is a directory
-			if (!jobDirectory.isDirectory()){
-				if(choosefromFile!=null) 
-					System.err.println("Warning: "+jobDirectory.getName()+" specified in list file (-f), " +
-															"but directory "+jobDirectory+"is not present, Skipping");
-				continue;
-			}
-			
-			//Check for 4 letter code directories starting with a number
-			if (!jobDirectory.getName().matches("^\\d\\w\\w\\w$")){
-				System.out.println("Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
-				continue; 
-			}
 
-
-			System.out.print(jobDirectory.getName()+" ");
-
-			long start = System.currentTimeMillis();
-
-			String currentPDB = jobDirectory.getName();
-
-
-			// Get the PDB-Score Item to be read
-			File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
-			boolean isSerializedFilePresent = webuiFile.isFile();
-
-			try {				
-
-
-				//MODE FORCE
-				if (modeEverything) {
-					boolean ifRemoved = dbh.removeJob(currentPDB);
-					if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
-					else System.out.print(" Not Found.. Adding.. ");
-					if(isSerializedFilePresent) {
-						PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
-						// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-						if (pdbScoreItem == null) continue;				
-
-						dbh.persistFinishedJob(em,pdbScoreItem);
-					}
-					else {
-						dbh.persistErrorJob(em, currentPDB);
-					}
-					//continue;
-				}
-
-				//MODE NEW INSERT
-				if (modeNew){
-					int isPresent = dbh.checkJobExist(currentPDB);
-					if(isPresent == 0){ // not present
-						System.out.print(" Not Present.. Adding.. ");
-						if(isSerializedFilePresent) {
-							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
-							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-							if (pdbScoreItem == null) continue;				
-
-							dbh.persistFinishedJob(em,pdbScoreItem);
-						}
-						else {
-							dbh.persistErrorJob(em, currentPDB);
-							countErrorJob++;
-						}
-						countUploaded++;
-					} else if (isPresent ==2) {
-						// already present but as an error, we have to remove and reinsert
-						boolean ifRemoved = dbh.removeJob(currentPDB);
-						if (ifRemoved) System.out.print(" Found as error.. Removing and Updating.. ");
-						else {
-							System.err.print(" Warning! Not Found, but there should be an error job. Skipping..");
-							continue;
-						}
-						
-						if(isSerializedFilePresent) {
-							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
-							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-							if (pdbScoreItem == null) continue;				
-
-							dbh.persistFinishedJob(em,pdbScoreItem);
-						}
-						else {
-							dbh.persistErrorJob(em, currentPDB);
-							countErrorJob++;
-						}
-						countUploaded++;
-						
-					} else {
-						// already present and is not an error
-						countPresent++;
-						System.out.print(" Already Present.. Skipping.. ");
-					}
-					//continue;
-				}
-
-				//MODE REMOVE
-				if (modeRemove) {
-					boolean ifRemoved = dbh.removeJob(currentPDB);
-					if (ifRemoved) {
-						System.out.print(" Removed.. ");
-						countRemoved++;
-					}
-					else {
-						System.out.print(" Not Found.. ");
-					}
-					//continue;
-				}
-
-				long end = System.currentTimeMillis();
-				System.out.print(((end-start)/1000)+"s\n");
-
-				if (i%TIME_STATS_EVERY1==0) {
-					avgTimeEnd1 = System.currentTimeMillis();
-
-					if (i!=0) // no statistics before starting
-						System.out.println("Last "+TIME_STATS_EVERY1+" entries in "+((avgTimeEnd1-avgTimeStart1)/1000)+" s");
-
-					avgTimeStart1 = System.currentTimeMillis();
-				}
-
-				if (i%TIME_STATS_EVERY2==0) {
-					avgTimeEnd2 = System.currentTimeMillis();
-
-					if (i!=0) // no statistics before starting
-						System.out.println("Last "+TIME_STATS_EVERY2+" entries in "+((avgTimeEnd2-avgTimeStart2)/1000)+" s");
-
-					avgTimeStart2 = System.currentTimeMillis();
-				}
-
-				
-			} catch (Exception e) {
-				if (em.getTransaction().isActive()) {
-					em.getTransaction().rollback();
-				}
-				System.err.println("WARNING: problems while inserting "+currentPDB+". Error: "+e.getMessage());
-				pdbsWithWarnings.add(currentPDB);
-				continue;
-			} 
-		}
-		
+		Counts counts = loadSet(jobsDirectories, pdbsWithWarnings);
 		
 		long totalEnd = System.currentTimeMillis();
 		
 		System.out.println("Completed all "+jobsDirectories.length+" entries in "+((totalEnd-totalStart)/1000)+" s");
 		if (modeNew) {
-			System.out.println("Already present: "+countPresent+", uploaded: "+countUploaded+", couldn't insert: "+pdbsWithWarnings.size());
-			System.out.println("There were "+countErrorJob+" error jobs in "+countUploaded+" uploaded entries.");
+			System.out.println("Already present: "+counts.countPresent+", uploaded: "+counts.countUploaded+", couldn't insert: "+pdbsWithWarnings.size());
+			System.out.println("There were "+counts.countErrorJob+" error jobs in "+counts.countUploaded+" uploaded entries.");
 		}
-		if (modeRemove) System.out.println("Removed: "+countRemoved);
+		if (modeRemove) System.out.println("Removed: "+counts.countRemoved);
 
 		if (!pdbsWithWarnings.isEmpty()) {
 			System.out.println("These PDBs had problems while inserting to db: ");
@@ -324,7 +165,7 @@ public class UploadToDb {
 		}
 
 		// make sure we exit with an error state in cases with many failures
-		int maxFailuresTolerated = (countPresent + countUploaded)/2;
+		int maxFailuresTolerated = (counts.countPresent + counts.countUploaded)/2;
 		if (pdbsWithWarnings.size() > maxFailuresTolerated) {
 			System.err.println("Total of "+pdbsWithWarnings.size()+" failures, more than "+maxFailuresTolerated+" failures. Something must be wrong!"); 
 			System.exit(1);
@@ -338,11 +179,9 @@ public class UploadToDb {
 			ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
 			pdbScoreItem = (PdbInfoDB)in.readObject();
 			in.close();
-		} catch (IOException e) {
+		} catch (IOException|ClassNotFoundException e) {
 			System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());
-		} catch (ClassNotFoundException e) {
-			System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());					
-		}
+		} 
 		// will be null if an exception occurs
 		return pdbScoreItem;
 	}
@@ -395,5 +234,169 @@ public class UploadToDb {
 			System.exit(1);
 		}
 		return pdbCodes;
+	}
+
+	private static Counts loadSet(File[] jobsDirectories, List<String> pdbsWithWarnings) {
+		DBHandler dbh = new DBHandler(dbName, configFile);
+
+		// Start the Process
+		int i = -1;
+		long avgTimeStart1 = 0;
+		long avgTimeEnd1 = 0;
+		long avgTimeStart2 = 0;
+		long avgTimeEnd2 = 0;
+
+		Counts counts = new Counts();
+
+
+		EntityManager em = dbh.getEntityManager();
+		for (File jobDirectory : jobsDirectories) {
+			i++;
+
+			//Check if it really is a directory
+			if (!jobDirectory.isDirectory()){
+				if(choosefromFile!=null)
+					System.err.println("Warning: "+jobDirectory.getName()+" specified in list file (-f), " +
+							"but directory "+jobDirectory+"is not present, Skipping");
+				continue;
+			}
+
+			//Check for 4 letter code directories starting with a number
+			if (!jobDirectory.getName().matches("^\\d\\w\\w\\w$")){
+				System.out.println("Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
+				continue;
+			}
+
+
+			System.out.print(jobDirectory.getName()+" ");
+
+			long start = System.currentTimeMillis();
+
+			String currentPDB = jobDirectory.getName();
+
+
+			// Get the PDB-Score Item to be read
+			File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
+			boolean isSerializedFilePresent = webuiFile.isFile();
+
+			try {
+
+
+				//MODE FORCE
+				if (modeEverything) {
+					boolean ifRemoved = dbh.removeJob(currentPDB);
+					if (ifRemoved) System.out.print(" Found.. Removing and Updating.. ");
+					else System.out.print(" Not Found.. Adding.. ");
+					if(isSerializedFilePresent) {
+						PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
+						// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+						if (pdbScoreItem == null) continue;
+
+						dbh.persistFinishedJob(em,pdbScoreItem);
+					}
+					else {
+						dbh.persistErrorJob(em, currentPDB);
+					}
+					//continue;
+				}
+
+				//MODE NEW INSERT
+				if (modeNew){
+					int isPresent = dbh.checkJobExist(currentPDB);
+					if(isPresent == 0){ // not present
+						System.out.print(" Not Present.. Adding.. ");
+						if(isSerializedFilePresent) {
+							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
+							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+							if (pdbScoreItem == null) continue;
+
+							dbh.persistFinishedJob(em,pdbScoreItem);
+						}
+						else {
+							dbh.persistErrorJob(em, currentPDB);
+							counts.countErrorJob++;
+						}
+						counts.countUploaded++;
+					} else if (isPresent ==2) {
+						// already present but as an error, we have to remove and reinsert
+						boolean ifRemoved = dbh.removeJob(currentPDB);
+						if (ifRemoved) System.out.print(" Found as error.. Removing and Updating.. ");
+						else {
+							System.err.print(" Warning! Not Found, but there should be an error job. Skipping..");
+							continue;
+						}
+
+						if(isSerializedFilePresent) {
+							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
+							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+							if (pdbScoreItem == null) continue;
+
+							dbh.persistFinishedJob(em,pdbScoreItem);
+						}
+						else {
+							dbh.persistErrorJob(em, currentPDB);
+							counts.countErrorJob++;
+						}
+						counts.countUploaded++;
+
+					} else {
+						// already present and is not an error
+						counts.countPresent++;
+						System.out.print(" Already Present.. Skipping.. ");
+					}
+					//continue;
+				}
+
+				//MODE REMOVE
+				if (modeRemove) {
+					boolean ifRemoved = dbh.removeJob(currentPDB);
+					if (ifRemoved) {
+						System.out.print(" Removed.. ");
+						counts.countRemoved++;
+					}
+					else {
+						System.out.print(" Not Found.. ");
+					}
+					//continue;
+				}
+
+				long end = System.currentTimeMillis();
+				System.out.print(((end-start)/1000)+"s\n");
+
+				if (i%TIME_STATS_EVERY1==0) {
+					avgTimeEnd1 = System.currentTimeMillis();
+
+					if (i!=0) // no statistics before starting
+						System.out.println("Last "+TIME_STATS_EVERY1+" entries in "+((avgTimeEnd1-avgTimeStart1)/1000)+" s");
+
+					avgTimeStart1 = System.currentTimeMillis();
+				}
+
+				if (i%TIME_STATS_EVERY2==0) {
+					avgTimeEnd2 = System.currentTimeMillis();
+
+					if (i!=0) // no statistics before starting
+						System.out.println("Last "+TIME_STATS_EVERY2+" entries in "+((avgTimeEnd2-avgTimeStart2)/1000)+" s");
+
+					avgTimeStart2 = System.currentTimeMillis();
+				}
+
+
+			} catch (Exception e) {
+				if (em.getTransaction().isActive()) {
+					em.getTransaction().rollback();
+				}
+				System.err.println("WARNING: problems while inserting "+currentPDB+". Error: "+e.getMessage());
+				pdbsWithWarnings.add(currentPDB);
+			}
+		}
+		return counts;
+	}
+
+	private static class Counts {
+		int countPresent = 0;
+		int countUploaded = 0;
+		int countRemoved = 0;
+		int countErrorJob = 0;
 	}
 }
