@@ -32,6 +32,7 @@ public class UploadToDb {
 	private static final int TIME_STATS_EVERY1 = 100;
 	private static final int TIME_STATS_EVERY2 = 1000;
 
+	private static DBHandler dbh;
 	private static boolean modeNew = true;
 	private static boolean modeEverything = false;
 	private static boolean modeRemove = false;
@@ -154,6 +155,8 @@ public class UploadToDb {
 		}
 
 		System.out.println("Will use " + numWorkers + " workers");
+
+		dbh = new DBHandler(dbName, configFile);
 
 		ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
 		List<Future<Stats>> allResults = new ArrayList<>();
@@ -284,7 +287,6 @@ public class UploadToDb {
 	}
 
 	private static Stats loadSet(File[] jobsDirectories) {
-		DBHandler dbh = new DBHandler(dbName, configFile);
 
 		// Start the Process
 		int i = -1;
