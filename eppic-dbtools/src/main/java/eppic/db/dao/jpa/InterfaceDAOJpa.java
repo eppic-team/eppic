@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -165,7 +166,7 @@ public class InterfaceDAOJpa implements InterfaceDAO
 			}
 
 			if (result==null)
-				throw new DaoException("Could not find an interface for pdbInfo uid "+pdbInfoUid+" and interface id "+interfaceId);
+				throw new NoResultException("Could not find an interface for pdbInfo uid "+pdbInfoUid+" and interface id "+interfaceId);
 
 			return result;
 		}
@@ -217,8 +218,6 @@ public class InterfaceDAOJpa implements InterfaceDAO
 			}
 
 			// no interfaces is a valid situation (e.g.NMR monomers). See #164
-			//if (result.isEmpty()) 
-			//	throw new DaoException("Could not find any interfaces for pdbInfo uid "+pdbInfoUid);
 
 			return result;
 		} catch (Throwable e) {

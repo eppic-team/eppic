@@ -2,6 +2,7 @@ package eppic.rest.service;
 
 import java.util.*;
 
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 import eppic.db.adaptors.ViewsAdaptor;
@@ -191,9 +192,8 @@ public class JobService {
         ContactDAO contactDAO = new ContactDAOJpa();
         List<Contact> list = contactDAO.getContactsForInterface(pdbInfo.getUid(), interfId);
 
-        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (list==null) {
-            throw new DaoException("Could not find contact data for job "+jobId+" and interface id "+interfId);
+            throw new NoResultException("Could not find contact data for job "+jobId+" and interface id "+interfId);
         }
 
         return list;
@@ -214,9 +214,8 @@ public class JobService {
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
         Assembly assembly = assemblyDAO.getAssemblyByPdbAssemblyId(pdbInfo.getUid(), pdbAssemblyId, true);
 
-        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null) {
-            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+pdbAssemblyId);
+            throw new NoResultException("Could not find assembly data for job "+jobId+" and PDB assembly id "+pdbAssemblyId);
         }
         return assembly;
     }
@@ -236,9 +235,8 @@ public class JobService {
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
         Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
 
-        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null) {
-            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new NoResultException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
         return assembly;
     }
@@ -259,9 +257,8 @@ public class JobService {
         Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
         Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
 
-        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null || unitcellAssembly == null) {
-            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new NoResultException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
 
         return ViewsAdaptor.getLatticeGraphView(assembly, unitcellAssembly);
@@ -286,9 +283,8 @@ public class JobService {
 
         Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
 
-        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (unitcellAssembly == null) {
-            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+            throw new NoResultException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
         }
 
         if (interfaceIds == null) {
@@ -324,9 +320,8 @@ public class JobService {
 
         Assembly unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
 
-        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (unitcellAssembly == null) {
-            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+            throw new NoResultException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
         }
 
         if (interfaceClusterIds == null) {
@@ -357,9 +352,8 @@ public class JobService {
         AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
         Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
 
-        // TODO probably this should be handled differently, different exception? Essentially it should lead to a 404/204 in REST
         if (assembly==null) {
-            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new NoResultException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
 
         return ViewsAdaptor.getAssemblyDiagram(assembly);

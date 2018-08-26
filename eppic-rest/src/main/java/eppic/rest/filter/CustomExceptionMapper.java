@@ -29,13 +29,21 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
         int response;
         String msg;
 
-        if (ex instanceof DaoException && ex.getCause()!=null && ex.getCause() instanceof NoResultException) {
+        if (ex instanceof DaoException && ex.getCause() != null && ex.getCause() instanceof NoResultException) {
 
             // so that a hibernate NoResultException (wrapped inside a DaoException) is converted to a 404 in REST API output
 
             response = Response.Status.NOT_FOUND.getStatusCode();
             msg = "No results found";
-            logger.error(msg + ". Error: "+ex.getMessage());
+            logger.error(msg + ". Error: " + ex.getMessage());
+
+        } else if (ex instanceof NoResultException){
+
+            // we throw NoResultExceptions in service layer when we don't find data
+
+            response = Response.Status.NOT_FOUND.getStatusCode();
+            msg = "No results found";
+            logger.error(msg + ". Error: " + ex.getMessage());
 
         } else {
 
