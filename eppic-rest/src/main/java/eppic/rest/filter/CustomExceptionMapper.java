@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.NoResultException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -32,10 +33,11 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
         if (ex instanceof DaoException && ex.getCause() != null && ex.getCause() instanceof NoResultException) {
 
             // so that a hibernate NoResultException (wrapped inside a DaoException) is converted to a 404 in REST API output
+            // these exceptions come from dao-jpa layer
 
             response = Response.Status.NOT_FOUND.getStatusCode();
             msg = "No results found";
-            logger.error("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
+            logger.warn("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
 
         } else if (ex instanceof NoResultException){
 
@@ -43,7 +45,15 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
 
             response = Response.Status.NOT_FOUND.getStatusCode();
             msg = "No results found";
-            logger.error("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
+            logger.warn("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
+
+        } else if(ex instanceof WebApplicationException) {
+
+            // jersey exceptions
+
+            response = ((WebApplicationException)ex).getResponse().getStatus();
+            msg = ex.getMessage();
+            logger.warn("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
 
         } else {
 
