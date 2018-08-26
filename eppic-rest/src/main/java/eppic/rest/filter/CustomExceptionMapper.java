@@ -35,7 +35,7 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
 
             response = Response.Status.NOT_FOUND.getStatusCode();
             msg = "No results found";
-            logger.error(msg + ". Error: " + ex.getMessage());
+            logger.error("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
 
         } else if (ex instanceof NoResultException){
 
@@ -43,13 +43,13 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
 
             response = Response.Status.NOT_FOUND.getStatusCode();
             msg = "No results found";
-            logger.error(msg + ". Error: " + ex.getMessage());
+            logger.error("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
 
         } else {
 
             response = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
             msg = "Internal server error. If the problem persists, please report it to " + EppicParams.CONTACT_EMAIL;
-            logger.error(msg + ". Error: "+ex.getMessage());
+            logger.error("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
         }
 
         return Response.status(response)
