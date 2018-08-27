@@ -23,6 +23,8 @@ import javax.vecmath.Matrix4d;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Adaptor of db data models to produce coordinate mmcif files for
@@ -34,6 +36,11 @@ import java.util.List;
 public class CoordFilesAdaptor {
 
     private static final Logger logger = LoggerFactory.getLogger(CoordFilesAdaptor.class);
+
+    /**
+     * Regex to capture the actual chainName out of a chain name for an entry with NCS ops
+     */
+    private static final Pattern ncsOpsChainNameRegex = Pattern.compile("([A-Za-z])+\\d+n");
 
     /**
      * Given an input file with coordinates of an AU in mmCIF format produces
@@ -75,7 +82,7 @@ public class CoordFilesAdaptor {
             if (!node.isIn3dStructure())
                 continue;
 
-            String chainName = node.getLabel().split("_")[0];
+            String chainName = fixChainNameForNcsEntry(node.getLabel().split("_")[0]);
             String opId = node.getLabel().split("_")[1];
 
             Chain c = (Chain) s.getPolyChainByPDB(chainName).clone();
@@ -157,8 +164,8 @@ public class CoordFilesAdaptor {
 
         List<AtomSite> atomSiteList = new ArrayList<>();
 
-        String chainName1 = interfaceDB.getChain1();
-        String chainName2 = interfaceDB.getChain2();
+        String chainName1 = fixChainNameForNcsEntry(interfaceDB.getChain1());
+        String chainName2 = fixChainNameForNcsEntry(interfaceDB.getChain2());
 
         Chain c1 = s.getPolyChainByPDB(chainName1);
         Chain c2 = (Chain) s.getPolyChainByPDB(chainName2).clone();
@@ -272,7 +279,7 @@ public class CoordFilesAdaptor {
 
             } else {
                 entropy = maxEntropy;
-                logger.warn("Residue info could not be found from data in db: res serial {}, chain asym id {}. Setting entropy to 0", resSerial, c.getId());
+                logger.warn("Residue info could not be found from data in db: res serial {}, chain asym id {}. Setting entropy to maxEntropy", resSerial, c.getId());
             }
             for (Atom a : g.getAtoms()) {
                 a.setTempFactor((float) entropy);
@@ -313,5 +320,25 @@ public class CoordFilesAdaptor {
             }
         }
         return null;
+    }
+
+    /**
+     * Entries with NCS ops are assigned by biojava an artificial chain name ending with "n" and
+     * with an NCS operator identifier, e.g. C5n. This reverses the name to the original
+     * chain name.
+     * @param chainName the chain name
+     * @return the original chain name if chain name contains "n" as last char or the same as input if it's
+     * a standard chain name
+     */
+    private String fixChainNameForNcsEntry(String chainName) {
+
+        if (chainName.length()>2 && chainName.endsWith("n")) {
+            Matcher m = ncsOpsChainNameRegex.matcher(chainName);
+            if (m.matches()) {
+                return m.group(1);
+            }
+        }
+
+        return chainName;
     }
  }

@@ -15,7 +15,7 @@ public class FileToDownloadLocationValidator
 		if ((!location.exists()) ||
 			(!location.isDirectory())) 
 		{
-			throw new IOException("Location does not exist.");
+			throw new IOException("Job directory does not exist for job " + location.getName());
 		}
 	}
 }
