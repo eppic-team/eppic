@@ -17,7 +17,6 @@ import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.nio.ch.IOUtil;
 
 import javax.vecmath.Matrix4d;
 import java.io.*;
@@ -183,6 +182,28 @@ public class CoordFilesAdaptor {
             addEvolutionaryScores(c2, pdbInfoDB);
         }
 
+        // for the NCS case (mostly viral capsids) we've got to hack in the operators that create the full AU
+        if (pdbInfoDB.isNcsOpsPresent()) {
+            // we don't have the NCS ops at interface level, we've got to grab them from the unit cell assembly
+            Assembly unitCellAssembly = pdbInfoDB.getAssemblyById(0);
+            Matrix4d ncsOp1 = findNcsOp(unitCellAssembly.getGraphNodes(), chainName1);
+            Matrix4d ncsOp2 = findNcsOp(unitCellAssembly.getGraphNodes(), chainName2);
+            if (ncsOp1 != null) {
+                c1 = (Chain) c1.clone();
+                Calc.transform(c1, ncsOp1);
+                for (Chain nonPolyChain1 : nonPolyChains1) {
+                    nonPolyChain1 = (Chain) nonPolyChain1.clone();
+                    Calc.transform(nonPolyChain1, ncsOp1);
+                }
+            }
+            if (ncsOp2 != null) {
+                Calc.transform(c2, ncsOp2);
+                for (Chain nonPolyChain2 : nonPolyChains2) {
+                    Calc.transform(nonPolyChain2, ncsOp2);
+                }
+            }
+        }
+
         Matrix4d tranform = SpaceGroup.getMatrixFromAlgebraic(interfaceDB.getOperator());
         CrystalCell cell = s.getPDBHeader().getCrystallographicInfo().getCrystalCell();
         if (cell!=null) {
@@ -199,7 +220,7 @@ public class CoordFilesAdaptor {
 
         // 2: all atoms (poly and non-poly) of second chain
         String opId2 = null;
-        if (c1.getId().equals(c2.getId())) {
+        if (chainName1.equals(chainName2)) {
             opId2 = String.valueOf(interfaceDB.getOperatorId());
         }
         addAtomSites(c2, atomSiteList, chainName2, opId2);
@@ -353,5 +374,38 @@ public class CoordFilesAdaptor {
         }
 
         return chainName;
+    }
+
+    private Matrix4d findNcsOp(List<GraphNode> graphNodes, String chainName) {
+        for (GraphNode graphNode : graphNodes) {
+            String[] tokens = graphNode.getLabel().split("_");
+            // the NCS op is in the matching chain name with opId=0
+            if (!tokens[1].equals("0")) continue;
+            if (tokens[0].equals(chainName)) {
+                Matrix4d op = new Matrix4d();
+                op.m00 = graphNode.getRxx();
+                op.m01 = graphNode.getRxy();
+                op.m02 = graphNode.getRxz();
+
+                op.m10 = graphNode.getRyx();
+                op.m11 = graphNode.getRyy();
+                op.m12 = graphNode.getRyz();
+
+                op.m20 = graphNode.getRzx();
+                op.m21 = graphNode.getRzy();
+                op.m22 = graphNode.getRzz();
+
+                op.m03 = graphNode.getTx();
+                op.m13 = graphNode.getTy();
+                op.m23 = graphNode.getTz();
+
+                op.m30 = 0;
+                op.m31 = 0;
+                op.m32 = 0;
+                op.m33 = 1;
+                return op;
+            }
+        }
+        return null;
     }
  }

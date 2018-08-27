@@ -381,6 +381,7 @@ public class TestAssemblyStructure {
         testInterfacesCoordFilesAdaptorForPdbId("4ht5");
         testInterfacesCoordFilesAdaptorForPdbId("5wjc");
         testInterfacesCoordFilesAdaptorForPdbId("4hhb");
+        testInterfacesCoordFilesAdaptorForPdbId("1auy");
 
     }
 
