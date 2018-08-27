@@ -40,7 +40,7 @@ public class CoordFilesAdaptor {
     /**
      * Regex to capture the actual chainName out of a chain name for an entry with NCS ops
      */
-    private static final Pattern ncsOpsChainNameRegex = Pattern.compile("([A-Za-z])+\\d+n");
+    public static final Pattern ncsOpsChainNameRegex = Pattern.compile("([A-Za-z]+)(\\d+n)");
 
     /**
      * Given an input file with coordinates of an AU in mmCIF format produces
@@ -82,12 +82,13 @@ public class CoordFilesAdaptor {
             if (!node.isIn3dStructure())
                 continue;
 
-            String chainName = fixChainNameForNcsEntry(node.getLabel().split("_")[0]);
+            String chainName = node.getLabel().split("_")[0];
             String opId = node.getLabel().split("_")[1];
+            String chainNameOrig = fixChainNameForNcsEntry(chainName);
 
-            Chain c = (Chain) s.getPolyChainByPDB(chainName).clone();
+            Chain c = (Chain) s.getPolyChainByPDB(chainNameOrig).clone();
             List<Chain> nonPolyChains = new ArrayList<>();
-            for (Chain nonPolyChain: s.getNonPolyChainsByPDB(chainName)) {
+            for (Chain nonPolyChain: s.getNonPolyChainsByPDB(chainNameOrig)) {
                 nonPolyChains.add((Chain) nonPolyChain.clone());
             }
 
@@ -120,8 +121,8 @@ public class CoordFilesAdaptor {
 
             nonPolyChains.forEach(nonPolyChain -> Calc.transform(nonPolyChain, op));
 
-            addAtomSites(c, atomSiteList, opId);
-            nonPolyChains.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, opId));
+            addAtomSites(c, atomSiteList, chainName, opId);
+            nonPolyChains.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, chainName, opId));
 
         }
 
@@ -164,14 +165,16 @@ public class CoordFilesAdaptor {
 
         List<AtomSite> atomSiteList = new ArrayList<>();
 
-        String chainName1 = fixChainNameForNcsEntry(interfaceDB.getChain1());
-        String chainName2 = fixChainNameForNcsEntry(interfaceDB.getChain2());
+        String chainName1 = interfaceDB.getChain1();
+        String chainName2 = interfaceDB.getChain2();
+        String chainNameOrig1 = fixChainNameForNcsEntry(chainName1);
+        String chainNameOrig2 = fixChainNameForNcsEntry(chainName2);
 
-        Chain c1 = s.getPolyChainByPDB(chainName1);
-        Chain c2 = (Chain) s.getPolyChainByPDB(chainName2).clone();
-        List<Chain> nonPolyChains1 = s.getNonPolyChainsByPDB(chainName1);
+        Chain c1 = s.getPolyChainByPDB(chainNameOrig1);
+        Chain c2 = (Chain) s.getPolyChainByPDB(chainNameOrig2).clone();
+        List<Chain> nonPolyChains1 = s.getNonPolyChainsByPDB(chainNameOrig1);
         List<Chain> nonPolyChains2 = new ArrayList<>();
-        for (Chain nonPolyChain : s.getNonPolyChainsByPDB(chainName2)) {
+        for (Chain nonPolyChain : s.getNonPolyChainsByPDB(chainNameOrig2)) {
             nonPolyChains2.add((Chain)nonPolyChain.clone());
         }
 
@@ -191,17 +194,17 @@ public class CoordFilesAdaptor {
         }
 
         // 1: all atoms (poly and non-poly) of first chain
-        addAtomSites(c1, atomSiteList, null);
-        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, null));
+        addAtomSites(c1, atomSiteList, chainName1, null);
+        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, chainName1, null));
 
         // 2: all atoms (poly and non-poly) of second chain
         String opId2 = null;
         if (c1.getId().equals(c2.getId())) {
             opId2 = String.valueOf(interfaceDB.getOperatorId());
         }
-        addAtomSites(c2, atomSiteList, opId2);
+        addAtomSites(c2, atomSiteList, chainName2, opId2);
         for (Chain nonPolyChain : nonPolyChains2) {
-            addAtomSites(nonPolyChain, atomSiteList, opId2);
+            addAtomSites(nonPolyChain, atomSiteList, chainName2, opId2);
         }
 
         // TODO check what's the right charset to use
@@ -288,13 +291,23 @@ public class CoordFilesAdaptor {
         }
     }
 
-    private void addAtomSites(Chain c, List<AtomSite> atomSites, String opId) {
+    private void addAtomSites(Chain c, List<AtomSite> atomSites, String chainName, String opId) {
         // TODO set atom ids to be unique throughout (problem for sym mates)
+
+        // for NCS case (mostly viral capsids) we get the possible ncs suffix in chainName so that we can also add it to the chainId
+        String chainIdWithNcsOpsSuffix = c.getId();
+        if (chainName.length()>2 && chainName.endsWith("n")) {
+            Matcher m = ncsOpsChainNameRegex.matcher(chainName);
+            if (m.matches()) {
+                chainIdWithNcsOpsSuffix = c.getId() + m.group(2);
+            }
+        }
+
         for (Group g : c.getAtomGroups()) {
             for (Atom a : g.getAtoms()) {
-                String chainId = c.getId() + ((opId==null)?"":"_" + opId);
-                String chainName = c.getName() + ((opId==null)?"":"_" + opId);
-                atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainName, chainId));
+                String chainId = chainIdWithNcsOpsSuffix + ((opId==null)?"":"_" + opId);
+                String chainNameForOutput = chainName + ((opId==null)?"":"_" + opId);
+                atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainNameForOutput, chainId));
             }
             // we intentionally not write altloc groups
             // if we decide to write out altloc groups then #220 has to be taken into account

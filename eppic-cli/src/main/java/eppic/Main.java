@@ -279,16 +279,20 @@ public class Main {
 		LOGGER.info("Calculating possible interfaces");
 		CrystalBuilder interfFinder;
 		Map<String,String> chainOrigNames = null;
+		Map<String, Matrix4d > chainNcsOps = null;
 		if (modelAdaptor.getPdbInfo().isNcsOpsPresent()) {
 			chainOrigNames = new HashMap<>();
-			Map<String, Matrix4d > chainNcsOps = new HashMap<>();
+			chainNcsOps = new HashMap<>();
 			CrystalBuilder.expandNcsOps(pdb,chainOrigNames,chainNcsOps);
 			interfFinder = new CrystalBuilder(pdb,chainOrigNames,chainNcsOps);
 		} else {
 			interfFinder = new CrystalBuilder(pdb);
 		}
 
-		modelAdaptor.setChainClustersData(pdb, chainOrigNames);
+		modelAdaptor.setChainOrigNames(chainOrigNames);
+		modelAdaptor.setChainNcsOps(chainNcsOps);
+
+		modelAdaptor.setChainClustersData(pdb);
 
 		interfaces = interfFinder.getUniqueInterfaces(EppicParams.INTERFACE_DIST_CUTOFF);
 		LOGGER.info("Calculating ASAs");

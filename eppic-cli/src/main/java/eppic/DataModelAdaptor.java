@@ -81,6 +81,10 @@ public class DataModelAdaptor {
 	
 	// a map to convert between asym ids and chain ids so that we can match PDB biounits correctly
 	private HashMap<String,String> asymIds2chainIds;
+
+	// data required to deal with entries with NCS ops (viral capsids mostly), if not an NCS entry then both should be null
+	private Map<String,String> chainOrigNames;
+	private Map<String, Matrix4d > chainNcsOps;
 	
 	public DataModelAdaptor() {
 		pdbInfo = new PdbInfoDB();
@@ -90,6 +94,22 @@ public class DataModelAdaptor {
 	public PdbInfoDB getPdbInfo() {
 		return pdbInfo;
 	}
+
+	public void setChainOrigNames(Map<String, String> chainOrigNames) {
+		this.chainOrigNames = chainOrigNames;
+	}
+
+	public void setChainNcsOps(Map<String, Matrix4d> chainNcsOps) {
+		this.chainNcsOps = chainNcsOps;
+	}
+
+	protected Map<String, String> getChainOrigNames() {
+	    return chainOrigNames;
+    }
+
+	protected Map<String, Matrix4d> getChainNcsOps() {
+	    return chainNcsOps;
+    }
 	
 	public void setParams(EppicParams params) {
 		this.params = params;
@@ -156,7 +176,7 @@ public class DataModelAdaptor {
 
 	}
 
-	public void setChainClustersData(Structure pdb, Map<String,String> chainOrigNames) {
+	public void setChainClustersData(Structure pdb) {
 		List<ChainClusterDB> chainClusterDBs = new ArrayList<ChainClusterDB>();
 
 		for (EntityInfo compound:pdb.getEntityInfos()) {
@@ -616,7 +636,7 @@ public class DataModelAdaptor {
 	 * @param assemblyDB the assembly model bean
 	 * @param latticeGraph the lattice graph
 	 * @param add2dLayout whether to add 2D layout data or not
-     * @param assembly the assembly object
+     * @param assembly the assembly object, null if in unit cell assembly case (special assembly with id=0, containing the full unit cell)
 	 */
 	private void setGraph(SortedSet<Integer> clusterIds, AssemblyDB assemblyDB, LatticeGraph3D latticeGraph, boolean add2dLayout, Assembly assembly) {
 
@@ -655,7 +675,6 @@ public class DataModelAdaptor {
 				if (v2d == null) {
 					// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever
 					// a vertex is not part of the subgraph that is displayed in 2D
-					// TODO does this work for disjoint cases?
 					nodeDB.setInGraph2d(false);
 				} else {
 					nodeDB.setPos2dX(v2d.getCenter().x);
@@ -682,6 +701,9 @@ public class DataModelAdaptor {
                     nodeDB.setIn3dStructure(false);
 
                 } else {
+                	// important for entries with NCS, we need to compose the operator with the one used to create the expanded AU
+                	fixNcsCase(op, v);
+
                     nodeDB.setRxx(op.m00);
                     nodeDB.setRxy(op.m01);
                     nodeDB.setRxz(op.m02);
@@ -703,7 +725,10 @@ public class DataModelAdaptor {
             } else if (assembly==null) {
                 Matrix4d op = latticeGraph.getUnitCellTransformationOrthonormal(v.getChain().getName(), v.getOpId());
 
-                nodeDB.setRxx(op.m00);
+				// important for entries with NCS, we need to compose the operator with the one used to create the expanded AU
+				fixNcsCase(op, v);
+
+				nodeDB.setRxx(op.m00);
                 nodeDB.setRxy(op.m01);
                 nodeDB.setRxz(op.m02);
 
@@ -792,7 +817,6 @@ public class DataModelAdaptor {
 				if (getCorrespondingEdge(graph2D, e, v1, v2) == null) {
 					// the 2d graph only contains 1 of the many subgraphs, so this is a valid situation that happens whenever
 					// an edge is not part of the subgraph that is displayed in 2D
-					// TODO does this work for disjoint cases?
 					edgeDB.setInGraph2d(false);
 				} else {
 					edgeDB.setInGraph2d(true);
@@ -829,6 +853,25 @@ public class DataModelAdaptor {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * In entries with NCS operators (mostly viral capsids), we need to compose the assembly operator
+	 * with the operator that created the expanded AU.
+	 * @param op
+	 * @param v
+	 */
+	private void fixNcsCase(Matrix4d op, ChainVertex3D v) {
+
+		if (chainNcsOps == null) {
+			// case not NCS entry, nothing to do
+			return;
+		}
+
+		Matrix4d ncsOp = chainNcsOps.get(v.getChain().getName());
+
+		// note the order is important here!
+		op.mul(ncsOp);
 	}
 
 	/**

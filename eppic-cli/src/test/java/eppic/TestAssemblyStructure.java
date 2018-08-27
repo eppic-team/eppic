@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import javax.vecmath.Matrix4d;
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -38,14 +39,15 @@ public class TestAssemblyStructure {
      * @throws IOException
      */
     @Test
-    public void testAssemblyStructureLayout() throws IOException{
+    public void testAssemblyStructureLayout() throws IOException, StructureException {
 
         testAssemblyLayoutForPdbId("4ht5");
         testAssemblyLayoutForPdbId("5wjc");
+        testAssemblyLayoutForPdbId("1auy");
 
     }
 
-    private void testAssemblyLayoutForPdbId(String pdbId) throws IOException {
+    private void testAssemblyLayoutForPdbId(String pdbId) throws IOException, StructureException {
 
         outDir.mkdir();
         outDir.deleteOnExit();
@@ -58,10 +60,13 @@ public class TestAssemblyStructure {
         Main m = new Main();
 
         m.run(params);
-        Structure auStruct = m.getStructure();
 
         CrystalAssemblies validAssemblies = m.getCrystalAssemblies();
         PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
+
+        // Important: we need to parse a-new the structure so that we make sure it does not have NCS ops expanded,
+        // if we take it from m.getStructure(), in there the NCS ops are already expanded
+        Structure auStruct = StructureIO.getStructure(pdbId);
 
         Map<Integer, Structure> structFromFiles = writeAssemblyStructFiles(validAssemblies, pdbId, outDir);
 
@@ -98,6 +103,9 @@ public class TestAssemblyStructure {
             if (adb.getId()==0) assemblyDB = adb;
         }
         assertNotNull(assemblyDB);
+
+        // the following test will not work on structures with NCS ops
+        if (pdbInfoDB.isNcsOpsPresent()) return;
 
         // the reference node: 1st opId type seen
         Map<Integer, GraphNodeDB> refNodeDBs = new HashMap<>();
@@ -154,15 +162,19 @@ public class TestAssemblyStructure {
                 op.m33 = 1;
 
                 String[] labelTokens = nodeDB.getLabel().split("_");
-                String chainId = labelTokens[0];
+                String chainName = labelTokens[0];
+                Matcher m = CoordFilesAdaptor.ncsOpsChainNameRegex.matcher(chainName);
+                if (m.matches()) {
+                    chainName = m.group(1);
+                }
                 int opId = Integer.parseInt(labelTokens[1]);
-                Chain c = (Chain)s.getPolyChainByPDB(chainId).clone();
-                c.setName(chainId+"_"+opId);
-                c.setId(chainId+"_"+opId);
+                Chain c = (Chain)s.getPolyChainByPDB(chainName).clone();
+                c.setName(labelTokens[0]+"_"+opId);
+                c.setId(labelTokens[0]+"_"+opId);
                 Calc.transform(c, op);
                 assemblyStruct.addChain(c);
 
-                System.out.println("Operator for " + s.getPDBCode() +", assembly id "+assemblyDB.getId()+", chain id "+chainId+":");
+                System.out.println("Operator for " + s.getPDBCode() +", assembly id "+assemblyDB.getId()+", chain id "+chainName+":");
                 System.out.println(op);
 
             }
@@ -264,6 +276,7 @@ public class TestAssemblyStructure {
         testAssembliesCoordFilesAdaptorForPdbId("4ht5");
         testAssembliesCoordFilesAdaptorForPdbId("5wjc");
         testAssembliesCoordFilesAdaptorForPdbId("4hhb");
+        testAssembliesCoordFilesAdaptorForPdbId("1auy");
 
     }
 
