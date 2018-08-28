@@ -12,6 +12,7 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
@@ -209,7 +210,7 @@ public class Main {
 						reader.setFetchBehavior(cache.getFetchBehavior());
 						reader.setObsoleteBehavior(cache.getObsoleteBehavior());
 						File file = reader.getLocalFile(params.getPdbCode());
-						Files.copy(file.toPath(), params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION).toPath());
+						Files.copy(file.toPath(), params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION).toPath(), StandardCopyOption.REPLACE_EXISTING);
 					}
 				} catch(IOException e) {
 					throw new EppicException(e,"Couldn't get cif file from AtomCache for code "+params.getPdbCode()+". Error: "+e.getMessage(),true);
