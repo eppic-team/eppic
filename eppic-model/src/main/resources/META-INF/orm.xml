@@ -225,21 +225,26 @@
 			<basic name="symmetry">
 				<column length="10"/>
 			</basic>
+			<!--
+			Note there's an overall limit per *table* of 65535 for the size of all varchars. Beyond that
+			varchars must be converted to text -->
 			<basic name="composition">
 			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
-			     very long list of chains in their assemblies, we need text here -->
-				<column length="20000" />
+			     very long list of chains in their assemblies -->
+				<column length="15000" />
 			</basic>
 			<basic name="compositionRepChainIds">
-				<column length="20000" />
+				<column length="15000" />
 			</basic>
 			<basic name="stoichiometry">
-				<column length="20000" />
+				<!-- Some large structures, specially viral capsid proteins with NCS operators can have
+     			very long list of chains in their assemblies -->
+				<column length="15000" />
 			</basic>
 			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
-			     very long list of chains in their assemblies, we need text here -->
+			     very long list of chains in their assemblies -->
 			<basic name="chainIds">
-				<column length="20000" />
+				<column length="15000" />
 			</basic>
 						
 			<many-to-one name="assembly">
