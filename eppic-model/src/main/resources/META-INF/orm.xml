@@ -234,6 +234,7 @@
 				<column length="20000" />
 			</basic>
 			<basic name="stoichiometry">
+				<column length="20000" />
 			</basic>
 			<!-- Some large structures, specially viral capsid proteins with NCS operators can have
 			     very long list of chains in their assemblies, we need text here -->
