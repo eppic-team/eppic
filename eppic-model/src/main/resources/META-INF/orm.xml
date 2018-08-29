@@ -741,7 +741,7 @@
 				<generated-value strategy="IDENTITY" />
 			</id>
 			<basic name="text">
-				<column length="10000" />
+				<column length="15000" />
 			</basic>
 
 			<many-to-one name="interfaceItem">
