@@ -2,11 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.jmol.generators;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
 import org.slf4j.Logger;
@@ -138,7 +134,7 @@ public class JmolPageGenerator
 				// in ngl insertion codes are specified with a "^", see https://github.com/arose/ngl/issues/19
 				pdbResNum = pdbResNum.substring(0, pdbResNum.length()-1) + "^" + pdbResNum.charAt(pdbResNum.length()-1); 
 			}
-			sb.append(pdbResNum+":"+chain);
+			sb.append(pdbResNum).append(":").append(chain);
 			
 		}
 		return sb.toString();
@@ -227,10 +223,28 @@ public class JmolPageGenerator
 			}
 		} 
 		// else it stays empty and then the array var is empty
+
+        // Due to a limitation in NGL (all versions up to at least v2.0.0-dev.33), NGL will only read the
+        // first 4 chars of the chain id. Here we have truncate to 4 chars so that the selection commands work.
+        // Things will still be broken, but less.
+        // The chain ids > 4 chars happen a lot in virus capsid entries with NCS ops, e.g. A8n_4, without this
+        // patch they would not show well in the ngl applet
+        List<String> chainsForNgl = new ArrayList<>();
+        int countTruncated = 0;
+        for (String chainId : chains) {
+            if (chainId.length() > 4) {
+                chainsForNgl.add(chainId.substring(0, 4));
+                countTruncated ++;
+            } else {
+                chainsForNgl.add(chainId);
+            }
+        }
+        if (countTruncated>0)
+            logger.warn("Needed to truncate {} chain ids with length over 4 chars for NGL selections compatibility.", countTruncated);
 		
 		// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
 		return 
-				"var chains     = " + toJsArray(chains) + ";\n" +
+				"var chains     = " + toJsArray(chainsForNgl) + ";\n" +
 				"var colors     = " + toJsArray(getColorsForChains(chains)) + ";\n" +
 				coreRimSelectionVarsStr;
 
@@ -251,7 +265,7 @@ public class JmolPageGenerator
 		sb.append("[");
 		for (int i = 0; i<list.size(); i++) {		
 			if (i!=0) sb.append(", ");
-			sb.append("\""+list.get(i)+"\"");
+			sb.append("\"").append(list.get(i)).append("\"");
 		}
 		sb.append("]");
 		return sb.toString();

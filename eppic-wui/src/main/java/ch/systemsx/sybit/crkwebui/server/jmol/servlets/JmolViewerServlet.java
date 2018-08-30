@@ -100,7 +100,7 @@ public class JmolViewerServlet extends BaseServlet
 			logger.warn("The URL for NGL js is not set in property 'urlNglJs' in config file! NGL won't work.");
 		}
 		
-		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, size={}",jobId,input,interfaceId,size);
+		logger.info("Requested 3D viewer page for jobId={}, input={}, interfaceId={}, assemblyId={}, size={}",jobId,input,interfaceId,assemblyId,size);
 
 		try( PrintWriter outputStream = new PrintWriter(response.getOutputStream());)
 		{
