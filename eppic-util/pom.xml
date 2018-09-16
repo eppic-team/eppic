@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>eppic</artifactId>
+        <groupId>org.eppic-web</groupId>
+        <version>3.1.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>eppic-util</artifactId>
+
+	<repositories>
+		<!-- for uniprot japi -->
+		<repository>
+			<id>ebi-repo</id>
+			<name>ebi-repo</name>
+			<url>http://www.ebi.ac.uk/~maven/m2repo</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+	
+		<dependency>
+			<groupId>org.biojava</groupId>
+			<artifactId>biojava-structure</artifactId>
+			<version>${biojava.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math</artifactId>
+			<version>2.2</version>
+		</dependency>
+		
+		<!-- logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<!-- binding for log4j 2 -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${log4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<!-- Log4j API and Core implementation required for binding -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>gnu.getopt</groupId>
+			<artifactId>java-getopt</artifactId>
+			<version>1.0.13</version>
+		</dependency>
+
+		<!-- uniprot -->
+		<dependency>
+			<groupId>uk.ac.ebi.uniprot</groupId>
+			<artifactId>japi</artifactId>
+			<version>1.0.22</version>
+			<exclusions>
+				<!-- This should fix the problem of multiple bindings (warning at startup). But it doesn't because something
+                in the UniProt japi calls a logback function at runtime and then the JVM crashes with a NoClassDefFoundError.
+                I've submitted a bug report to the UniProt people - JD 2016-09-23 -->
+				<!--
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-classic</artifactId>
+                    </exclusion>
+                -->
+			</exclusions>
+		</dependency>
+		
+		<!-- testing deps -->
+		<!-- junit -->
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
