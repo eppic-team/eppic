@@ -960,4 +960,39 @@
 		</attributes>
 	</entity>
 
+	<entity class="eppic.model.db.HitHspDB" name="HitHsp">
+		<table name="HitHsp" />
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="db">
+			</basic>
+			<basic name="queryId">
+			</basic>
+			<basic name="subjectId">
+			</basic>
+			<basic name="percentIdentity">
+			</basic>
+			<basic name="aliLength">
+			</basic>
+			<basic name="numMismatches">
+			</basic>
+			<basic name="numGapOpenings">
+			</basic>
+			<basic name="queryStart">
+			</basic>
+			<basic name="queryEnd">
+			</basic>
+			<basic name="subjectStart">
+			</basic>
+			<basic name="subjectEnd">
+			</basic>
+			<basic name="eValue">
+			</basic>
+			<basic name="bitScore">
+			</basic>
+		</attributes>
+	</entity>
+
 </entity-mappings>
