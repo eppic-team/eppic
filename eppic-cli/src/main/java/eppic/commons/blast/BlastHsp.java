@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import eppic.commons.sequence.AlignmentConstructionException;
 import eppic.commons.sequence.MultipleSequenceAlignment;
+import eppic.model.db.HitHspDB;
 
 
 public class BlastHsp implements Serializable {
@@ -298,5 +299,29 @@ public class BlastHsp implements Serializable {
 				parent.getQueryId(),parent.getSubjectId(),
 				getPercentIdentity(),aliLength,aliLength-getIdentities(),0,queryStart,queryEnd,subjectStart,subjectEnd,eValue,score);
 	}
+
+	public HitHspDB toDbModel() {
+		HitHspDB hitHspDB = new HitHspDB();
+
+		hitHspDB.setDb(null); // TODO where do we get the db from?
+		hitHspDB.setQueryId(this.parent.getQueryId());
+		hitHspDB.setSubjectId(this.parent.getSubjectId());
+		hitHspDB.setPercentIdentity(getPercentIdentity()/100.0);
+		hitHspDB.setAliLength(this.aliLength);
+		// missing for now: numMismatches, numGapOpenings
+		hitHspDB.setQueryStart(this.queryStart);
+		hitHspDB.setQueryEnd(this.queryEnd);
+		hitHspDB.setSubjectStart(this.subjectStart);
+		hitHspDB.setSubjectEnd(this.subjectEnd);
+		hitHspDB.seteValue(this.eValue);
+		hitHspDB.setBitScore((int)this.score); // TODO check if score in this class can be converted to int
+
+		return hitHspDB;
+	}
+
+//	public static BlastHsp createFromDbModel(HitHspDB hitHspDB) {
+//
+//
+//	}
 	
 }

@@ -961,7 +961,10 @@
 	</entity>
 
 	<entity class="eppic.model.db.HitHspDB" name="HitHsp">
-		<table name="HitHsp" />
+		<table name="HitHsp">
+			<!-- All requests will be via queryId, so this is important -->
+			<index name="queryId_idx" column-list="queryId" unique="false"/>
+		</table>
 		<attributes>
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />

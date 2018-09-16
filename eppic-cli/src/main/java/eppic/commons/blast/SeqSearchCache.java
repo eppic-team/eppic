@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import java.util.Map;
  * The sequence search cache with a list of hits per query (for all queries).
  *
  * @author Jose Duarte
- * @since 3.1.1
+ * @since 3.2.0
  */
 public class SeqSearchCache {
 
@@ -132,5 +133,9 @@ public class SeqSearchCache {
      */
     public BlastHitList getHitsForQuery(String queryId) {
         return queriesToHitList.get(queryId);
+    }
+
+    public Collection<BlastHitList> getAllHitLists() {
+        return queriesToHitList.values();
     }
 }
