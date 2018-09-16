@@ -19,11 +19,10 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- some other things are needed from eppic-cli package (including some 
-			of biojava) -->
+		<!-- util package for some utilities and biojava -->
 		<dependency>
 			<groupId>org.eppic-web</groupId>
-			<artifactId>eppic-cli</artifactId>
+			<artifactId>eppic-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

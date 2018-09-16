@@ -1,6 +1,5 @@
 package eppic.db.adaptors;
 
-import eppic.assembly.LatticeGraph3D;
 import eppic.model.dto.Assembly;
 import eppic.model.dto.GraphEdge;
 import eppic.model.dto.GraphNode;
@@ -17,6 +16,11 @@ import java.util.*;
  * @since 3.1.0
  */
 public class ViewsAdaptor {
+	
+	/**
+	 * Same as in LatticeGraph3D
+	 */
+	public static final double defaultInterfaceRadius = 2.5;
 
     /**
      * Convert Assembly/GraphEdge dto objects into a LatticeGraph dto view object.
@@ -105,7 +109,7 @@ public class ViewsAdaptor {
             circle.setCenter(new Point3D(center.x, center.y, center.z));
             // perpendicular is simply a point on the perpendicular to the circle, e.g the source of the edge
             circle.setPerpendicular(new Point3D(start.x, start.y, start.z));
-            circle.setRadius(LatticeGraph3D.defaultInterfaceRadius);
+            circle.setRadius(defaultInterfaceRadius);
             circles.add(circle);
             lgEdge.setCircles(circles);
 

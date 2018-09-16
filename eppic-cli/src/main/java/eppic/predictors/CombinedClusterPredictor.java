@@ -2,7 +2,7 @@ package eppic.predictors;
 
 import java.util.List;
 
-import eppic.CallType;
+import eppic.commons.util.CallType;
 
 public class CombinedClusterPredictor implements InterfaceTypePredictor {
 

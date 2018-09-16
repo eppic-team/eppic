@@ -1,4 +1,4 @@
-package eppic;
+package eppic.commons.util;
 
 import java.io.Serializable;
 

@@ -7,10 +7,10 @@ import org.biojava.nbio.structure.contact.AtomContact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.CallType;
 import eppic.DataModelAdaptor;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
+import eppic.commons.util.CallType;
 
 /**
  * The CombinedPredictor takes as input all other predictors (scores) and

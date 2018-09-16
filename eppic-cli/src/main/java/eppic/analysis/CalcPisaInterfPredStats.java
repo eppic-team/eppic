@@ -9,13 +9,13 @@ import java.util.TreeMap;
 
 import org.xml.sax.SAXException;
 
-import eppic.CallType;
 import eppic.ScoringType;
 import eppic.commons.pisa.OligomericPrediction;
 import eppic.commons.pisa.PisaAsmSetList;
 import eppic.commons.pisa.PisaAssembliesXMLParser;
 import eppic.commons.pisa.PisaConnection;
 import eppic.commons.pisa.PisaInterfaceList;
+import eppic.commons.util.CallType;
 import gnu.getopt.Getopt;
 
 
