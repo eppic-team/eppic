@@ -5,9 +5,12 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
+import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
+import eppic.db.jpautils.DbConfigGenerator;
 import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.EntityType;
 import org.biojava.nbio.structure.Structure;
@@ -246,6 +249,15 @@ public class ChainEvolContextList implements Serializable {
 	private void blastForHomologs(EppicParams params) throws EppicException {
 		params.getProgressLog().println("Blasting for homologs");
 		params.getProgressLog().print("chains: ");
+
+		// init jpa db connection so that querying cache works in chainEvCont.blastForHomologs(params)
+		try {
+			Map<String, String> props = DbConfigGenerator.createDatabaseProperties(params.getDbConfigFile());
+			EntityManagerHandler.initFactory(props);
+		} catch (IOException e) {
+			throw new EppicException(e, "Could not init db config from file " + params.getDbConfigFile() + ": " +e.getMessage(), true);
+		}
+
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence

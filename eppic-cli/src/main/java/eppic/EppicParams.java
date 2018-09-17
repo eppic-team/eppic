@@ -288,6 +288,8 @@ public class EppicParams {
 	private PrintStream progressLog;
 	
 	private File configFile;
+
+	private File dbConfigFile;
 	
 	private boolean debug;
 	
@@ -401,7 +403,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:G:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -482,6 +484,9 @@ public class EppicParams {
 			case 'g':
 				configFile = new File(g.getOptarg());
 				break;
+			case 'G':
+				dbConfigFile = new File(g.getOptarg());
+				break;
 			case 'u':
 				debug = true;
 				break;
@@ -558,6 +563,7 @@ public class EppicParams {
 		"                  from SIFTS only, b) only blast cache files are used.\n"+
 		"                  Useful for precomputation from scratch to avoid the dependency on\n"+
 		"                  blast index files.\n"+
+		"  [-G <file>]  :  config file for JPA db connection, needed to query the sequence search cache\n"+
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
 		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +
@@ -602,7 +608,14 @@ public class EppicParams {
 		if (configFile!=null && !configFile.exists()) {
 			throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
 		}
-		
+
+		if (dbConfigFile!=null && !dbConfigFile.exists()) {
+			throw new EppicException(null, "Specified config file "+dbConfigFile+" doesn't exist",true);
+		}
+
+		if (noBlast && dbConfigFile == null) {
+			throw new EppicException(null, "The no-blast mode (-B) requires using a db config file to query sequence search cache (-G)", true);
+		}
 	
 		if (homologsSearchMode==null) {
 			// invalid string passed as homologs search mode
@@ -923,6 +936,10 @@ public class EppicParams {
 	
 	public File getConfigFile() {
 		return configFile;
+	}
+
+	public File getDbConfigFile() {
+		return dbConfigFile;
 	}
 	
 	public boolean getDebug() {
