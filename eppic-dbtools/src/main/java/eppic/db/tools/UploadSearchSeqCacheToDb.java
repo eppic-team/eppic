@@ -91,11 +91,14 @@ public class UploadSearchSeqCacheToDb {
 
         HitHspDAO hitHspDAO = new HitHspDAOJpa();
 
+        long start = System.currentTimeMillis();
 
         try (BufferedReader br = new BufferedReader(new FileReader(blastTabFile));) {
 
             String line;
             int lineNum = 0;
+            int cantParse = 0;
+            int cantPersist = 0;
             while ((line = br.readLine()) != null) {
                 lineNum++;
                 if (line.isEmpty()) continue;
@@ -139,13 +142,29 @@ public class UploadSearchSeqCacheToDb {
 
                     } catch (DaoException e) {
                         logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", queryId, subjectId, e.getMessage());
+                        cantPersist++;
                     }
 
                 } catch (NumberFormatException e) {
                     logger.warn("Wrong number format for line {} of file {}. Query id is {}. Will ignore line. Error: {}", lineNum, blastTabFile, queryId, e.getMessage());
+                    cantParse++;
+                }
+
+                if (lineNum % 10000 == 0) {
+                    logger.info("Done processing {} lines", lineNum);
                 }
             }
+
+            long end = System.currentTimeMillis();
+
+            logger.info("Processed a total of {} lines in file {}. Time taken: {} s", lineNum, blastTabFile, (end-start)/1000.0);
+
+            if (cantParse!=0 || cantPersist!=0) {
+                logger.info("Could not parse {} lines and could not persist {} lines", cantParse, cantPersist);
+            }
         }
+
+
 
     }
 
