@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -75,11 +77,21 @@ public class UploadSearchSeqCacheToDb {
             System.exit(1);
         }
 
+        String db = null;
+        String fileName = blastTabFile.getName();
+        // e.g. pdbAll_UniRef90_2018_09.m8
+        Pattern p = Pattern.compile("^.*_(UniRef\\d+_\\d\\d\\d\\d_\\d\\d)\\.m8$");
+        Matcher m = p.matcher(fileName);
+        if (m.matches()) {
+            db = m.group(1);
+            logger.info("UniRef version parsed from file name is {}", db);
+        } else {
+            logger.warn("Could not parse UniRef version from file name {}. UniRef version won't be available in db. ", fileName);
+        }
 
         initJpaConnection(configFile);
 
         SeqSearchCache seqSearchCache = new SeqSearchCache();
-        seqSearchCache.setDb(null); // TODO set db
         seqSearchCache.initCache(blastTabFile);
 
         HitHspDAO hitHspDAO = new HitHspDAOJpa();
@@ -90,19 +102,19 @@ public class UploadSearchSeqCacheToDb {
                 for (BlastHsp hsp : hit) {
                     try {
                         hitHspDAO.insertHitHsp(
-                                null, // TODO where do we get the db from?
+                                db,
                                 hsp.getParent().getQueryId(),
                                 hsp.getParent().getSubjectId(),
                                 hsp.getPercentIdentity()/100.0,
                                 hsp.getAliLength(),
-                                0, // TODO missing for now these 2 fields
-                                0,
+                                -1, // TODO missing for now these 2 fields
+                                -1,
                                 hsp.getQueryStart(),
                                 hsp.getQueryEnd(),
                                 hsp.getSubjectStart(),
                                 hsp.getSubjectEnd(),
                                 hsp.getEValue(),
-                                (int)hsp.getScore() // TODO check if score in this class can be converted to int
+                                (int)hsp.getScore() // TODO check if score in BlastHsp can be converted to int
 
                         );
 
