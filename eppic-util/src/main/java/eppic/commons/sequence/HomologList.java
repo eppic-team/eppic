@@ -133,83 +133,54 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * @param blastDbDir
 	 * @param blastDb
 	 * @param blastNumThreads
-	 * @param cacheFile a file with the cached gzipped xml blast output file, if null blast will be always run
-	 * @param noBlast whether the "no blast" mode is enabled: if true no blast is performed at all, if false blast 
+	 * @param cachedHitList a BlastHitList coming from a cache of precomputed sequence search run
+	 * @param noBlast whether the "no blast" mode is enabled: if true no blast is performed at all, if false blast
 	 * is attempted if needed
 	 * @throws IOException
 	 * @throws BlastException
 	 * @throws InterruptedException
 	 */
-	public void searchWithBlast(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, int maxNumSeqs, File cacheFile, boolean noBlast) 
+	public void searchWithBlast(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, int maxNumSeqs, BlastHitList cachedHitList, boolean noBlast)
 			throws IOException, BlastException, InterruptedException {
-		
-		File outBlast = null;
-		boolean fromCache = false;
+
 		BlastHitList blastList = null;
 		
 		this.uniprotVer = readUniprotVer(blastDbDir);
-		
-		// note we also check for size in case empty cache files are around (can happen often because
-		// of the way we create the files from blast redirecting to stdout)
-		if (cacheFile!=null && cacheFile.exists() && cacheFile.length()>0L) {
 
-			outBlast = cacheFile;
-			fromCache = true;
-			LOGGER.info("Reading blast results from cache file "+cacheFile);
+		if (cachedHitList!=null) {
 
-			try {
-				// note that by setting second parameter to true we are ignoring the DTD url to avoid unnecessary network connections
-				BlastXMLParser blastParser = new BlastXMLParser(outBlast, true);
-				blastList = blastParser.getHits();
-				
-				// 500 is blast's default, we don't want to check this if we are under default
-				if (maxNumSeqs>BlastRunner.BLAST_DEFAULT_MAX_HITS && blastList.size()<maxNumSeqs) { 
-					// we are asking for more max hits than present in the file, we have to blast again
-					LOGGER.info("Blast cache file exits ("+cacheFile+") but it contains only "+blastList.size()+" hits. Need to re-blast as a max of "+maxNumSeqs+" hits have been requested");
-					fromCache = false;
-					blastList = null;
-				} else {
-					// if we do take the cache file we have to do some sanity checks
-					String blastqueryid = blastList.getQueryId();
-					blastqueryid = blastqueryid.replaceAll("_.*", "");
-					if (!blastqueryid.equals(this.ref.getUniId())) {
-						throw new IOException("Query id "+blastqueryid+" from cache file "+cacheFile+
-								" does not match the id from the sequence: "+this.ref.getUniId());
-					}
-					String uniprotVerFromCache = readUniprotVer(cacheFile.getParent());
-					if (!uniprotVerFromCache.equals(uniprotVer)) {						
-						LOGGER.warn("Uniprot version from blast db dir "+blastDbDir+
-								" ("+uniprotVer+") does not match version in cache dir "+cacheFile.getParent()+" ("+uniprotVerFromCache+")");
-					}
-					if (!blastList.getDb().substring(blastList.getDb().lastIndexOf("/")+1).equals(blastDb)) {
-						LOGGER.error("Blast db used in cache file ("+cacheFile+") different from one requested "+blastDb);
-						LOGGER.error("Please check the blast cache directory.");
-						System.exit(1);
-					}
-				}
-			} catch (SAXException e) {
-				// The file is there and can be read, but somehow corrupted or incomplete.
-				if (noBlast) {
-					throw new IOException("Cache file "+cacheFile+" does not comply with blast XML format. Error: "+
-							e.getMessage()+ ". Will not try blasting because the \"no blast\" mode (-B option) was specified.");
-				} else {
-					// Let's issue a warning and consider there was no file so that we go and blast again
-					// so that the file will eventually get overwritten and the error corrected
-					LOGGER.warn("Cache file "+cacheFile+" does not comply with blast XML format. "
-							+ "Error: "+e.getMessage()+". Will ignore file and try blasting.");
-					fromCache = false;
-				}
-				
+			LOGGER.info("Using sequence search results from cache.");
+
+			blastList = cachedHitList;
+
+			// if we do take the cache, we have to do some sanity checks
+			String blastqueryid = blastList.getQueryId();
+			blastqueryid = blastqueryid.replaceAll("_.*", "");
+			if (!blastqueryid.equals(this.ref.getUniId())) {
+				throw new IOException("Query id " + blastqueryid + " from cache " +
+						" does not match the id from the sequence: " + this.ref.getUniId());
 			}
+			String uniprotVerFromCache = blastList.getDb();
+			if (!uniprotVerFromCache.equals(uniprotVer)) {
+				LOGGER.warn("Uniprot version from blast db dir " + blastDbDir +
+						" (" + uniprotVer + ") does not match version in cache (" + uniprotVerFromCache + ")");
+			}
+			if (!blastList.getDb().substring(blastList.getDb().lastIndexOf("/") + 1).equals(blastDb)) {
+				LOGGER.error("Blast db used in cache '{}' different from one requested '{}'", blastList.getDb(), blastDb);
+				LOGGER.error("Please check the blast cache directory.");
+				throw new RuntimeException("Blast db used in cache different from one requested " + blastDb);
+			}
+
+
+		} else if (noBlast) {
+				throw new IOException("The \"no blast\" mode was specified (-B option) and entry does not exist in blast cache ");
+
 		} else {
-			if (noBlast) {
-				throw new IOException("The \"no blast\" mode was specified (-B option) and blast cache file " +
-						cacheFile + " does not exist or is empty.");
-			}
-		}
-		
-		if (!fromCache) {
-			outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
+
+			// perform the sequence search
+			// TODO rewrite by running mmseqs or calling the mmseqs search microservice
+
+			File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
 			File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
 			// NOTE: we blast the reference uniprot sequence using only the interval specified
 			this.ref.getSeq().getInterval(this.refInterval).writeToFastaFile(inputSeqFile);
@@ -226,15 +197,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			LOGGER.info("Run blast: "+blastRunner.getLastBlastCommand());
 			
 			LOGGER.info("Blasted against "+blastDbDir+"/"+blastDb);
-			if (cacheFile!=null) {
-				try {
-					LOGGER.info("Writing blast cache file "+cacheFile);
-					Goodies.gzipFile(outBlast, cacheFile);
-					cacheFile.setWritable(true, false);
-				} catch (IOException e) {
-					LOGGER.warn("Couldn't write the blast cache file "+cacheFile+". Error: "+e.getMessage());
-				}
-			} 
+
 			try {
 				// note that by setting second parameter to true we are ignoring the DTD url to avoid unnecessary network connections
 				BlastXMLParser blastParser = new BlastXMLParser(outBlast, true);
@@ -245,8 +208,12 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 				System.exit(1);
 			}
 		}
-		
-		this.list = new ArrayList<Homolog>();
+
+		if (blastList.size()==0) {
+			LOGGER.warn("The size of the sequence search hit list is 0 for {}.", this.ref.getUniId());
+		}
+
+		this.list = new ArrayList<>();
 		for (BlastHit hit:blastList) {
 			for (BlastHsp hsp:hit) {
 				String sid = hit.getSubjectId();
@@ -766,7 +733,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * from the chosen list of clusters one representative is chosen from each cluster and the other
 	 * cluster members discarded.
 	 * @param maxDesiredHomologs
-	 * @param blastBinDir
+	 * @param blastclustBin
 	 * @param blastDataDir
 	 * @param blastNumThreads
 	 * @throws IOException 
@@ -918,7 +885,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	
 	/**
 	 * Returns the percent clustering identity that was used for redundancy reduction 
-	 * procedure, see {@link #reduceRedundancy(int, String, String, int, int, boolean)}
+	 * procedure, see {@link #reduceRedundancy(int, File, String, int)}
 	 * @return
 	 */
 	public int getUsedClusteringPercentId() {

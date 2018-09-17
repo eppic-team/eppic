@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import eppic.db.dao.DaoException;
+import eppic.db.dao.HitHspDAO;
+import eppic.db.dao.jpa.HitHspDAOJpa;
+import eppic.model.dto.HitHsp;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
@@ -508,7 +512,7 @@ public class ChainEvolContext implements Serializable {
 	
 	
 	public void blastForHomologs(EppicParams params) 
-			throws IOException, BlastException, InterruptedException {
+			throws IOException, BlastException, InterruptedException, DaoException {
 		
 		
 		File blastPlusBlastp = params.getBlastpBin();
@@ -541,14 +545,11 @@ public class ChainEvolContext implements Serializable {
 		if (useUniparc) LOGGER.info("UniParc hits will be used");
 		else LOGGER.info("UniParc hits won't be used");
 		homologs.setUseUniparc(useUniparc);
-		
-		File blastCacheFile = null;
-		if (params.getBlastCacheDir()!=null) {
-			blastCacheFile = new File(params.getBlastCacheDir(),getQuery().getUniId()+
-					"."+queryInterv.beg+"-"+queryInterv.end+EppicParams.BLAST_CACHE_FILE_SUFFIX);
-		}
-		
-		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, blastCacheFile, params.isNoBlast());
+
+		String queryId = getQuery().getUniId()+ "." + queryInterv.beg + "-" + queryInterv.end;
+		BlastHitList cachedHitList = getCachedHspsForQuery(queryId);
+
+		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, cachedHitList, params.isNoBlast());
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast (chain "+getRepresentativeChainCode()+")");
 		
 		if (homologs.getSizeFullList()>0) {
@@ -680,7 +681,7 @@ public class ChainEvolContext implements Serializable {
 	
 	/**
 	 * Compute the sequence entropies for all reference sequence (uniprot) positions
-	 * @param reducedAlphabet
+	 * @param alphabet
 	 */
 	public void computeEntropies(AAAlphabet alphabet) {
 		homologs.computeEntropies(alphabet);
@@ -920,7 +921,7 @@ public class ChainEvolContext implements Serializable {
 	
 	/**
 	 * Whether the search for homologs is based on full Uniprot or on a sub-interval, 
-	 * get the interval with {@link #getQueryInterval()} 
+	 * get the interval with {@link PdbToUniProtMapper#getHomologsSearchInterval(HomologsSearchMode)}
 	 * @return
 	 */
 	public boolean isSearchWithFullUniprot() {
@@ -928,7 +929,7 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Returns the actual identity cut-off applied after calling {@link #applyIdentityCutoff(double, double, double, double, int)}
+	 * Returns the actual identity cut-off applied after calling {@link #applyIdentityCutoff(EppicParams)}
 	 * @return
 	 */
 	public double getIdCutoff() {
@@ -958,8 +959,56 @@ public class ChainEvolContext implements Serializable {
 	public HomologList getHomologs() {
 		return homologs;
 	}
-	
 
+	/**
+	 * Retrieve the BlastHitList from the sequence search cache in db.
+	 * @param queryId the query id e.g. P29476_294-340
+	 * @return
+	 * @throws DaoException if something goes wrong when getting data from db
+	 * @since 3.2.0
+	 */
+	private static BlastHitList getCachedHspsForQuery(String queryId) throws DaoException {
+		HitHspDAO dao = new HitHspDAOJpa();
+
+		List<HitHsp> hitHsps = dao.getHitHspsForQueryId(queryId);
+
+		BlastHitList hitList = new BlastHitList();
+
+		int i = 0;
+		for (HitHsp hsp : hitHsps) {
+
+			if (i==0) hitList.setDb(hsp.getDb());
+
+			BlastHit hit;
+			if (hitList.contains(hsp.getSubjectId())) {
+				hit = hitList.getHit(hsp.getSubjectId());
+			} else {
+				hit = new BlastHit();
+				hit.setQueryId(queryId);
+				hit.setSubjectId(hsp.getSubjectId());
+				// TODO review if query/subject length needed, also subject def
+
+				hitList.add(hit);
+			}
+
+			BlastHsp blastHsp = new BlastHsp(hit);
+			blastHsp.setAliLength(hsp.getAliLength());
+			blastHsp.setEValue(hsp.geteValue());
+			blastHsp.setQueryStart(hsp.getQueryStart());
+			blastHsp.setQueryEnd(hsp.getQueryEnd());
+			blastHsp.setSubjectStart(hsp.getSubjectStart());
+			blastHsp.setSubjectEnd(hsp.getSubjectEnd());
+			blastHsp.setScore(hsp.getBitScore());
+			// TODO check if this is right
+			blastHsp.setIdentities((int)(hsp.getPercentIdentity()*hsp.getAliLength()));
+
+			hit.addHsp(blastHsp);
+
+			i++;
+		}
+
+		return hitList;
+	}
 	
 
 	

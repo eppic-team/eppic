@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
+import eppic.db.dao.DaoException;
 import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.EntityType;
 import org.biojava.nbio.structure.Structure;
@@ -257,8 +258,8 @@ public class ChainEvolContextList implements Serializable {
 
 			} catch (BlastException e) {
 				throw new EppicException(e,"Couldn't run blast to retrieve homologs: "+e.getMessage() ,true);
-			} catch (IOException e) {
-				throw new EppicException(e,"Problem while blasting for sequence homologs: "+e.getMessage(),true);
+			} catch (IOException|DaoException e) {
+				throw new EppicException(e,"Problem while performing sequence search for sequence homologs: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
 				throw new EppicException(e,"Thread interrupted while blasting for sequence homologs: "+e.getMessage(),true);
 			}
