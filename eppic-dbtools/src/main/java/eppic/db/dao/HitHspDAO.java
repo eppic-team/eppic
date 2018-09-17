@@ -1,12 +1,25 @@
 package eppic.db.dao;
 
-import eppic.model.db.HitHspDB;
+import eppic.model.dto.HitHsp;
 
 import java.util.List;
 
 public interface HitHspDAO {
 
-    void insertHitHsp(HitHspDB hitHspDB) throws DaoException;
+    void insertHitHsp(
+            String db,
+            String queryId,
+            String subjectId,
+            double percentIdentity,
+            int aliLength,
+            int numMismatches,
+            int numGapOpenings,
+            int queryStart,
+            int queryEnd,
+            int subjectStart,
+            int subjectEnd,
+            double eValue,
+            int bitScore) throws DaoException;
 
-    List<HitHspDB> getHitHspsForQueryId(String queryId) throws DaoException;
+    List<HitHsp> getHitHspsForQueryId(String queryId) throws DaoException;
 }

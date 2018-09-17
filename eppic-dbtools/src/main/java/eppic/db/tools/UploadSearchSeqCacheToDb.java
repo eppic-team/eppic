@@ -9,7 +9,6 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.db.dao.jpa.HitHspDAOJpa;
 import eppic.db.jpautils.DbConfigGenerator;
-import eppic.model.db.HitHspDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,9 +89,23 @@ public class UploadSearchSeqCacheToDb {
             for (BlastHit hit : hitList.getHits()) {
                 for (BlastHsp hsp : hit) {
                     try {
-                    	// TODO convert from BlastHsp to HitHspDB
-                    	HitHspDB hitHspDb = null;
-                        hitHspDAO.insertHitHsp(hitHspDb);
+                        hitHspDAO.insertHitHsp(
+                                null, // TODO where do we get the db from?
+                                hsp.getParent().getQueryId(),
+                                hsp.getParent().getSubjectId(),
+                                hsp.getPercentIdentity()/100.0,
+                                hsp.getAliLength(),
+                                0, // TODO missing for now these 2 fields
+                                0,
+                                hsp.getQueryStart(),
+                                hsp.getQueryEnd(),
+                                hsp.getSubjectStart(),
+                                hsp.getSubjectEnd(),
+                                hsp.getEValue(),
+                                (int)hsp.getScore() // TODO check if score in this class can be converted to int
+
+                        );
+
                     } catch (DaoException e) {
                         logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", hit.getQueryId(), hit.getSubjectId(), e.getMessage());
                     }

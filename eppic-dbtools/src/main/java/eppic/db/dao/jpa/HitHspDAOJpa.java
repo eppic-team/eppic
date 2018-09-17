@@ -5,20 +5,49 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.model.db.HitHspDB;
 import eppic.model.db.HitHspDB_;
+import eppic.model.dto.HitHsp;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HitHspDAOJpa implements HitHspDAO {
 
     @Override
-    public void insertHitHsp(HitHspDB hitHspDB) throws DaoException {
+    public void insertHitHsp(String db,
+                             String queryId,
+                             String subjectId,
+                             double percentIdentity,
+                             int aliLength,
+                             int numMismatches,
+                             int numGapOpenings,
+                             int queryStart,
+                             int queryEnd,
+                             int subjectStart,
+                             int subjectEnd,
+                             double eValue,
+                             int bitScore) throws DaoException {
 
         EntityManager entityManager = null;
+
+        HitHspDB hitHspDB = new HitHspDB();
+        hitHspDB.setDb(db);
+        hitHspDB.setQueryId(queryId);
+        hitHspDB.setSubjectId(subjectId);
+        hitHspDB.setPercentIdentity(percentIdentity);
+        hitHspDB.setAliLength(aliLength);
+        hitHspDB.setNumMismatches(numMismatches);
+        hitHspDB.setNumGapOpenings(numGapOpenings);
+        hitHspDB.setQueryStart(queryStart);
+        hitHspDB.setQueryEnd(queryEnd);
+        hitHspDB.setSubjectStart(subjectStart);
+        hitHspDB.setSubjectEnd(subjectEnd);
+        hitHspDB.seteValue(eValue);
+        hitHspDB.setBitScore(bitScore);
 
         try {
             entityManager = EntityManagerHandler.getEntityManager();
@@ -40,8 +69,10 @@ public class HitHspDAOJpa implements HitHspDAO {
     }
 
     @Override
-    public List<HitHspDB> getHitHspsForQueryId(String queryId) throws DaoException {
+    public List<HitHsp> getHitHspsForQueryId(String queryId) throws DaoException {
         EntityManager entityManager = null;
+
+        List<HitHsp> hitHsps = new ArrayList<>();
 
         try {
             entityManager = EntityManagerHandler.getEntityManager();
@@ -54,7 +85,11 @@ public class HitHspDAOJpa implements HitHspDAO {
 
             TypedQuery<HitHspDB> query = entityManager.createQuery(criteriaQuery);
 
-            return query.getResultList();
+            for (HitHspDB hitHspDB : query.getResultList()) {
+                hitHsps.add(HitHsp.create(hitHspDB));
+            }
+
+            return hitHsps;
         }
         catch(Throwable e) {
             throw new DaoException(e);
