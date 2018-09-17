@@ -13,6 +13,9 @@ import java.util.Map;
 
 /**
  * The sequence search cache with a list of hits per query (for all queries).
+ * Note for a full cache this requires a lot of memory, so it is not usable in a prod setting,
+ * instead persist to db and get data from there.
+ * See HitHspDAO and UploadSearchSeqCacheToDb
  *
  * @author Jose Duarte
  * @since 3.2.0

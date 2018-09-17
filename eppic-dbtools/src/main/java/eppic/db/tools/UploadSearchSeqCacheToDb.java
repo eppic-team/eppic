@@ -1,9 +1,5 @@
 package eppic.db.tools;
 
-import eppic.commons.blast.BlastHit;
-import eppic.commons.blast.BlastHitList;
-import eppic.commons.blast.BlastHsp;
-import eppic.commons.blast.SeqSearchCache;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
@@ -13,7 +9,9 @@ import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -91,36 +89,60 @@ public class UploadSearchSeqCacheToDb {
 
         initJpaConnection(configFile);
 
-        SeqSearchCache seqSearchCache = new SeqSearchCache();
-        seqSearchCache.initCache(blastTabFile);
-
         HitHspDAO hitHspDAO = new HitHspDAOJpa();
 
-        for (BlastHitList hitList : seqSearchCache.getAllHitLists()) {
 
-            for (BlastHit hit : hitList.getHits()) {
-                for (BlastHsp hsp : hit) {
+        try (BufferedReader br = new BufferedReader(new FileReader(blastTabFile));) {
+
+            String line;
+            int lineNum = 0;
+            while ((line = br.readLine()) != null) {
+                lineNum++;
+                if (line.isEmpty()) continue;
+                String[] tokens = line.split("\t");
+                if (tokens.length != 12) {
+                    logger.warn("Line {} of file {} does not have 12 fields. Ignoring line.", lineNum, blastTabFile);
+                    continue;
+                }
+                // qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
+
+                String queryId = tokens[0];
+                String subjectId = tokens[1];
+                try {
+                    double identity = Double.parseDouble(tokens[2]);
+                    int length = Integer.parseInt(tokens[3]);
+                    int mismatches = Integer.parseInt(tokens[4]);
+                    int gapOpenings = Integer.parseInt(tokens[5]);
+                    int qStart = Integer.parseInt(tokens[6]);
+                    int qEnd = Integer.parseInt(tokens[7]);
+                    int sStart = Integer.parseInt(tokens[8]);
+                    int sEnd = Integer.parseInt(tokens[9]);
+                    double eValue = Double.parseDouble(tokens[10]);
+                    int bitScore = Integer.parseInt(tokens[11]);
+
                     try {
                         hitHspDAO.insertHitHsp(
                                 db,
-                                hsp.getParent().getQueryId(),
-                                hsp.getParent().getSubjectId(),
-                                hsp.getPercentIdentity()/100.0,
-                                hsp.getAliLength(),
-                                -1, // TODO missing for now these 2 fields
-                                -1,
-                                hsp.getQueryStart(),
-                                hsp.getQueryEnd(),
-                                hsp.getSubjectStart(),
-                                hsp.getSubjectEnd(),
-                                hsp.getEValue(),
-                                (int)hsp.getScore() // TODO check if score in BlastHsp can be converted to int
-
+                                queryId,
+                                subjectId,
+                                identity,
+                                length,
+                                mismatches,
+                                gapOpenings,
+                                qStart,
+                                qEnd,
+                                sStart,
+                                sEnd,
+                                eValue,
+                                bitScore
                         );
 
                     } catch (DaoException e) {
-                        logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", hit.getQueryId(), hit.getSubjectId(), e.getMessage());
+                        logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", queryId, subjectId, e.getMessage());
                     }
+
+                } catch (NumberFormatException e) {
+                    logger.warn("Wrong number format for line {} of file {}. Query id is {}. Will ignore line. Error: {}", lineNum, blastTabFile, queryId, e.getMessage());
                 }
             }
         }
@@ -131,4 +153,5 @@ public class UploadSearchSeqCacheToDb {
         Map<String,String> props = DbConfigGenerator.createDatabaseProperties(configFile);
         EntityManagerHandler.initFactory(props);
     }
+
 }
