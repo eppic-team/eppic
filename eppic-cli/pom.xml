@@ -57,6 +57,16 @@
 			<artifactId>eppic-util</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
+			<exclusions>
+				<!--
+				This is to exclude the runtime dependency of uniprot japi (via eppic-util)
+				 that produces a "multiple slf4j binding" error. Excluding in pom in eppic-util
+				 does not work because it is required at compile time. Since 3.2.0 - JD 2018-09-16 -->
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
