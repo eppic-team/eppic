@@ -66,6 +66,11 @@
 					<groupId>ch.qos.logback</groupId>
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
+				<!-- This one clashes with a newer jboss from hibernate. Must exclude - JD 2018-09-17 -->
+				<exclusion>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 

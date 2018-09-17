@@ -546,7 +546,7 @@ public class ChainEvolContext implements Serializable {
 		else LOGGER.info("UniParc hits won't be used");
 		homologs.setUseUniparc(useUniparc);
 
-		String queryId = getQuery().getUniId()+ "." + queryInterv.beg + "-" + queryInterv.end;
+		String queryId = getQuery().getUniId() + "_" + queryInterv.beg + "-" + queryInterv.end;
 		BlastHitList cachedHitList = getCachedHspsForQuery(queryId);
 
 		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, cachedHitList, params.isNoBlast());
@@ -977,7 +977,10 @@ public class ChainEvolContext implements Serializable {
 		int i = 0;
 		for (HitHsp hsp : hitHsps) {
 
-			if (i==0) hitList.setDb(hsp.getDb());
+			if (i==0) {
+				hitList.setDb(hsp.getDb());
+				hitList.setQueryId(queryId);
+			}
 
 			BlastHit hit;
 			if (hitList.contains(hsp.getSubjectId())) {

@@ -156,6 +156,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			// if we do take the cache, we have to do some sanity checks
 			String blastqueryid = blastList.getQueryId();
 			blastqueryid = blastqueryid.replaceAll("_.*", "");
+			// TODO check if these checks apply now, if not change them as needed
 			if (!blastqueryid.equals(this.ref.getUniId())) {
 				throw new IOException("Query id " + blastqueryid + " from cache " +
 						" does not match the id from the sequence: " + this.ref.getUniId());
@@ -166,9 +167,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 						" (" + uniprotVer + ") does not match version in cache (" + uniprotVerFromCache + ")");
 			}
 			if (!blastList.getDb().substring(blastList.getDb().lastIndexOf("/") + 1).equals(blastDb)) {
-				LOGGER.error("Blast db used in cache '{}' different from one requested '{}'", blastList.getDb(), blastDb);
-				LOGGER.error("Please check the blast cache directory.");
-				throw new RuntimeException("Blast db used in cache different from one requested " + blastDb);
+				LOGGER.warn("Blast db used in cache '{}' different from one requested '{}'", blastList.getDb(), blastDb);
 			}
 
 
