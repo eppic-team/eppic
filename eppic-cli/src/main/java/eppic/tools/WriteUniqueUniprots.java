@@ -38,24 +38,25 @@ public class WriteUniqueUniprots {
 	 * @throws NoMatchFoundException 
 	 * @throws SQLException 
 	 */
-	public static void main(String[] args) throws IOException, SQLException, NoMatchFoundException {
+	public static void main(String[] args) throws IOException, SQLException {
 		
 		String help =
 				"Usage: WriteUniqueUnirots\n" +
 						"Creates fasta (.fa) files of unique mapings of PDB to Uniprot\n" +
-						" -s <dir>  	: Sifts Connection file path \n" +
-						" -u <dbName>   : Uniprot Database Name \n" +
-						" [-o <dir>] 	: Directory where output files are to be written\n" +
-						" [-g <file>]   : an eppic-cli configuration file with config parameters \n" +
-						"                 for uniprot local db connection. If not provided it will \n" +
-						"                 be read from ~/.eppic.conf \n";
+						" -s <dir>  	  : Sifts Connection file path \n" +
+						" -u <dbName>     : Uniprot Database Name \n" +
+						" [-o <dir/file>] : If directory, sequences are written to individual FASTA \n"+
+						"                   files in the directory.\n" +
+						"                   If file all sequences are written to it as a single FASTA\n"+
+						" [-g <file>]     : an eppic-cli configuration file with config parameters \n" +
+						"                   for uniprot local db connection. If not provided it will \n" +
+						"                   be read from ~/.eppic.conf \n";
 		
 		Getopt g = new Getopt("UploadToDB", args, "s:u:o:g:h?");
 		
 		String scFilePath = null;
 		String uniprotdbName = null;
-		String outdirPath = "";
-		boolean ifOutdir = false;
+		File outPath = null;
 		File configFile = null;
 		
 		int c;
@@ -68,8 +69,7 @@ public class WriteUniqueUniprots {
 				uniprotdbName = g.getOptarg();
 				break;
 			case 'o':
-				ifOutdir = true;
-				outdirPath = g.getOptarg();
+				outPath = new File(g.getOptarg());
 				break;
 			case 'g':
 				configFile = new File(g.getOptarg());
@@ -99,11 +99,9 @@ public class WriteUniqueUniprots {
 			System.err.println(help);
 			System.exit(1);
 		}
-		
-		//Check if outdir if provided really exists
-		if(ifOutdir && !(new File(outdirPath)).isDirectory() ){
-			System.err.println("Hey Jim, Can you check the Output Directory path: " + outdirPath +
-					" I am having trouble in recognizing it!!");
+
+		if (outPath == null) {
+			System.err.println("Output file or dir must be provided with -o");
 			System.err.println(help);
 			System.exit(1);
 		}
@@ -113,61 +111,75 @@ public class WriteUniqueUniprots {
 			configFile = new File(System.getProperty("user.home"), EppicParams.CONFIG_FILE_NAME);
 		}
 		params.readConfigFile(configFile);
-		
-		//Initialize the variable
-		try{
-			WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath, uniprotdbName,
-					params.getLocalUniprotDbHost(), params.getLocalUniprotDbPort(),
-					params.getLocalUniprotDbUser(), params.getLocalUniprotDbPwd());
-			HashMap<String, ArrayList<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
-			PrintWriter outList = new PrintWriter(new File (outdirPath, "queries.list"));
-		
-			int countFishy = 0;
-			int countErrLength = 0;
-			
-			for(String uniprotid:uniqueMap.keySet()) {
-				try {
-					UnirefEntry uniEntry = wuni.uniLC.getUnirefEntry(uniprotid);
-					String uniSeq = uniEntry.getSequence();
-					for(Interval interv:uniqueMap.get(uniprotid)){
-						//Create fasta files
-						String fileName = outdirPath + uniprotid + "." + interv.beg + "-" + interv.end + ".fa";
-						int maxLen = 60;
-						
-						if(interv.beg >= interv.end || interv.beg <= 0){
-							System.err.println("Warning: Fishy mapping in uniprot for "+uniprotid+"_"+interv.beg+"-"+interv.end);
-							countFishy++;
-							continue;
+
+		boolean singleFastaFile;
+		if (outPath.isDirectory()) {
+			singleFastaFile = false;
+		} else {
+			singleFastaFile = true;
+		}
+
+
+		WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath, uniprotdbName,
+				params.getLocalUniprotDbHost(), params.getLocalUniprotDbPort(),
+				params.getLocalUniprotDbUser(), params.getLocalUniprotDbPwd());
+		HashMap<String, ArrayList<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
+
+		int countFishy = 0;
+		int countErrLength = 0;
+
+		PrintWriter out = null;
+
+		if (singleFastaFile) {
+			out = new PrintWriter(outPath);
+		}
+
+		for (String uniprotid : uniqueMap.keySet()) {
+			try {
+				UnirefEntry uniEntry = wuni.uniLC.getUnirefEntry(uniprotid);
+				String uniSeq = uniEntry.getSequence();
+				for (Interval interv : uniqueMap.get(uniprotid)) {
+					//Create fasta files
+					int maxLen = 60;
+
+					if (interv.beg >= interv.end || interv.beg <= 0) {
+						System.err.println("Warning: Fishy mapping in uniprot for " + uniprotid + "_" + interv.beg + "-" + interv.end);
+						countFishy++;
+						continue;
+					}
+					if (uniSeq.length() >= interv.end) {
+						if (!singleFastaFile) {
+							File outFile = new File(outPath, uniprotid + "." + interv.beg + "-" + interv.end + ".fa");
+							out = new PrintWriter(outFile);
 						}
-						if(uniSeq.length() >= interv.end){
-							File outFile = new File (fileName); 
-							PrintWriter out = new PrintWriter(outFile);
-							out.println(">"+uniprotid+"_"+interv.beg+"-"+interv.end);
-							String uniSubSeq = uniSeq.substring(interv.beg-1, interv.end);
-							for(int i=0; i<uniSubSeq.length(); i+=maxLen) {
-								out.println(uniSubSeq.substring(i, Math.min(i+maxLen, uniSubSeq.length())));
-							}
-							outList.println(uniprotid+"."+interv.beg+"-"+interv.end);
+						out.println(">" + uniprotid + "_" + interv.beg + "-" + interv.end);
+						String uniSubSeq = uniSeq.substring(interv.beg - 1, interv.end);
+						for (int i = 0; i < uniSubSeq.length(); i += maxLen) {
+							out.println(uniSubSeq.substring(i, Math.min(i + maxLen, uniSubSeq.length())));
+						}
+						if (!singleFastaFile) {
 							out.close();
 						}
-						else{
-							System.err.println("Warning: Length of query seq ("+uniSeq.length()+") smaller than interval end of uniprot seq for "+uniprotid+"_"+interv.beg+"-"+interv.end);
-							countErrLength++;
-						}
-					
+					} else {
+						System.err.println("Warning: Length of query seq (" + uniSeq.length() + ") smaller than interval end of uniprot seq for " + uniprotid + "_" + interv.beg + "-" + interv.end);
+						countErrLength++;
 					}
+
 				}
-				catch(NoMatchFoundException er){
-					System.err.println("Warning: FileNotFoundException: " + er.getMessage());
-				}
+			} catch (NoMatchFoundException er) {
+				System.err.println("Warning: NoMatchFoundException: " + er.getMessage());
 			}
-			outList.close();
-			if(countFishy > 0) System.err.println("Warning: Oops! total encountered fishy mappings: "+countFishy);
-			if(countErrLength > 0) System.err.println("Warning: Oops! total encountered problems in the length: "+countErrLength);
 		}
-		catch(IOException ex){
-			System.err.println("Error in inputs: " + ex.getClass() + " " + ex.getMessage());
-			System.exit(1);
+
+		if (singleFastaFile) {
+			out.close();
 		}
+
+		if (countFishy > 0)
+			System.err.println("Warning: Oops! total encountered fishy mappings: " + countFishy);
+
+		if (countErrLength > 0)
+			System.err.println("Warning: Oops! total encountered problems in the length: " + countErrLength);
+
 	}
 }
