@@ -1006,7 +1006,7 @@ public class ChainEvolContext implements Serializable {
 				// query length is needed for query coverage
 				hit.setQueryLength(hitList.getQueryLength());
 
-				// TODO review if subject length and subject def are needed
+				// note that subject length and subjectDef are not needed
 
 				hitList.add(hit);
 			}
