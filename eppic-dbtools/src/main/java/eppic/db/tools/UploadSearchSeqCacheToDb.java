@@ -13,7 +13,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,21 +33,23 @@ public class UploadSearchSeqCacheToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadSearchSeqCacheToDb.class);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 
         String help =
                 "Usage: UploadSearchSeqCacheToDb\n" +
                         "  -D <string>  : the database name to use\n"+
                         "  -f <file>    : the blast tabular format file containing all hits\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
-                        "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
+                        "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
+                        " [-n <int>]    : number of workers. Default 1. \n";
 
 
         File blastTabFile = null;
         String dbName = null;
         File configFile = DBHandler.DEFAULT_CONFIG_FILE;
+        int numWorkers = 1;
 
-        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:h?");
+        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:n:h?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch(c){
@@ -53,6 +61,9 @@ public class UploadSearchSeqCacheToDb {
                     break;
                 case 'g':
                     configFile = new File(g.getOptarg());
+                    break;
+                case 'n':
+                    numWorkers = Integer.parseInt(g.getOptarg());
                     break;
                 case 'h':
                     System.out.println(help);
@@ -91,6 +102,9 @@ public class UploadSearchSeqCacheToDb {
 
         HitHspDAO hitHspDAO = new HitHspDAOJpa();
 
+        ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
+        List<Future<Boolean>> allResults = new ArrayList<>();
+
         long start = System.currentTimeMillis();
 
         try (BufferedReader br = new BufferedReader(new FileReader(blastTabFile));) {
@@ -123,27 +137,13 @@ public class UploadSearchSeqCacheToDb {
                     double eValue = Double.parseDouble(tokens[10]);
                     int bitScore = Integer.parseInt(tokens[11]);
 
-                    try {
-                        hitHspDAO.insertHitHsp(
-                                db,
-                                queryId,
-                                subjectId,
-                                identity,
-                                length,
-                                mismatches,
-                                gapOpenings,
-                                qStart,
-                                qEnd,
-                                sStart,
-                                sEnd,
-                                eValue,
-                                bitScore
-                        );
+                    // so that lambda works
+                    final String dbToWrite = db;
 
-                    } catch (DaoException e) {
-                        logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", queryId, subjectId, e.getMessage());
-                        cantPersist++;
-                    }
+                    Future<Boolean> future = executorService.submit(() -> persist(hitHspDAO, dbToWrite, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
+                    allResults.add(future);
+
+
 
                 } catch (NumberFormatException e) {
                     logger.warn("Wrong number format for line {} of file {}. Query id is {}. Will ignore line. Error: {}", lineNum, blastTabFile, queryId, e.getMessage());
@@ -154,6 +154,14 @@ public class UploadSearchSeqCacheToDb {
                     logger.info("Done processing {} lines", lineNum);
                 }
             }
+
+            for (Future<Boolean> future : allResults) {
+                if (!future.get()) cantPersist++;
+            }
+
+            executorService.shutdown();
+
+            while (!executorService.isTerminated());
 
             long end = System.currentTimeMillis();
 
@@ -171,6 +179,36 @@ public class UploadSearchSeqCacheToDb {
     private static void initJpaConnection(File configFile) throws IOException {
         Map<String,String> props = DbConfigGenerator.createDatabaseProperties(configFile);
         EntityManagerHandler.initFactory(props);
+    }
+
+    private static boolean persist(HitHspDAO hitHspDAO,
+                                   String db,
+                                   String queryId, String subjectId,
+                                   double identity, int length, int mismatches, int gapOpenings,
+                                   int qStart, int qEnd, int sStart, int sEnd, double eValue, int bitScore) {
+        try {
+            hitHspDAO.insertHitHsp(
+                    db,
+                    queryId,
+                    subjectId,
+                    identity,
+                    length,
+                    mismatches,
+                    gapOpenings,
+                    qStart,
+                    qEnd,
+                    sStart,
+                    sEnd,
+                    eValue,
+                    bitScore
+            );
+
+            return true;
+
+        } catch (DaoException e) {
+            logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", queryId, subjectId, e.getMessage());
+            return false;
+        }
     }
 
 }
