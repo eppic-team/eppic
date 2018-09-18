@@ -546,7 +546,13 @@ public class ChainEvolContext implements Serializable {
 		else LOGGER.info("UniParc hits won't be used");
 		homologs.setUseUniparc(useUniparc);
 
-		BlastHitList cachedHitList = getCachedHspsForQuery(getQuery(), queryInterv);
+		BlastHitList cachedHitList;
+		if (params.getDbConfigFile()!=null) {
+			cachedHitList = getCachedHspsForQuery(getQuery(), queryInterv);
+		} else {
+			LOGGER.info("Not using sequence search cache from db because the db config file was not supplied.");
+			cachedHitList = null;
+		}
 
 		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, cachedHitList, params.isNoBlast());
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast (chain "+getRepresentativeChainCode()+")");
@@ -974,6 +980,10 @@ public class ChainEvolContext implements Serializable {
 		HitHspDAO dao = new HitHspDAOJpa();
 
 		List<HitHsp> hitHsps = dao.getHitHspsForQueryId(queryId);
+
+		if (hitHsps.isEmpty()) {
+			LOGGER.warn("Nothing found in sequence search cache for query {}", queryId);
+		}
 
 		BlastHitList hitList = new BlastHitList();
 
