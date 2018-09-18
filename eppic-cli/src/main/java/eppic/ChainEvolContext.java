@@ -540,14 +540,13 @@ public class ChainEvolContext implements Serializable {
 		} 
 		
 		
-		homologs = new HomologList(query,queryInterv);
+		homologs = new HomologList(query, queryInterv);
 		
 		if (useUniparc) LOGGER.info("UniParc hits will be used");
 		else LOGGER.info("UniParc hits won't be used");
 		homologs.setUseUniparc(useUniparc);
 
-		String queryId = getQuery().getUniId() + "_" + queryInterv.beg + "-" + queryInterv.end;
-		BlastHitList cachedHitList = getCachedHspsForQuery(queryId);
+		BlastHitList cachedHitList = getCachedHspsForQuery(getQuery(), queryInterv);
 
 		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, cachedHitList, params.isNoBlast());
 		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast (chain "+getRepresentativeChainCode()+")");
@@ -962,12 +961,16 @@ public class ChainEvolContext implements Serializable {
 
 	/**
 	 * Retrieve the BlastHitList from the sequence search cache in db.
-	 * @param queryId the query id e.g. P29476_294-340
+	 * @param query the query
+	 * @param queryInterv the query interval in uniprot 1-based coordinates
 	 * @return
 	 * @throws DaoException if something goes wrong when getting data from db
 	 * @since 3.2.0
 	 */
-	private static BlastHitList getCachedHspsForQuery(String queryId) throws DaoException {
+	private static BlastHitList getCachedHspsForQuery(UnirefEntry query, Interval queryInterv) throws DaoException {
+
+		String queryId = query.getUniId() + "_" + queryInterv.beg + "-" + queryInterv.end;
+
 		HitHspDAO dao = new HitHspDAOJpa();
 
 		List<HitHsp> hitHsps = dao.getHitHspsForQueryId(queryId);
@@ -980,6 +983,7 @@ public class ChainEvolContext implements Serializable {
 			if (i==0) {
 				hitList.setDb(hsp.getDb());
 				hitList.setQueryId(queryId);
+				hitList.setQueryLength(queryInterv.end - queryInterv.beg + 1);
 			}
 
 			BlastHit hit;
@@ -989,7 +993,10 @@ public class ChainEvolContext implements Serializable {
 				hit = new BlastHit();
 				hit.setQueryId(queryId);
 				hit.setSubjectId(hsp.getSubjectId());
-				// TODO review if query/subject length needed, also subject def
+				// query length is needed for query coverage
+				hit.setQueryLength(hitList.getQueryLength());
+
+				// TODO review if subject length and subject def are needed
 
 				hitList.add(hit);
 			}
@@ -1002,7 +1009,6 @@ public class ChainEvolContext implements Serializable {
 			blastHsp.setSubjectStart(hsp.getSubjectStart());
 			blastHsp.setSubjectEnd(hsp.getSubjectEnd());
 			blastHsp.setScore(hsp.getBitScore());
-			// TODO check if this is right
 			blastHsp.setIdentities((int)(hsp.getPercentIdentity()*hsp.getAliLength()));
 
 			hit.addHsp(blastHsp);
