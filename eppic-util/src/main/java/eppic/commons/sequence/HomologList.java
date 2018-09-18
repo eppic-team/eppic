@@ -147,7 +147,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 		
 		this.uniprotVer = readUniprotVer(blastDbDir);
 
-		if (cachedHitList!=null) {
+		if (cachedHitList!=null && cachedHitList.size()>0) {
 
 			LOGGER.info("Using sequence search results from cache.");
 
@@ -172,7 +172,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 
 
 		} else if (noBlast) {
-				throw new IOException("The \"no blast\" mode was specified (-B option) and entry does not exist in blast cache ");
+				throw new IOException("The \"no blast\" mode was specified (-B option) and entry does not exist in sequence search cache ");
 
 		} else {
 

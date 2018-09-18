@@ -142,6 +142,7 @@ public class HitHsp implements Serializable {
         hitHsp.setDb(hitHspDB.getDb());
         hitHsp.setQueryId(hitHspDB.getQueryId());
         hitHsp.setSubjectId(hitHspDB.getSubjectId());
+        hitHsp.setPercentIdentity(hitHspDB.getPercentIdentity());
         hitHsp.setAliLength(hitHspDB.getAliLength());
         hitHsp.setNumMismatches(hitHspDB.getNumMismatches());
         hitHsp.setNumGapOpenings(hitHspDB.getNumGapOpenings());
