@@ -17,6 +17,10 @@ import gnu.getopt.Getopt;
 
 
 /**
+ *
+ * Script to write out all unique uniprot sequence segments present in the SIFTS file into FASTA file/s.
+ * The sequences are pulled from the local uniprot database.
+ *
  * @author biyani_n
  *
  */
@@ -29,22 +33,14 @@ public class WriteUniqueUniprots {
 			sc = new SiftsConnection(scPath);
 			uniLC = new UniprotLocalConnection(uniprotdb, dbHost, dbPort, dbUser, dbPwd);
 	}
-	
-	/**
-	 * Gets argument from command line which gives a path of where the fasta files are to be written
-	 * 
-	 * @param args
-	 * @throws IOException 
-	 * @throws NoMatchFoundException 
-	 * @throws SQLException 
-	 */
+
 	public static void main(String[] args) throws IOException, SQLException {
 		
 		String help =
 				"Usage: WriteUniqueUnirots\n" +
-						"Creates fasta (.fa) files of unique mapings of PDB to Uniprot\n" +
-						" -s <dir>  	  : Sifts Connection file path \n" +
-						" -u <dbName>     : Uniprot Database Name \n" +
+						"Creates fasta (.fa) file/s of unique mappings of PDB to Uniprot\n" +
+						" -s <file>  	  : SIFTS file path \n" +
+						" -u <string>     : Uniprot database name \n" +
 						" [-o <dir/file>] : If directory, sequences are written to individual FASTA \n"+
 						"                   files in the directory.\n" +
 						"                   If file all sequences are written to it as a single FASTA\n"+
@@ -167,7 +163,7 @@ public class WriteUniqueUniprots {
 
 				}
 			} catch (NoMatchFoundException er) {
-				System.err.println("Warning: NoMatchFoundException: " + er.getMessage());
+				System.err.println("Warning: could not find " + uniprotid + " in db. Skipping");
 			}
 		}
 
