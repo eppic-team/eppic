@@ -16,10 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,6 +29,8 @@ import java.util.regex.Pattern;
 public class UploadSearchSeqCacheToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadSearchSeqCacheToDb.class);
+
+    private static final long SLEEP_TIME = 10000;
 
     public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
 
@@ -102,8 +101,14 @@ public class UploadSearchSeqCacheToDb {
 
         HitHspDAO hitHspDAO = new HitHspDAOJpa();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
         List<Future<Boolean>> allResults = new ArrayList<>();
+
+        ThreadFactory threadFactory = Executors.defaultThreadFactory();
+        ThreadPoolExecutor executorPool = new ThreadPoolExecutor(numWorkers, numWorkers, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000000), threadFactory);
+
+        MonitorThread monitor = new MonitorThread(executorPool, 30);
+        Thread monitorThread = new Thread(monitor);
+        monitorThread.start();
 
         long start = System.currentTimeMillis();
 
@@ -140,9 +145,9 @@ public class UploadSearchSeqCacheToDb {
                     // so that lambda works
                     final String dbToWrite = db;
 
-                    Future<Boolean> future = executorService.submit(() -> persist(hitHspDAO, dbToWrite, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
+                    //Future<Boolean> future = executorService.submit(() -> persist(hitHspDAO, dbToWrite, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
+                    Future<Boolean> future = executorPool.submit(() -> persist(hitHspDAO, dbToWrite, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
                     allResults.add(future);
-
 
 
                 } catch (NumberFormatException e) {
@@ -151,17 +156,29 @@ public class UploadSearchSeqCacheToDb {
                 }
 
                 if (lineNum % 10000 == 0) {
-                    logger.info("Done processing {} lines", lineNum);
+                    logger.info("Done processing {} lines.", lineNum);
+                }
+
+                if (lineNum % 100 == 0) {
+                    int remCap = executorPool.getQueue().remainingCapacity();
+                    if (remCap<100) {
+                        logger.info("Remaining capacity in queue is {}. Halting main thread for {} s to give time to queue to process submitted jobs", remCap, SLEEP_TIME / 1000);
+                        Thread.sleep(SLEEP_TIME);
+                    }
                 }
             }
+
+            logger.info("File {} fully processed", blastTabFile);
 
             for (Future<Boolean> future : allResults) {
                 if (!future.get()) cantPersist++;
             }
 
-            executorService.shutdown();
+            executorPool.shutdown();
 
-            while (!executorService.isTerminated());
+            while (!executorPool.isTerminated());
+
+            monitor.shutDown();
 
             long end = System.currentTimeMillis();
 
@@ -187,6 +204,8 @@ public class UploadSearchSeqCacheToDb {
                                    double identity, int length, int mismatches, int gapOpenings,
                                    int qStart, int qEnd, int sStart, int sEnd, double eValue, int bitScore) {
         try {
+
+            //logger.debug("Persisting {}--{}", queryId, subjectId);
             hitHspDAO.insertHitHsp(
                     db,
                     queryId,
@@ -208,6 +227,45 @@ public class UploadSearchSeqCacheToDb {
         } catch (DaoException e) {
             logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", queryId, subjectId, e.getMessage());
             return false;
+        }
+    }
+
+    private static class MonitorThread implements Runnable {
+
+        private ThreadPoolExecutor executor;
+        private int seconds;
+        private boolean run = true;
+
+        public MonitorThread(ThreadPoolExecutor executor, int delay) {
+            this.executor = executor;
+            this.seconds = delay;
+        }
+
+        public void shutDown() {
+            this.run = false;
+        }
+
+        @Override
+        public void run() {
+            while (run) {
+                logger.info(
+                        String.format("[monitor] [%d/%d] Active: %d, Completed: %d, Task: %d, isShutdown: %s, isTerminated: %s, remaining queue capacity: %d",
+                                this.executor.getPoolSize(),
+                                this.executor.getCorePoolSize(),
+                                this.executor.getActiveCount(),
+                                this.executor.getCompletedTaskCount(),
+                                this.executor.getTaskCount(),
+                                this.executor.isShutdown(),
+                                this.executor.isTerminated(),
+                                this.executor.getQueue().remainingCapacity()));
+
+                try {
+                    Thread.sleep(seconds * 1000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage(), e);
+                }
+            }
+
         }
     }
 
