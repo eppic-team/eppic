@@ -74,6 +74,13 @@
 					<groupId>org.jboss.logging</groupId>
 					<artifactId>jboss-logging</artifactId>
 				</exclusion>
+
+				<!-- This one clashes with a newer one in hibernate-core -->
+				<exclusion>
+					<artifactId>javassist</artifactId>
+					<groupId>org.javassist</groupId>
+				</exclusion>
+
 			</exclusions>
 		</dependency>
 

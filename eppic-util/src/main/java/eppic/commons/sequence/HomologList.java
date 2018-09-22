@@ -493,7 +493,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * Two external programs are supported: t_coffee or clustalo. Only one of the two can be passed, 
 	 * the other one must be null, if both are null or both are set then an IllegalArgumentException is thrown
 	 * @param clustaloBin
-	 * @param nThreads number of CPU cores t_coffee should use
+	 * @param nThreads number of CPU cores external program should use
 	 * @param alnCacheFile
 	 * @throws IOException 
 	 */
