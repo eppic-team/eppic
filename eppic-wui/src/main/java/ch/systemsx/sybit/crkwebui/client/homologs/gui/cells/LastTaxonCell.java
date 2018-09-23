@@ -1,6 +1,3 @@
-/**
- * 
- */
 package ch.systemsx.sybit.crkwebui.client.homologs.gui.cells;
 
 import ch.systemsx.sybit.crkwebui.client.commons.appdata.ApplicationContext;
@@ -18,6 +15,8 @@ public class LastTaxonCell extends AbstractCell<String> {
 	@Override
 	public void render(com.google.gwt.cell.client.Cell.Context context,
 			String value, SafeHtmlBuilder sb) {
+
+		if (value == null) return;
 		
 		String baseUrl = ApplicationContext.getSettings().getWikipediaLinkUrl();
 		
