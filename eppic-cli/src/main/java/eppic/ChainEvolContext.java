@@ -131,11 +131,11 @@ public class ChainEvolContext implements Serializable {
 	/**
 	 * Construct a ChainEvolContext from a Chain
 	 * @param parent
-	 * @param compound
+	 * @param entityInfo
 	 */
-	public ChainEvolContext(ChainEvolContextList parent, EntityInfo compound) {
+	public ChainEvolContext(ChainEvolContextList parent, EntityInfo entityInfo) {
 		this.parent = parent;
-		Chain chain = compound.getRepresentative();
+		Chain chain = entityInfo.getRepresentative();
 		
 		this.sequenceId = chain.getName();
 		this.hasQueryMatch = false;
@@ -144,9 +144,9 @@ public class ChainEvolContext implements Serializable {
 		
 		this.isProtein = chain.isProtein();
 		
-		this.entity = compound;
+		this.entity = entityInfo;
 		
-		this.pdbToUniProtMapper = new PdbToUniProtMapper(compound);
+		this.pdbToUniProtMapper = new PdbToUniProtMapper(entityInfo);
 		
 		this.sequence = pdbToUniProtMapper.getPdbSequence();
 	}

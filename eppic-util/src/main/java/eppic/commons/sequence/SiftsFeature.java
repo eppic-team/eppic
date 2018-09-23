@@ -5,7 +5,7 @@ import eppic.commons.util.IntervalSet;
 
 /**
  * A PDB chain as a subfeature of a Uniprot entry. The mapping is taken from the SIFTS resource.
- * See {@link http://www.ebi.ac.uk/msd/sifts}
+ * See http://www.ebi.ac.uk/msd/sifts
  */
 public class SiftsFeature {
 

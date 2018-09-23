@@ -10,7 +10,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +25,7 @@ import eppic.commons.util.Interval;
  * This seems to be at the moment the gold standard for PDB to Uniprot mapping. The class loads
  * the results from a given URL or file pointer and caches the results so that subsequent queries
  * are done in O(1) time (for the price of memory consumption).
- * See {@link http://www.ebi.ac.uk/msd/sifts}
+ * See http://www.ebi.ac.uk/msd/sifts
  * 
  * @author duarte, stehr
  */
@@ -108,7 +107,7 @@ public class SiftsConnection {
 			if (chain2uniprot.containsKey(id)) {
 				chain2uniprot.get(id).add(siftsMapping);
 			} else {
-				ArrayList<SiftsFeature> ups = new ArrayList<SiftsFeature>();
+				ArrayList<SiftsFeature> ups = new ArrayList<>();
 				ups.add(siftsMapping);
 				chain2uniprot.put(id, ups);				
 			}
@@ -116,7 +115,7 @@ public class SiftsConnection {
 			if (uniprot2chain.containsKey(uniprotId)) {
 				uniprot2chain.get(uniprotId).add(siftsMapping);
 			} else {
-				ArrayList<SiftsFeature> ups = new ArrayList<SiftsFeature>();
+				ArrayList<SiftsFeature> ups = new ArrayList<>();
 				ups.add(siftsMapping);
 				uniprot2chain.put(uniprotId, ups);				
 			}			
@@ -138,12 +137,7 @@ public class SiftsConnection {
 		List<SiftsFeature> list = chain2uniprot.get(pdbCode+pdbChainCode);
 		
 		// before returning the list we make sure it is sorted based on the order of cif intervals, i.e. as they happen in PDB chain
-		Collections.sort(list, new Comparator<SiftsFeature>() {
-			@Override
-			public int compare(SiftsFeature o1, SiftsFeature o2) {
-				return o1.getCifIntervalSet().iterator().next().compareTo(o2.getCifIntervalSet().iterator().next());
-			}
-		});
+		list.sort(Comparator.comparing(o -> o.getCifIntervalSet().iterator().next()));
 		return chain2uniprot.get(pdbCode+pdbChainCode);
 	}
 	
@@ -172,15 +166,14 @@ public class SiftsConnection {
 	 * Gets a HashMap with unique mappings of UniProt ids for all PDB chains found in the SIFTS repository 
 	 * as the keys and all its unique segments as the array list
 	 * @return HashMap<String, ArrayList<Interval>>
-	 * @throws IOException 
 	 */
-	public HashMap<String, ArrayList<Interval>> getUniqueMappings() throws IOException {
-		HashMap<String, ArrayList<Interval>> uniqueMap = new HashMap<String, ArrayList<Interval>>();
+	public HashMap<String, ArrayList<Interval>> getUniqueMappings() {
+		HashMap<String, ArrayList<Interval>> uniqueMap = new HashMap<>();
 		System.out.println("Unique UniProts in PDB: "+uniprot2chain.size());
 		
 		int count = 0;
 		for (String uniprotid:uniprot2chain.keySet()) {
-			ArrayList<Interval> uniqueIntervals = new ArrayList<Interval>();
+			ArrayList<Interval> uniqueIntervals = new ArrayList<>();
 			for (SiftsFeature f:uniprot2chain.get(uniprotid)) {
 				for (Interval interv: f.getUniprotIntervalSet()){
 					if(!uniqueIntervals.contains(interv)) uniqueIntervals.add(interv); 
@@ -202,11 +195,5 @@ public class SiftsConnection {
 	public int getMappingsCount() {
 		return chain2uniprot.size();
 	}
-	
-	public static void main (String[] args) throws IOException {
-		SiftsConnection sc = new SiftsConnection("/nfs/data/dbs/uniprot/current/pdb_chain_uniprot.lst");
-		
-		HashMap<String, ArrayList<Interval>> uniqueMap = sc.getUniqueMappings();
-		System.out.print(uniqueMap.size());
-	}
+
 }

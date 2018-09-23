@@ -45,6 +45,12 @@ public class PdbToUniProtMapper implements Serializable {
 	private Map<String, SequencePair<ProteinSequence,AminoAcidCompound>> alignments;
 	
 	private EntityInfo entity;
+
+	/**
+	 * The sequences corresponding to this entity. Keys are author chain ids (Chain#getName()).
+	 * If the sequence comes from SEQRES only 1 sequence is stored for the representative chain,
+	 * if the sequence comes from ATOM, then a sequence for every chain is stored.
+	 */
 	private Map<String, String> sequences;
 	private UnirefEntry uniProtReference;
 	
@@ -89,7 +95,7 @@ public class PdbToUniProtMapper implements Serializable {
 	 */
 	private void initSequences() {
 		
-		sequences = new TreeMap<String, String>();
+		sequences = new TreeMap<>();
 			
 		Chain chain = entity.getRepresentative();
 		// it looks like biojava interprets MSEs as METs, at least for the sequence, so no issues here
@@ -124,7 +130,7 @@ public class PdbToUniProtMapper implements Serializable {
 	
 	private void initAlignments() throws CompoundNotFoundException {
 		
-		this.alignments = new TreeMap<String, SequencePair<ProteinSequence,AminoAcidCompound>>();
+		this.alignments = new TreeMap<>();
 		
 		if (sequenceFromAtom) {
 			LOGGER.info("PDB sequences are from ATOM, will have one alignment per member chain of entity {}",entity.getMolId());
@@ -162,7 +168,7 @@ public class PdbToUniProtMapper implements Serializable {
 		ProteinSequence s2 = new ProteinSequence(upSequence);
 
 		NeedlemanWunsch<ProteinSequence,AminoAcidCompound> nw = 
-				new NeedlemanWunsch<ProteinSequence,AminoAcidCompound>(s1,s2, penalty, matrix);
+				new NeedlemanWunsch<>(s1,s2, penalty, matrix);
 		
 		alignment = nw.getPair();
 
