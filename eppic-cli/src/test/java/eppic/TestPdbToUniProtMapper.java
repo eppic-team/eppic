@@ -8,6 +8,9 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.io.FileParsingParameters;
+import org.biojava.nbio.structure.io.mmcif.ChemCompGroupFactory;
+import org.biojava.nbio.structure.io.mmcif.DownloadChemCompProvider;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -15,16 +18,26 @@ import java.io.IOException;
 
 public class TestPdbToUniProtMapper {
 
+    @BeforeClass
+    public static void setUpBeforeClass() {
+
+        // to be sure we download chemcomps properly
+        ChemCompGroupFactory.setChemCompProvider(new DownloadChemCompProvider());
+
+        AtomCache cache = new AtomCache();
+        FileParsingParameters params = new FileParsingParameters();
+        params.setAlignSeqRes(true);
+        cache.setUseMmCif(true); // with mmtf we get X in place of non-observed residues
+        cache.setFileParsingParams(params);
+        StructureIO.setAtomCache(cache);
+    }
+
     @Test
     public void test1smtMapping() throws IOException, StructureException, CompoundNotFoundException {
 
         // SIFTS record for 1smtA:
         // 1smt    A       P30340  1       122     None    None    1       122
 
-        AtomCache cache = new AtomCache();
-        FileParsingParameters params = new FileParsingParameters();
-        params.setAlignSeqRes(true);
-        cache.setFileParsingParams(params);
 
         Structure s =  StructureIO.getStructure("1smt");
         PdbToUniProtMapper pdbToUniProtMapper = new PdbToUniProtMapper(s.getEntityInfos().get(0));
@@ -41,10 +54,42 @@ public class TestPdbToUniProtMapper {
         Interval intervalPdb = pdbToUniProtMapper.getMatchingIntervalPdbCoords();
         Interval intervalUniProt = pdbToUniProtMapper.getMatchingIntervalUniProtCoords();
 
-        // we should get the observed subset of chain A (note both PDB and UniProt reference sequences are identical in this case)
-        assertEquals(24, intervalPdb.beg);
-        assertEquals(24, intervalUniProt.beg);
-        assertEquals(121, intervalPdb.end);
-        assertEquals(121, intervalUniProt.end);
+        assertEquals(1, intervalPdb.beg);
+        assertEquals(122, intervalPdb.end);
+
+        assertEquals(1, intervalUniProt.beg);
+        assertEquals(122, intervalUniProt.end);
+    }
+
+    @Test
+    public void test4a71Mapping() throws IOException, StructureException, CompoundNotFoundException {
+
+        // SIFTS record for 4a71A:
+        // 4a71    A       P00431  3       296     None    294     68      361
+
+        Structure s =  StructureIO.getStructure("4a71");
+        PdbToUniProtMapper pdbToUniProtMapper = new PdbToUniProtMapper(s.getEntityInfos().get(0));
+        UnirefEntry ref = new UnirefEntry();
+        ref.setId("P00431");
+        ref.setSequence(
+                "MTTAVRLLPSLGRTAHKRSLYLFSAAAAAAAAATFAYSQSQKRSSSSPGGGSNHGWNNWG" +
+                        "KAAALASTTPLVHVASVEKGRSYEDFQKVYNAIALKLREDDEYDNYIGYGPVLVRLAWHT" +
+                        "SGTWDKHDNTGGSYGGTYRFKKEFNDPSNAGLQNGFKFLEPIHKEFPWISSGDLFSLGGV" +
+                        "TAVQEMQGPKIPWRCGRVDTPEDTTPDNGRLPDADKDADYVRTFFQRLNMNDREVVALMG" +
+                        "AHALGKTHLKNSGYEGPWGAANNVFTNEFYLNLLNEDWKLEKNDANNEQWDSKSGYMMLP" +
+                        "TDYSLIQDPKYLSIVKEYANDQDKFFKDFSKAFEKLLENGITFPKDAPSPFIFKTLEEQG" +
+                        "L");
+        ref.setUniprotId("P00431");
+        ref.setNcbiTaxId(559292);
+        pdbToUniProtMapper.setUniProtReference(ref);
+
+        Interval intervalPdb = pdbToUniProtMapper.getMatchingIntervalPdbCoords();
+        Interval intervalUniProt = pdbToUniProtMapper.getMatchingIntervalUniProtCoords();
+
+        assertEquals(3, intervalPdb.beg);
+        assertEquals(296, intervalPdb.end);
+
+        assertEquals(68, intervalUniProt.beg);
+        assertEquals(361, intervalUniProt.end);
     }
 }
