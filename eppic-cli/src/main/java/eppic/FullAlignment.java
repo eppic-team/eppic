@@ -207,19 +207,21 @@ public class FullAlignment {
      * Gets the corresponding index in other sequence, given a position in first or second sequence
      * @param seqPos the sequence position
      * @param first if true seqPos refers to first sequence, if false seqPos refers to second sequence
-     * @return
+     * @return the sequence position in the other sequence, or -1 if it is a gap
      */
     public int getSeqPosOtherSeq(int seqPos, boolean first) {
         int alnIndex = getAlignmentIndexAt(seqPos, first);
         if (alnIndex == -1) {
             // in flanks
-            // TODO in principle it's possible to return a position in this case, but do we want to?
+            // in principle it's possible to return a position in this case, but I don't think we want to.
+            // We treat the flank regions as fully unaligned (fully aligned to gaps)
             return -1;
         }
         if (first) {
-            return ali.getIndexInQueryAt(alnIndex) + firstSeqLeftFlank.length();
-        } else {
+            // we need the other sequence here, i.e. target
             return ali.getIndexInTargetAt(alnIndex) + secondSeqLeftFlank.length();
+        } else {
+            return ali.getIndexInQueryAt(alnIndex) + firstSeqLeftFlank.length();
         }
 
     }

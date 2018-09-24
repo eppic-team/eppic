@@ -94,6 +94,9 @@ public class TestPdbToUniProtMapper {
         assertEquals(68, intervalUniProt.beg);
         assertEquals(361, intervalUniProt.end);
 
+        assertEquals(68, pdbToUniProtMapper.getAlignment().getSeqPosOtherSeq(3, true));
+        assertEquals(3, pdbToUniProtMapper.getAlignment().getSeqPosOtherSeq(68, false));
+
         assertEquals("PRO", pdbToUniProtMapper.getPdbGroupFromUniProtIndex(70, "A").getPDBName());
 
     }
