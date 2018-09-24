@@ -1246,8 +1246,8 @@ public class DataModelAdaptor {
 				chainClusterDB.setPdbStart(cec.getPdbToUniProtMapper().getMatchingIntervalPdbCoords().beg);
 				chainClusterDB.setPdbEnd(cec.getPdbToUniProtMapper().getMatchingIntervalPdbCoords().end);
 				
-				chainClusterDB.setPdbAlignedSeq(cec.getPdbToUniProtMapper().getAlignment().getAlignedSequence(1).getSequenceAsString());
-				chainClusterDB.setRefAlignedSeq(cec.getPdbToUniProtMapper().getAlignment().getAlignedSequence(2).getSequenceAsString());
+				chainClusterDB.setPdbAlignedSeq(cec.getPdbToUniProtMapper().getAlignment().getAlignedSequence(true));
+				chainClusterDB.setRefAlignedSeq(cec.getPdbToUniProtMapper().getAlignment().getAlignedSequence(false));
 				
 				chainClusterDB.setSeqIdCutoff(cec.getIdCutoff());
 				chainClusterDB.setClusteringSeqId(cec.getUsedClusteringPercentId()/100.0);

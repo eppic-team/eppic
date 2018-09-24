@@ -27,7 +27,7 @@ public class TestPdbToUniProtMapper {
         AtomCache cache = new AtomCache();
         FileParsingParameters params = new FileParsingParameters();
         params.setAlignSeqRes(true);
-        cache.setUseMmCif(true); // with mmtf we get X in place of non-observed residues
+        cache.setUseMmCif(true); // with mmtf we get X in place of non-observed residues, due to https://github.com/biojava/biojava/issues/671
         cache.setFileParsingParams(params);
         StructureIO.setAtomCache(cache);
     }
@@ -59,6 +59,8 @@ public class TestPdbToUniProtMapper {
 
         assertEquals(1, intervalUniProt.beg);
         assertEquals(122, intervalUniProt.end);
+
+        assertEquals("LYS", pdbToUniProtMapper.getPdbGroupFromUniProtIndex(3, "A").getPDBName());
     }
 
     @Test
@@ -81,7 +83,7 @@ public class TestPdbToUniProtMapper {
                         "L");
         ref.setUniprotId("P00431");
         ref.setNcbiTaxId(559292);
-        pdbToUniProtMapper.setUniProtReference(ref);
+        pdbToUniProtMapper.setUniProtReference(ref, new Interval(68, 361), new Interval(3, 296));
 
         Interval intervalPdb = pdbToUniProtMapper.getMatchingIntervalPdbCoords();
         Interval intervalUniProt = pdbToUniProtMapper.getMatchingIntervalUniProtCoords();
@@ -91,5 +93,8 @@ public class TestPdbToUniProtMapper {
 
         assertEquals(68, intervalUniProt.beg);
         assertEquals(361, intervalUniProt.end);
+
+        assertEquals("PRO", pdbToUniProtMapper.getPdbGroupFromUniProtIndex(70, "A").getPDBName());
+
     }
 }
