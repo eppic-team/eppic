@@ -49,6 +49,8 @@ public class TestPdbToUniProtMapper {
                 "CR");
         ref.setUniprotId("P30340");
         ref.setNcbiTaxId(1140);
+
+        // 1) don't set intervals externally, leave it all to biojava to align
         pdbToUniProtMapper.setUniProtReference(ref);
 
         Interval intervalPdb = pdbToUniProtMapper.getMatchingIntervalPdbCoords();
@@ -59,6 +61,31 @@ public class TestPdbToUniProtMapper {
 
         assertEquals(1, intervalUniProt.beg);
         assertEquals(122, intervalUniProt.end);
+
+        assertEquals(3, pdbToUniProtMapper.getAlignment().getSeqPosOtherSeq(3, true));
+        assertEquals(3, pdbToUniProtMapper.getAlignment().getSeqPosOtherSeq(3, false));
+
+        assertEquals(122, pdbToUniProtMapper.getAlignment().getLength());
+
+        assertEquals("LYS", pdbToUniProtMapper.getPdbGroupFromUniProtIndex(3, "A").getPDBName());
+
+        // 2) set intervals externally
+        pdbToUniProtMapper = new PdbToUniProtMapper(s.getEntityInfos().get(0));
+        pdbToUniProtMapper.setUniProtReference(ref, new Interval(1,122), new Interval(1,122));
+
+        intervalPdb = pdbToUniProtMapper.getMatchingIntervalPdbCoords();
+        intervalUniProt = pdbToUniProtMapper.getMatchingIntervalUniProtCoords();
+
+        assertEquals(1, intervalPdb.beg);
+        assertEquals(122, intervalPdb.end);
+
+        assertEquals(1, intervalUniProt.beg);
+        assertEquals(122, intervalUniProt.end);
+
+        assertEquals(3, pdbToUniProtMapper.getAlignment().getSeqPosOtherSeq(3, true));
+        assertEquals(3, pdbToUniProtMapper.getAlignment().getSeqPosOtherSeq(3, false));
+
+        assertEquals(122, pdbToUniProtMapper.getAlignment().getLength());
 
         assertEquals("LYS", pdbToUniProtMapper.getPdbGroupFromUniProtIndex(3, "A").getPDBName());
     }
