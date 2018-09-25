@@ -89,8 +89,14 @@ public class FullAlignment {
      * @return
      */
     public String getAlignmentString() {
-        // TODO add flanking regions
-        return ali.toString(100);
+        // TODO integrate better
+        return
+                getAlignedSequence(true) + "\n" +
+                getAlignedSequence(false)+ "\n" +
+                        "Aligned region (" +
+                        firstInterv.beg + "-" + firstInterv.end + ", "+
+                        secondInterv.beg + "-" + secondInterv.end + "): \n" +
+                        ali.toString(100);
     }
 
     /**
