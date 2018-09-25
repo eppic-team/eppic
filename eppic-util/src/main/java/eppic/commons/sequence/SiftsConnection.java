@@ -35,15 +35,15 @@ public class SiftsConnection {
 
 	private static final Pattern URL_PATTERN = Pattern.compile("^\\w+://.*"); 
 	
-	private HashMap<String,ArrayList<SiftsFeature>> chain2uniprot;
-	private HashMap<String,ArrayList<SiftsFeature>> uniprot2chain;	
+	private HashMap<String,List<SiftsFeature>> chain2uniprot;
+	private HashMap<String,List<SiftsFeature>> uniprot2chain;
 	
 	/**
-	 * Constructs a SiftsConnection using the default online URL, parsing the SIFTS data and storing it.
-	 * @throws IOException
+	 * Constructs a SiftsConnection. Use {@link #parsePdb2Uniprot(String)} afterwards
 	 */
-	public SiftsConnection() throws IOException {
-		this(PDB2UNIPROT_URL);
+	public SiftsConnection() {
+		chain2uniprot = new HashMap<>();
+		uniprot2chain = new HashMap<>();
 	}
 	
 	/**
@@ -54,20 +54,20 @@ public class SiftsConnection {
 	 * @throws IOException
 	 */
 	public SiftsConnection(String pdb2uniprotURL) throws IOException{
-		chain2uniprot = new HashMap<String, ArrayList<SiftsFeature>>();
-		uniprot2chain = new HashMap<String, ArrayList<SiftsFeature>>();		
+		chain2uniprot = new HashMap<>();
+		uniprot2chain = new HashMap<>();
 		parsePdb2Uniprot(pdb2uniprotURL);
 	}
 
 	/**
 	 * Parses the SIFTS table and stores pdb2uniprot and uniprot2pdb maps.
-	 * @param fileURL a URL pointing to the SIFTS pdb to UniProt mapping file or 
+	 * @param fileURL a URL pointing to the SIFTS pdb to UniProt mapping file or
 	 * a path to a local file
 	 * @throws IOException
 	 */
-	private void parsePdb2Uniprot(String fileURL) throws IOException {
+	protected void parsePdb2Uniprot(String fileURL) throws IOException {
 		Reader reader = null;
-		 
+
 		Matcher m = URL_PATTERN.matcher(fileURL);
 		if (m.matches()) {
 			// it is a URL
@@ -78,6 +78,18 @@ public class SiftsConnection {
 			// it is a file
 			reader = new FileReader(new File(fileURL));
 		}
+
+		parsePdb2Uniprot(reader);
+	}
+
+	/**
+	 * Parses the SIFTS table and stores pdb2uniprot and uniprot2pdb maps.
+	 * @param reader a URL pointing to the SIFTS pdb to UniProt mapping file or
+	 * a path to a local file
+	 * @throws IOException
+	 */
+	protected void parsePdb2Uniprot(Reader reader) throws IOException {
+
 		BufferedReader br = new BufferedReader(reader);
 		String line;
 		int lineCount = 0;
@@ -87,7 +99,7 @@ public class SiftsConnection {
 			String[] fields = line.split("\\s+");
 			
 			if (fields.length!=9) {
-				throw new IOException("The SIFTS file "+fileURL+" does not seem to be in the right format. Line "+lineCount+" does not have exactly 9 fields");
+				throw new IOException("The SIFTS file does not seem to be in the right format. Line "+lineCount+" does not have exactly 9 fields");
 			}
 			
 			String pdbCode = fields[0];
@@ -158,7 +170,7 @@ public class SiftsConnection {
 	 * Gets the Collection of all mappings for all PDB chains found in the SIFTS repository
 	 * @return
 	 */
-	public Collection<ArrayList<SiftsFeature>> getAllMappings() {
+	public Collection<List<SiftsFeature>> getAllMappings() {
 		return chain2uniprot.values();
 	}
 	
@@ -167,8 +179,8 @@ public class SiftsConnection {
 	 * as the keys and all its unique segments as the array list
 	 * @return HashMap<String, ArrayList<Interval>>
 	 */
-	public HashMap<String, ArrayList<Interval>> getUniqueMappings() {
-		HashMap<String, ArrayList<Interval>> uniqueMap = new HashMap<>();
+	public HashMap<String, List<Interval>> getUniqueMappings() {
+		HashMap<String, List<Interval>> uniqueMap = new HashMap<>();
 		System.out.println("Unique UniProts in PDB: "+uniprot2chain.size());
 		
 		int count = 0;

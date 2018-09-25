@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import eppic.EppicParams;
 import eppic.commons.sequence.NoMatchFoundException;
@@ -119,7 +120,7 @@ public class WriteUniqueUniprots {
 		WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath, uniprotdbName,
 				params.getLocalUniprotDbHost(), params.getLocalUniprotDbPort(),
 				params.getLocalUniprotDbUser(), params.getLocalUniprotDbPwd());
-		HashMap<String, ArrayList<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
+		HashMap<String, List<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
 
 		int countFishy = 0;
 		int countErrLength = 0;
