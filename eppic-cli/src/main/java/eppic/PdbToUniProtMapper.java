@@ -78,13 +78,29 @@ public class PdbToUniProtMapper implements Serializable {
 		initSequences();
 
 	}
-	
+
+	/**
+	 * Set the UniProt reference sequence. The alignment will be calculated from full sequences with BioJava's
+	 * Needleman-Wunsch implementation. Equivalent to {@link #setUniProtReference(UnirefEntry, Interval, Interval)}
+	 * with both Interval parameters set to null.
+	 * @param uniref
+	 * @throws CompoundNotFoundException
+	 */
 	public void setUniProtReference(UnirefEntry uniref) throws CompoundNotFoundException {
 		
 		setUniProtReference(uniref, null, null);
 
 	}
 
+	/**
+	 * Set the UniProt reference sequence and aligned regions, the alignment will be calculated
+	 * for the given aligned regions. If both intervals are null the alignment is calculated from
+	 * full sequences with BioJava's Needleman-Wunsch implementation.
+	 * @param uniref
+	 * @param uniProtInterv
+	 * @param pdbInterv
+	 * @throws CompoundNotFoundException
+	 */
 	public void setUniProtReference(UnirefEntry uniref, Interval uniProtInterv, Interval pdbInterv) throws CompoundNotFoundException {
 
 		this.uniProtReference = uniref;
