@@ -3,6 +3,7 @@ package eppic;
 import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
+import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
@@ -124,7 +125,21 @@ public class TestPdbToUniProtMapper {
         assertEquals(68, pdbToUniProtMapper.getAlignment().getSeqPosOtherSeq(3, true));
         assertEquals(3, pdbToUniProtMapper.getAlignment().getSeqPosOtherSeq(68, false));
 
-        assertEquals("PRO", pdbToUniProtMapper.getPdbGroupFromUniProtIndex(70, "A").getPDBName());
+        assertEquals(363, pdbToUniProtMapper.getAlignment().getLength());
+        assertEquals(363, pdbToUniProtMapper.getAlignment().getAlignedSequence(true).length());
+        assertEquals(363, pdbToUniProtMapper.getAlignment().getAlignedSequence(false).length());
 
+        Group g = pdbToUniProtMapper.getPdbGroupFromUniProtIndex(70, "A");
+        assertEquals("PRO", g.getPDBName());
+        g = s.getPolyChainByPDB("A").getSeqResGroup(4);
+        assertEquals( 70, pdbToUniProtMapper.getUniProtIndexForPdbGroup(g, false));
+        assertTrue(pdbToUniProtMapper.isPdbGroupMatchingUniProt(g));
+
+        assertTrue(pdbToUniProtMapper.getAlignment().isMatchingPos(3, true));
+        assertTrue(pdbToUniProtMapper.getAlignment().isMatchingPos(68, false));
+
+        assertFalse(pdbToUniProtMapper.getAlignment().hasGap(3, true));
+        assertFalse(pdbToUniProtMapper.getAlignment().hasGap(68, false));
+        assertTrue(pdbToUniProtMapper.getAlignment().hasGap(1, true));
     }
 }

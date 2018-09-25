@@ -192,24 +192,6 @@ public class FullAlignment {
     }
 
     /**
-     * Gets the AminoAcidCompound in first or second sequence (depending on parameter first) at
-     * the given alignment index.
-     * @param alnIndex the alignment index (1-based)
-     * @param first if true the compound for first sequence is returned, if false for second sequence
-     * @return
-     */
-    public AminoAcidCompound getCompoundInSequenceAt(int alnIndex, boolean first) {
-        if (alnIndex <= 0) {
-            throw new IllegalArgumentException("Alignment index can't be <=0");
-        }
-        if (first) {
-            return ali.getCompoundInQueryAt(alnIndex);
-        } else {
-            return ali.getCompoundInTargetAt(alnIndex);
-        }
-    }
-
-    /**
      * Gets the corresponding index in other sequence, given a position in first or second sequence
      * @param seqPos the sequence position
      * @param first if true seqPos refers to first sequence, if false seqPos refers to second sequence
