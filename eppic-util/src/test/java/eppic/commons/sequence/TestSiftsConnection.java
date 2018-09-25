@@ -35,5 +35,7 @@ public class TestSiftsConnection {
         assertEquals(3, features.size());
 
         assertEquals(1, features.get(0).getCifIntervalSet().size());
+
+        assertEquals(4, siftsConnection.getAllMappings().size());
     }
 }

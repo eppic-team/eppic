@@ -8,11 +8,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,8 +31,8 @@ public class SiftsConnection {
 
 	private static final Pattern URL_PATTERN = Pattern.compile("^\\w+://.*"); 
 	
-	private HashMap<String,List<SiftsFeature>> chain2uniprot;
-	private HashMap<String,List<SiftsFeature>> uniprot2chain;
+	private Map<String,List<SiftsFeature>> chain2uniprot;
+	private Map<String,List<SiftsFeature>> uniprot2chain;
 	
 	/**
 	 * Constructs a SiftsConnection. Use {@link #parsePdb2Uniprot(String)} afterwards
@@ -119,7 +115,7 @@ public class SiftsConnection {
 			if (chain2uniprot.containsKey(id)) {
 				chain2uniprot.get(id).add(siftsMapping);
 			} else {
-				ArrayList<SiftsFeature> ups = new ArrayList<>();
+				List<SiftsFeature> ups = new ArrayList<>();
 				ups.add(siftsMapping);
 				chain2uniprot.put(id, ups);				
 			}
@@ -127,7 +123,7 @@ public class SiftsConnection {
 			if (uniprot2chain.containsKey(uniprotId)) {
 				uniprot2chain.get(uniprotId).add(siftsMapping);
 			} else {
-				ArrayList<SiftsFeature> ups = new ArrayList<>();
+				List<SiftsFeature> ups = new ArrayList<>();
 				ups.add(siftsMapping);
 				uniprot2chain.put(uniprotId, ups);				
 			}			
