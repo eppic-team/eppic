@@ -61,10 +61,10 @@ public class ChainEvolContext implements Serializable {
 	
 	// private classes
 	private class MappingCoverage implements Comparable<MappingCoverage>{
-		public String uniprotId;
+		public SiftsFeature siftsFeature;
 		public int totalCoverage;
-		public MappingCoverage(String uniprotId, int coverage) {
-			this.uniprotId = uniprotId;
+		public MappingCoverage(SiftsFeature siftsFeature, int coverage) {
+			this.siftsFeature = siftsFeature;
 			this.totalCoverage = coverage;			
 		}
 		public void add(int coverage) {
@@ -72,11 +72,11 @@ public class ChainEvolContext implements Serializable {
 		}
 		@Override
 		public int compareTo(MappingCoverage o) {
-			return new Integer(totalCoverage).compareTo(o.totalCoverage);
+			return Integer.compare(totalCoverage, o.totalCoverage);
 		}
 		@Override
 		public String toString() {
-			return uniprotId+"-"+totalCoverage;
+			return siftsFeature.getUniprotId()+"-"+totalCoverage;
 		}
 	}
 
@@ -200,6 +200,9 @@ public class ChainEvolContext implements Serializable {
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
 		List<SiftsFeature> mappings = null;
 		boolean findMappingWithBlast = false;
+
+		Interval pdbInterv = null;
+		Interval uniProtInterv = null;
 		
 		if (!params.isInputAFile() || params.isUsePdbCodeFromFile()) {
 			String pdbCode = parent.getPdb().getPDBCode().toLowerCase();
@@ -213,7 +216,10 @@ public class ChainEvolContext implements Serializable {
 					try {
 						mappings = siftsConn.getMappings(pdbCode, sequenceId);
 
-						queryUniprotId = checkSiftsMappings(mappings, params.isAllowChimeras());
+						SiftsFeature chosenSiftsFeature = checkSiftsMappings(mappings, params.isAllowChimeras());
+						queryUniprotId = chosenSiftsFeature==null?null:chosenSiftsFeature.getUniprotId();
+						pdbInterv = chosenSiftsFeature==null?null:chosenSiftsFeature.getCifIntervalSet().iterator().next();
+						uniProtInterv = chosenSiftsFeature==null?null:chosenSiftsFeature.getUniprotIntervalSet().iterator().next();
 
 					} catch (NoMatchFoundException e) {
 						LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+sequenceId);
@@ -261,8 +267,10 @@ public class ChainEvolContext implements Serializable {
 					LOGGER.warn("Replacing 'O' by 'X' in UniProt reference "+query.getUniId());
 				}
 
-				// this initialises the alignment that maps PDB-to-UniProt
-				pdbToUniProtMapper.setUniProtReference(query);
+				// this initialises the alignment that maps PDB-to-UniProt,
+				// if SIFTS mapping was found then intervals will be used (https://github.com/eppic-team/eppic/issues/188),
+				// otherwise intervals will be false
+				pdbToUniProtMapper.setUniProtReference(query, uniProtInterv, pdbInterv);
 				
 				String warning = pdbToUniProtMapper.checkAlignments();
 				if (warning!=null) {
@@ -347,7 +355,7 @@ public class ChainEvolContext implements Serializable {
 	
 	/**
 	 * Checks the PDB to UniProt mapping obtained from the SIFTS resource and 
-	 * returns a single UniProt id decided to be the valid mapping. 
+	 * returns a single SiftsFeature with a single UniProt id decided to be the valid mapping.
 	 * If any of the intervals is of 0 or negative length the mapping is rejected.
 	 * 
 	 * Subcases:
@@ -359,14 +367,15 @@ public class ChainEvolContext implements Serializable {
 	 *     
 	 * @param mappings
 	 * @param allowChimeras
-	 * @return the UniProt id decided to be the valid mapping or null if mapping is rejected
+	 * @return the SiftsFeature with UniProt id decided to be the valid mapping or
+	 * null if mapping is rejected
 	 */
-	private String checkSiftsMappings(List<SiftsFeature> mappings, boolean allowChimeras) {
+	private SiftsFeature checkSiftsMappings(List<SiftsFeature> mappings, boolean allowChimeras) {
 		
-		String queryUniprotId = null;
+		SiftsFeature chosenSiftsFeature = null;
 						
 		// first we group the unique uniprot ids in a map also storing their coverage
-		HashMap<String,MappingCoverage> uniqUniIds = new HashMap<String,MappingCoverage>();
+		HashMap<String,MappingCoverage> uniqUniIds = new HashMap<>();
 		boolean hasNegativeLength = false;
 		boolean hasNegatives = false;
 		for (SiftsFeature sifts:mappings) {
@@ -376,7 +385,7 @@ public class ChainEvolContext implements Serializable {
 			if (interv.beg<=0 || interv.end<=0) hasNegatives = true;
 			
 			if (!uniqUniIds.containsKey(sifts.getUniprotId())) {
-				uniqUniIds.put(sifts.getUniprotId(), new MappingCoverage(sifts.getUniprotId(),interv.getLength()));
+				uniqUniIds.put(sifts.getUniprotId(), new MappingCoverage(sifts,interv.getLength()));
 			} else {
 				uniqUniIds.get(sifts.getUniprotId()).add(interv.getLength());
 			}
@@ -406,7 +415,7 @@ public class ChainEvolContext implements Serializable {
 		// a) more than 1 uniprot id: chimeras
 		if (uniqUniIds.size()>1) {
 						
-			String largestCoverageUniprotId = Collections.max(uniqUniIds.values()).uniprotId;
+			String largestCoverageUniprotId = Collections.max(uniqUniIds.values()).siftsFeature.getUniprotId();
 			
 			LOGGER.warn("More than one UniProt SIFTS mapping for chain "+sequenceId);
 			String msg = "UniProt IDs are: ";
@@ -417,7 +426,7 @@ public class ChainEvolContext implements Serializable {
 			
 			if (allowChimeras) {
 				LOGGER.warn("ALLOW_CHIMERAS mode is on. Will use longest coverage UniProt id as reference "+largestCoverageUniprotId);
-				queryUniprotId = largestCoverageUniprotId;
+				chosenSiftsFeature = uniqUniIds.get(largestCoverageUniprotId).siftsFeature;
 			} else {
 				LOGGER.warn("This is likely to be a chimeric chain. Won't do evolution analysis on this chain.");
 				String warning = "More than one UniProt id correspond to chain "+sequenceId+": ";
@@ -431,7 +440,9 @@ public class ChainEvolContext implements Serializable {
 			}
 
 		// b) 1 uniprot id but with more than 1 mapping: deletions or insertions in the construct 
-		} else if (mappings.size()>1) {			
+		} else if (mappings.size()>1) {
+
+			@SuppressWarnings("unused") // not needed anymore since 3.2.0 when we reject all insertion/deletions
 			boolean unacceptableGaps = false;
 			String msg = "";
 			
@@ -479,35 +490,25 @@ public class ChainEvolContext implements Serializable {
 			LOGGER.warn("PDB chain "+sequenceId+" vs UniProt ("+
 					mappings.iterator().next().getUniprotId()+") segments:"+msg);
 
-			
-			if (unacceptableGaps) {				
-				// insertions exist and they are too long: reject mapping
-				LOGGER.warn("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 
-				String warning = "More than one UniProt segment of id "+mappings.iterator().next().getUniprotId()+
-						" correspond to chain "+sequenceId+":"+msg+
-						". This is most likely an engineered chain";
-				queryWarnings.add(warning);
+			// since 3.2.0 we reject any insertion/deletion
+			LOGGER.warn("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 
-				return null;
+			String warning = "More than one UniProt segment of id " + mappings.iterator().next().getUniprotId() +
+					" correspond to chain " + sequenceId + ":" + msg +
+					". This is most likely an engineered chain";
+			queryWarnings.add(warning);
+
+			return null;
 				
-			} else {
-				// two cases here: 
-				// a) all deletions 
-				// b) insertions exist but they are within the allowed margins: warn only and continue using the mapping
-				//    (sometimes the gaps are of only 2-3 residues and it is a bit over the top to reject it plainly)
-				//    for some cases the gaps are even 0 length! (I guess a SIFTS error) e.g. 2jdi chain D				
-				LOGGER.warn("All segments are deletions or insertions are all below "+EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION+" residues. " +
-						"Will anyway proceed with this UniProt reference");
-				queryUniprotId = uniqUniIds.keySet().iterator().next();
-			}
+
 		// c) 1 uniprot id and 1 mapping: vanilla case
 		} else {
 			LOGGER.info("Getting UniProt reference mapping for chain "+sequenceId+" from SIFTS");
-			queryUniprotId = uniqUniIds.keySet().iterator().next();
+			chosenSiftsFeature = uniqUniIds.values().iterator().next().siftsFeature;
 		}
 		
-		return queryUniprotId;
+		return chosenSiftsFeature;
 	}
 	
 	
