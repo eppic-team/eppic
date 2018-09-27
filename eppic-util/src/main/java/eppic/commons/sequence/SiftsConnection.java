@@ -31,15 +31,13 @@ public class SiftsConnection {
 
 	private static final Pattern URL_PATTERN = Pattern.compile("^\\w+://.*"); 
 	
-	private Map<String,List<SiftsFeature>> chain2uniprot;
-	private Map<String,List<SiftsFeature>> uniprot2chain;
-	
+	private Map<String,SiftsFeature> chain2uniprot;
+
 	/**
 	 * Constructs a SiftsConnection. Use {@link #parsePdb2Uniprot(String)} afterwards
 	 */
 	public SiftsConnection() {
 		chain2uniprot = new HashMap<>();
-		uniprot2chain = new HashMap<>();
 	}
 	
 	/**
@@ -51,7 +49,6 @@ public class SiftsConnection {
 	 */
 	public SiftsConnection(String pdb2uniprotURL) throws IOException{
 		chain2uniprot = new HashMap<>();
-		uniprot2chain = new HashMap<>();
 		parsePdb2Uniprot(pdb2uniprotURL);
 	}
 
@@ -104,29 +101,21 @@ public class SiftsConnection {
 			String uniprotId = fields[2];
 			int cifBeg = Integer.parseInt(fields[3]);
 			int cifEnd = Integer.parseInt(fields[4]);
-			String pdbBeg = fields[5];
-			String pdbEnd = fields[6];
+			//String pdbBeg = fields[5];
+			//String pdbEnd = fields[6];
 			int uniBeg = Integer.parseInt(fields[7]);
 			int uniEnd = Integer.parseInt(fields[8]);
 			
-			SiftsFeature siftsMapping = new SiftsFeature(pdbCode, pdbChainCode, uniprotId, cifBeg, cifEnd, pdbBeg, pdbEnd, uniBeg, uniEnd);
-			
+			SiftsFeature feat;
 			// store pdb2uniprot record
 			if (chain2uniprot.containsKey(id)) {
-				chain2uniprot.get(id).add(siftsMapping);
+				feat = chain2uniprot.get(id);
 			} else {
-				List<SiftsFeature> ups = new ArrayList<>();
-				ups.add(siftsMapping);
-				chain2uniprot.put(id, ups);				
+				feat = new SiftsFeature(pdbCode, pdbChainCode);
+				chain2uniprot.put(id, feat);
 			}
-			// store uniprot2pdb record
-			if (uniprot2chain.containsKey(uniprotId)) {
-				uniprot2chain.get(uniprotId).add(siftsMapping);
-			} else {
-				List<SiftsFeature> ups = new ArrayList<>();
-				ups.add(siftsMapping);
-				uniprot2chain.put(uniprotId, ups);				
-			}			
+			feat.addSegment(uniprotId, cifBeg, cifEnd, uniBeg, uniEnd);
+
 		}
 		br.close();
 	}
@@ -139,66 +128,59 @@ public class SiftsConnection {
 	 * @return
 	 * @throws NoMatchFoundException if no matching UniProt entry is found
 	 */
-	public List<SiftsFeature> getMappings(String pdbCode, String pdbChainCode) throws NoMatchFoundException{
+	public SiftsFeature getMappings(String pdbCode, String pdbChainCode) throws NoMatchFoundException{
 		if (!chain2uniprot.containsKey(pdbCode+pdbChainCode)) 
 			throw new NoMatchFoundException("No SIFTS mapping for PDB "+pdbCode+", chain "+pdbChainCode);
-		List<SiftsFeature> list = chain2uniprot.get(pdbCode+pdbChainCode);
-		
+		SiftsFeature list = chain2uniprot.get(pdbCode+pdbChainCode);
+
+		// TODO do we need this now?
 		// before returning the list we make sure it is sorted based on the order of cif intervals, i.e. as they happen in PDB chain
-		list.sort(Comparator.comparing(o -> o.getCifIntervalSet().iterator().next()));
+		//list.sort(Comparator.comparing(o -> o.getCifIntervalSet().iterator().next()));
 		return chain2uniprot.get(pdbCode+pdbChainCode);
-	}
-	
-	/**
-	 * Returns a list of SiftsFeatures for the given UniProt ID.
-	 * Warning: If this is not the primary ID, no results may be found.
-	 * @param uniprotId
-	 * @return the SiftsFeatures containing information about PDB chains associated with this Uniprot entry
-	 * @throws NoMatchFoundException if no matching PDB chains are found
-	 */
-	public List<SiftsFeature> getUniprot2PdbMappings(String uniprotId) throws NoMatchFoundException {
-		if (!uniprot2chain.containsKey(uniprotId)) 
-			throw new NoMatchFoundException("No SIFTS mapping for UniProtID "+uniprotId);
-		return uniprot2chain.get(uniprotId);
 	}
 	
 	/**
 	 * Gets the Collection of all mappings for all PDB chains found in the SIFTS repository
 	 * @return
 	 */
-	public Collection<List<SiftsFeature>> getAllMappings() {
+	public Collection<SiftsFeature> getAllMappings() {
 		return chain2uniprot.values();
 	}
 	
 	/**
-	 * Gets a HashMap with unique mappings of UniProt ids for all PDB chains found in the SIFTS repository 
+	 * Gets a Map with unique mappings of UniProt ids for all PDB chains found in the SIFTS repository
 	 * as the keys and all its unique segments as the array list
-	 * @return HashMap<String, ArrayList<Interval>>
+	 * @return a map with keys uniprot ids and value a list of unique uniprot intervals for that uniprot id
 	 */
-	public HashMap<String, List<Interval>> getUniqueMappings() {
-		HashMap<String, List<Interval>> uniqueMap = new HashMap<>();
-		System.out.println("Unique UniProts in PDB: "+uniprot2chain.size());
-		
-		int count = 0;
-		for (String uniprotid:uniprot2chain.keySet()) {
-			ArrayList<Interval> uniqueIntervals = new ArrayList<>();
-			for (SiftsFeature f:uniprot2chain.get(uniprotid)) {
-				for (Interval interv: f.getUniprotIntervalSet()){
-					if(!uniqueIntervals.contains(interv)) uniqueIntervals.add(interv); 
+	public Map<String, List<Interval>> getUniqueMappings() {
+		Map<String, List<Interval>> uniqueMap = new HashMap<>();
+
+		for (SiftsFeature feat : chain2uniprot.values()) {
+			for (int i = 0; i<feat.getUniprotIntervalSet().size(); i++) {
+				String uniProtId = feat.getUniprotIds().get(i);
+				Interval uniProtInterv = feat.getUniprotIntervalSet().get(i);
+
+				List<Interval> intervalsPerUniProt;
+				if (uniqueMap.containsKey(uniProtId)) {
+					intervalsPerUniProt = uniqueMap.get(uniProtId);
+				} else {
+					intervalsPerUniProt = new ArrayList<>();
+					uniqueMap.put(uniProtId, intervalsPerUniProt);
 				}
+
+				if(!intervalsPerUniProt.contains(uniProtInterv))
+					intervalsPerUniProt.add(uniProtInterv);
 			}
-			count += uniqueIntervals.size();
-			uniqueMap.put(uniprotid, uniqueIntervals);
+
 		}
-		System.out.print("Unique UniProt segments in PDB: "+count);
 		
 		return uniqueMap;
 	}
 	
 	/**
 	 * Gets the total number of available pdb to UniProt mappings available in the SIFTS 
-	 * database.
-	 * @return
+	 * database. A mapping is one pdbId+chainId (one mapping per unique chain).
+	 * @return the count
 	 */
 	public int getMappingsCount() {
 		return chain2uniprot.size();

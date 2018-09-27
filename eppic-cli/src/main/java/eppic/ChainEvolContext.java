@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,27 +56,6 @@ public class ChainEvolContext implements Serializable {
 	private static final String FASTA_SUFFIX = ".fa";	
 	private static final boolean BLAST_NO_FILTERING = true;
 	private static final boolean DEBUG = false;
-	
-	// private classes
-	private class MappingCoverage implements Comparable<MappingCoverage>{
-		public SiftsFeature siftsFeature;
-		public int totalCoverage;
-		public MappingCoverage(SiftsFeature siftsFeature, int coverage) {
-			this.siftsFeature = siftsFeature;
-			this.totalCoverage = coverage;			
-		}
-		public void add(int coverage) {
-			this.totalCoverage += coverage;
-		}
-		@Override
-		public int compareTo(MappingCoverage o) {
-			return Integer.compare(totalCoverage, o.totalCoverage);
-		}
-		@Override
-		public String toString() {
-			return siftsFeature.getUniprotId()+"-"+totalCoverage;
-		}
-	}
 
 	
 	// members 
@@ -198,7 +175,7 @@ public class ChainEvolContext implements Serializable {
 		
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
-		List<SiftsFeature> mappings = null;
+		SiftsFeature siftsMappings = null;
 		boolean findMappingWithBlast = false;
 
 		Interval pdbInterv = null;
@@ -214,12 +191,14 @@ public class ChainEvolContext implements Serializable {
 
 					SiftsConnection siftsConn = parent.getSiftsConn(siftsLocation);
 					try {
-						mappings = siftsConn.getMappings(pdbCode, sequenceId);
+						siftsMappings = siftsConn.getMappings(pdbCode, sequenceId);
 
-						SiftsFeature chosenSiftsFeature = checkSiftsMappings(mappings, params.isAllowChimeras());
-						queryUniprotId = chosenSiftsFeature==null?null:chosenSiftsFeature.getUniprotId();
-						pdbInterv = chosenSiftsFeature==null?null:chosenSiftsFeature.getCifIntervalSet().iterator().next();
-						uniProtInterv = chosenSiftsFeature==null?null:chosenSiftsFeature.getUniprotIntervalSet().iterator().next();
+						Integer chosenSiftsFeatureIndex = checkSiftsMappings(siftsMappings, params.isAllowChimeras());
+						if (chosenSiftsFeatureIndex != null) {
+							queryUniprotId = siftsMappings.getUniprotIds().get(chosenSiftsFeatureIndex);
+							pdbInterv = siftsMappings.getCifIntervalSet().get(chosenSiftsFeatureIndex);
+							uniProtInterv = siftsMappings.getUniprotIntervalSet().get(chosenSiftsFeatureIndex);
+						}
 
 					} catch (NoMatchFoundException e) {
 						LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+sequenceId);
@@ -313,86 +292,28 @@ public class ChainEvolContext implements Serializable {
 
 		}
 		
-		// In case we did get the mappings from SIFTS and that we could align properly 
-		// we need to check our alignment against SIFTS mappings
-		if (hasQueryMatch && mappings!=null) {
-
-			// we only do the check for uniprot mappings of size 1 and not for multi-segment mappings 
-			// TODO could we do this check also for multi-segment mapping?
-			if (mappings.size()==1) {
-				// if we are here it means we have a single uniprot match with only one interval mapping
-				Interval interv = mappings.iterator().next().getIntervalSet().iterator().next();
-
-				if (interv.end>query.getSequence().length() || interv.beg>query.getSequence().length()) {
-					// This can happen if Uniref100 got the clustering wrong and provide a 
-					// representative whose sequence is shorter (but 100% identical) than the member
-					// e.g. in UniProt 2013_01 PDB 1bo4 maps to Q53396 (seq length 177) and its representative 
-					// in Uniref100 is D3VY99 (seq length 154). The SIFTS mapping then refers to the longer sequence
-					// This is a problem only if we use our local UniProt database (which contains the Uniref100 clustering)
-					// but not if we use the UniProt JAPI
-					LOGGER.warn("The retrieved sequence for UniProt "+query.getUniId()+
-							" seems to be shorter than the mapping coordinates in SIFTS (for chain "+sequenceId+")." +
-							" This is likely to be a problem with Uniref100 clustering. Sequence length is "+query.getSequence().length()+
-							", SIFTS mapping is "+interv.beg+"-"+interv.end);
-
-					// For any other case we check that our mappings coincide and warn if not
-				} else {
-					
-					Interval ourInterv = pdbToUniProtMapper.getMatchingIntervalUniProtCoords();
-					
-					if (ourInterv.beg!=interv.beg || ourInterv.end!=interv.end ) {
-						
-						LOGGER.warn("The SIFTS mapping does not coincide with our mapping for chain "+sequenceId+", UniProt id "+query.getUniId()+
-							": ours is "+
-							ourInterv.beg+"-"+ourInterv.end+
-							", SIFTS is "+interv.beg+"-"+interv.end);
-					}
-				}
-			}
-		}
-		
 	}
 	
 	/**
 	 * Checks the PDB to UniProt mapping obtained from the SIFTS resource and 
-	 * returns a single SiftsFeature with a single UniProt id decided to be the valid mapping.
-	 * If any of the intervals is of 0 or negative length the mapping is rejected.
+	 * returns a single index of input siftsMapping corresponding to a single UniProt segment
+	 * decided to be the valid mapping.
+	 * If any of the intervals is of 0 or negative length the mapping is rejected (null returned)
 	 * 
 	 * Subcases:
 	 *  - more than one UniProt id: chimera case. 
 	 *    If allow chimeras is true then the longest length match will be used
-	 *  - one UniProt id but several segments: deletion or insertion case.
-	 *    All deletions are allowed, insertions are only allowed if below
-	 *    EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION 
+	 *  - one UniProt id but several segments: deletion or insertion case. Mapping rejected since 3.2.0
 	 *     
-	 * @param mappings
-	 * @param allowChimeras
-	 * @return the SiftsFeature with UniProt id decided to be the valid mapping or
-	 * null if mapping is rejected
+	 * @param siftsMapping a SiftsFeature containing all UniProt segments that map to a particular PDB chain
+	 * @param allowChimeras if true and mapping chimeric, the largest coverage segment will be chosen as the mapping
+	 * @return the index (in {@link SiftsFeature#getUniprotIds()}) in input SiftsFeature corresponding to
+	 * the chosen segment mapping or null if the mapping is rejected.
 	 */
-	private SiftsFeature checkSiftsMappings(List<SiftsFeature> mappings, boolean allowChimeras) {
-		
-		SiftsFeature chosenSiftsFeature = null;
-						
-		// first we group the unique uniprot ids in a map also storing their coverage
-		HashMap<String,MappingCoverage> uniqUniIds = new HashMap<>();
-		boolean hasNegativeLength = false;
-		boolean hasNegatives = false;
-		for (SiftsFeature sifts:mappings) {
-			Interval interv = sifts.getUniprotIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
-						
-			if (interv.getLength()<=0) hasNegativeLength = true;
-			if (interv.beg<=0 || interv.end<=0) hasNegatives = true;
-			
-			if (!uniqUniIds.containsKey(sifts.getUniprotId())) {
-				uniqUniIds.put(sifts.getUniprotId(), new MappingCoverage(sifts,interv.getLength()));
-			} else {
-				uniqUniIds.get(sifts.getUniprotId()).add(interv.getLength());
-			}
-		}
+	private Integer checkSiftsMappings(SiftsFeature siftsMapping, boolean allowChimeras) {
 		
 		//we do a sanity check on the SIFTS data: negative intervals are surely errors, we need to reject
-		if (hasNegativeLength) {
+		if (siftsMapping.hasNegativeLength()) {
 			LOGGER.warn("Negative intervals present in SIFTS mapping for chain "+sequenceId+". Will not use the SIFTS mapping.");
 			queryWarnings.add("Problem with SIFTS PDB to UniProt mapping: negative intervals present in mapping");
 			// We continue with a null query, i.e. no match, of course we could try to still find a mapping ourselves
@@ -402,7 +323,7 @@ public class ChainEvolContext implements Serializable {
 			return null;
 		}
 		// second sanity check: negative or 0 coordinates are surely errors: reject
-		if (hasNegatives) {
+		if (siftsMapping.hasNegatives()) {
 			LOGGER.warn("0 or negative coordinates present in SIFTS mapping for chain "+sequenceId+". Will not use the SIFTS mapping.");
 			queryWarnings.add("Problem with SIFTS PDB to UniProt mapping: 0 or negative coordinates present in mapping");
 			// We continue with a null query, i.e. no match, of course we could try to still find a mapping ourselves
@@ -411,27 +332,36 @@ public class ChainEvolContext implements Serializable {
 			// As of Oct 2013 there is a bug in the SIFTS pipeline that produces some negative coordinates, e.g. 1s70 
 			return null;			
 		}
+
+		Integer chosenSiftsFeature = null;
 		
 		// a) more than 1 uniprot id: chimeras
-		if (uniqUniIds.size()>1) {
-						
-			String largestCoverageUniprotId = Collections.max(uniqUniIds.values()).siftsFeature.getUniprotId();
+		if (siftsMapping.isChimeric()) {
+
+			// since 3.2.0 we select the largest coverage segment instead of the largest total coverage over all
+			// segments of the same uniprot id
+			int largestCoverageUniprotIdSegmentIndex = siftsMapping.getLargestSegmentCoverageIndex();
 			
 			LOGGER.warn("More than one UniProt SIFTS mapping for chain "+sequenceId);
-			String msg = "UniProt IDs are: ";
-			for (String uniId:uniqUniIds.keySet()){
-				msg+=(uniId+" (total coverage "+uniqUniIds.get(uniId).totalCoverage+") ");
+			StringBuilder msg = new StringBuilder("UniProt IDs are: ");
+			for (int i=0;i<siftsMapping.getUniprotIds().size();i++){
+				msg.append(siftsMapping.getUniprotIds().get(i))
+						.append(" (segment coverage ")
+						.append(siftsMapping.getUniprotIntervalSet().get(i).getLength())
+						.append(") ");
 			}
-			LOGGER.warn(msg);
+			LOGGER.warn(msg.toString());
 			
 			if (allowChimeras) {
-				LOGGER.warn("ALLOW_CHIMERAS mode is on. Will use longest coverage UniProt id as reference "+largestCoverageUniprotId);
-				chosenSiftsFeature = uniqUniIds.get(largestCoverageUniprotId).siftsFeature;
+				LOGGER.warn("ALLOW_CHIMERAS mode is on. Will use longest segment coverage UniProt id as reference: {} (coverage: {})",
+						siftsMapping.getUniprotIds().get(largestCoverageUniprotIdSegmentIndex),
+						siftsMapping.getUniprotIntervalSet().get(largestCoverageUniprotIdSegmentIndex).getLength());
+				chosenSiftsFeature = largestCoverageUniprotIdSegmentIndex;
 			} else {
-				LOGGER.warn("This is likely to be a chimeric chain. Won't do evolution analysis on this chain.");
+				LOGGER.warn("Chain {} is likely to be a chimeric chain. Won't do evolution analysis on this chain.", sequenceId);
 				String warning = "More than one UniProt id correspond to chain "+sequenceId+": ";
-				for (String uniId:uniqUniIds.keySet()){
-					warning+=(uniId+" (total coverage "+uniqUniIds.get(uniId).totalCoverage+") ");
+				for (String uniId:siftsMapping.getUniqueUniprotIds()){
+					warning+=(uniId+" (total coverage "+siftsMapping.getUniProtLengthCoverage(uniId)+") ");
 				}
 				warning+=". This is most likely a chimeric chain";
 				queryWarnings.add(warning);
@@ -440,72 +370,43 @@ public class ChainEvolContext implements Serializable {
 			}
 
 		// b) 1 uniprot id but with more than 1 mapping: deletions or insertions in the construct 
-		} else if (mappings.size()>1) {
+		} else if (siftsMapping.getUniprotIds().size()>1) {
 
-			@SuppressWarnings("unused") // not needed anymore since 3.2.0 when we reject all insertion/deletions
-			boolean unacceptableGaps = false;
-			String msg = "";
+			StringBuilder msg = new StringBuilder();
 			
 			// common logging for all deletion/insertion cases
 			LOGGER.warn("The SIFTS PDB-to-UniProt mapping of chain "+sequenceId+
-					" is composed of several segments of a single UniProt sequence ("+mappings.iterator().next().getUniprotId()+")");
-			
-			int lastUniprotEnd = -1;
-			int lastPdbEnd = -1;			
-			
-			for (SiftsFeature sifts:mappings) {
-				// checking for the gaps between the PDB segments: insertions in PDB sequence with respect to UniProt
-				Interval pdbInterv = sifts.getCifIntervalSet().iterator().next();
-				if (lastPdbEnd!=-1 && 
-					( (pdbInterv.beg-lastPdbEnd)>EppicParams.NUM_GAP_RES_FOR_CHIMERIC_FUSION ||
-					  (pdbInterv.beg-lastPdbEnd)<0	)) {
-					// if at least one of the gaps is long or an inversion then we consider the mappings unacceptable
-					unacceptableGaps = true;
-				}
-				lastPdbEnd = pdbInterv.end;
-				
-				// checking for the gaps between the uniprot segments: deletions in PDB sequence with respect to UniProt
-				Interval interv = sifts.getUniprotIntervalSet().iterator().next(); // there's always only 1 interval per SiftsFeature
-				if ( lastUniprotEnd!=-1 && 
-					 (interv.beg-lastUniprotEnd)<0 ) {
-					// if at least 1 of the gaps is an inversion (e.g. circular permutants) then we consider the mappings unacceptable
-					// Note: for this to work properly the intervals have to be sorted as they appear in the PDB chain (getMappings above sorts them)
-					unacceptableGaps = true;
-				} else if (lastUniprotEnd!=-1 && 
-						   (interv.beg-lastUniprotEnd)>1) {
-					// we only warn that deletion exists, we then proceed with the mapping unless unacceptableGaps goes to true elsewhere
-					// esentially a deletion is like removing a domain from a terminal, so as we do allow removing domains from terminals
-					// we should also allow this (see JIRA issue CRK-139)
-					// e.g. 4cofA: a whole loop is deleted (and a few residues inserted to replace it too) 
-					LOGGER.warn("Deletion of length "+(interv.beg-lastUniprotEnd)+" in sequence of PDB chain "+sequenceId+" with respect to its UniProt reference");
-				}
-				lastUniprotEnd = interv.end;
-				
+					" is composed of several segments of a single UniProt sequence ("+siftsMapping.getUniprotIds().get(0)+")");
+
+			for (int i=0 ; i<siftsMapping.getUniprotIds().size(); i++) {
+				Interval pdbInterv = siftsMapping.getCifIntervalSet().get(i);
+				Interval interv = siftsMapping.getUniprotIntervalSet().get(i);
 				// putting in the same loop the different mapping coordinates in the msg string for reporting below
-				msg+=" "+pdbInterv.beg+"-"+pdbInterv.end+","+interv.beg+"-"+interv.end;
-				
+				msg.append(" ")
+						.append(pdbInterv.beg).append("-").append(pdbInterv.end)
+						.append(",")
+						.append(interv.beg).append("-").append(interv.end);
 			}
 
 			// common logging for all deletion/insertion cases
 			LOGGER.warn("PDB chain "+sequenceId+" vs UniProt ("+
-					mappings.iterator().next().getUniprotId()+") segments:"+msg);
+					siftsMapping.getUniprotIds().get(0)+") segments:"+msg);
 
 
 			// since 3.2.0 we reject any insertion/deletion
 			LOGGER.warn("Check if the PDB entry is biologically reasonable (likely to be an engineered entry). Won't do evolution analysis on this chain.");
 
-			String warning = "More than one UniProt segment of id " + mappings.iterator().next().getUniprotId() +
+			String warning = "More than one UniProt segment of id " + siftsMapping.getUniprotIds().get(0) +
 					" correspond to chain " + sequenceId + ":" + msg +
 					". This is most likely an engineered chain";
 			queryWarnings.add(warning);
 
 			return null;
-				
 
 		// c) 1 uniprot id and 1 mapping: vanilla case
 		} else {
 			LOGGER.info("Getting UniProt reference mapping for chain "+sequenceId+" from SIFTS");
-			chosenSiftsFeature = uniqUniIds.values().iterator().next().siftsFeature;
+			chosenSiftsFeature = 0; // only one index in SiftsFeature
 		}
 		
 		return chosenSiftsFeature;
