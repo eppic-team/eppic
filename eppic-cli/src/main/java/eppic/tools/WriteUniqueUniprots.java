@@ -16,6 +16,8 @@ import eppic.commons.sequence.UniprotLocalConnection;
 import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
 import gnu.getopt.Getopt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -27,6 +29,8 @@ import gnu.getopt.Getopt;
  *
  */
 public class WriteUniqueUniprots {
+
+	private static final Logger logger = LoggerFactory.getLogger(WriteUniqueUniprots.class);
 	
 	public SiftsConnection sc;
 	public UniprotLocalConnection uniLC;
@@ -140,8 +144,13 @@ public class WriteUniqueUniprots {
 					//Create fasta files
 					int maxLen = 60;
 
-					if (interv.beg >= interv.end || interv.beg <= 0) {
-						System.err.println("Warning: Fishy mapping in uniprot for " + uniprotid + "_" + interv.beg + "-" + interv.end);
+					if (interv.beg >= interv.end) {
+						logger.warn("Inverted or 0-size interval in uniprot mapping for {}_{}-{}", uniprotid, interv.beg, interv.end);
+						countFishy++;
+						continue;
+					}
+					if (interv.beg <= 0) {
+						logger.warn("Negative starting position in uniprot mapping for {}_{}-{}", uniprotid, interv.beg, interv.end);
 						countFishy++;
 						continue;
 					}
@@ -159,13 +168,13 @@ public class WriteUniqueUniprots {
 							out.close();
 						}
 					} else {
-						System.err.println("Warning: Length of query seq (" + uniSeq.length() + ") smaller than interval end of uniprot seq for " + uniprotid + "_" + interv.beg + "-" + interv.end);
+						logger.warn("Length of query seq ({}) smaller than interval end of uniprot seq for {}_{}-{}", uniSeq.length(), uniprotid, interv.beg, interv.end);
 						countErrLength++;
 					}
 
 				}
 			} catch (NoMatchFoundException er) {
-				System.err.println("Warning: could not find " + uniprotid + " in db. Skipping");
+				logger.warn("Could not find {} in db. Skipping");
 			}
 		}
 
@@ -174,10 +183,10 @@ public class WriteUniqueUniprots {
 		}
 
 		if (countFishy > 0)
-			System.err.println("Warning: Oops! total encountered fishy mappings: " + countFishy);
+			logger.warn("Total encountered fishy mappings (inverted/0-size intervals and negative starting positions): {}", countFishy);
 
 		if (countErrLength > 0)
-			System.err.println("Warning: Oops! total encountered problems in the length: " + countErrLength);
+			logger.warn("Total encountered problems in the length: {}", countErrLength);
 
 	}
 }
