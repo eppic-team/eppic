@@ -104,8 +104,11 @@ public class WriteUniqueUniprots {
 
 		for (String uniprotid : uniqueMap.keySet()) {
 			try {
-
+				UnirefEntry uniEntry = wuni.uc.getUnirefEntry(uniprotid);
+				String uniSeq = uniEntry.getSequence();
 				for (Interval interv : uniqueMap.get(uniprotid)) {
+					//Create fasta files
+					int maxLen = 60;
 
 					if (interv.beg >= interv.end) {
 						logger.warn("Inverted or 0-size interval in uniprot mapping {}_{}-{}", uniprotid, interv.beg, interv.end);
@@ -117,12 +120,6 @@ public class WriteUniqueUniprots {
 						countFishy++;
 						continue;
 					}
-
-					//Create fasta files
-					int maxLen = 60;
-					UnirefEntry uniEntry = wuni.uc.getUnirefEntry(uniprotid);
-					String uniSeq = uniEntry.getSequence();
-
 					if (uniSeq.length() >= interv.end) {
 						if (!singleFastaFile) {
 							File outFile = new File(outPath, uniprotid + "." + interv.beg + "-" + interv.end + ".fa");
