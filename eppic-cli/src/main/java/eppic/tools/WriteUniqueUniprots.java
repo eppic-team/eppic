@@ -3,78 +3,60 @@ package eppic.tools;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import eppic.EppicParams;
-import eppic.commons.sequence.NoMatchFoundException;
-import eppic.commons.sequence.SiftsConnection;
-import eppic.commons.sequence.UniprotLocalConnection;
-import eppic.commons.sequence.UnirefEntry;
+import eppic.commons.sequence.*;
 import eppic.commons.util.Interval;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 
 /**
  *
  * Script to write out all unique uniprot sequence segments present in the SIFTS file into FASTA file/s.
- * The sequences are pulled from the local uniprot database.
+ * The sequences are pulled from UniProt JAPI remotely (since 3.2.0, before it was from loca UniProt db).
  *
- * @author biyani_n
- *
+ * @author Nikhil Biyani
+ * @author Jose Duarte
  */
 public class WriteUniqueUniprots {
 
 	private static final Logger logger = LoggerFactory.getLogger(WriteUniqueUniprots.class);
 	
-	public SiftsConnection sc;
-	public UniprotLocalConnection uniLC;
-	
-	public WriteUniqueUniprots(String scPath, String uniprotdb, String dbHost, String dbPort, String dbUser, String dbPwd) throws IOException, SQLException{
+	private SiftsConnection sc;
+	private UniProtConnection uc;
+
+	public WriteUniqueUniprots(String scPath) throws IOException {
 			sc = new SiftsConnection(scPath);
-			uniLC = new UniprotLocalConnection(uniprotdb, dbHost, dbPort, dbUser, dbPwd);
+			uc = new UniProtConnection();
 	}
 
-	public static void main(String[] args) throws IOException, SQLException {
+	public static void main(String[] args) throws IOException {
 		
 		String help =
 				"Usage: WriteUniqueUnirots\n" +
 						"Creates fasta (.fa) file/s of unique mappings of PDB to Uniprot\n" +
 						" -s <file>  	  : SIFTS file path \n" +
-						" -u <string>     : Uniprot database name \n" +
-						" [-o <dir/file>] : If directory, sequences are written to individual FASTA \n"+
+						" -o <dir/file>   : If directory, sequences are written to individual FASTA \n"+
 						"                   files in the directory.\n" +
-						"                   If file all sequences are written to it as a single FASTA\n"+
-						" [-g <file>]     : an eppic-cli configuration file with config parameters \n" +
-						"                   for uniprot local db connection. If not provided it will \n" +
-						"                   be read from ~/.eppic.conf \n";
-		
-		Getopt g = new Getopt("UploadToDB", args, "s:u:o:g:h?");
+						"                   If file all sequences are written to it as a single FASTA\n";
+
+		Getopt g = new Getopt("UploadToDB", args, "s:o:h?");
 		
 		String scFilePath = null;
-		String uniprotdbName = null;
 		File outPath = null;
-		File configFile = null;
-		
+
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 's':
 				scFilePath = g.getOptarg();
 				break;
-			case 'u':
-				uniprotdbName = g.getOptarg();
-				break;
 			case 'o':
 				outPath = new File(g.getOptarg());
-				break;
-			case 'g':
-				configFile = new File(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -89,16 +71,8 @@ public class WriteUniqueUniprots {
 		
 		//Check if the file for sifts connection exits!
 		if( scFilePath == null || !(new File(scFilePath)).isFile()) {
-			System.err.println("Hey Jim, Can you check if the SIFTS Connection file really exists! " +
+			System.err.println("Hey Jim, Can you check if the SIFTS file really exists! " +
 					"I am having trouble in reading it.");
-			System.err.println(help);
-			System.exit(1);
-		}
-		
-		//Check if the uniprotdbName is provided by the user
-		if( uniprotdbName == null){
-			System.err.println("Hey Jim, Could you please provide me with a unipotDB Name with option -u");
-			System.err.println(help);
 			System.exit(1);
 		}
 
@@ -108,12 +82,6 @@ public class WriteUniqueUniprots {
 			System.exit(1);
 		}
 
-		EppicParams params = new EppicParams();
-		if (configFile == null) {
-			configFile = new File(System.getProperty("user.home"), EppicParams.CONFIG_FILE_NAME);
-		}
-		params.readConfigFile(configFile);
-
 		boolean singleFastaFile;
 		if (outPath.isDirectory()) {
 			singleFastaFile = false;
@@ -122,9 +90,7 @@ public class WriteUniqueUniprots {
 		}
 
 
-		WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath, uniprotdbName,
-				params.getLocalUniprotDbHost(), params.getLocalUniprotDbPort(),
-				params.getLocalUniprotDbUser(), params.getLocalUniprotDbPwd());
+		WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath);
 		Map<String, List<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
 
 		int countFishy = 0;
@@ -138,19 +104,19 @@ public class WriteUniqueUniprots {
 
 		for (String uniprotid : uniqueMap.keySet()) {
 			try {
-				UnirefEntry uniEntry = wuni.uniLC.getUnirefEntry(uniprotid);
+				UnirefEntry uniEntry = wuni.uc.getUnirefEntry(uniprotid);
 				String uniSeq = uniEntry.getSequence();
 				for (Interval interv : uniqueMap.get(uniprotid)) {
 					//Create fasta files
 					int maxLen = 60;
 
 					if (interv.beg >= interv.end) {
-						logger.warn("Inverted or 0-size interval in uniprot mapping for {}_{}-{}", uniprotid, interv.beg, interv.end);
+						logger.warn("Inverted or 0-size interval in uniprot mapping {}_{}-{}", uniprotid, interv.beg, interv.end);
 						countFishy++;
 						continue;
 					}
 					if (interv.beg <= 0) {
-						logger.warn("Negative starting position in uniprot mapping for {}_{}-{}", uniprotid, interv.beg, interv.end);
+						logger.warn("Negative starting position in uniprot mapping {}_{}-{}", uniprotid, interv.beg, interv.end);
 						countFishy++;
 						continue;
 					}
@@ -174,7 +140,9 @@ public class WriteUniqueUniprots {
 
 				}
 			} catch (NoMatchFoundException er) {
-				logger.warn("Could not find {} in db. Skipping");
+				logger.warn("Could not find {} from JAPI. Skipping", uniprotid);
+			} catch (ServiceException e) {
+				logger.warn("ServiceException while retrieving UniProt {} from JAPI. Error: {}", uniprotid, e.getMessage());
 			}
 		}
 

@@ -98,14 +98,14 @@ public class UniProtConnection {
 	 * @throws ServiceException if problems getting the entry
 	 */
 	public UnirefEntry getUnirefEntry(String uniProtId) throws NoMatchFoundException, ServiceException {
-		List<String> taxons = new ArrayList<String>();
+		List<String> taxons = new ArrayList<>();
 		
 		UniProtEntry entry = getEntry(uniProtId);
 		String sequence = entry.getSequence().getValue();
 		
 		List<NcbiTaxonomyId> ncbiTaxIds = entry.getNcbiTaxonomyIds();
 		if (ncbiTaxIds.size()>1) {
-			LOGGER.warn("More than one taxonomy id for uniprot entry "+uniProtId);
+			LOGGER.warn("More than one taxonomy id for uniprot entry {}", uniProtId);
 		}
 		int ncbiTaxId = Integer.parseInt(ncbiTaxIds.get(0).getValue());
 		for (NcbiTaxon ncbiTax:entry.getTaxonomy()) {
