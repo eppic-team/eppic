@@ -35,7 +35,7 @@
 		<mysql.connector.version>5.1.45</mysql.connector.version>
 		<jgrapht.version>1.0.1</jgrapht.version>
 		<gson.version>2.7</gson.version>
-		<biojava.version>5.1.0</biojava.version>
+		<biojava.version>5.1.1</biojava.version>
 	</properties>
 
 	<build>
