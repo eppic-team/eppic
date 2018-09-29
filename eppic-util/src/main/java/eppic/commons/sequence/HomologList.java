@@ -304,7 +304,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 		
 		List<UnirefEntry> unirefs = uniprotConn.getMultipleUnirefEntries(uniprotIds);
 		
-		HashMap<String,UnirefEntry> unirefsmap = new HashMap<String,UnirefEntry>();
+		HashMap<String,UnirefEntry> unirefsmap = new HashMap<>();
 		for (UnirefEntry uniref:unirefs) {
 			unirefsmap.put(uniref.getUniId(), uniref);
 		}

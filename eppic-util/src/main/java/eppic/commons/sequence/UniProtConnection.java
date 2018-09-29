@@ -189,11 +189,11 @@ public class UniProtConnection {
 		
 		
 		// now we check if the query to uniprot JAPI did really return all requested uniprot ids
-	    HashSet<String> returnedUniIds = new HashSet<String>();
+	    HashSet<String> returnedUniIds = new HashSet<>();
 	    for (UnirefEntry uniref:unirefEntries) {
 			returnedUniIds.add(uniref.getUniprotId());
 	    }
-	    nonReturnedIdsLastMultipleRequest = new HashSet<String>();
+	    nonReturnedIdsLastMultipleRequest = new HashSet<>();
 	    for (String uniprotId:uniprotIds){
 	    	if (!returnedUniIds.contains(uniprotId)) {
 	    		nonReturnedIdsLastMultipleRequest.add(uniprotId);
