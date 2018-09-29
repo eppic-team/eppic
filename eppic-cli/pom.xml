@@ -51,7 +51,7 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.eppic-web</groupId>
 			<artifactId>eppic-util</artifactId>
@@ -149,7 +149,7 @@
 			<version>1.0.13</version>
 		</dependency>
 
-		
+
 
 		<dependency>
 			<groupId>mysql</groupId>
