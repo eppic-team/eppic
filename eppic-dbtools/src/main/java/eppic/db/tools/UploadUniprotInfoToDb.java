@@ -11,6 +11,7 @@ import eppic.db.jpautils.DbConfigGenerator;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.kraken.interfaces.uniparc.UniParcEntry;
 import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 import java.io.BufferedReader;
@@ -87,6 +88,8 @@ public class UploadUniprotInfoToDb {
 
         initJpaConnection(configFile);
 
+        logger.info("Parsing file {}", blastTabFile);
+
         Set<String> uniqueIds = getUniqueUniRefIds(blastTabFile);
 
         logger.info("A total of {} unique UniProt/Parc ids were found", uniqueIds.size());
@@ -123,10 +126,15 @@ public class UploadUniprotInfoToDb {
         // TODO what to do if it's a isoform id? (i.e. with a "-")
 
         try {
-            // TODO check if this works for uniparc and uniprot ids
-            final UnirefEntry entry = uc.getUnirefEntry(uniId);
 
-            dao.insertUniProtInfo(entry.getUniId(), entry.getSequence(), entry.getFirstTaxon(), entry.getLastTaxon());
+            if (uniId.startsWith("UPI")) {
+                UniParcEntry uniparcEntry = uc.getUniparcEntry(uniId);
+                String seq = uniparcEntry.getSequence().getValue();
+                dao.insertUniProtInfo(uniId, seq, null, null);
+            } else {
+                final UnirefEntry entry = uc.getUnirefEntry(uniId);
+                dao.insertUniProtInfo(entry.getUniId(), entry.getSequence(), entry.getFirstTaxon(), entry.getLastTaxon());
+            }
 
         } catch (DaoException e) {
             logger.warn("Could not insert to db UniProt id {}.", uniId);

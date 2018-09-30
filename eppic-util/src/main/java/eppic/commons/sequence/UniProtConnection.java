@@ -146,7 +146,7 @@ public class UniProtConnection {
 	 */
 	public List<UnirefEntry> getMultipleUnirefEntries(List<String> uniprotIds) throws IOException, ServiceException {
 		
-		List<UnirefEntry> unirefEntries = new ArrayList<UnirefEntry>();
+		List<UnirefEntry> unirefEntries = new ArrayList<>();
 		
 		for (int i=0;i<uniprotIds.size();i+=MAX_ENTRIES_PER_REQUEST) {
 			
