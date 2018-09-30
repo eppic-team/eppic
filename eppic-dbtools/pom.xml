@@ -134,7 +134,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-	              			
+
 	              			<filters>
         						<filter>
         							<!-- solution to the signature repackaging problem is this filter: exclude the signatures!  -->
