@@ -164,6 +164,8 @@ public class UploadUniprotInfoToDb {
                 if (m.matches()) {
                     String uniId = m.group(1);
                     uniqueIds.add(uniId);
+                } else {
+                    logger.warn("Unexpected subject id format for {}. Will skip.", subjectId);
                 }
             }
         }
