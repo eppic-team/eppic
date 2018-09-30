@@ -134,15 +134,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-	              			<artifactSet>
-	                			<excludes>
-	                  				
-	                  				<!--  excluding the uniprot japi jar, there's no point in including it in the uber-jar for 
-	                  				      distribution, since it gets updated every month. It has to be downloaded by the user -->	                  				
-	                  				<exclude>uk.ac.ebi.uniprot.kraken</exclude>
-	                  				
-	                			</excludes>
-	              			</artifactSet>
+	              			
 	              			<filters>
         						<filter>
         							<!-- solution to the signature repackaging problem is this filter: exclude the signatures!  -->
