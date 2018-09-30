@@ -1010,6 +1010,8 @@
 			<basic name="uniId">
 			</basic>
 			<basic name="sequence">
+				<!-- As of Sept 2018, info from uniprot.org: the longest sequence is A0A1V4K6M4 at 36,991 AA  -->
+				<column length="40000" />
 			</basic>
 			<basic name="firstTaxon">
 			</basic>
