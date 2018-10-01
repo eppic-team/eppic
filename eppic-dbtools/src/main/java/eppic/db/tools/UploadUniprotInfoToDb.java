@@ -8,6 +8,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.db.dao.jpa.UniProtInfoDAOJpa;
 import eppic.db.jpautils.DbConfigGenerator;
+import eppic.model.dto.UniProtInfo;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,6 +127,13 @@ public class UploadUniprotInfoToDb {
         // TODO what to do if it's a isoform id? (i.e. with a "-")
 
         try {
+
+            UniProtInfo uniProtInfo = dao.getUniProtInfo(uniId);
+
+            if (uniProtInfo!=null) {
+                logger.info("Id already present in db: {}. Skipping", uniId);
+                return;
+            }
 
             if (uniId.startsWith("UPI")) {
                 UniParcEntry uniparcEntry = uc.getUniparcEntry(uniId);

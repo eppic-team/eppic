@@ -41,9 +41,7 @@ public class UniprotLocalConnection {
 	private static final String DATA_TABLE = "uniprot"; 
 	private static final String CLUSTERS_TABLE = "uniprot_clusters";
 	private static final String TAX_TABLE = "taxonomy";
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(UniprotLocalConnection.class);
-	
+
 	private class TaxonomyRecord {
 		
 		@SuppressWarnings("unused")
@@ -158,7 +156,7 @@ public class UniprotLocalConnection {
 		if (tax!=null) {
 			uniref.setTaxons(tax.taxons);
 		} else {
-			LOGGER.info("No taxonomy information could be found for uniprot/uniparc id "+uniref.getUniId()+" (tax_id="+uniref.getNcbiTaxId()+")");
+			logger.info("No taxonomy information could be found for uniprot/uniparc id "+uniref.getUniId()+" (tax_id="+uniref.getNcbiTaxId()+")");
 		}
 		
 		return uniref;
@@ -206,7 +204,7 @@ public class UniprotLocalConnection {
 				entries.add(getUnirefEntry(uniId));
 			} catch (NoMatchFoundException e) {
 				nonReturnedIdsLastMultipleRequest.add(uniId);
-				LOGGER.warn("Information for uniprot/uniparc ID "+uniId+" could not be retrieved from local Uniprot.");
+				logger.warn("Information for uniprot/uniparc ID "+uniId+" could not be retrieved from local Uniprot.");
 			}
 			
 		}
