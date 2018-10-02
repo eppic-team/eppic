@@ -283,6 +283,8 @@ public class EppicParams {
 	private boolean generateModelSerializedFile;
 	
 	private boolean noBlast;
+
+	private boolean useLocalUniProtInfo;
 	
 	private File progressLogFile;
 	private PrintStream progressLog;
@@ -386,6 +388,7 @@ public class EppicParams {
 		this.generateThumbnails = false;
 		this.generateModelSerializedFile = false;
 		this.noBlast = false;
+		this.useLocalUniProtInfo = false;
 		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
@@ -397,7 +400,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:G:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:G:Uuh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -481,6 +484,9 @@ public class EppicParams {
 			case 'G':
 				dbConfigFile = new File(g.getOptarg());
 				break;
+			case 'U':
+				useLocalUniProtInfo = true;
+				break;
 			case 'u':
 				debug = true;
 				break;
@@ -554,10 +560,13 @@ public class EppicParams {
 		"  [-w]         :  if specified a serialized webui.dat file will be produced. Coordinate files are removed in \n" +
         "                  this mode, so the -p option will have no effect.\n" +
 		"  [-B]         :  if specified no blasting will be performed at all: a) UniProt references are taken\n"+
-		"                  from SIFTS only, b) only blast cache files are used.\n"+
+		"                  from SIFTS only, b) only sequence search cache is used.\n"+
 		"                  Useful for precomputation from scratch to avoid the dependency on\n"+
 		"                  blast index files.\n"+
 		"  [-G <file>]  :  config file for JPA db connection, needed to query the sequence search cache\n"+
+		"                  and to get UniProt info (sequences, taxonomy) from local db\n"+
+		"  [-U]         :  use local UniProt info via JPA db connection. Requires a config file (-G).\n"+
+		"                  If not provided, default is to use UniProt JAPI to retrieve UniProt info\n"+
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
 		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +
@@ -625,6 +634,9 @@ public class EppicParams {
 			tempCoordFilesDir = outDir;
 		}
 
+		if (useLocalUniProtInfo && dbConfigFile == null) {
+			throw new EppicException(null, "A db config file must be provided (-G) when using local UniProt info from db (-U)", true);
+		}
 	}
 	
 	public void checkConfigFileInput() throws EppicException {
@@ -919,7 +931,11 @@ public class EppicParams {
 	public boolean isNoBlast() {
 		return noBlast;
 	}
-	
+
+	public boolean isUseLocalUniProtInfo() {
+		return useLocalUniProtInfo;
+	}
+
 	public PrintStream getProgressLog() {
 		return progressLog;
 	}

@@ -49,24 +49,20 @@ public class ChainEvolContextList implements Serializable {
 
 	private transient SiftsConnection siftsConn;
 
-	
+
 	public ChainEvolContextList(Structure pdb, EppicParams params) throws SQLException {
 		this.pdb = pdb;
-		
+
 		this.cecs = new TreeMap<String, ChainEvolContext>();
-		
+
 		if (!params.isNoBlast()) {
 			// if we fail to read a version, it will stay null. Should we rather throw exception?
 			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
 			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
 		}
-		
-		if (params.getDbConfigFile()!=null) {
-			this.useLocalUniprot = true;
-		} else {
-			this.useLocalUniprot = false;
-		}
-		
+
+		this.useLocalUniprot = params.isUseLocalUniProtInfo();
+
 		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
 
 			if (chainCluster.getType() == EntityType.POLYMER) {
@@ -92,12 +88,8 @@ public class ChainEvolContextList implements Serializable {
 			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
 			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
 		}
-		
-		if (params.getDbConfigFile()!=null) {
-			this.useLocalUniprot = true;
-		} else {
-			this.useLocalUniprot = false;
-		}
+
+        this.useLocalUniprot = params.isUseLocalUniProtInfo();
 		
 		for (Sequence sequence: sequences) {
 						
@@ -433,7 +425,7 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void openConnections(EppicParams params) throws EppicException {
-		if (useLocalUniprot) {
+		if (params.getDbConfigFile()!=null) {
 			// init jpa db connection so that querying cache works in chainEvCont.blastForHomologs(params)
 			// and so that uniprot data can be retrieved in retrieveQueryData and retrieveHomologsData
 			try {
