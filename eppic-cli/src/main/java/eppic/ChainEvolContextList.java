@@ -18,11 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.commons.blast.BlastException;
-import eppic.commons.sequence.HomologList;
 import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.UniProtConnection;
-import eppic.commons.sequence.UniprotLocalConnection;
 import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 
@@ -48,8 +46,7 @@ public class ChainEvolContextList implements Serializable {
 	
 	private boolean useLocalUniprot;
 	private transient UniProtConnection uniprotJapiConn;
-	private transient UniprotLocalConnection uniprotLocalConn;
-	
+
 	private transient SiftsConnection siftsConn;
 
 	
@@ -64,7 +61,7 @@ public class ChainEvolContextList implements Serializable {
 			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
 		}
 		
-		if (params.getLocalUniprotDbName()!=null) {
+		if (params.getDbConfigFile()!=null) {
 			this.useLocalUniprot = true;
 		} else {
 			this.useLocalUniprot = false;
@@ -96,7 +93,7 @@ public class ChainEvolContextList implements Serializable {
 			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
 		}
 		
-		if (params.getLocalUniprotDbName()!=null) {
+		if (params.getDbConfigFile()!=null) {
 			this.useLocalUniprot = true;
 		} else {
 			this.useLocalUniprot = false;
@@ -174,11 +171,7 @@ public class ChainEvolContextList implements Serializable {
 	public boolean isUseLocalUniprot() {
 		return useLocalUniprot;
 	}
-	
-	public UniprotLocalConnection getUniProtLocalConnection() {
-		return uniprotLocalConn;
-	}
-	
+
 	public UniProtConnection getUniProtJapiConnection() {
 		return uniprotJapiConn;
 	}
@@ -250,13 +243,7 @@ public class ChainEvolContextList implements Serializable {
 		params.getProgressLog().println("Blasting for homologs");
 		params.getProgressLog().print("chains: ");
 
-		// init jpa db connection so that querying cache works in chainEvCont.blastForHomologs(params)
-		try {
-			Map<String, String> props = DbConfigGenerator.createDatabaseProperties(params.getDbConfigFile());
-			EntityManagerHandler.initFactory(props);
-		} catch (IOException e) {
-			throw new EppicException(e, "Could not init db config from file " + params.getDbConfigFile() + ": " +e.getMessage(), true);
-		}
+		openConnections(params);
 
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
@@ -277,6 +264,9 @@ public class ChainEvolContextList implements Serializable {
 			}
 
 		}
+
+		closeConnections();
+
 		params.getProgressLog().println();
 	}
 	
@@ -301,8 +291,6 @@ public class ChainEvolContextList implements Serializable {
 				chainEvCont.retrieveHomologsData();
 			} catch (IOException e) {
 				throw new EppicException(e, "Problems while retrieving homologs data: "+e.getMessage(),true);
-			} catch (SQLException e) {
-				throw new EppicException(e, "Problems while retrieving homologs data from UniProt local database: "+e.getMessage(), true);
 			} catch (ServiceException e) {
 				throw new EppicException(e, "Problems while retrieving homologs data from UniProt JAPI: "+e.getMessage(), true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
@@ -446,14 +434,18 @@ public class ChainEvolContextList implements Serializable {
 	
 	public void openConnections(EppicParams params) throws EppicException {
 		if (useLocalUniprot) {
+			// init jpa db connection so that querying cache works in chainEvCont.blastForHomologs(params)
+			// and so that uniprot data can be retrieved in retrieveQueryData and retrieveHomologsData
 			try {
-				this.uniprotLocalConn = new UniprotLocalConnection(
-						params.getLocalUniprotDbName(), params.getLocalUniprotDbHost(),
-						params.getLocalUniprotDbPort(), params.getLocalUniprotDbUser(),
-						params.getLocalUniprotDbPwd());
-				LOGGER.info("Opening local UniProt connection to retrieve UniProtKB data. Local database: "+params.getLocalUniprotDbName());
-			} catch (SQLException e) {
-				throw new EppicException(e, "Could not open connection to local UniProt database " + params.getLocalUniprotDbName(), true);
+
+				if (EntityManagerHandler.getEntityManagerFactory() == null) {
+					LOGGER.info("Initialising JPA connection to for sequence search data and uniprot data.");
+					Map<String, String> props = DbConfigGenerator.createDatabaseProperties(params.getDbConfigFile());
+					EntityManagerHandler.initFactory(props);
+				}
+
+			} catch (IOException e) {
+				throw new EppicException(e, "Could not init db JPA config from file " + params.getDbConfigFile() + ": " +e.getMessage(), true);
 			}
 		} else {
 			this.uniprotJapiConn = new UniProtConnection();
@@ -462,16 +454,10 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void closeConnections() {
-		if (useLocalUniprot) {
-			try {
-				this.uniprotLocalConn.close();
-				LOGGER.info("Connection to local UniProt database closed");
-			} catch (SQLException e) {
-				LOGGER.warn("Could not close MySQL connection to UniProt local database. Error: " + e.getMessage());
-			}
-		} else {
+		if (!useLocalUniprot) {
 			this.uniprotJapiConn.close();
 			LOGGER.info("Connection to UniProt JAPI closed");
 		}
+		// else { // the JPA connection can't really be closed, nothing to do
 	}
 }

@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
-import eppic.commons.sequence.Homolog;
 import eppic.commons.util.CallType;
 import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;

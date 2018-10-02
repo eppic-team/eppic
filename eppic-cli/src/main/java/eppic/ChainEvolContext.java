@@ -3,7 +3,6 @@ package eppic;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -11,8 +10,11 @@ import java.util.regex.Pattern;
 
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
+import eppic.db.dao.UniProtInfoDAO;
 import eppic.db.dao.jpa.HitHspDAOJpa;
+import eppic.db.dao.jpa.UniProtInfoDAOJpa;
 import eppic.model.dto.HitHsp;
+import eppic.model.dto.UniProtInfo;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
@@ -29,7 +31,6 @@ import eppic.commons.blast.BlastHsp;
 import eppic.commons.blast.BlastRunner;
 import eppic.commons.blast.BlastXMLParser;
 import eppic.commons.sequence.AAAlphabet;
-import eppic.commons.sequence.HomologList;
 import eppic.commons.sequence.MultipleSequenceAlignment;
 import eppic.commons.sequence.NoMatchFoundException;
 import eppic.commons.sequence.Sequence;
@@ -236,7 +237,16 @@ public class ChainEvolContext implements Serializable {
 			// once we have the identifier we get the data from uniprot
 			try {
 				if (parent.isUseLocalUniprot()) {
-					query = parent.getUniProtLocalConnection().getUnirefEntry(queryUniprotId);
+					UniProtInfoDAO dao = new UniProtInfoDAOJpa();
+					UniProtInfo uniProtInfo = dao.getUniProtInfo(queryUniprotId);
+					query = new UnirefEntry();
+					query.setUniprotId(queryUniprotId);
+					query.setId(queryUniprotId); // TODO check if this is needed
+					query.setSequence(uniProtInfo.getSequence());
+					List<String> taxons = new ArrayList<>();
+					taxons.add(uniProtInfo.getFirstTaxon());
+					taxons.add(uniProtInfo.getLastTaxon());
+					query.setTaxons(taxons);
 				} else {
 					query = parent.getUniProtJapiConnection().getUnirefEntry(queryUniprotId);
 				}
@@ -276,8 +286,8 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;								
-			} catch (SQLException e) {
-				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database "+params.getLocalUniprotDbName()+", error: "+e.getMessage());
+			} catch (DaoException e) {
+				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database, error: "+e.getMessage());
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
@@ -484,12 +494,11 @@ public class ChainEvolContext implements Serializable {
 	/**
 	 * Retrieves the Uniprot data and metadata
 	 * @throws IOException
-	 * @throws SQLException 
 	 * @throws ServiceException
 	 */
-	public void retrieveHomologsData() throws IOException, SQLException, ServiceException {
+	public void retrieveHomologsData() throws DaoException, IOException, ServiceException {
 		if (parent.isUseLocalUniprot()) {
-			homologs.retrieveUniprotKBData(parent.getUniProtLocalConnection());
+			homologs.retrieveUniprotKBData();
 		} else {
 			homologs.retrieveUniprotKBData(parent.getUniProtJapiConnection());
 		}

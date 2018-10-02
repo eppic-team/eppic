@@ -157,7 +157,7 @@ public class EppicParams {
 	// default sifts file location
 	private static final String   DEF_SIFTS_FILE = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";	
 	private static final boolean  DEF_USE_SIFTS = true;
-	
+
 	// default blast settings
 	private static final File     DEF_BLASTP_BIN = new File("/usr/bin/blastp"); // from blast+ package
 	private static final File     DEF_BLASTCLUST_BIN = new File("/usr/bin/blastclust"); // from legacy blast package
@@ -310,7 +310,7 @@ public class EppicParams {
 	private String   siftsFile;
 	
 	private boolean  useSifts;
-	
+
 	private File     blastclustBin;
 	private File     blastpBin;
 	
@@ -351,12 +351,6 @@ public class EppicParams {
 	// and finally the ones with no defaults
 	private String   blastDbDir; // no default
 	private String   blastDb;    // no default
-	
-	private String   localUniprotDbName; // no default
-	private String   localUniprotDbHost;
-	private String   localUniprotDbPort;
-	private String   localUniprotDbUser;
-	private String   localUniprotDbPwd;
 
 	private File 	 hbplusExe;
 	
@@ -970,12 +964,6 @@ public class EppicParams {
 			// variables without defaults
 			blastDbDir    	= p.getProperty("BLAST_DB_DIR");
 			blastDb        	= p.getProperty("BLAST_DB");
-			
-			localUniprotDbName = p.getProperty("LOCAL_UNIPROT_DB_NAME");
-			localUniprotDbHost = p.getProperty("LOCAL_UNIPROT_DB_HOST");
-			localUniprotDbPort = p.getProperty("LOCAL_UNIPROT_DB_PORT");
-			localUniprotDbUser = p.getProperty("LOCAL_UNIPROT_DB_USER");
-			localUniprotDbPwd  = p.getProperty("LOCAL_UNIPROT_DB_PWD");
 
 			atomCachePath      = p.getProperty("ATOM_CACHE_PATH");
 						
@@ -1031,7 +1019,7 @@ public class EppicParams {
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC", Boolean.valueOf(DEF_USE_UNIPARC).toString()));
 			
 			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER", Boolean.valueOf(DEF_USE_PDB_RES_SER).toString()));
-			
+
 			alphabet = new AAAlphabet(p.getProperty("CUSTOM_ALPHABET", DEF_ENTROPY_ALPHABET.toString()));
 			
 			
@@ -1128,26 +1116,6 @@ public class EppicParams {
 
 	public String getBlastDb() {
 		return blastDb;
-	}
-	
-	public String getLocalUniprotDbName() {
-		return localUniprotDbName;
-	}
-
-	public String getLocalUniprotDbHost() {
-		return localUniprotDbHost;
-	}
-
-	public String getLocalUniprotDbPort() {
-		return localUniprotDbPort;
-	}
-
-	public String getLocalUniprotDbUser() {
-		return localUniprotDbUser;
-	}
-
-	public String getLocalUniprotDbPwd() {
-		return localUniprotDbPwd;
 	}
 	
 	public boolean isUseUniparc() {

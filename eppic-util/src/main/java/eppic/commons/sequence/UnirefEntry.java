@@ -9,7 +9,6 @@ import java.util.List;
  * A minimal Uniref entry representation  
  * 
  * @see UniProtConnection
- * @see UniprotLocalConnection
  * @see UnirefXMLParser
  * 
  * @author duarte_j
