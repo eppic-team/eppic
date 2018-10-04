@@ -170,8 +170,13 @@ public class ChainEvolContext implements Serializable {
 			return;
 		}
 		
-		if (isProtein && sequence.length()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+		if (sequence.length()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 			queryWarnings.add("Chain is a peptide ("+sequence.length()+" residues)");
+			// since 3.2.0 we don't do evol analysis of peptides for several reasons
+			// a) it's difficult to find sequence homologs, due to high evalues and needing to use special
+			//    substitution matrices (see https://github.com/soedinglab/MMseqs2/issues/125)
+			// b) eppic evol scoring doesn't make much sense for peptides, see https://github.com/eppic-team/eppic/issues/5
+			return;
 		}
 		
 		// two possible cases: 
@@ -687,7 +692,7 @@ public class ChainEvolContext implements Serializable {
 	private String findUniprotMapping(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold, boolean useUniparc) 
 			throws IOException, BlastException, InterruptedException {
 		// for too short sequence it doesn't make sense to blast
-		if (this.sequence.length()<EppicParams.MIN_SEQ_LENGTH_FOR_BLASTING) {
+		if (this.sequence.length()<EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 			LOGGER.info("Chain "+sequenceId+" too short for blasting. Won't try to find a UniProt reference for it.");
 			// query warnings for peptides (with a higher cutoff than this) are already logged before, see above
 			// note that then as no reference is found, there won't be blasting for homologs either

@@ -82,7 +82,7 @@ public class EppicParams {
 	public static final int		  NUM_CLASHES_FOR_ERROR = 30;
 	/** If more clashes than this in an interface, the warning message will not be detailed */
 	public static final int		  MAX_NUM_CLASHES_TO_REPORT_WUI = 20;
-	/** Shorter chains will be considered peptides */
+	/** Shorter chains will be considered peptides. No evol analysis is performed. */
 	public static final int	      PEPTIDE_LENGTH_CUTOFF = 20; 
 	/** Maximum allowed ratio of unreliable residues for calling nopred */
 	public static final double     MAX_ALLOWED_UNREL_RES = 0.1; 
@@ -93,8 +93,6 @@ public class EppicParams {
 	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 2;
 	/** Value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases */
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
-	/** For sequences (strictly) below this length value no blast will be performed */
-	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 10;
 	/** The maximum length of an engineered insertion when a single chain maps to multiple segments with a single UniProt reference */
 	public static final int		   NUM_GAP_RES_FOR_CHIMERIC_FUSION = 10;
 	// the hard limits aka "duarte" limits: areas above/below which it is very unlikely to have xtal/bio interfaces
