@@ -425,7 +425,7 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void openConnections(EppicParams params) throws EppicException {
-		if (params.getDbConfigFile()!=null) {
+		if (useLocalUniprot) {
 			// init jpa db connection so that querying cache works in chainEvCont.blastForHomologs(params)
 			// and so that uniprot data can be retrieved in retrieveQueryData and retrieveHomologsData
 			try {
