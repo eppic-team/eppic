@@ -171,6 +171,7 @@ public class ChainEvolContext implements Serializable {
 		}
 		
 		if (sequence.length()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+			LOGGER.info("Chain {} is a peptide (length {}, below cutoff {}), will not do evolutionary analysis for it.", sequenceId, sequence.length(), EppicParams.PEPTIDE_LENGTH_CUTOFF);
 			queryWarnings.add("Chain is a peptide ("+sequence.length()+" residues)");
 			// since 3.2.0 we don't do evol analysis of peptides for several reasons
 			// a) it's difficult to find sequence homologs, due to high evalues and needing to use special
