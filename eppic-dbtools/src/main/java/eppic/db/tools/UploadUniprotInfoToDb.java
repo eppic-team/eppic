@@ -33,6 +33,8 @@ public class UploadUniprotInfoToDb {
     private static final Pattern UNIREF_SUBJECT_PATTERN = Pattern.compile("^UniRef\\d+_([0-9A-Z\\-]+)$");
 
     private static AtomicInteger countDone = new AtomicInteger(0);
+
+    private static AtomicInteger alreadyPresent = new AtomicInteger(0);
     private static AtomicInteger couldntInsert = new AtomicInteger(0);
     private static AtomicInteger couldntRetrieve = new AtomicInteger(0);
     private static AtomicInteger couldntFind = new AtomicInteger(0);
@@ -128,6 +130,9 @@ public class UploadUniprotInfoToDb {
         if (couldntRetrieve.get()>0) {
             logger.info("{} entries failed to be retrieved from JAPI", couldntRetrieve.get());
         }
+        if (alreadyPresent.get()>0) {
+            logger.info("{} entries were already present in db and were not reloaded", alreadyPresent.get());
+        }
 
     }
 
@@ -146,7 +151,11 @@ public class UploadUniprotInfoToDb {
             UniProtInfo uniProtInfo = dao.getUniProtInfo(uniId);
 
             if (uniProtInfo!=null) {
-                logger.info("Id already present in db: {}. Skipping", uniId);
+                logger.debug("Id already present in db: {}. Skipping", uniId);
+                int countPresent = alreadyPresent.incrementAndGet();
+                if (countPresent % 1000000 == 0) {
+                    logger.info("Gone through {} already present entries in db", countPresent);
+                }
                 return;
             }
 
