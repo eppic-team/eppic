@@ -245,35 +245,42 @@ public class ChainEvolContext implements Serializable {
 				if (parent.isUseLocalUniprot()) {
 					UniProtInfoDAO dao = new UniProtInfoDAOJpa();
 					UniProtInfo uniProtInfo = dao.getUniProtInfo(queryUniprotId);
-					query = new UnirefEntry();
-					query.setUniprotId(queryUniprotId);
-					query.setId(queryUniprotId); // TODO check if this is needed
-					query.setSequence(uniProtInfo.getSequence());
-					List<String> taxons = new ArrayList<>();
-					taxons.add(uniProtInfo.getFirstTaxon());
-					taxons.add(uniProtInfo.getLastTaxon());
-					query.setTaxons(taxons);
+					if (uniProtInfo == null) {
+						LOGGER.warn("No UniProt info could be found in local db for id {}. Will not be able to do evolutionary analysis for chain {}", queryUniprotId, sequenceId);
+						query = null;
+						hasQueryMatch = false;
+					} else {
+						query = new UnirefEntry();
+						query.setUniprotId(queryUniprotId);
+						query.setId(queryUniprotId); // TODO check if this is needed
+						query.setSequence(uniProtInfo.getSequence());
+						List<String> taxons = new ArrayList<>();
+						taxons.add(uniProtInfo.getFirstTaxon());
+						taxons.add(uniProtInfo.getLastTaxon());
+						query.setTaxons(taxons);
+					}
 				} else {
 					query = parent.getUniProtJapiConnection().getUnirefEntry(queryUniprotId);
 				}
 				
-				if (query.replaceNonStandardByX()) {
+				if (query!=null && query.replaceNonStandardByX()) {
 					// TODO for jaligner we needed to replace 'O' by 'X', with Biojava and I'm not sure if this is needed anymore...
 					LOGGER.warn("Replacing 'O' by 'X' in UniProt reference "+query.getUniId());
 				}
 
-				// this initialises the alignment that maps PDB-to-UniProt,
-				// if SIFTS mapping was found then intervals will be used (https://github.com/eppic-team/eppic/issues/188),
-				// otherwise intervals will be false
-				pdbToUniProtMapper.setUniProtReference(query, uniProtInterv, pdbInterv);
-				
-				String warning = pdbToUniProtMapper.checkAlignments();
-				if (warning!=null) {
-					queryWarnings.add(warning);
-					query = null;
-					hasQueryMatch = false;
+				if (query != null) {
+					// this initialises the alignment that maps PDB-to-UniProt,
+					// if SIFTS mapping was found then intervals will be used (https://github.com/eppic-team/eppic/issues/188),
+					// otherwise intervals will be false
+					pdbToUniProtMapper.setUniProtReference(query, uniProtInterv, pdbInterv);
+
+					String warning = pdbToUniProtMapper.checkAlignments();
+					if (warning != null) {
+						queryWarnings.add(warning);
+						query = null;
+						hasQueryMatch = false;
+					}
 				}
-				
 				// the back-mapping to pdb is not working well yet, commented out
 				//LOGGER.info("Our mapping in SIFTS tab format: "+pdbToUniProtMapper.getMappingSiftsFormat(sequenceId));
 				//LOGGER.info("Our mapping in DBREF PDB format: "+pdbToUniProtMapper.getMappingDbrefFormat(sequenceId));
