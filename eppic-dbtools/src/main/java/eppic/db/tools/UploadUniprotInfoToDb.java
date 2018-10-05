@@ -32,7 +32,10 @@ public class UploadUniprotInfoToDb {
 
     private static final Pattern UNIREF_SUBJECT_PATTERN = Pattern.compile("^UniRef\\d+_([0-9A-Z\\-]+)$");
 
-    private static AtomicInteger failureCounter = new AtomicInteger(0);
+    private static AtomicInteger countDone = new AtomicInteger(0);
+    private static AtomicInteger couldntInsert = new AtomicInteger(0);
+    private static AtomicInteger couldntRetrieve = new AtomicInteger(0);
+    private static AtomicInteger couldntFind = new AtomicInteger(0);
 
     public static void main(String[] args) throws IOException {
 
@@ -116,8 +119,14 @@ public class UploadUniprotInfoToDb {
         }
 
         logger.info("Done retrieving info and persisting {} UniProt/Parc entries to database", uniqueIds.size());
-        if (failureCounter.get()>0) {
-            logger.info("{} entries could not be retrieved or persisted", failureCounter.get());
+        if (couldntInsert.get()>0) {
+            logger.info("{} entries could not be persisted to db", couldntInsert.get());
+        }
+        if (couldntFind.get()>0) {
+            logger.info("{} entries could not be found by querying JAPI", couldntFind.get());
+        }
+        if (couldntRetrieve.get()>0) {
+            logger.info("{} entries failed to be retrieved from JAPI", couldntRetrieve.get());
         }
 
     }
@@ -127,6 +136,12 @@ public class UploadUniprotInfoToDb {
         // TODO what to do if it's a isoform id? (i.e. with a "-")
 
         try {
+
+            int countProcessed = countDone.incrementAndGet();
+
+            if (countProcessed%1000000 == 0) {
+                logger.info("Done processing {} entries", countProcessed);
+            }
 
             UniProtInfo uniProtInfo = dao.getUniProtInfo(uniId);
 
@@ -146,13 +161,13 @@ public class UploadUniprotInfoToDb {
 
         } catch (DaoException e) {
             logger.warn("Could not insert to db UniProt id {}.", uniId);
-            failureCounter.incrementAndGet();
+            couldntInsert.incrementAndGet();
         } catch (NoMatchFoundException e) {
             logger.warn("Could not find UniProt id {} via JAPI", uniId);
-            failureCounter.incrementAndGet();
+            couldntFind.incrementAndGet();
         } catch (ServiceException e) {
             logger.warn("Problem retrieving UniProt info from JAPI for UniProt id {}", uniId);
-            failureCounter.incrementAndGet();
+            couldntRetrieve.incrementAndGet();
         }
     }
 
