@@ -120,7 +120,8 @@ public class UploadUniprotInfoToDb {
 
         }
 
-        logger.info("Done retrieving info and persisting {} UniProt/Parc entries to database", uniqueIds.size());
+        int didInsert = uniqueIds.size() - couldntInsert.get() - couldntFind.get() - couldntRetrieve.get() - alreadyPresent.get();
+        logger.info("Done processing {} UniProt/Parc entries to database. Actually inserted {} in db", uniqueIds.size(), didInsert);
         if (couldntInsert.get()>0) {
             logger.info("{} entries could not be persisted to db", couldntInsert.get());
         }
