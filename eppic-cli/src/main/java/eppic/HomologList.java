@@ -386,6 +386,10 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 				entry.setUniprotId(uniId);
 				entry.setId(uniId); // TODO check if this is needed
 				entry.setSequence(uniProtInfo.getSequence());
+				List<String> taxons = new ArrayList<>();
+				taxons.add(uniProtInfo.getFirstTaxon());
+				taxons.add(uniProtInfo.getLastTaxon());
+				entry.setTaxons(taxons);
 				unirefs.add(entry);
 			} else {
 				LOGGER.warn("No UniProt info found in db for {}", uniId);
