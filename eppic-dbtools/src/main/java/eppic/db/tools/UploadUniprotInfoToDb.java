@@ -199,7 +199,17 @@ public class UploadUniprotInfoToDb {
                 }
                 // qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
 
+                String queryId = tokens[0];
                 String subjectId = tokens[1];
+
+                // we also want to add the queries, if we use UniRef90 or lower levels of clustering
+                // the search will not have necessarily find the query, since it might not be a representative
+                String[] queryTokens = queryId.split("_");
+                if (queryTokens.length == 2) {
+                    uniqueIds.add(queryTokens[0]);
+                } else {
+                    logger.warn("Query id {} did not split into 2 tokens at '_' delimiter. Ignoring it.", queryId);
+                }
 
                 Matcher m = UNIREF_SUBJECT_PATTERN.matcher(subjectId);
                 if (m.matches()) {
