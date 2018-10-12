@@ -795,9 +795,9 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 					String.format("%4.2f", BLASTCLUST_CLUSTERING_COVERAGE)+" coverage on both neighbors)");
 			
 			currentclusterslist = blastRunner.runBlastclust(blastclustBin, outblastclustFile, true, clusteringId, BLASTCLUST_CLUSTERING_COVERAGE, saveFile, blastNumThreads);
-			LOGGER.info("Run blastclust from saved neighbors: "+blastRunner.getLastBlastCommand());
+			LOGGER.info("Run blastclust from saved neighbors: {}", blastRunner.getLastBlastCommand());
 			
-			LOGGER.info("Clustering with "+clusteringId+"% id resulted in "+currentclusterslist.size()+" clusters");
+			LOGGER.info("Clustering with {}% id resulted in {} clusters", clusteringId, currentclusterslist.size());
 			
 			// note that in order not to loop forever if the number of clusters don't shrink, we use the second
 			// condition (clusteringId<idCutoff), using idCutoff seems to make some sense, but in a way it's totally arbitrary
@@ -828,22 +828,22 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			clusters = lastclusterslist;
 			usedClusteringPercentId = clusteringId+CLUSTERING_ID_STEP;			
 		}
-		LOGGER.info("Redundancy elimination will proceed with clusters of "+usedClusteringPercentId+"% identity");		
+		LOGGER.info("Redundancy elimination will proceed with clusters of {}% identity", usedClusteringPercentId);
 		
-		HashSet<String> membersToRemove = new HashSet<String>(); 
+		HashSet<String> membersToRemove = new HashSet<>();
 		int i = 0;
 		for (List<String> cluster:clusters) {
 			i++;
 			if (cluster.size()>1) {
-				String msg = "Cluster "+i+" representative: "+cluster.get(0)+". Removed: ";			
+				StringBuilder msg = new StringBuilder("Cluster "+i+" representative: "+cluster.get(0)+". Removed: ");
 				// we then proceed to remove all but first
 				for (int j=1;j<cluster.size();j++) {
 					membersToRemove.add(cluster.get(j));
 					//Homolog toRemove = getHomolog(cluster.get(j));
 					//subList.remove(toRemove);
-					msg += cluster.get(j)+" ";
+					msg.append(cluster.get(j)).append(" ");
 				}								
-				LOGGER.info(msg);
+				LOGGER.info(msg.toString());
 			}
 		}
 		
