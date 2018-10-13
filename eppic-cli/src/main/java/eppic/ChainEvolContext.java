@@ -551,7 +551,7 @@ public class ChainEvolContext implements Serializable {
 					String.format("%4.2f",queryCovCutoff)+" query coverage cutoff and before redundancy elimination"
 					+" (chain "+getRepresentativeChainCode()+")");
 			
-			homologs.reduceRedundancy(maxNumSeqs, params.getBlastclustBin(), params.getBlastDataDir(), params.getNumThreads());
+			homologs.reduceRedundancy(maxNumSeqs, params.getMmseqsBin(), params.getOutDir(), params.getNumThreads());
 
 			this.idCutoff = currentIdCutoff;
 			
@@ -870,7 +870,7 @@ public class ChainEvolContext implements Serializable {
 	 * @return
 	 */
 	public int getUsedClusteringPercentId() {
-		return homologs.getUsedClusteringPercentId();
+		return HomologList.CLUSTERING_ID;
 	}
 	
 	/**

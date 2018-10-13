@@ -15,7 +15,7 @@ import java.util.*;
 public class ClusterSequences {
 	
 	
-	// blastclust complains about too short sequences, any sequence <= than this value won't be used
+	// any sequence <= than this value won't be used for clustering
 	private static final int MIN_LENGTH = 8;
 	
 	/**

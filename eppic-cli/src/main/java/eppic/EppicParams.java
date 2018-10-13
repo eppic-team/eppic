@@ -158,9 +158,8 @@ public class EppicParams {
 
 	// default blast settings
 	private static final File     DEF_BLASTP_BIN = new File("/usr/bin/blastp"); // from blast+ package
-	private static final File     DEF_BLASTCLUST_BIN = new File("/usr/bin/blastclust"); // from legacy blast package
-	private static final String   DEF_BLAST_DATA_DIR = "/usr/share/blast";
-	
+	private static final File     DEF_MMSEQS_BIN = new File("/usr/bin/mmseqs2");
+
 	// default aligner programs execs: blank files, so that we can control that one and only one is set (see checkConfigFileInput)
 	private static final File	  DEF_CLUSTALO_BIN = new File("");
 	
@@ -311,11 +310,10 @@ public class EppicParams {
 	
 	private boolean  useSifts;
 
-	private File     blastclustBin;
 	private File     blastpBin;
-	
-	private String   blastDataDir; // dir with blosum matrices only needed for blastclust
-	
+
+	private File     mmseqsBin;
+
 	private File	 clustaloBin;
 	
 	private File	 pymolExe;
@@ -691,13 +689,8 @@ public class EppicParams {
 					throw new EppicException(null,"The BLASTP_BIN path given in config file does not exist: "+blastpBin,true);
 				}
 			}
-			if (!blastclustBin.exists()) {
-				throw new EppicException(null,"The BLASTCLUST_BIN path given in config file does not exist: "+blastclustBin,true);
-			}
-			if (! new File(blastDataDir).isDirectory()) {
-				throw new EppicException(null,"BLAST_DATA_DIR must be set to a valid value in config file. Directory "+blastDataDir+ " doesn't exist.",true);
-			} else if (! new File(blastDataDir,"BLOSUM62").exists()) {
-				throw new EppicException(null, "BLAST_DATA_DIR parameter in config file must be set to a dir containing a blast BLOSUM62 file. No BLOSUM62 file in "+blastDataDir, true);
+			if (!mmseqsBin.exists()) {
+				throw new EppicException(null,"The MMSEQS_BIN path given in config file does not exist: "+mmseqsBin,true);
 			}
 			
 			// alignment programs: we allow one and only one to be set
@@ -991,13 +984,11 @@ public class EppicParams {
 			
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
 			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", Boolean.valueOf(DEF_USE_SIFTS).toString()));
-			
-			blastclustBin   = new File(p.getProperty("BLASTCLUST_BIN", DEF_BLASTCLUST_BIN.toString()));
-			
+
 			blastpBin	    = new File(p.getProperty("BLASTP_BIN", DEF_BLASTP_BIN.toString()));
-			
-			blastDataDir    = p.getProperty("BLAST_DATA_DIR", DEF_BLAST_DATA_DIR);
-			
+
+			mmseqsBin       = new File(p.getProperty("MMSEQS_BIN", DEF_MMSEQS_BIN.toString()));
+
 			// for alignment programs we either read them or set them to null
 			clustaloBin		= new File(p.getProperty("CLUSTALO_BIN", DEF_CLUSTALO_BIN.toString()));
 			
@@ -1063,15 +1054,11 @@ public class EppicParams {
 	public File getBlastpBin() {
 		return blastpBin;
 	}
-	
-	public File getBlastclustBin() {
-		return blastclustBin;
+
+	public File getMmseqsBin() {
+		return mmseqsBin;
 	}
 
-	public String getBlastDataDir() {
-		return blastDataDir;
-	}
-	
 	public File getClustaloBin() {
 		return clustaloBin;
 	}

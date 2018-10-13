@@ -30,7 +30,7 @@ public class MmseqsRunner {
      * @param inFile the input FASTA file
      * @param outFilePrefix the output file path, to be considered as prefix for all output files produced
      * @param clusteringPercentId the percent identity to cluster, e.g. 30
-     * @param clusteringCoverage the coverage to apply to both query and target sequences
+     * @param clusteringCoverage the coverage to apply to both query and target sequences, e.g. 0.90
      * @param numThreads number of threads to run mmseqs2
      * @return a list with list of cluster members
      * @throws IOException
@@ -43,7 +43,7 @@ public class MmseqsRunner {
         // command to run mmseqs2 for 30% clustering over 0.9 coverage on both sequences
         // mmseqs easy-cluster pdb_seqres_pr.fasta clusterOutput tmp --min-seq-id 0.3 -c 0.9 -s 8 --max-seqs 1000 --cluster-mode 1
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
 
         File tmpDir = new File(outFilePrefix.getParent(), "tmp-" + outFilePrefix.getName());
 

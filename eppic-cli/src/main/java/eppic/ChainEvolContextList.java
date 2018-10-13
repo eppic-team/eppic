@@ -322,14 +322,9 @@ public class ChainEvolContextList implements Serializable {
 				chainEvCont.applyIdentityCutoff(params);
 
 
-			} catch (IOException e) {
-				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
-			} catch (InterruptedException e) {
-				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
-			} catch (BlastException e) {
-				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
+			} catch (IOException|InterruptedException|BlastException e) {
+				throw new EppicException(e, "Problems while performing redundancy reduction of homologs: "+e.getMessage(), true);
 			}
-
 			
 		}
 	}
