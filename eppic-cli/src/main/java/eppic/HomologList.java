@@ -747,6 +747,11 @@ public class HomologList implements  Serializable {
 	 */
 	public void reduceRedundancy(int maxDesiredHomologs, File mmseqsBin, File outDir, int numThreads)
 			throws IOException, InterruptedException, BlastException {
+
+		if (getSizeFilteredSubset()==0) {
+			LOGGER.info("No homologs in the filtered list, no need to cluster them for sequence redundancy elimination");
+			return;
+		}
 		
 		LOGGER.info("Proceeding to perform redundancy reduction for homologs of {} by clustering of sequences", ref.getUniId());
 				
