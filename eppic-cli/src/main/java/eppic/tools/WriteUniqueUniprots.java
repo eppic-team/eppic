@@ -1,10 +1,10 @@
 package eppic.tools;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import eppic.commons.sequence.*;
 import eppic.commons.util.Interval;
@@ -30,8 +30,8 @@ public class WriteUniqueUniprots {
 	private UniProtConnection uc;
 
 	public WriteUniqueUniprots(String scPath) throws IOException {
-			sc = new SiftsConnection(scPath);
-			uc = new UniProtConnection();
+		sc = new SiftsConnection(scPath);
+		uc = new UniProtConnection();
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -40,20 +40,27 @@ public class WriteUniqueUniprots {
 				"Usage: WriteUniqueUnirots\n" +
 						"Creates fasta (.fa) file/s of unique mappings of PDB to Uniprot\n" +
 						" -s <file>  	  : SIFTS file path \n" +
+						" [-f <file>]     : a file with a list of PDB ids. Only sequences corresponding\n" +
+						"                   to these PDB ids will be written out. If not provided, then\n" +
+						"                   all sequences in SIFTS files are written out\n" +
 						" -o <dir/file>   : If directory, sequences are written to individual FASTA \n"+
 						"                   files in the directory.\n" +
 						"                   If file all sequences are written to it as a single FASTA\n";
 
-		Getopt g = new Getopt("UploadToDB", args, "s:o:h?");
+		Getopt g = new Getopt("UploadToDB", args, "s:f:o:h?");
 		
 		String scFilePath = null;
 		File outPath = null;
+		File listFile = null;
 
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 's':
 				scFilePath = g.getOptarg();
+				break;
+			case 'f':
+				listFile = new File(g.getOptarg());
 				break;
 			case 'o':
 				outPath = new File(g.getOptarg());
@@ -91,7 +98,11 @@ public class WriteUniqueUniprots {
 
 
 		WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath);
-		Map<String, List<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
+		Set<String> pdbIds = null;
+		if (listFile!=null) {
+			pdbIds = readListFile(listFile);
+		}
+		Map<String, List<Interval>> uniqueMap = wuni.sc.getUniqueMappings(pdbIds);
 
 		int countFishy = 0;
 		int countErrLength = 0;
@@ -103,6 +114,7 @@ public class WriteUniqueUniprots {
 		}
 
 		for (String uniprotid : uniqueMap.keySet()) {
+
 			try {
 				UnirefEntry uniEntry = wuni.uc.getUnirefEntry(uniprotid);
 				String uniSeq = uniEntry.getSequence();
@@ -156,5 +168,24 @@ public class WriteUniqueUniprots {
 		if (countErrLength > 0)
 			logger.warn("Total encountered problems in the length: {}", countErrLength);
 
+	}
+
+	private static Set<String> readListFile(File listFile) throws IOException {
+		Set<String> set = new HashSet<>();
+		try (BufferedReader br = new BufferedReader(new FileReader(listFile))) {
+			String line;
+			while ((line = br.readLine())!=null) {
+				if (line.trim().isEmpty()) continue;
+				if (line.startsWith("#")) continue;
+
+				String pdbId = line.trim();
+				if (pdbId.length()!=4) {
+					logger.warn("Found string of length !=4 in file {}: {}. Skipping", listFile.toString(), pdbId);
+					continue;
+				}
+				set.add(pdbId);
+			}
+		}
+		return set;
 	}
 }

@@ -150,12 +150,16 @@ public class SiftsConnection {
 	/**
 	 * Gets a Map with unique mappings of UniProt ids for all PDB chains found in the SIFTS repository
 	 * as the keys and all its unique segments as the array list
+	 * @param pdbIds restrict output mappings to this pdb ids, if null all mappings are output
 	 * @return a map with keys uniprot ids and value a list of unique uniprot intervals for that uniprot id
 	 */
-	public Map<String, List<Interval>> getUniqueMappings() {
+	public Map<String, List<Interval>> getUniqueMappings(Set<String> pdbIds) {
 		Map<String, List<Interval>> uniqueMap = new HashMap<>();
 
 		for (SiftsFeature feat : chain2uniprot.values()) {
+			if (pdbIds!=null && !pdbIds.contains(feat.getPdbCode()))
+				continue;
+
 			for (int i = 0; i<feat.getUniprotIntervalSet().size(); i++) {
 				String uniProtId = feat.getUniprotIds().get(i);
 				Interval uniProtInterv = feat.getUniprotIntervalSet().get(i);
@@ -175,6 +179,15 @@ public class SiftsConnection {
 		}
 		
 		return uniqueMap;
+	}
+
+	/**
+	 * Gets a Map with unique mappings of UniProt ids for all PDB chains found in the SIFTS repository
+	 * as the keys and all its unique segments as the array list
+	 * @return a map with keys uniprot ids and value a list of unique uniprot intervals for that uniprot id
+	 */
+	public Map<String, List<Interval>> getUniqueMappings() {
+		return getUniqueMappings(null);
 	}
 	
 	/**

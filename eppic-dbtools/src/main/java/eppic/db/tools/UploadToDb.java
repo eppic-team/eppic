@@ -306,7 +306,7 @@ public class UploadToDb {
 			if (!jobDirectory.isDirectory()){
 				if(choosefromFile!=null)
 					logger.warn(jobDirectory.getName()+" specified in list file (-f), " +
-							"but directory "+jobDirectory+"is not present, Skipping");
+							"but directory "+jobDirectory+" is not present, Skipping");
 				continue;
 			}
 
