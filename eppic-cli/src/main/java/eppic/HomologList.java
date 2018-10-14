@@ -795,8 +795,8 @@ public class HomologList implements  Serializable {
 		
 		LOGGER.info("Size of homolog list after redundancy reduction: "+subList.size());
 		
-		if (subList.size()>maxDesiredHomologs*1.50) {
-			LOGGER.warn("Size of final homologs list ({}) is larger than 50% of the max number of sequences required", subList.size());
+		if (subList.size()>maxDesiredHomologs*2.00) {
+			LOGGER.info("Size of final homologs list ({}) is larger than 2x of the max number of sequences required ({})", subList.size(), maxDesiredHomologs);
 		}
 
 	}
