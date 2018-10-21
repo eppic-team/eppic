@@ -115,7 +115,8 @@ public class UploadUniprotInfoToDb {
         retrieveInfoAndPersist(unirefFastaFile, uniqueIds, numWorkers);
 
         if (countDone.get()<uniqueIds.size()) {
-            logger.warn("Count of processed entries ({}) is less than the number of entries needed ({}). FASTA file did not contain some entries. There's something wrong!");
+            logger.warn("Count of processed entries ({}) is less than the number of entries needed ({}). " +
+                    "FASTA file did not contain some entries. There's something wrong!", countDone.get(), uniqueIds.size());
         }
         logger.info("Done processing {} UniProt/Parc entries to database. Actually inserted {} in db", uniqueIds.size(), didInsert.get());
         if (couldntInsert.get()>0) {
