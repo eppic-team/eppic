@@ -201,7 +201,7 @@ public class UploadUniprotInfoToDb {
                             }
                         }
                     } else {
-                        logger.warn("Tag {} does not conform to expected UniRef90 identifier format", tag);
+                        logger.warn("Tag {} does not conform to expected UniRef identifier format", tag);
                     }
                 } else {
                     // line with sequence data

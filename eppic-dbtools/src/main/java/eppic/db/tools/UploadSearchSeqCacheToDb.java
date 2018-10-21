@@ -209,7 +209,7 @@ public class UploadSearchSeqCacheToDb {
         try {
 
             HitHsp hit = hitHspDAO.getHitHsp(queryId, subjectId, qStart, qEnd, sStart, sEnd);
-            if (hit == null) {
+            if (hit != null) {
                 logger.debug("Hit already present for queryId {}, subjectId {}, qStart {}, qEnd {}, sStart {}, sEnd {}", queryId, subjectId, qStart, qEnd, sStart, sEnd);
                 alreadyPresent.incrementAndGet();
             } else {
