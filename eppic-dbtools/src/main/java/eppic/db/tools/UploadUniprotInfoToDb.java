@@ -19,6 +19,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+/**
+ * Parses all unique UniRef ids out of a .m8 file (blast/mmseqs2 output) and
+ * reads info for each entry from a UniRef FASTA file (sequence and last taxon),
+ * persisting the info to db via JPA. Avoids using the UniProt JAPI altogether.
+ *
+ * @author Jose Duarte
+ * @since 3.2.0
+ */
 public class UploadUniprotInfoToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadUniprotInfoToDb.class);
@@ -238,7 +246,7 @@ public class UploadUniprotInfoToDb {
 
 
         } catch (DaoException e) {
-            logger.warn("Could not insert to db UniProt id {}.", uniEntry.uniId);
+            logger.warn("Could not insert to db UniProt id {}. Error: {}", uniEntry.uniId, e.getMessage());
             couldntInsert.incrementAndGet();
         }
     }
