@@ -5,6 +5,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.db.dao.jpa.UniProtInfoDAOJpa;
 import eppic.db.jpautils.DbConfigGenerator;
+import eppic.db.tools.helpers.MonitorThread;
 import eppic.model.dto.UniProtInfo;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
@@ -12,8 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +31,8 @@ public class UploadUniprotInfoToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadUniprotInfoToDb.class);
 
+    private static final long SLEEP_TIME = 10000;
+
     private static final Pattern UNIREF_SUBJECT_PATTERN = Pattern.compile("^UniRef\\d+_([0-9A-Z\\-]+)$");
     private static final Pattern TAXONOMY_PATTERN = Pattern.compile(".*Tax=(.*)TaxID=.*");
 
@@ -41,7 +43,7 @@ public class UploadUniprotInfoToDb {
     private static AtomicInteger couldntFind = new AtomicInteger(0);
     private static AtomicInteger didInsert = new AtomicInteger(0);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         String help =
                         "Usage: UploadUniprotInfoToDb\n" +
@@ -135,12 +137,18 @@ public class UploadUniprotInfoToDb {
      * @param uniqueIds the ids for which we want to extract info from the FASTA file
      * @param numWorkers the number of workers for parallelising the persistence
      * @throws IOException if problems when parsing FASTA file
+     * @throws InterruptedException
      */
-    private static void retrieveInfoAndPersist(File fastaFile, Set<String> uniqueIds, int numWorkers) throws IOException {
+    private static void retrieveInfoAndPersist(File fastaFile, Set<String> uniqueIds, int numWorkers) throws IOException, InterruptedException {
 
         logger.info("Proceeding to parse info from FASTA file {} and persist it.", fastaFile);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
+        ThreadFactory threadFactory = Executors.defaultThreadFactory();
+        ThreadPoolExecutor executorPool = new ThreadPoolExecutor(numWorkers, numWorkers, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000000), threadFactory);
+
+        MonitorThread monitor = new MonitorThread(executorPool, 30);
+        Thread monitorThread = new Thread(monitor);
+        monitorThread.start();
 
         UniProtInfoDAO dao = new UniProtInfoDAOJpa();
 
@@ -155,7 +163,9 @@ public class UploadUniprotInfoToDb {
             boolean readSequence = false;
             UniEntry currentUniEntry = null;
             StringBuilder currentSequence = null;
+            int lineNum = 0;
             while ((line = br.readLine())!=null) {
+                lineNum++;
                 if (line.trim().isEmpty()) continue;
 
                 if (line.startsWith(">")) {
@@ -165,7 +175,7 @@ public class UploadUniprotInfoToDb {
                             logger.warn("Sequence for uni id {} has 0 length!", currentUniEntry.uniId);
                         }
                         final UniEntry uniEntry = currentUniEntry;
-                        executorService.submit(() -> persist(dao, uniEntry));
+                        executorPool.submit(() -> persist(dao, uniEntry));
                     }
 
                     // reset last sequence
@@ -198,21 +208,30 @@ public class UploadUniprotInfoToDb {
                         currentSequence.append(line.trim());
                     }
                 }
+
+                if (lineNum % 100 == 0) {
+                    int remCap = executorPool.getQueue().remainingCapacity();
+                    if (remCap<100) {
+                        logger.info("Remaining capacity in queue is {}. Halting main thread for {} s to give time to queue to process submitted jobs", remCap, SLEEP_TIME / 1000);
+                        Thread.sleep(SLEEP_TIME);
+                    }
+                }
             }
 
             // make sure we persist the last sequence if it is one of the required ids
             if (readSequence && currentUniEntry!=null && currentUniEntry.uniId!=null) {
                 currentUniEntry.sequence = currentSequence.toString();
                 final UniEntry uniEntry = currentUniEntry;
-                executorService.submit(() -> persist(dao, uniEntry));
+                executorPool.submit(() -> persist(dao, uniEntry));
             }
 
         } finally {
-            executorService.shutdown();
+            executorPool.shutdown();
 
-            while (!executorService.isTerminated()) {
+            while (!executorPool.isTerminated()) {
 
             }
+            monitor.shutDown();
 
         }
 
