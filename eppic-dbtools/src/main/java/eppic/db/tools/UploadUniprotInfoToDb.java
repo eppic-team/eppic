@@ -153,6 +153,9 @@ public class UploadUniprotInfoToDb {
                 if (line.startsWith(">")) {
                     if (currentUniEntry!=null  && currentUniEntry.uniId!=null) {
                         currentUniEntry.sequence = currentSequence.toString();
+                        if (currentUniEntry.sequence.length()==0) {
+                            logger.warn("Sequence for uni id {} has 0 length!", currentUniEntry.uniId);
+                        }
                         final UniEntry uniEntry = currentUniEntry;
                         executorService.submit(() -> persist(dao, uniEntry));
                     }
