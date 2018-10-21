@@ -151,11 +151,11 @@ public class UploadUniprotInfoToDb {
                 if (line.trim().isEmpty()) continue;
 
                 if (line.startsWith(">")) {
-                    if (currentUniEntry!=null)
+                    if (currentUniEntry!=null  && currentUniEntry.uniId!=null) {
                         currentUniEntry.sequence = currentSequence.toString();
-
-                    final UniEntry uniEntry = currentUniEntry;
-                    executorService.submit(() -> persist(dao, uniEntry));
+                        final UniEntry uniEntry = currentUniEntry;
+                        executorService.submit(() -> persist(dao, uniEntry));
+                    }
 
                     // reset last sequence
                     currentSequence = new StringBuilder();
@@ -190,9 +190,8 @@ public class UploadUniprotInfoToDb {
             }
 
             // make sure we persist the last sequence if it is one of the required ids
-            if (readSequence) {
+            if (readSequence && currentUniEntry!=null && currentUniEntry.uniId!=null) {
                 currentUniEntry.sequence = currentSequence.toString();
-
                 final UniEntry uniEntry = currentUniEntry;
                 executorService.submit(() -> persist(dao, uniEntry));
             }
