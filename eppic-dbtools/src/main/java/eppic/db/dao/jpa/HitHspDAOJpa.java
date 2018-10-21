@@ -99,4 +99,47 @@ public class HitHspDAOJpa implements HitHspDAO {
                 entityManager.close();
         }
     }
+
+    @Override
+    public HitHsp getHitHsp(String queryId, String subjectId, int queryStart, int queryEnd, int subjectStart, int subjectEnd) throws DaoException {
+        EntityManager entityManager = null;
+
+        HitHsp hitHsp = null;
+
+        try {
+            entityManager = EntityManagerHandler.getEntityManager();
+
+            CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<HitHspDB> criteriaQuery = criteriaBuilder.createQuery(HitHspDB.class);
+
+            Root<HitHspDB> root = criteriaQuery.from(HitHspDB.class);
+            criteriaQuery.where(
+                    criteriaBuilder.equal(root.get(HitHspDB_.queryId), queryId),
+                    criteriaBuilder.equal(root.get(HitHspDB_.subjectId), subjectId),
+                    criteriaBuilder.equal(root.get(HitHspDB_.queryStart), queryStart),
+                    criteriaBuilder.equal(root.get(HitHspDB_.queryEnd), queryEnd),
+                    criteriaBuilder.equal(root.get(HitHspDB_.subjectStart), subjectStart),
+                    criteriaBuilder.equal(root.get(HitHspDB_.subjectEnd), subjectEnd));
+
+            TypedQuery<HitHspDB> query = entityManager.createQuery(criteriaQuery);
+
+            for (HitHspDB hitHspDB : query.getResultList()) {
+                if (hitHsp != null) {
+                    throw new DaoException("More than 1 result for queryId "+queryId+", subjectId "+subjectId+
+                            ", qStart "+queryStart+", qEnd "+queryEnd+", sStart "+subjectStart+", sEnd " + subjectEnd);
+                }
+                hitHsp = HitHsp.create(hitHspDB);
+            }
+
+            return hitHsp;
+        }
+        catch(Throwable e) {
+            throw new DaoException(e);
+        }
+        finally {
+            if (entityManager!=null)
+                entityManager.close();
+        }
+    }
+
 }

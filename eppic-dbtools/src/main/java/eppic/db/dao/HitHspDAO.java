@@ -22,4 +22,6 @@ public interface HitHspDAO {
             int bitScore) throws DaoException;
 
     List<HitHsp> getHitHspsForQueryId(String queryId) throws DaoException;
+
+    HitHsp getHitHsp(String queryId, String subjectId, int queryStart, int queryEnd, int subjectStart, int subjectEnd) throws DaoException;
 }
