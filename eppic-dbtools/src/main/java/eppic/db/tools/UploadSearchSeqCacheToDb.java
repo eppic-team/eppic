@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -45,15 +43,17 @@ public class UploadSearchSeqCacheToDb {
                         "  -f <file>    : the blast tabular format file containing all hits\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
                         "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
-                        " [-n <int>]    : number of workers. Default 1. \n";
+                        " [-n <int>]    : number of workers. Default 1. \n" +
+                        " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n";
 
 
         File blastTabFile = null;
         String dbName = null;
         File configFile = DBHandler.DEFAULT_CONFIG_FILE;
         int numWorkers = 1;
+        String db = null;
 
-        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:n:h?");
+        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:n:v:h?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch(c){
@@ -68,6 +68,9 @@ public class UploadSearchSeqCacheToDb {
                     break;
                 case 'n':
                     numWorkers = Integer.parseInt(g.getOptarg());
+                    break;
+                case 'v':
+                    db = g.getOptarg();
                     break;
                 case 'h':
                     System.out.println(help);
@@ -89,17 +92,9 @@ public class UploadSearchSeqCacheToDb {
             System.err.println("A blast tabular format file must be provided with -f");
             System.exit(1);
         }
-
-        String db = null;
-        String fileName = blastTabFile.getName();
-        // e.g. pdbAll_UniRef90_2018_09.m8
-        Pattern p = Pattern.compile("^.*_(UniRef\\d+_\\d\\d\\d\\d_\\d\\d)\\.m8$");
-        Matcher m = p.matcher(fileName);
-        if (m.matches()) {
-            db = m.group(1);
-            logger.info("UniRef version parsed from file name is {}", db);
-        } else {
-            logger.warn("Could not parse UniRef version from file name {}. UniRef version won't be available in db. ", fileName);
+        
+        if (db == null) {
+            logger.warn("UniRef version not passed with -v option. UniRef version won't be available in db.");
         }
 
         initJpaConnection(configFile);
@@ -109,7 +104,7 @@ public class UploadSearchSeqCacheToDb {
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         ThreadPoolExecutor executorPool = new ThreadPoolExecutor(numWorkers, numWorkers, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000000), threadFactory);
 
-        MonitorThread monitor = new MonitorThread(executorPool, 30);
+        MonitorThread monitor = new MonitorThread(executorPool, 60);
         Thread monitorThread = new Thread(monitor);
         monitorThread.start();
 

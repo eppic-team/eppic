@@ -147,7 +147,7 @@ public class UploadUniprotInfoToDb {
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         ThreadPoolExecutor executorPool = new ThreadPoolExecutor(numWorkers, numWorkers, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000000), threadFactory);
 
-        MonitorThread monitor = new MonitorThread(executorPool, 30);
+        MonitorThread monitor = new MonitorThread(executorPool, 60);
         Thread monitorThread = new Thread(monitor);
         monitorThread.start();
 
