@@ -10,11 +10,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import eppic.assembly.*;
@@ -173,45 +178,20 @@ public class Main {
 		
 		params.getProgressLog().println("Loading PDB data: "+(params.getInFile()==null?params.getPdbCode():params.getInFile().getName()));
 		writeStep("Calculating Interfaces");
+
+		FileParsingParameters fileParsingParams = new FileParsingParameters();
+		// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
+		//fileParsingParams.set????
+		fileParsingParams.setAlignSeqRes(true);
+		fileParsingParams.setParseBioAssembly(true);
+
 		pdb = null;
 		try {
 			if (!params.isInputAFile()) {
-				
-				AtomCache cache = null;
-								
-				if (params.getAtomCachePath()!=null) {
-					LOGGER.info("Path given in ATOM_CACHE_PATH, setting AtomCache to {} and ignoring env variable PDB_DIR", params.getAtomCachePath());
-					cache = new AtomCache(params.getAtomCachePath());
-				} else {
-					cache = new AtomCache();
-				}
-				cache.setUseMmCif(true);
-				
-				// we set default fetch behavior to FETCH_IF_OUTDATED which is the closest to rsync
-				if (params.getFetchBehavior()!=null) {
-					cache.setFetchBehavior(params.getFetchBehavior());
-				} else {
-					cache.setFetchBehavior(EppicParams.DEF_FETCH_BEHAVIOR);
-				}
-				FileParsingParameters fileParsingParams = new FileParsingParameters();
-				fileParsingParams.setAlignSeqRes(true);
-				fileParsingParams.setParseBioAssembly(true);
-				cache.setFileParsingParams(fileParsingParams);
-				
-				StructureIO.setAtomCache(cache); 
-				
-				
-				try {
-					pdb = StructureIO.getStructure(params.getPdbCode());
 
-					// now we get the file and copy it to the output dir if in -w mode
-					if (params.isGenerateModelSerializedFile()) {
-						MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
-						reader.setFetchBehavior(cache.getFetchBehavior());
-						reader.setObsoleteBehavior(cache.getObsoleteBehavior());
-						File file = reader.getLocalFile(params.getPdbCode());
-						Files.copy(file.toPath(), params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION).toPath(), StandardCopyOption.REPLACE_EXISTING);
-					}
+				try {
+					pdb = readStructureFromPdbCode(fileParsingParams);
+
 				} catch(IOException e) {
 					throw new EppicException(e,"Couldn't get cif file from AtomCache for code "+params.getPdbCode()+". Error: "+e.getMessage(),true);
 				}
@@ -219,22 +199,14 @@ public class Main {
 			} else {
 
 				int fileType = FileTypeGuesser.guessFileType(params.getInFile());
-				
+				fileParsingParams.setParseBioAssembly(false);
+
 				if (fileType==FileTypeGuesser.CIF_FILE) {
 
 					MMcifParser parser = new SimpleMMcifParser();
-
 					SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-
-					FileParsingParameters fileParsingParams = new FileParsingParameters();
-					// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
-					//fileParsingParams.set????					
-					fileParsingParams.setAlignSeqRes(true);
-
 					consumer.setFileParsingParameters(fileParsingParams);
-
 					parser.addMMcifConsumer(consumer);
-
 					parser.parse(new BufferedReader(new InputStreamReader(IOUtils.openFile(params.getInFile())))); 
 
 					pdb = consumer.getStructure();
@@ -242,14 +214,8 @@ public class Main {
 				} else if (fileType==FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
 
 					PDBFileParser parser = new PDBFileParser();
-					
-					FileParsingParameters fileParsingParams = new FileParsingParameters();
-					// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
-					//fileParsingParams.set????
-					fileParsingParams.setAlignSeqRes(true);
-					
 					parser.setFileParsingParameters(fileParsingParams);
-					
+
 					pdb = parser.parsePDBFile(new FileInputStream(params.getInFile()));
 					
 				}
@@ -271,6 +237,71 @@ public class Main {
 		modelAdaptor = new DataModelAdaptor();
 		modelAdaptor.setParams(params);
 		modelAdaptor.setPdbMetadata(pdb);
+	}
+
+	private Structure readStructureFromPdbCode(FileParsingParameters fileParsingParams) throws StructureException, IOException {
+
+		if (params.getCifRepositoryBaseUrl()!=null) {
+
+			// 1. Use a different http repository than the official PDB one
+
+			String pdbCode = params.getPdbCode().toLowerCase();
+			String url = params.getCifRepositoryBaseUrl() + "/" + pdbCode.substring(1, 3) + "/" + pdbCode + "/" + pdbCode + ".cif.gz";
+			URL cifGzUrl = new URL(url);
+			MMcifParser parser = new SimpleMMcifParser();
+			SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+			consumer.setFileParsingParameters(fileParsingParams);
+			parser.addMMcifConsumer(consumer);
+			parser.parse(new BufferedReader(new InputStreamReader(new GZIPInputStream(cifGzUrl.openStream()))));
+
+			pdb = consumer.getStructure();
+
+			// now we get the file and copy it to the output dir if in -w mode
+			if (params.isGenerateModelSerializedFile()) {
+				cifGzUrl = new URL(url);
+				ReadableByteChannel readableByteChannel = Channels.newChannel(cifGzUrl.openStream());
+				FileOutputStream fileOutputStream = new FileOutputStream(params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION));
+				fileOutputStream.getChannel()
+						.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+			}
+
+		} else {
+
+			// 2. Use standard PDB http repository as available via BioJava
+
+			AtomCache cache;
+
+			if (params.getAtomCachePath() != null) {
+				LOGGER.info("Path given in ATOM_CACHE_PATH, setting AtomCache to {} and ignoring env variable PDB_DIR", params.getAtomCachePath());
+				cache = new AtomCache(params.getAtomCachePath());
+			} else {
+				cache = new AtomCache();
+			}
+			cache.setUseMmCif(true);
+
+			// we set default fetch behavior to FETCH_IF_OUTDATED which is the closest to rsync
+			if (params.getFetchBehavior() != null) {
+				cache.setFetchBehavior(params.getFetchBehavior());
+			} else {
+				cache.setFetchBehavior(EppicParams.DEF_FETCH_BEHAVIOR);
+			}
+			cache.setFileParsingParams(fileParsingParams);
+
+			StructureIO.setAtomCache(cache);
+
+			pdb = StructureIO.getStructure(params.getPdbCode());
+
+			// now we get the file and copy it to the output dir if in -w mode
+			if (params.isGenerateModelSerializedFile()) {
+				MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
+				reader.setFetchBehavior(cache.getFetchBehavior());
+				reader.setObsoleteBehavior(cache.getObsoleteBehavior());
+				File file = reader.getLocalFile(params.getPdbCode());
+				Files.copy(file.toPath(), params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION).toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
+		}
+
+		return pdb;
 	}
 
 	public void doFindInterfaces() throws EppicException {
