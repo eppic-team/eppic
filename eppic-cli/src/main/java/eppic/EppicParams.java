@@ -305,6 +305,7 @@ public class EppicParams {
 	// fields assignable from config file
 	private String   atomCachePath;
 	private FetchBehavior  fetchBehavior;
+	private String cifRepositoryBaseUrl;
 	
 	private String   siftsFile;
 	
@@ -981,6 +982,8 @@ public class EppicParams {
 						p.getProperty("FETCH_BEHAVIOR"), DEF_FETCH_BEHAVIOR.name());
 				fetchBehavior = DEF_FETCH_BEHAVIOR;
 			}
+
+			cifRepositoryBaseUrl = p.getProperty("CIF_REPOSITORY_BASE_URL");
 			
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
 			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", Boolean.valueOf(DEF_USE_SIFTS).toString()));
@@ -1041,6 +1044,10 @@ public class EppicParams {
 
 	public FetchBehavior getFetchBehavior() {
 		return fetchBehavior;
+	}
+
+	public String getCifRepositoryBaseUrl() {
+		return cifRepositoryBaseUrl;
 	}
 	
 	public String getSiftsFile() {
