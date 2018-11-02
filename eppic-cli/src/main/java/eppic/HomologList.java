@@ -156,20 +156,10 @@ public class HomologList implements  Serializable {
 			// if we do take the cache, we have to do some sanity checks
 			String blastqueryid = blastList.getQueryId();
 			blastqueryid = blastqueryid.replaceAll("_.*", "");
-			// TODO check if these checks apply now, if not change them as needed
 			if (!blastqueryid.equals(this.ref.getUniId())) {
 				throw new IOException("Query id " + blastqueryid + " from cache " +
 						" does not match the id from the sequence: " + this.ref.getUniId());
 			}
-			String uniprotVerFromCache = blastList.getDb();
-			if (!uniprotVerFromCache.equals(uniprotVer)) {
-				LOGGER.warn("Uniprot version from blast db dir " + blastDbDir +
-						" (" + uniprotVer + ") does not match version in cache (" + uniprotVerFromCache + ")");
-			}
-			if (!blastList.getDb().substring(blastList.getDb().lastIndexOf("/") + 1).equals(blastDb)) {
-				LOGGER.warn("Blast db used in cache '{}' different from one requested '{}'", blastList.getDb(), blastDb);
-			}
-
 
 		} else if (noBlast) {
 				throw new IOException("The \"no blast\" mode was specified (-B option) and entry does not exist in sequence search cache ");

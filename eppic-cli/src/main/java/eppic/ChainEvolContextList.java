@@ -10,7 +10,10 @@ import java.util.TreeMap;
 
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
+import eppic.db.dao.UniProtMetadataDAO;
+import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
 import eppic.db.jpautils.DbConfigGenerator;
+import eppic.model.dto.UniProtMetadata;
 import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.EntityType;
 import org.biojava.nbio.structure.Structure;
@@ -50,16 +53,10 @@ public class ChainEvolContextList implements Serializable {
 	private transient SiftsConnection siftsConn;
 
 
-	public ChainEvolContextList(Structure pdb, EppicParams params) throws SQLException {
+	public ChainEvolContextList(Structure pdb, EppicParams params) {
 		this.pdb = pdb;
 
-		this.cecs = new TreeMap<String, ChainEvolContext>();
-
-		if (!params.isNoBlast()) {
-			// if we fail to read a version, it will stay null. Should we rather throw exception?
-			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
-			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
-		}
+		this.cecs = new TreeMap<>();
 
 		this.useLocalUniprot = params.isUseLocalUniProtInfo();
 
@@ -78,16 +75,10 @@ public class ChainEvolContextList implements Serializable {
 		
 	}
 	
-	public ChainEvolContextList(List<Sequence> sequences, EppicParams params) throws SQLException {
+	public ChainEvolContextList(List<Sequence> sequences, EppicParams params) {
 		this.pdb = null;
 		
-		this.cecs = new TreeMap<String, ChainEvolContext>();
-
-		if (!params.isNoBlast()) {
-			// if we fail to read a version, it will stay null. Should we rather throw exception?
-			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
-			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
-		}
+		this.cecs = new TreeMap<>();
 
         this.useLocalUniprot = params.isUseLocalUniProtInfo();
 		
@@ -98,6 +89,36 @@ public class ChainEvolContextList implements Serializable {
 			cecs.put(sequence.getName(), cec);
 		}
 		
+	}
+
+	public void initUniProtVer(EppicParams params) throws EppicException {
+		if (!params.isNoBlast()) {
+			// if we fail to read a version, it will stay null. Should we rather throw exception?
+			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
+			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
+		} else if (useLocalUniprot) {
+			openConnections(params);
+			UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
+			try {
+				UniProtMetadata uniProtMetadata = dao.getUniProtMetadata();
+				this.uniprotVer = uniProtMetadata.getVersion();
+			} catch (DaoException e) {
+				LOGGER.warn("Could not retrieve UniProt version from database");
+			}
+		} else {
+			// japi connection
+			try {
+				this.uniprotVer = uniprotJapiConn.getVersion();
+			} catch (ServiceException e) {
+				LOGGER.warn("Could not retrieve UniProt version from UniProt JAPI");
+			}
+		}
+		// in other cases it stays null
+
+		if (uniprotVer != null) {
+			LOGGER.info("Using UniProt version {}", uniprotVer);
+		}
+
 	}
 	
 	public void addChainEvolContext(String representativeChain, ChainEvolContext cec) {

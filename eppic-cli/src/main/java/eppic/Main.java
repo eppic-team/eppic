@@ -796,12 +796,9 @@ public class Main {
 		if (interfaces.size()==0) return;
 		
 		findUniqueChains();
-		
-		try {
-			cecs = new ChainEvolContextList(pdb,params);
-		} catch (SQLException e) {
-			throw new EppicException(e,"Could not connect to local UniProt database server: "+e.getMessage(),true);
-		}
+
+		cecs = new ChainEvolContextList(pdb, params);
+		cecs.initUniProtVer(params);
 		
 		// a) getting the uniprot ids corresponding to the query (the pdb sequence)
 		writeStep("Finding Homologs and Calculating Entropies");		
