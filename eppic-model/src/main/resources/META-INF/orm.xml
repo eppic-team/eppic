@@ -969,8 +969,6 @@
 			<id name="uid">
 				<generated-value strategy="IDENTITY" />
 			</id>
-			<basic name="db">
-			</basic>
 			<basic name="queryId">
 			</basic>
 			<basic name="subjectId">
@@ -994,6 +992,20 @@
 			<basic name="eValue">
 			</basic>
 			<basic name="bitScore">
+			</basic>
+		</attributes>
+	</entity>
+
+	<entity class="eppic.model.db.UniProtMetadataDB" name="UniProtMetadata">
+		<table name="UniProtMetadata">
+		</table>
+		<attributes>
+			<id name="uid">
+				<generated-value strategy="IDENTITY" />
+			</id>
+			<basic name="uniRefType">
+			</basic>
+			<basic name="version">
 			</basic>
 		</attributes>
 	</entity>

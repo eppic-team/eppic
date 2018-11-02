@@ -7,7 +7,6 @@ import java.util.List;
 public interface HitHspDAO {
 
     void insertHitHsp(
-            String db,
             String queryId,
             String subjectId,
             double percentIdentity,

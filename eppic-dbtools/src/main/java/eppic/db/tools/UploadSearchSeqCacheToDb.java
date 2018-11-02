@@ -3,10 +3,13 @@ package eppic.db.tools;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
+import eppic.db.dao.UniProtMetadataDAO;
 import eppic.db.dao.jpa.HitHspDAOJpa;
+import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
 import eppic.db.jpautils.DbConfigGenerator;
 import eppic.db.tools.helpers.MonitorThread;
 import eppic.model.dto.HitHsp;
+import eppic.model.dto.UniProtMetadata;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +38,7 @@ public class UploadSearchSeqCacheToDb {
     private static AtomicInteger alreadyPresent = new AtomicInteger(0);
 
 
-    public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         String help =
                 "Usage: UploadSearchSeqCacheToDb\n" +
@@ -44,6 +47,7 @@ public class UploadSearchSeqCacheToDb {
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
                         "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
                         " [-n <int>]    : number of workers. Default 1. \n" +
+                        " [-r <string>] : uniref type to be written to db, e.g. UniRef90. If not provided null is written\n" +
                         " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n";
 
 
@@ -51,9 +55,10 @@ public class UploadSearchSeqCacheToDb {
         String dbName = null;
         File configFile = DBHandler.DEFAULT_CONFIG_FILE;
         int numWorkers = 1;
-        String db = null;
+        String uniProtVersion = null;
+        String uniRefType = null;
 
-        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:n:v:h?");
+        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:n:r:v:h?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch(c){
@@ -69,8 +74,11 @@ public class UploadSearchSeqCacheToDb {
                 case 'n':
                     numWorkers = Integer.parseInt(g.getOptarg());
                     break;
+                case 'r':
+                    uniRefType = g.getOptarg();
+                    break;
                 case 'v':
-                    db = g.getOptarg();
+                    uniProtVersion = g.getOptarg();
                     break;
                 case 'h':
                     System.out.println(help);
@@ -92,8 +100,12 @@ public class UploadSearchSeqCacheToDb {
             System.err.println("A blast tabular format file must be provided with -f");
             System.exit(1);
         }
-        
-        if (db == null) {
+
+        if (uniRefType == null) {
+            logger.warn("UniRef type not passed with -r option. UniRef type won't be available in db.");
+        }
+
+        if (uniProtVersion == null) {
             logger.warn("UniRef version not passed with -v option. UniRef version won't be available in db.");
         }
 
@@ -140,11 +152,8 @@ public class UploadSearchSeqCacheToDb {
                     double eValue = Double.parseDouble(tokens[10]);
                     int bitScore = Integer.parseInt(tokens[11]);
 
-                    // so that lambda works
-                    final String dbToWrite = db;
-
                     //Future<Boolean> future = executorService.submit(() -> persist(hitHspDAO, dbToWrite, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
-                    executorPool.submit(() -> persist(hitHspDAO, dbToWrite, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
+                    executorPool.submit(() -> persist(hitHspDAO, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
 
 
                 } catch (NumberFormatException e) {
@@ -185,9 +194,30 @@ public class UploadSearchSeqCacheToDb {
             if (alreadyPresent.get()!=0) {
                 logger.info("{} entries already present and did not re-add them", alreadyPresent.get());
             }
+
+            // a rough way of guessing that the insertion of records was successful
+            if (lineNum - couldntInsert.get() > 1000) {
+                UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
+                UniProtMetadata uniProtMetadata = null;
+                try {
+                    uniProtMetadata = dao.getUniProtMetadata();
+                } catch (DaoException e) {
+                    logger.info("UniProtMetadata could not be find in database. We will persist a new one.");
+                }
+
+                if (uniProtMetadata == null) {
+                    try {
+                        dao.insertUniProtMetadata(uniRefType, uniProtVersion);
+                    } catch (DaoException e) {
+                        logger.warn("Could not persist the UniProt metadata (UniRef type and version). " +
+                                "Things could fail downstream. Error: {}", e.getMessage());
+                    }
+                } else {
+                    logger.info("UniProtMetadata present in database with uniRefType={}, version={}. Will not persist a new one.",
+                            uniProtMetadata.getUniRefType(), uniProtMetadata.getVersion());
+                }
+            }
         }
-
-
 
     }
 
@@ -197,7 +227,6 @@ public class UploadSearchSeqCacheToDb {
     }
 
     private static void persist(HitHspDAO hitHspDAO,
-                                   String db,
                                    String queryId, String subjectId,
                                    double identity, int length, int mismatches, int gapOpenings,
                                    int qStart, int qEnd, int sStart, int sEnd, double eValue, int bitScore) {
@@ -211,7 +240,6 @@ public class UploadSearchSeqCacheToDb {
 
                 //logger.debug("Persisting {}--{}", queryId, subjectId);
                 hitHspDAO.insertHitHsp(
-                        db,
                         queryId,
                         subjectId,
                         identity,

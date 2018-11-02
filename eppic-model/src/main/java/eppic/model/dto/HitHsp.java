@@ -9,7 +9,6 @@ public class HitHsp implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private int uid;
-    private String db;
     // qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
     private String queryId;
     private String subjectId;
@@ -30,14 +29,6 @@ public class HitHsp implements Serializable {
 
     public void setUid(int uid) {
         this.uid = uid;
-    }
-
-    public String getDb() {
-        return db;
-    }
-
-    public void setDb(String db) {
-        this.db = db;
     }
 
     public String getQueryId() {
@@ -139,7 +130,6 @@ public class HitHsp implements Serializable {
     public static HitHsp create(HitHspDB hitHspDB) {
         HitHsp hitHsp = new HitHsp();
         hitHsp.setUid(hitHspDB.getUid());
-        hitHsp.setDb(hitHspDB.getDb());
         hitHsp.setQueryId(hitHspDB.getQueryId());
         hitHsp.setSubjectId(hitHspDB.getSubjectId());
         hitHsp.setPercentIdentity(hitHspDB.getPercentIdentity());

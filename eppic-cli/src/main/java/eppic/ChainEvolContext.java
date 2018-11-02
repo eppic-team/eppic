@@ -11,10 +11,13 @@ import java.util.regex.Pattern;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.db.dao.UniProtInfoDAO;
+import eppic.db.dao.UniProtMetadataDAO;
 import eppic.db.dao.jpa.HitHspDAOJpa;
 import eppic.db.dao.jpa.UniProtInfoDAOJpa;
+import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
 import eppic.model.dto.HitHsp;
 import eppic.model.dto.UniProtInfo;
+import eppic.model.dto.UniProtMetadata;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
@@ -905,6 +908,10 @@ public class ChainEvolContext implements Serializable {
 
 		List<HitHsp> hitHsps = dao.getHitHspsForQueryId(queryId);
 
+		UniProtMetadataDAO uniDao = new UniProtMetadataDAOJpa();
+
+		UniProtMetadata uniProtMetadata = uniDao.getUniProtMetadata();
+
 		if (hitHsps.isEmpty()) {
 			LOGGER.warn("Nothing found in sequence search cache for query {}", queryId);
 		}
@@ -915,7 +922,7 @@ public class ChainEvolContext implements Serializable {
 		for (HitHsp hsp : hitHsps) {
 
 			if (i==0) {
-				hitList.setDb(hsp.getDb());
+				hitList.setDb(uniProtMetadata.getVersion());
 				hitList.setQueryId(queryId);
 				hitList.setQueryLength(queryInterv.end - queryInterv.beg + 1);
 			}

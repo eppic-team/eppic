@@ -18,8 +18,7 @@ import java.util.List;
 public class HitHspDAOJpa implements HitHspDAO {
 
     @Override
-    public void insertHitHsp(String db,
-                             String queryId,
+    public void insertHitHsp(String queryId,
                              String subjectId,
                              double percentIdentity,
                              int aliLength,
@@ -35,7 +34,6 @@ public class HitHspDAOJpa implements HitHspDAO {
         EntityManager entityManager = null;
 
         HitHspDB hitHspDB = new HitHspDB();
-        hitHspDB.setDb(db);
         hitHspDB.setQueryId(queryId);
         hitHspDB.setSubjectId(subjectId);
         hitHspDB.setPercentIdentity(percentIdentity);
