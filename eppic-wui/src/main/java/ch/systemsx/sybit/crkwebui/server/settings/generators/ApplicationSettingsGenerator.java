@@ -37,9 +37,6 @@ public class ApplicationSettingsGenerator
 	/**
 	 * Creates application settings using provided input streams.
 	 * @param inputParametersStream input parameters input stream
-	 * @param helpPageStream stream containing help page content
-	 * @param downloadsPageStream stream containing downloads page content
-	 * @param releasesPageStream stream containing releases page content
 	 * @param gridPropertiesInputStream stream containing settings of the grids
 	 * @return application settings
 	 * @throws ParsingException when can not properly prepare application settings
@@ -59,7 +56,6 @@ public class ApplicationSettingsGenerator
 		String wikipediaLinkUrl = globalProperties.getProperty("wikipedia_link_url");
 		String publicationLinkUrl = globalProperties.getProperty("publication_link_url");
 		boolean usePrecompiledResults = Boolean.parseBoolean(globalProperties.getProperty("use_precompiled","true"));
-		String uniprotVersion = globalProperties.getProperty("uniprot_version");
 		String examplePdb = globalProperties.getProperty("example_pdb");
 		String eppicExplorerUrl = globalProperties.getProperty("eppic_explorer_url");
 		double resolutionCutOff;
@@ -106,7 +102,6 @@ public class ApplicationSettingsGenerator
 		settings.setWikipediaUrl(wikipediaLinkUrl);
 		settings.setPublicationLinkUrl(publicationLinkUrl);
 		settings.setUsePrecompiledResults(usePrecompiledResults);
-		settings.setUniprotVersion(uniprotVersion);
 		settings.setExamplePdb(examplePdb);
 		boolean readOnlyMode = Boolean.parseBoolean(globalProperties.getProperty("read_only_mode","false"));
 		settings.setReadOnlyMode(readOnlyMode);
@@ -136,7 +131,6 @@ public class ApplicationSettingsGenerator
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
 			throw new ParsingException("Error during preparing input parameters");
 		}
 	}
@@ -156,7 +150,6 @@ public class ApplicationSettingsGenerator
 		}
 		catch(Throwable t)
 		{
-			t.printStackTrace();
 			throw new ParsingException("Error during preparing grid properties");
 		}
 	}

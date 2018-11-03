@@ -16,6 +16,9 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
+import eppic.db.dao.*;
+import eppic.db.dao.jpa.*;
+import eppic.model.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,22 +44,6 @@ import ch.systemsx.sybit.crkwebui.server.settings.generators.ApplicationSettings
 import ch.systemsx.sybit.crkwebui.shared.exceptions.CrkWebException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
-import eppic.model.dto.ApplicationSettings;
-import eppic.model.dto.Assembly;
-import eppic.model.dto.ChainCluster;
-import eppic.model.dto.InputWithType;
-import eppic.model.dto.Interface;
-import eppic.model.dto.InterfaceCluster;
-import eppic.model.dto.JobsForSession;
-import eppic.model.dto.PDBSearchResult;
-import eppic.model.dto.PdbInfo;
-import eppic.model.dto.ProcessingData;
-import eppic.model.dto.ProcessingInProgressData;
-import eppic.model.dto.Residue;
-import eppic.model.dto.ResiduesList;
-import eppic.model.dto.RunJobData;
-import eppic.model.dto.SequenceClusterType;
-import eppic.model.dto.StepStatus;
 import eppic.model.shared.InputType;
 import eppic.model.shared.StatusOfJob;
 
@@ -64,23 +51,6 @@ import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
 
 import eppic.EppicParams;
 import eppic.db.EntityManagerHandler;
-import eppic.db.dao.AssemblyDAO;
-import eppic.db.dao.ChainClusterDAO;
-import eppic.db.dao.DaoException;
-import eppic.db.dao.InterfaceClusterDAO;
-import eppic.db.dao.InterfaceDAO;
-import eppic.db.dao.JobDAO;
-import eppic.db.dao.PDBInfoDAO;
-import eppic.db.dao.ResidueDAO;
-import eppic.db.dao.UserSessionDAO;
-import eppic.db.dao.jpa.AssemblyDAOJpa;
-import eppic.db.dao.jpa.ChainClusterDAOJpa;
-import eppic.db.dao.jpa.InterfaceClusterDAOJpa;
-import eppic.db.dao.jpa.InterfaceDAOJpa;
-import eppic.db.dao.jpa.JobDAOJpa;
-import eppic.db.dao.jpa.PDBInfoDAOJpa;
-import eppic.db.dao.jpa.ResidueDAOJpa;
-import eppic.db.dao.jpa.UserSessionDAOJpa;
 import eppic.db.jpautils.DbConfigGenerator;
 
 /**
@@ -424,8 +394,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	{
 		ApplicationSettingsGenerator applicationSettingsGenerator = new ApplicationSettingsGenerator(properties);
 
-		//InputStream inputParametersStream = getServletContext()
-		//		.getResourceAsStream(INPUT_PARAMS_FILE);
 		InputStream inputParametersStream = new FileInputStream(new File(INPUT_PARAMS_FILE));
 
 		// grid properties: we read them first from the war-packed resource. Then from the file system (which will override them)
@@ -441,6 +409,14 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		ApplicationSettings settings = applicationSettingsGenerator.generateApplicationSettings(inputParametersStream, 
 				gridPropertiesInputStream);
 
+		try {
+			UniProtMetadataDAO uniDAO = new UniProtMetadataDAOJpa();
+			UniProtMetadata uniProtMetadata = uniDAO.getUniProtMetadata();
+			settings.setUniprotVersion(uniProtMetadata.getVersion());
+		} catch (DaoException e) {
+			settings.setUniprotVersion("");
+			logger.warn("Could not get UniProt version from database UniProtMetadata table. Version won't be available in home page. Error: {}", e.getMessage());
+		}
 
 		JobDAO jobDAO = new JobDAOJpa();
 		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();

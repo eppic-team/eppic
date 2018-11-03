@@ -211,7 +211,6 @@ public class ApplicationSettings implements Serializable {
 	 * <li>
 	 * If jobId is a long alphanumerical string (more than 4 characters): the URL is directly under resultsLocation: resultsLocation/jobId
 	 * </li>
-	 * @param baseUrl
 	 * @param jobId
 	 * @return
 	 */
@@ -440,7 +439,7 @@ public class ApplicationSettings implements Serializable {
 
 	/**
 	 * Sets name of the uniprot version to display in input panel.
-	 * @param examplePdb name of the uniprot version
+	 * @param uniprotVersion name of the uniprot version
 	 */
 	public void setUniprotVersion(String uniprotVersion) {
 		this.uniprotVersion = uniprotVersion;
