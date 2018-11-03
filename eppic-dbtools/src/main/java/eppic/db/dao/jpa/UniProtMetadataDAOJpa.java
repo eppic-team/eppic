@@ -50,6 +50,7 @@ public class UniProtMetadataDAOJpa implements UniProtMetadataDAO {
 
             CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
             CriteriaQuery<UniProtMetadataDB> criteriaQuery = criteriaBuilder.createQuery(UniProtMetadataDB.class);
+            criteriaQuery.from(UniProtMetadataDB.class);
 
             TypedQuery<UniProtMetadataDB> query = entityManager.createQuery(criteriaQuery);
 
