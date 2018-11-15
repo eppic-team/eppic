@@ -17,7 +17,7 @@ public class MmseqsRunner {
     private static final Logger logger = LoggerFactory.getLogger(MmseqsRunner.class);
 
     private static final String MMSEQS_TSV_SUFFIX = "_cluster.tsv";
-    private static final String MMSEQS_REQSEQ_SUFFIX = "_req_seq.fasta";
+    private static final String MMSEQS_REPSEQ_SUFFIX = "_rep_seq.fasta";
     private static final String MMSEQS_ALLSEQS_SUFFIX = "_all_seqs.fasta";
 
     private MmseqsRunner() {
@@ -101,9 +101,9 @@ public class MmseqsRunner {
         // reached and thus files not removed on exit
         outFile.delete();
         // other files that mmseqs creates
-        File reqseqFile = new File(outFilePrefix.getParent(), outFilePrefix.getName() + MMSEQS_REQSEQ_SUFFIX);
+        File repseqFile = new File(outFilePrefix.getParent(), outFilePrefix.getName() + MMSEQS_REPSEQ_SUFFIX);
         File allseqsFile = new File(outFilePrefix.getParent(), outFilePrefix.getName() + MMSEQS_ALLSEQS_SUFFIX);
-        reqseqFile.delete();
+        repseqFile.delete();
         allseqsFile.delete();
 
         return clusters;
