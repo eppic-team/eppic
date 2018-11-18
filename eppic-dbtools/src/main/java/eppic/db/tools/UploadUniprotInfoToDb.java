@@ -1,5 +1,8 @@
 package eppic.db.tools;
 
+import eppic.commons.sequence.NoMatchFoundException;
+import eppic.commons.sequence.UniProtConnection;
+import eppic.commons.sequence.UnirefEntry;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
@@ -10,6 +13,7 @@ import eppic.model.dto.UniProtInfo;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 import java.io.*;
 import java.util.*;
@@ -40,8 +44,11 @@ public class UploadUniprotInfoToDb {
 
     private static AtomicInteger alreadyPresent = new AtomicInteger(0);
     private static AtomicInteger couldntInsert = new AtomicInteger(0);
-    private static AtomicInteger couldntFind = new AtomicInteger(0);
+    private static AtomicInteger couldntFindInJapi = new AtomicInteger(0);
     private static AtomicInteger didInsert = new AtomicInteger(0);
+
+    private static Set<String> notInFastaUniIds = new HashSet<>();
+
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -108,25 +115,29 @@ public class UploadUniprotInfoToDb {
 
         Set<String> uniqueIds = getUniqueUniRefIds(blastTabFile);
 
-        logger.info("A total of {} unique UniProt/Parc ids were found", uniqueIds.size());
+        logger.info("A total of {} unique UniProt/Parc ids were found in file {}", uniqueIds.size(), blastTabFile);
 
         initJpaConnection(configFile);
 
         retrieveInfoAndPersist(unirefFastaFile, uniqueIds, numWorkers);
 
-        if (countDone.get()<uniqueIds.size()) {
-            logger.warn("Count of processed entries ({}) is less than the number of entries needed ({}). " +
-                    "FASTA file did not contain some entries. There's something wrong!", countDone.get(), uniqueIds.size());
+        logger.info("A total of {} ids were not present in FASTA file. Proceeding to grab them from JAPI and persist them", notInFastaUniIds.size());
+
+        retrieveFromJapiAndPersist(notInFastaUniIds, numWorkers);
+
+        if (countDone.get() + couldntFindInJapi.get() < uniqueIds.size()) {
+            logger.warn("Count of processed entries ({}) after retrieving info from FASTA file and JAPI is less than the number of entries needed ({}). " +
+                    "There's something wrong!", countDone.get() + couldntFindInJapi.get(), uniqueIds.size());
         }
         logger.info("Done processing {} UniProt/Parc entries to database. Actually inserted {} in db", uniqueIds.size(), didInsert.get());
         if (couldntInsert.get()>0) {
             logger.info("{} entries could not be persisted to db", couldntInsert.get());
         }
-        if (couldntFind.get()>0) {
-            logger.info("{} entries could not be found in UniRef FASTA file", couldntFind.get());
-        }
         if (alreadyPresent.get()>0) {
             logger.info("{} entries were already present in db and were not reloaded", alreadyPresent.get());
+        }
+        if (couldntFindInJapi.get()>0) {
+            logger.info("{} entries (out of {}) could not be retrieved via JAPI", couldntFindInJapi.get(), notInFastaUniIds.size());
         }
 
     }
@@ -136,7 +147,7 @@ public class UploadUniprotInfoToDb {
      * subsequently persisting the info to db via JPA.
      * @param fastaFile the UniRef FASTA file, either plain text or gzipped (must have .gz extension)
      * @param uniqueIds the ids for which we want to extract info from the FASTA file
-     * @param numWorkers the number of workers for parallelising the persistence
+     * @param numWorkers the number of workers for concurrent persistence
      * @throws IOException if problems when parsing FASTA file
      * @throws InterruptedException
      */
@@ -152,6 +163,8 @@ public class UploadUniprotInfoToDb {
         monitorThread.start();
 
         UniProtInfoDAO dao = new UniProtInfoDAOJpa();
+
+        Set<String> uniIdsPresentInFasta = new HashSet<>();
 
         InputStreamReader isr;
         if (fastaFile.getName().endsWith(".gz")) {
@@ -199,6 +212,8 @@ public class UploadUniprotInfoToDb {
                             } else {
                                 logger.warn("Could not match taxonomy for uni id {}, won't have taxonomy info for it. Full tag is: {}", uniId, line);
                             }
+
+                            uniIdsPresentInFasta.add(uniId);
                         }
                     } else {
                         logger.warn("Tag {} does not conform to expected UniRef identifier format", tag);
@@ -233,6 +248,51 @@ public class UploadUniprotInfoToDb {
 
             }
             monitor.shutDown();
+
+        }
+
+        notInFastaUniIds = new HashSet<>(uniqueIds);
+        notInFastaUniIds.removeAll(uniIdsPresentInFasta);
+
+    }
+
+    /**
+     * Retrieve UniProt info from UniProt JAPI for given notInFastaUniIds and
+     * subsequently persist the info to db via JPA.
+     * @param notInFastaUniIds a list of UniRef ids that were not found in FASTA file
+     * @param numWorkers the number of workers for concurrent persistence
+     */
+    private static void retrieveFromJapiAndPersist(Set<String> notInFastaUniIds, int numWorkers) {
+
+        ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
+
+        UniProtConnection uc = new UniProtConnection();
+        UniProtInfoDAO dao = new UniProtInfoDAOJpa();
+
+
+        for (String uniId : notInFastaUniIds) {
+
+            try {
+                UnirefEntry entry = uc.getUnirefEntry(uniId);
+
+                final UniEntry uniEntry = new UniEntry();
+                uniEntry.sequence = entry.getSequence();
+                uniEntry.uniId = entry.getUniId();
+                uniEntry.lastTaxon = entry.getLastTaxon();
+                executorService.submit(() -> persist(dao, uniEntry));
+
+            } catch (NoMatchFoundException e) {
+                logger.warn("Could not find UniProt id {} via JAPI", uniId);
+                couldntFindInJapi.incrementAndGet();
+            } catch (ServiceException e) {
+                logger.warn("Problem retrieving UniProt info from JAPI for UniProt id {}. Error: {}", uniId, e.getMessage());
+                couldntFindInJapi.incrementAndGet();
+            }
+        }
+
+        executorService.shutdown();
+
+        while (!executorService.isTerminated()) {
 
         }
 
