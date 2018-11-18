@@ -180,6 +180,7 @@ public class ChainEvolContext implements Serializable {
 			// a) it's difficult to find sequence homologs, due to high evalues and needing to use special
 			//    substitution matrices (see https://github.com/soedinglab/MMseqs2/issues/125)
 			// b) eppic evol scoring doesn't make much sense for peptides, see https://github.com/eppic-team/eppic/issues/5
+			//    See also discussion here: https://github.com/eppic-team/eppic-science/issues/120
 			return;
 		}
 		

@@ -83,7 +83,7 @@ public class EppicParams {
 	/** If more clashes than this in an interface, the warning message will not be detailed */
 	public static final int		  MAX_NUM_CLASHES_TO_REPORT_WUI = 20;
 	/** Shorter chains will be considered peptides. No evol analysis is performed. */
-	public static final int	      PEPTIDE_LENGTH_CUTOFF = 20; 
+	public static final int	      PEPTIDE_LENGTH_CUTOFF = 30;
 	/** Maximum allowed ratio of unreliable residues for calling nopred */
 	public static final double     MAX_ALLOWED_UNREL_RES = 0.1; 
 	/** 
