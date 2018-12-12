@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import eppic.EppicParams;
 import eppic.commons.sequence.*;
 import eppic.commons.util.Interval;
 import gnu.getopt.Getopt;
@@ -106,6 +107,7 @@ public class WriteUniqueUniprots {
 
 		int countFishy = 0;
 		int countErrLength = 0;
+		int countPeptide = 0;
 
 		int countNotFound = 0;
 		int countCantRetrieve = 0;
@@ -149,22 +151,31 @@ public class WriteUniqueUniprots {
 						countFishy++;
 						continue;
 					}
-					if (uniSeq.length() >= interv.end) {
-						if (!singleFastaFile) {
-							File outFile = new File(outPath, uniprotid + "." + interv.beg + "-" + interv.end + ".fa");
-							out = new PrintWriter(outFile);
-						}
-						out.println(">" + uniprotid + "_" + interv.beg + "-" + interv.end);
-						String uniSubSeq = uniSeq.substring(interv.beg - 1, interv.end);
-						for (int i = 0; i < uniSubSeq.length(); i += maxLen) {
-							out.println(uniSubSeq.substring(i, Math.min(i + maxLen, uniSubSeq.length())));
-						}
-						if (!singleFastaFile) {
-							out.close();
-						}
-					} else {
+
+					if (uniSeq.length() < interv.end) {
 						logger.warn("Length of query seq ({}) smaller than interval end of uniprot seq for {}_{}-{}", uniSeq.length(), uniprotid, interv.beg, interv.end);
 						countErrLength++;
+						continue;
+					}
+
+					if (interv.getLength() <= EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+						logger.info("Not writing mapping {}_{}-{} to fasta file, because it is below the peptide cutoff ({})",
+								uniprotid, interv.beg, interv.end, EppicParams.PEPTIDE_LENGTH_CUTOFF);
+						countPeptide++;
+						continue;
+					}
+
+					if (!singleFastaFile) {
+						File outFile = new File(outPath, uniprotid + "." + interv.beg + "-" + interv.end + ".fa");
+						out = new PrintWriter(outFile);
+					}
+					out.println(">" + uniprotid + "_" + interv.beg + "-" + interv.end);
+					String uniSubSeq = uniSeq.substring(interv.beg - 1, interv.end);
+					for (int i = 0; i < uniSubSeq.length(); i += maxLen) {
+						out.println(uniSubSeq.substring(i, Math.min(i + maxLen, uniSubSeq.length())));
+					}
+					if (!singleFastaFile) {
+						out.close();
 					}
 
 				}
@@ -193,6 +204,10 @@ public class WriteUniqueUniprots {
 
 		if (countCantRetrieve > 0) {
 			logger.warn("Could not retrieve {} ids via JAPI", countNotFound);
+		}
+
+		if (countPeptide > 0) {
+			logger.info("There were a total of {} peptide sequences that were not written to fasta file", countPeptide);
 		}
 
 		if ( (countNotFound + countCantRetrieve) > 0.10 * uniqueMap.size()) {
