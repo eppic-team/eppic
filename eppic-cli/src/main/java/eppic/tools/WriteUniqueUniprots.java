@@ -116,7 +116,19 @@ public class WriteUniqueUniprots {
 			out = new PrintWriter(outPath);
 		}
 
-		logger.info("Total of {} unique UniProt ids", uniqueMap.size());
+		int countMappings = 0;
+		for (List<Interval> list : uniqueMap.values()) {
+			countMappings += list.size();
+		}
+
+		logger.info("Total of {} unique UniProt ids and {} unique segment mappings.",
+				uniqueMap.size(), countMappings);
+
+		if (pdbIds!=null) {
+			logger.info("Mappings correspond to {} PDB ids", pdbIds.size());
+		} else {
+			logger.info("Mappings correspond to ALL current PDB ids as present in SIFTS file {}", scFilePath);
+		}
 
 		for (String uniprotid : uniqueMap.keySet()) {
 
