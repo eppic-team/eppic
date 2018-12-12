@@ -17,7 +17,7 @@ import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 /**
  *
  * Script to write out all unique uniprot sequence segments present in the SIFTS file into FASTA file/s.
- * The sequences are pulled from UniProt JAPI remotely (since 3.2.0, before it was from loca UniProt db).
+ * The sequences are pulled from UniProt JAPI remotely (since 3.2.0, before it was from local UniProt db).
  *
  * @author Nikhil Biyani
  * @author Jose Duarte
@@ -107,11 +107,16 @@ public class WriteUniqueUniprots {
 		int countFishy = 0;
 		int countErrLength = 0;
 
+		int countNotFound = 0;
+		int countCantRetrieve = 0;
+
 		PrintWriter out = null;
 
 		if (singleFastaFile) {
 			out = new PrintWriter(outPath);
 		}
+
+		logger.info("Total of {} unique UniProt ids", uniqueMap.size());
 
 		for (String uniprotid : uniqueMap.keySet()) {
 
@@ -153,8 +158,10 @@ public class WriteUniqueUniprots {
 				}
 			} catch (NoMatchFoundException er) {
 				logger.warn("Could not find {} from JAPI. Skipping", uniprotid);
+				countNotFound++;
 			} catch (ServiceException e) {
 				logger.warn("ServiceException while retrieving UniProt {} from JAPI. Error: {}", uniprotid, e.getMessage());
+				countCantRetrieve++;
 			}
 		}
 
@@ -168,6 +175,20 @@ public class WriteUniqueUniprots {
 		if (countErrLength > 0)
 			logger.warn("Total encountered problems in the length: {}", countErrLength);
 
+		if (countNotFound > 0) {
+			logger.warn("Could not find {} ids via JAPI", countNotFound);
+		}
+
+		if (countCantRetrieve > 0) {
+			logger.warn("Could not retrieve {} ids via JAPI", countNotFound);
+		}
+
+		if ( (countNotFound + countCantRetrieve) > 0.20 * uniqueMap.size()) {
+			logger.error("More than 20% of ids could not be found or retrieved. Dumping sequences was unsuccessful.");
+			System.exit(1);
+		}
+
+		logger.info("Finished dumping sequences successfully");
 	}
 
 	private static Set<String> readListFile(File listFile) throws IOException {
