@@ -195,8 +195,8 @@ public class WriteUniqueUniprots {
 			logger.warn("Could not retrieve {} ids via JAPI", countNotFound);
 		}
 
-		if ( (countNotFound + countCantRetrieve) > 0.20 * uniqueMap.size()) {
-			logger.error("More than 20% of ids could not be found or retrieved. Dumping sequences was unsuccessful.");
+		if ( (countNotFound + countCantRetrieve) > 0.10 * uniqueMap.size()) {
+			logger.error("More than 10% of ids could not be found or retrieved. Dumping sequences was unsuccessful. Is there a new UniProt JAPI version?");
 			System.exit(1);
 		}
 
