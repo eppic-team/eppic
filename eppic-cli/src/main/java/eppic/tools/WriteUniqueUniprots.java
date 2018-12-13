@@ -203,7 +203,7 @@ public class WriteUniqueUniprots {
 		}
 
 		if (countCantRetrieve > 0) {
-			logger.warn("Could not retrieve {} ids via JAPI", countNotFound);
+			logger.warn("Could not retrieve {} ids via JAPI", countCantRetrieve);
 		}
 
 		if (countPeptide > 0) {
