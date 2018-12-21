@@ -35,6 +35,16 @@ public class UniProtConnection {
 	 * The maximum number of UniProt entries to fetch in one request, see {@link #getMultipleUnirefEntries(List)}
 	 */
 	private static final int MAX_ENTRIES_PER_REQUEST = 100;
+
+	/**
+	 * Waiting time (in seconds) between retries
+	 */
+	private static final int RETRY_INTERVAL = 30;
+
+	/**
+	 * Maximum number of retries
+	 */
+	private static final int MAX_NUM_RETRIES = 5;
 	
 	/*--------------------------- member variables --------------------------*/
 	private UniProtService uniProtService;
@@ -117,6 +127,38 @@ public class UniProtConnection {
 		uniref.setTaxons(taxons);
 		uniref.setSequence(sequence);
 		return uniref;
+	}
+
+	/**
+	 * As {@link #getUnirefEntry(String)} but with retries every {@value #RETRY_INTERVAL} seconds, up to a
+	 * maximum of {@value #MAX_NUM_RETRIES}
+	 * @param uniProtId the uniprot identifier
+	 * @return
+	 * @throws NoMatchFoundException if no match returned by UniProt JAPI
+	 * @throws ServiceException if all {@value #MAX_NUM_RETRIES} retries result in ServiceExceptions
+	 */
+	public UnirefEntry getUnirefEntryWithRetry(String uniProtId) throws NoMatchFoundException, ServiceException {
+		for (int i=1; i<=MAX_NUM_RETRIES; i++) {
+			if (i!=1) {
+				try {
+					LOGGER.info("Waiting {} s before next retry", RETRY_INTERVAL);
+					Thread.sleep(RETRY_INTERVAL * 1000);
+				} catch (InterruptedException e1) {
+					LOGGER.error("Got InterruptedException while retrying to retrieve {}. Will not retry more", uniProtId);
+					break;
+				}
+			}
+			try {
+				UnirefEntry unirefEntry = getUnirefEntry(uniProtId);
+				return unirefEntry;
+			} catch (ServiceException e) {
+				LOGGER.warn("Got ServiceException while retrieving {} on attempt {}.", uniProtId, i);
+
+			}
+		}
+
+		// after MAX_NUM_RETRIES, we got exceptions in all, give up and throw exception
+		throw new ServiceException("Could not retrieve "+uniProtId+" from UniProt JAPI after "+MAX_NUM_RETRIES+" attempts. Giving up");
 	}
 	
 	/**

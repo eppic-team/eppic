@@ -264,7 +264,7 @@ public class ChainEvolContext implements Serializable {
 						query.setTaxons(taxons);
 					}
 				} else {
-					query = parent.getUniProtJapiConnection().getUnirefEntry(queryUniprotId);
+					query = parent.getUniProtJapiConnection().getUnirefEntryWithRetry(queryUniprotId);
 				}
 				
 				if (query!=null && query.replaceNonStandardByX()) {

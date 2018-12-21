@@ -273,7 +273,7 @@ public class UploadUniprotInfoToDb {
         for (String uniId : notInFastaUniIds) {
 
             try {
-                UnirefEntry entry = uc.getUnirefEntry(uniId);
+                UnirefEntry entry = uc.getUnirefEntryWithRetry(uniId);
 
                 final UniEntry uniEntry = new UniEntry();
                 uniEntry.sequence = entry.getSequence();

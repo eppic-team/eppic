@@ -135,7 +135,7 @@ public class WriteUniqueUniprots {
 		for (String uniprotid : uniqueMap.keySet()) {
 
 			try {
-				UnirefEntry uniEntry = wuni.uc.getUnirefEntry(uniprotid);
+				UnirefEntry uniEntry = wuni.uc.getUnirefEntryWithRetry(uniprotid);
 				String uniSeq = uniEntry.getSequence();
 				for (Interval interv : uniqueMap.get(uniprotid)) {
 					//Create fasta files
