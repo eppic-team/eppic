@@ -22,7 +22,8 @@ public class ClusterSequences {
 	 * The clustering identity levels, they have to be the exact same levels as in SeqClusterDB constructor
 	 */
 	private static final int[] CLUSTERING_IDS = {100,95,90,80,70,60,50,40,30};
-	
+
+	private static final File DEF_MMSEQS_BIN = new File("/usr/bin/mmseqs");
 
 		
 	public static void main(String[] args) throws Exception {
@@ -33,7 +34,8 @@ public class ClusterSequences {
 				" [-d]        : dry run. Runs mmseqs but does not persist results to database\n" +
 				" [-f]        : force to truncate the SeqCluster table and load everything. \n" +
 				"               Default: not force, i.e. if table is not empty, nothing is persisted\n"+
-				" [-a]        : number of threads (default 1)\n"+
+				" [-a <int>]  : number of threads (default 1)\n"+
+				" [-m <file>] : path to mmseqs2 executable. Default: " + DEF_MMSEQS_BIN + "\n" +
 				" [-g <file>] : a configuration file containing the database access parameters, if not provided\n" +
 				"               the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
 				
@@ -44,8 +46,9 @@ public class ClusterSequences {
 		File configFile = null;
 		boolean dryRun = false;
 		boolean force = false;
+		File mmseqsBin = DEF_MMSEQS_BIN;
 		
-		Getopt g = new Getopt("ClusterSequences", args, "D:dfa:s:g:h?");
+		Getopt g = new Getopt("ClusterSequences", args, "D:dfa:m:g:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -60,6 +63,9 @@ public class ClusterSequences {
 				break;
 			case 'a':
 				numThreads = Integer.parseInt(g.getOptarg());
+				break;
+			case 'm':
+				mmseqsBin = new File(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -77,6 +83,10 @@ public class ClusterSequences {
 		
 		if (dbName == null) {
 			System.err.println("A database name must be provided with -D");
+			System.exit(1);
+		}
+		if (!mmseqsBin.canExecute()) {
+			System.err.println("mmseqs bin path " + mmseqsBin + " does not exist or is not executable. Please provide a valid value with -m");
 			System.exit(1);
 		}
 		
@@ -103,7 +113,7 @@ public class ClusterSequences {
 		filterShortSeqs(allChains, MIN_LENGTH);
 		System.out.println(allChains.size()+" chains with length greater than "+MIN_LENGTH);
 		
-		SeqClusterer sc = new SeqClusterer(allChains, numThreads);
+		SeqClusterer sc = new SeqClusterer(allChains, numThreads, mmseqsBin);
 
 		Map<Integer,Map<Integer,Integer>> allMaps = new TreeMap<Integer,Map<Integer,Integer>>();
 
