@@ -119,23 +119,29 @@ public class DBHandler {
 	
 	/**
 	 * Persists the given PdbInfoDB, using an empty place-holder job
+	 * @param em
 	 * @param pdbInfo
-	 * 
+	 * @param jobId
+	 * @param inputName the input name in case of user jobs, if null then the pdbCode will be taken from pdbInfo
 	 */
-	public void persistFinishedJob(EntityManager em, PdbInfoDB pdbInfo){
+	public void persistFinishedJob(EntityManager em, PdbInfoDB pdbInfo, String jobId, String inputName){
 		
 		em.getTransaction().begin(); 
-		
-		String pdbCode = pdbInfo.getPdbCode();
 
 		JobDB job = new JobDB();
-		job.setJobId(pdbCode);
+		job.setJobId(jobId);
 		job.setEmail(null);
-		job.setInputName(pdbCode);
+		if (inputName!=null)
+			job.setInputName(inputName);
+		else
+			job.setInputName(pdbInfo.getPdbCode());
 		job.setIp("localhost");
 		job.setStatus(StatusOfJob.FINISHED.getName());
 		job.setSubmissionDate(new Date());
-		job.setInputType(InputType.PDBCODE.getIndex());
+		if (inputName!=null)
+			job.setInputType(InputType.FILE.getIndex());
+		else
+			job.setInputType(InputType.PDBCODE.getIndex());
 		job.setSubmissionId("-1");
 
 		pdbInfo.setJob(job);
@@ -148,21 +154,25 @@ public class DBHandler {
 	}
 	
 	/**
-	 * Persists a JobDB with given pdbCode, assigning error status to it
-	 * @param pdbCode
+	 * Persists a JobDB with given jobId, assigning error status to it
+	 * @param jobId
 	 */
-	public void persistErrorJob(EntityManager em, String pdbCode){
+	public void persistErrorJob(EntityManager em, String jobId){
 
 		em.getTransaction().begin(); 
 		
 		JobDB job = new JobDB();
-		job.setJobId(pdbCode);
+		job.setJobId(jobId);
 		job.setEmail(null);
-		job.setInputName(pdbCode);
+		if (jobId.length()==4)
+			job.setInputName(jobId);
 		job.setIp("localhost");
 		job.setStatus(StatusOfJob.ERROR.getName());
 		job.setSubmissionDate(new Date());
-		job.setInputType(InputType.PDBCODE.getIndex());
+		if (jobId.length()==4)
+			job.setInputType(InputType.PDBCODE.getIndex());
+		else
+			job.setInputType(InputType.FILE.getIndex());
 		job.setSubmissionId("-1");
 		em.persist(job);
 		

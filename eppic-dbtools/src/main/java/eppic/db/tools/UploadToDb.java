@@ -11,9 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -303,6 +303,7 @@ public class UploadToDb {
 				continue;
 			}
 
+			String inputName = null;
 			File serializedFile = null;
 			if (isDividedLayout) {
 				serializedFile = new File(dir, dir.getName() + ".webui.dat");
@@ -315,10 +316,28 @@ public class UploadToDb {
 						serializedFile = f;
 					}
 				}
+
+				Optional<File> mostRecentFile =
+						Arrays
+								.stream(dir.listFiles())
+								.filter(File::isFile)
+								.min(Comparator.comparingLong(File::lastModified));
+
+				if (mostRecentFile.isPresent()) {
+					inputName = mostRecentFile.get().getName();
+					if (!inputName.equalsIgnoreCase(".pdb") &&
+							!inputName.equalsIgnoreCase(".cif") &&
+							!inputName.equalsIgnoreCase(".pdb.gz") &&
+							!inputName.equalsIgnoreCase(".cif.gz")) {
+						logger.warn("Input name found in dir {} (via looking for oldest file in dir) does not have one of the usual extensions", dir);
+					}
+				} else {
+					logger.warn("Could not find the oldest file in dir {}. inputName won't be available", dir);
+				}
 			}
 
 			// we keep the null serializedFiles to persist error jobs
-			serializedFiles.add(new JobDir(dir, serializedFile));
+			serializedFiles.add(new JobDir(dir, serializedFile, inputName));
 		}
 		return serializedFiles;
 	}
@@ -439,7 +458,7 @@ public class UploadToDb {
 			// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
 			if (pdbScoreItem == null) return false;
 
-			dbh.persistFinishedJob(em,pdbScoreItem);
+			dbh.persistFinishedJob(em, pdbScoreItem, jobId, jobDirectory.inputName);
 		}
 		else {
 			dbh.persistErrorJob(em, jobId);
@@ -468,7 +487,8 @@ public class UploadToDb {
 	private static class JobDir {
 		File dir;
 		File serializedFile;
-		public JobDir(File dir, File serializedFile) {
+		String inputName;
+		public JobDir(File dir, File serializedFile, String inputName) {
 			this.dir = dir;
 			this.serializedFile = serializedFile;
 		}
