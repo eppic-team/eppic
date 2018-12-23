@@ -47,10 +47,10 @@ public class UploadToDb {
 		String help = 
 				"Usage: UploadToDB\n" +
 				"  -D <string>  : the database name to use\n"+
-				"  -d <dir>     : root dir of eppic output files with subdirs as job dirs (PDB ids or user jobs) \n" +
+				"  -d <dir>     : root dir of eppic output files with subdirs as job dirs (user jobs only, no PDB ids jobs) \n" +
 				" [-l]          : if specified, subdirs under root dir (-d) are considered to be in PDB divided \n" +
 				"                 layout and leaf dirs must be PDB ids (this affects the behaviour of -d and -f).\n"+
-				"                 Default: subdirs under root are taken directly as PDB codes \n"+
+				"                 Default: subdirs under root are taken directly as job dirs (user jobs) \n"+
 				" [-f <file>]   : file specifying a list of PDB ids indicating subdirs of root \n"+
 				"                 directory to take (default: uses all subdirs in the root directory) \n" +
 				" [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
@@ -238,10 +238,9 @@ public class UploadToDb {
 	}
 	
 	private static List<File> listAllDirs(boolean isDividedLayout, File rootDir) {
+		List<File> allDirs = new ArrayList<>();
 		if (isDividedLayout) {
 			File dividedRoot = new File(rootDir, DIVIDED_ROOT);
-			
-			List<File> allDirs = new ArrayList<>();
 			
 			for (File indexDir:dividedRoot.listFiles()) {
 				allDirs.addAll(Arrays.asList(indexDir.listFiles()));
@@ -250,8 +249,12 @@ public class UploadToDb {
 			return allDirs;
 			
 		} else {
-			return Arrays.asList(rootDir.listFiles());
+			for (File dir:rootDir.listFiles()) {
+				if (dir.getName().equals(DIVIDED_ROOT)) continue;
+				allDirs.add(dir);
+			}
 		}
+		return allDirs;
 	}
 
 	private static File getDirectory(boolean isDividedLayout, File rootDir, String pdbCode) {
