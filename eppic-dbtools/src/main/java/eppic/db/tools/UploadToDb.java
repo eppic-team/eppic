@@ -295,7 +295,7 @@ public class UploadToDb {
 			//Check if it really is a directory
 			if (!dir.isDirectory()) {
 				if (choosefromFile != null)
-					logger.warn("{} specified in list file (-f), but directory {} is not present, Skipping",
+					logger.warn("Job id {} specified in list file (-f), but directory {} is not present. Skipping",
 							dir.getName(), dir);
 				continue;
 			}
@@ -328,11 +328,13 @@ public class UploadToDb {
 
 				if (mostRecentFile.isPresent()) {
 					inputName = mostRecentFile.get().getName();
-					if (!inputName.equalsIgnoreCase(".pdb") &&
-							!inputName.equalsIgnoreCase(".cif") &&
-							!inputName.equalsIgnoreCase(".pdb.gz") &&
-							!inputName.equalsIgnoreCase(".cif.gz")) {
-						logger.warn("Input name found in dir {} (via looking for oldest file in dir) does not have one of the usual extensions", dir);
+					logger.info("Input name for job {} is {}", dir.getName(), inputName);
+					if (!inputName.toLowerCase().endsWith(".pdb") &&
+							!inputName.toLowerCase().endsWith(".cif") &&
+							!inputName.toLowerCase().endsWith(".pdb.gz") &&
+							!inputName.toLowerCase().endsWith(".cif.gz")) {
+						logger.warn("Input name '{}' found in dir {} (via looking for oldest file in dir) does not have one of the usual pdb/cif extensions",
+								inputName, dir);
 					}
 				} else {
 					logger.warn("Could not find the oldest file in dir {}. inputName won't be available", dir);
@@ -494,6 +496,7 @@ public class UploadToDb {
 		public JobDir(File dir, File serializedFile, String inputName) {
 			this.dir = dir;
 			this.serializedFile = serializedFile;
+			this.inputName = inputName;
 		}
 	}
 }
