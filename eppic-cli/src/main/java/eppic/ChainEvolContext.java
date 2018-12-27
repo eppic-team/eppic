@@ -242,7 +242,7 @@ public class ChainEvolContext implements Serializable {
 		
 		if (hasQueryMatch) {
 
-			LOGGER.info("UniProt id for chain "+sequenceId+": "+queryUniprotId);			
+			LOGGER.info("UniProt id for chain "+sequenceId+": "+queryUniprotId);
 
 			// once we have the identifier we get the data from uniprot
 			try {
@@ -283,6 +283,17 @@ public class ChainEvolContext implements Serializable {
 						queryWarnings.add(warning);
 						query = null;
 						hasQueryMatch = false;
+					}
+
+					int length = pdbToUniProtMapper.getHomologsSearchInterval(params.getHomologsSearchMode()).getLength();
+					if (length <= EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+						// it can happen when the pdb length is above cutoff but the search length is below
+						// e.g. 2mre_B, 3gj5_B
+						LOGGER.warn("The search interval length {} is below the peptide length cutoff ({}). Will not do evolutionary analysis for chain {}", length, EppicParams.PEPTIDE_LENGTH_CUTOFF, sequenceId);
+						queryWarnings.add("Search interval length " + length + " for " + query.getId() +
+								" is below the peptide length cutoff (" + EppicParams.PEPTIDE_LENGTH_CUTOFF + ")");
+						hasQueryMatch = false;
+						query = null;
 					}
 				}
 				// the back-mapping to pdb is not working well yet, commented out
