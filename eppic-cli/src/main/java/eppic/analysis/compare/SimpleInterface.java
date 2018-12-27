@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.vecmath.Matrix4d;
 
-import eppic.DataModelAdaptor;
 import org.biojava.nbio.structure.quaternary.BioAssemblyInfo;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
@@ -22,11 +21,11 @@ public class SimpleInterface {
 	private static final Logger logger = LoggerFactory.getLogger(SimpleInterface.class);
 
 	/**
-	 * PDB biounits that have more than this number of transformations won't be matched
+	 * PDB biounits that have more than this number of SimpleInterface combinations won't be matched
 	 * against EPPIC's transforms to find the matching assemblies. Current algorithm is O(n2) and
 	 * will take forever on such large assemblies.
 	 */
-	public static final int MAX_NUM_TRANSFORMS_IN_PDB_BIOUNIT = 10000;
+	public static final int MAX_NUM_INTERFACE_COMBINATIONS = 10000;
 	
 	private int id;
 	
@@ -127,7 +126,7 @@ public class SimpleInterface {
 	 * @param bioUnit
 	 * @param cell
 	 * @param asymIds2chainIds
-	 * @return the list of null if {@value #MAX_NUM_TRANSFORMS_IN_PDB_BIOUNIT} is exceeded, where calculation would take too long
+	 * @return the list or null if {@value #MAX_NUM_INTERFACE_COMBINATIONS} is exceeded, where calculation would take too long
 	 */
 	public static List<SimpleInterface> createSimpleInterfaceListFromPdbBioUnit(
 			BioAssemblyInfo bioUnit, CrystalCell cell, HashMap<String, String> asymIds2chainIds) {
@@ -180,10 +179,10 @@ public class SimpleInterface {
 						id++;
 					}
 
-					if (list.size()> MAX_NUM_TRANSFORMS_IN_PDB_BIOUNIT) {
+					if (list.size()> MAX_NUM_INTERFACE_COMBINATIONS) {
 						// Cases like 1m4x_1 (5040 operators) or 1m4x_3 (420 operators) take forever to run
 						// Because algorithm is O(n2) currently
-						logger.warn("Exceeded the max allowed number of SimpleInterfaces for PDB biounit matching ({}). Will not do PDB biounit matching.", MAX_NUM_TRANSFORMS_IN_PDB_BIOUNIT);
+						logger.warn("Exceeded the max allowed number of SimpleInterfaces ({}) for PDB biounit matching for biounit id {}. Will not do PDB biounit matching.", MAX_NUM_INTERFACE_COMBINATIONS, bioUnit.getId());
 						return null;
 					}
 					//System.out.println(i+" "+j+" "+si);
