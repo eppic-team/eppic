@@ -6,17 +6,27 @@ import java.util.List;
 
 import javax.vecmath.Matrix4d;
 
+import eppic.DataModelAdaptor;
 import org.biojava.nbio.structure.quaternary.BioAssemblyInfo;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 
 import eppic.commons.pisa.PisaInterface;
 import eppic.commons.pisa.PisaInterfaceList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class SimpleInterface {
 
-	
+	private static final Logger logger = LoggerFactory.getLogger(SimpleInterface.class);
+
+	/**
+	 * PDB biounits that have more than this number of transformations won't be matched
+	 * against EPPIC's transforms to find the matching assemblies. Current algorithm is O(n2) and
+	 * will take forever on such large assemblies.
+	 */
+	public static final int MAX_NUM_TRANSFORMS_IN_PDB_BIOUNIT = 10000;
 	
 	private int id;
 	
@@ -110,11 +120,19 @@ public class SimpleInterface {
 		
 		return list;
 	}
-	
+
+	/**
+	 * Create a list of SimpleInterfaces (operators+chain ids) via enumerating all pairwise
+	 * combinations of operators-chainIds.
+	 * @param bioUnit
+	 * @param cell
+	 * @param asymIds2chainIds
+	 * @return the list of null if {@value #MAX_NUM_TRANSFORMS_IN_PDB_BIOUNIT} is exceeded, where calculation would take too long
+	 */
 	public static List<SimpleInterface> createSimpleInterfaceListFromPdbBioUnit(
 			BioAssemblyInfo bioUnit, CrystalCell cell, HashMap<String, String> asymIds2chainIds) {
 	
-		List<SimpleInterface> list = new ArrayList<SimpleInterface>();
+		List<SimpleInterface> list = new ArrayList<>();
 		
 		int id = 1;
 		
@@ -162,6 +180,12 @@ public class SimpleInterface {
 						id++;
 					}
 
+					if (list.size()> MAX_NUM_TRANSFORMS_IN_PDB_BIOUNIT) {
+						// Cases like 1m4x_1 (5040 operators) or 1m4x_3 (420 operators) take forever to run
+						// Because algorithm is O(n2) currently
+						logger.warn("Exceeded the max allowed number of SimpleInterfaces for PDB biounit matching ({}). Will not do PDB biounit matching.", MAX_NUM_TRANSFORMS_IN_PDB_BIOUNIT);
+						return null;
+					}
 					//System.out.println(i+" "+j+" "+si);
 				}
 			}
