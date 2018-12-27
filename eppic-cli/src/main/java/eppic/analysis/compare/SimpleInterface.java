@@ -101,7 +101,7 @@ public class SimpleInterface {
 	
 	public static List<SimpleInterface> createSimpleInterfaceListFromPisaInterfaceList(PisaInterfaceList pisaInterfaces, double minArea) {
 		
-		List<SimpleInterface> list = new ArrayList<SimpleInterface>();
+		List<SimpleInterface> list = new ArrayList<>();
 		for (PisaInterface pisaI:pisaInterfaces) {
 			if (pisaI.getInterfaceArea()>minArea && pisaI.isProtein()) {
 				list.add(createSimpleInterfaceFromPisaInterface(pisaI));
@@ -186,23 +186,4 @@ public class SimpleInterface {
 		return false;
 	}
 
-//	private class ChainOperator {
-//
-//		private String chainId;
-//		private Matrix4d operator;
-//		
-//		public ChainOperator(String chainId, Matrix4d operator) {
-//			this.chainId = chainId;
-//			this.operator = operator;
-//		}
-//
-//		public String getChainId() {
-//			return chainId;
-//		}
-//
-//		public Matrix4d getOperator() {
-//			return operator;
-//		}
-//		
-//	}
 }
