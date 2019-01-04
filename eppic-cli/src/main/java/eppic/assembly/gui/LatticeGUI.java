@@ -708,7 +708,7 @@ public class LatticeGUI {
 	 * @param name
 	 * @return
 	 */
-	public static File getFile(AtomCache cache, String name) {
+	public static File getFile(AtomCache cache, String name) throws IOException {
 		if(cache.isUseMmCif()) {
 			logger.info("Looking for {} in mmcif cache",name);
 			MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());

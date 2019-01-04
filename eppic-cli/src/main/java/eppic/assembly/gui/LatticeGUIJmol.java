@@ -208,7 +208,7 @@ public class LatticeGUIJmol {
 	 * @param name
 	 * @return
 	 */
-	private static File getFile(AtomCache cache, String name) {
+	private static File getFile(AtomCache cache, String name) throws IOException {
 		if(cache.isUseMmCif()) {
 			MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
 			reader.setFetchBehavior(cache	.getFetchBehavior());
