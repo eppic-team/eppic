@@ -915,9 +915,15 @@ public class DataModelAdaptor {
 		if (validAssemblies.getStructure().getCrystallographicInfo()!=null && validAssemblies.getStructure().isCrystallographic()) {
 			cell = validAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
 		}
-
 		
-		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);	
+		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);
+
+		// Cases like 1m4x_1 (5040 operators) or 1m4x_3 (420 operators) take forever to run
+		// matchToInterfaceClusters() and SimpleInterface.createSimpleInterfaceListFromPdbBioUnit() within
+		// Because algorithm is O(n2) currently
+		if (matchingClusterIds==null)
+			return;
+
 		int[] matchingClusterIdsArray = new int[matchingClusterIds.size()];
 		Iterator<Integer> it = matchingClusterIds.iterator();
 		for (int i=0;i<matchingClusterIds.size();i++) matchingClusterIdsArray[i] = it.next(); 
@@ -1078,9 +1084,11 @@ public class DataModelAdaptor {
 	private Set<Integer> matchToInterfaceClusters(BioAssemblyInfo bioUnit, CrystalCell cell) {
 
 		// the Set will eliminate duplicates if any found, I'm not sure if duplicates are even possible really...
-		Set<Integer> matchingClusterIds = new TreeSet<Integer>();
+		Set<Integer> matchingClusterIds = new TreeSet<>();
 
 		List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit, cell, asymIds2chainIds);
+		if (bioUnitInterfaces==null) return null;
+
 		InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
 			for (InterfaceDB i:ic.getInterfaces()) {
