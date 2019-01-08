@@ -83,14 +83,7 @@ public class PymolRunner {
 		command.add("-q");
 		command.add("-c");
 
-
-		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuffer.
-		//      But pymol 1.3 and 1.4 seem to have problems with very long strings (causing segfaults)
-		//      Because of that now we write most commands to pml file (which we were doing anyway so that users can 
-		//      use the pml scripts if they want) and then load the pmls with pymol "@" command
-		
-		
-		StringBuffer pymolScriptBuilder = new StringBuffer();
+		StringBuilder pymolScriptBuilder = new StringBuilder();
 		
 		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
 				
@@ -134,16 +127,16 @@ public class PymolRunner {
 			
 			pymolScriptBuilder.append("png "+pngFiles[i].getAbsolutePath() + ";");
 		}
-		
+
 		pymolScriptBuilder.append("quit;");
 		
 		command.add("-d");
-		
-		//System.out.println(pymolScriptBuilder.toString());
-		
+
 		command.add(pymolScriptBuilder.toString());
 
 		// pymol breaks at about 32KB, see https://github.com/eppic-team/eppic/issues/210
+		// It is unlikely that for the interface case, this will happen, but keeping it here in case.
+		// For assemblies case it does happen a lot, there we switched to using a pml file.
 		if (pymolScriptBuilder.length() > MAX_LENGTH_PYMOL_SCRIPT) {
 			throw new IOException("Can't create "+base+" png file. Script is longer than "+MAX_LENGTH_PYMOL_SCRIPT+" bytes, PyMOL can't handle that. Script length is " + pymolScriptBuilder.length() + " bytes.");
 		}
@@ -185,14 +178,7 @@ public class PymolRunner {
 		command.add("-q");
 		command.add("-c");
 
-
-		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuffer.
-		//      But pymol 1.3 and 1.4 seem to have problems with very long strings (causing segfaults)
-		//      Because of that now we write most commands to pml file (which we were doing anyway so that users can 
-		//      use the pml scripts if they want) and then load the pmls with pymol "@" command
-
-
-		StringBuffer pymolScriptBuilder = new StringBuffer();
+		StringBuilder pymolScriptBuilder = new StringBuilder();
 
 		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
 
@@ -217,7 +203,7 @@ public class PymolRunner {
 
 
 		for (int i=0;i<chains.size();i++) {
-			pymolScriptBuilder.append("color "+colors.get(i)+", "+molecName+" and chain "+chains.get(i) + ";");
+			pymolScriptBuilder.append("color ").append(colors.get(i)).append(", ").append(molecName).append(" and chain ").append(chains.get(i)).append(";");
 		}
 
 		pymolScriptBuilder.append("set ray_opaque_background, off;");
@@ -235,17 +221,21 @@ public class PymolRunner {
 			pymolScriptBuilder.append("png "+pngFiles[j].getAbsolutePath() + ";");
 		}
 
-		pymolScriptBuilder.append("quit;");
+		File pmlFile = File.createTempFile("eppicAssemblyPng", ".pml");
+		pmlFile.deleteOnExit();
+
+		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuilder.
+		//      but that can cause problems for very long scripts (e.g. viral capsid).
+		//     Because of that we write to pml file and then load the pmls with pymol "@" command
+		// See issue https://github.com/eppic-team/eppic/issues/210
+
+		PrintStream pml = new PrintStream(pmlFile);
+		pml.println(pymolScriptBuilder.toString());
 
 		command.add("-d");
 
-		command.add(pymolScriptBuilder.toString());
+		command.add("@" + pmlFile.toString() + "; quit;");
 		
-		// pymol breaks at about 32KB, see https://github.com/eppic-team/eppic/issues/210
-		if (pymolScriptBuilder.length() > MAX_LENGTH_PYMOL_SCRIPT) {
-			throw new IOException("Can't create "+base+" png file. Script is longer than "+MAX_LENGTH_PYMOL_SCRIPT+" bytes, PyMOL can't handle that. Script length is " + pymolScriptBuilder.length() + " bytes.");
-		}
-
 		Process pymolProcess = new ProcessBuilder(command).start();
 		int exit = pymolProcess.waitFor();
 		if (exit!=0) {
@@ -265,7 +255,7 @@ public class PymolRunner {
 		command.add("-q");
 		command.add("-c");
 
-		StringBuffer pymolScriptBuilder = new StringBuffer();
+		StringBuilder pymolScriptBuilder = new StringBuilder();
 		PrintStream pml = new PrintStream(pmlFile);
 		
 		String cmd;
@@ -403,13 +393,13 @@ public class PymolRunner {
 		command.add("-c");
 
 
-		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuffer.
+		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuilder.
 		//      But pymol 1.3 and 1.4 seem to have problems with very long strings (causing segfaults)
 		//      Because of that now we write most commands to pml file (which we were doing anyway so that users can 
 		//      use the pml scripts if they want) and then load the pmls with pymol "@" command
 		
 		
-		StringBuffer pymolScriptBuilder = new StringBuffer();
+		StringBuilder pymolScriptBuilder = new StringBuilder();
 		PrintStream pml = new PrintStream(pmlFile);
 		
 		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
@@ -578,7 +568,7 @@ public class PymolRunner {
 	
 	private String getResiSelString(List<Group> list) {
 		if (list.isEmpty()) return "none"; // the keyword for an empty selection in pymol
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		int lastSerial = -9999;
 		// we write selection ranges in the style: 5-14+18+23-34 (to make shorter strings, pymol has issues with very long strings)
 		StringBuilder cs = new StringBuilder();		
