@@ -243,12 +243,12 @@ public class HomologList implements  Serializable {
 	}
 	
 	public static String readUniprotVer(String blastDbDir) {
-		String ver = "unknown";
+		String ver = null;
 		File uniprotVerFile = new File(blastDbDir,UNIPROT_VER_FILE);
 		try (
 			BufferedReader br = new BufferedReader(new FileReader(uniprotVerFile));) {
 			String line;
-			Pattern p = Pattern.compile("^UniProt.*Release\\s([\\d._]+)\\s.*");
+			Pattern p = Pattern.compile("^UniProt.*Release\\s([\\d._]+).*");
 			while ((line=br.readLine())!=null){
 				Matcher m = p.matcher(line);
 				if (m.matches()) {
@@ -256,8 +256,13 @@ public class HomologList implements  Serializable {
 					break;
 				}
 			}
+			if (ver == null) {
+				LOGGER.warn("Couldn't find a UniProt version in file {}", uniprotVerFile);
+				ver = "unknown";
+			}
 		} catch(IOException e) {
-			LOGGER.warn("Couldn't read UniProt version from file "+uniprotVerFile);
+			LOGGER.warn("Couldn't read UniProt release file {} to find UniProt version", uniprotVerFile);
+			ver = "unknown";
 		}
 		return ver;
 	}
