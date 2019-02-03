@@ -7,8 +7,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * A list of blast hits
+ * A list of blast hits corresponding to a given query.
  *
+ * @author Jose Duarte
  */
 public class BlastHitList implements Iterable<BlastHit> {
 	

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import eppic.commons.util.StreamGobbler;
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.contact.StructureInterface;
@@ -180,12 +181,12 @@ public class PymolRunner {
 
 		StringBuilder pymolScriptBuilder = new StringBuilder();
 
-		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
+		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+"\n");
 
 		//pymolScriptBuilder.append("orient;");
 		// Orient to Z axis, since coordinates are pre-transformed
-		pymolScriptBuilder.append("set_view (1,0,0, 0,1,0, 0,0,1, 0,0,-1000, 0,0,0, 500,1500, -20);");
-		pymolScriptBuilder.append("zoom all, complete=1, buffer=5;");
+		pymolScriptBuilder.append("set_view (1,0,0, 0,1,0, 0,0,1, 0,0,-1000, 0,0,0, 500,1500, -20)\n");
+		pymolScriptBuilder.append("zoom all, complete=1, buffer=5\n");
 
 		pymolScriptBuilder.append("remove solvent;");
 
@@ -194,31 +195,32 @@ public class PymolRunner {
 		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
 
 		if(DEF_TN_STYLE.equalsIgnoreCase("ribbon")) {
-			pymolScriptBuilder.append("set ribbon_radius, 2;");
-			pymolScriptBuilder.append("set dash_length, 100;");
-			pymolScriptBuilder.append("set dash_radius, 2;");
-			pymolScriptBuilder.append("set ray_trace_gain, 0;");
-			pymolScriptBuilder.append("set ray_trace_disco_factor, 1;");
+			pymolScriptBuilder.append("set ribbon_radius, 2\n");
+			pymolScriptBuilder.append("set dash_length, 100\n");
+			pymolScriptBuilder.append("set dash_radius, 2\n");
+			pymolScriptBuilder.append("set ray_trace_gain, 0\n");
+			pymolScriptBuilder.append("set ray_trace_disco_factor, 1\n");
 		}
 
 
 		for (int i=0;i<chains.size();i++) {
-			pymolScriptBuilder.append("color ").append(colors.get(i)).append(", ").append(molecName).append(" and chain ").append(chains.get(i)).append(";");
+			// note that pymol script lines can be separated by ';' or '\n'. But for large scripts ';' separation breaks pymol, so we really need '\n' here
+			pymolScriptBuilder.append("color ").append(colors.get(i)).append(", ").append(molecName).append(" and chain ").append(chains.get(i)).append("\n");
 		}
 
-		pymolScriptBuilder.append("set ray_opaque_background, off;");
+		pymolScriptBuilder.append("set ray_opaque_background, off\n");
 
 		for (int j=0;j<DEF_TN_HEIGHTS.length;j++) {
 			if(DEF_TN_HEIGHTS[j]>=200 && DEF_TN_WIDTHS[j]>=200) {
-				pymolScriptBuilder.append("set ray_trace_mode, 3;");
+				pymolScriptBuilder.append("set ray_trace_mode, 3\n");
 			} else {
-				pymolScriptBuilder.append("set ray_trace_mode, 0;");
+				pymolScriptBuilder.append("set ray_trace_mode, 0\n");
 			}
-			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[j]+","+DEF_TN_WIDTHS[j] + ";");
+			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[j]+","+DEF_TN_WIDTHS[j] + "\n");
 
-			pymolScriptBuilder.append("ray;");
+			pymolScriptBuilder.append("ray\n");
 
-			pymolScriptBuilder.append("png "+pngFiles[j].getAbsolutePath() + ";");
+			pymolScriptBuilder.append("png "+pngFiles[j].getAbsolutePath() + "\n");
 		}
 
 		File pmlFile = File.createTempFile("eppicAssemblyPng", ".pml");
@@ -237,6 +239,12 @@ public class PymolRunner {
 		command.add("@" + pmlFile.toString() + "; quit;");
 		
 		Process pymolProcess = new ProcessBuilder(command).start();
+		// important: for large scripts with a lot of output the Process stderr/out streams don't play well with the
+		// pymol executable. This makes sure that the stdout/err is gobbled up and that Process doesn't hang forever
+		StreamGobbler s1 = new StreamGobbler ("stdout", pymolProcess.getInputStream ());
+		StreamGobbler s2 = new StreamGobbler ("stderr", pymolProcess.getErrorStream ());
+		s1.start();
+		s2.start();
 		int exit = pymolProcess.waitFor();
 		if (exit!=0) {
 			throw new IOException("Pymol exited with error status "+exit);

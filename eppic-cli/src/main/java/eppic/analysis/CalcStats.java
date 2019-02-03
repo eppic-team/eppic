@@ -14,12 +14,12 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.CallType;
 import eppic.ChainEvolContextList;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 import eppic.InterfaceEvolContextList;
 import eppic.ScoringType;
+import eppic.commons.util.CallType;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;

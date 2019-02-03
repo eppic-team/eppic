@@ -2,7 +2,6 @@ package eppic;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -44,15 +43,9 @@ public class FindEvolContext {
 		new File("${sys:logFilename}").deleteOnExit();
 
 
-		
-		
 		List<Sequence> sequences = Sequence.readSeqs(inputFile, null);
-		
-		try {
-			cecs = new ChainEvolContextList(sequences,params);
-		} catch (SQLException e) {
-			throw new EppicException(e,"Could not connect to local uniprot database server: "+e.getMessage(),true);
-		}
+
+		cecs = new ChainEvolContextList(sequences,params);
 
 		doFindEvolContext();
 		

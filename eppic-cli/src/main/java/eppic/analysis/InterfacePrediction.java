@@ -2,7 +2,7 @@ package eppic.analysis;
 
 import java.io.PrintStream;
 
-import eppic.CallType;
+import eppic.commons.util.CallType;
 
 /**
  * A class to store a full Interface Prediction with all 3 methods + combined.

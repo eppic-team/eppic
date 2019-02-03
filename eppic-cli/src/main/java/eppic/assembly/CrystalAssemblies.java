@@ -17,9 +17,9 @@ import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.CallType;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContextList;
+import eppic.commons.util.CallType;
 
 /**
  * A representation of all valid assemblies in a crystal structure.

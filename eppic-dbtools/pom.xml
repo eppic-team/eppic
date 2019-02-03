@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.eppic-web</groupId>
 		<artifactId>eppic</artifactId>
-		<version>3.1.1-SNAPSHOT</version>
+		<version>3.2.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>eppic-dbtools</artifactId>
@@ -16,14 +16,6 @@
 		<dependency>
 			<groupId>org.eppic-web</groupId>
 			<artifactId>eppic-model</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- some other things are needed from eppic-cli package (including some 
-			of biojava) -->
-		<dependency>
-			<groupId>org.eppic-web</groupId>
-			<artifactId>eppic-cli</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -76,7 +68,18 @@
 			<version>${log4j.version}</version>
 			<scope>compile</scope>
 		</dependency>
-		
+
+		<!--
+		Because of different implementations of slf4j inside uniprot japi, the order is important.
+		The util dependency appears here after the log4j2 dependency so that one takes precedence and
+		becomes the chosen implementation.
+		-->
+		<!-- util package for some utilities and biojava -->
+		<dependency>
+			<groupId>org.eppic-web</groupId>
+			<artifactId>eppic-util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		
 		
 		<dependency>
@@ -135,15 +138,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-	              			<artifactSet>
-	                			<excludes>
-	                  				
-	                  				<!--  excluding the uniprot japi jar, there's no point in including it in the uber-jar for 
-	                  				      distribution, since it gets updated every month. It has to be downloaded by the user -->	                  				
-	                  				<exclude>uk.ac.ebi.uniprot.kraken</exclude>
-	                  				
-	                			</excludes>
-	              			</artifactSet>
+
 	              			<filters>
         						<filter>
         							<!-- solution to the signature repackaging problem is this filter: exclude the signatures!  -->

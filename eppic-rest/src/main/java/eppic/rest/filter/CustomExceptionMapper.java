@@ -1,6 +1,5 @@
 package eppic.rest.filter;
 
-import eppic.EppicParams;
 import eppic.db.dao.DaoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,7 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
         } else {
 
             response = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
-            msg = "Internal server error. If the problem persists, please report it to " + EppicParams.CONTACT_EMAIL;
+            msg = "Internal server error. If the problem persists, please report it to " + "eppic@systemsx.ch";
             logger.error("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
         }
 

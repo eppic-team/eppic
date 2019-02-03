@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import eppic.CallType;
 import eppic.commons.pisa.OligomericPrediction;
 import eppic.commons.pisa.PisaAsmSetList;
 import eppic.commons.pisa.PisaInterface;
 import eppic.commons.pisa.PisaInterfaceList;
+import eppic.commons.util.CallType;
 import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
 

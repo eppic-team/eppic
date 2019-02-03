@@ -4,9 +4,13 @@ import java.io.Serializable;
 
 import eppic.commons.sequence.AlignmentConstructionException;
 import eppic.commons.sequence.MultipleSequenceAlignment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class BlastHsp implements Serializable {
+
+	private static final Logger logger = LoggerFactory.getLogger(BlastHsp.class);
 
 	private static final long serialVersionUID = 1L;
 
@@ -173,7 +177,7 @@ public class BlastHsp implements Serializable {
 		try {
 			this.al = new MultipleSequenceAlignment(tags, seqs);
 		} catch (AlignmentConstructionException e) {
-			System.err.println("Error while constructing alignment from parsed blast output: "+e.getMessage());
+			logger.warn("Error while constructing alignment from parsed blast output: "+e.getMessage());
 		}
 	}
 
@@ -211,8 +215,8 @@ public class BlastHsp implements Serializable {
 				// nothing to do, blast alignment is already spanning both full sequences of query and subject
 				return this.al;				
 			} else {
-				System.err.println("Unexpected error: inconsistency between queryStart/End, subjectStart/End and sequences in stored alignment. Please report bug!");
-				System.exit(1);
+				logger.error("Unexpected error: inconsistency between queryStart/End, subjectStart/End and sequences in stored alignment. Please report bug!");
+				throw new RuntimeException("Unexpected error: inconsistency between queryStart/End, subjectStart/End and sequences in stored alignment. Please report bug!");
 			}
 		}
 		
@@ -236,8 +240,8 @@ public class BlastHsp implements Serializable {
 		try {
 			newAln = new MultipleSequenceAlignment(tags, seqs);
 		} catch (AlignmentConstructionException e) {
-			System.err.println("Unexpected error: new alignment with full sequences from blast alignment couldn't be created. Please report the bug! Error: "+e.getMessage());
-			System.exit(1);
+			logger.error("Unexpected error: new alignment with full sequences from blast alignment couldn't be created. Please report the bug! Error: "+e.getMessage());
+			throw new RuntimeException("Unexpected error: new alignment with full sequences from blast alignment couldn't be created. Please report the bug! Error: "+e.getMessage());
 		}
 		return newAln;
 	}
@@ -256,10 +260,9 @@ public class BlastHsp implements Serializable {
 	
 	/**
 	 * Return the alignment of this HSP with the subjectId tag replaced by templateId 
-	 * (pdbCode+pdbChaincode). If subjectId doesn't match regex {@value #ID_REGEX} then 
+	 * (pdbCode+pdbChaincode). If subjectId doesn't match regex {@value BlastHit#ID_REGEX} then
 	 * alignment with normal tags is returned. 
 	 * is returned.
-	 * @see {@link #getTemplateId()}
 	 * @param fullQuerySeq
 	 * @param fullSubjectSeq
 	 * @return

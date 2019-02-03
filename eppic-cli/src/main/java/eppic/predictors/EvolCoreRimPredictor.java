@@ -7,9 +7,9 @@ import org.biojava.nbio.structure.Group;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.CallType;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
+import eppic.commons.util.CallType;
 
 
 public class EvolCoreRimPredictor implements InterfaceTypePredictor {

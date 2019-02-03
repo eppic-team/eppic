@@ -12,11 +12,20 @@ import org.biojava.nbio.structure.xtal.SpaceGroup;
 
 import eppic.commons.pisa.PisaInterface;
 import eppic.commons.pisa.PisaInterfaceList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class SimpleInterface {
 
-	
+	private static final Logger logger = LoggerFactory.getLogger(SimpleInterface.class);
+
+	/**
+	 * PDB biounits that have more than this number of SimpleInterface combinations won't be matched
+	 * against EPPIC's transforms to find the matching assemblies. Current algorithm is O(n2) and
+	 * will take forever on such large assemblies.
+	 */
+	public static final int MAX_NUM_INTERFACE_COMBINATIONS = 10000;
 	
 	private int id;
 	
@@ -101,7 +110,7 @@ public class SimpleInterface {
 	
 	public static List<SimpleInterface> createSimpleInterfaceListFromPisaInterfaceList(PisaInterfaceList pisaInterfaces, double minArea) {
 		
-		List<SimpleInterface> list = new ArrayList<SimpleInterface>();
+		List<SimpleInterface> list = new ArrayList<>();
 		for (PisaInterface pisaI:pisaInterfaces) {
 			if (pisaI.getInterfaceArea()>minArea && pisaI.isProtein()) {
 				list.add(createSimpleInterfaceFromPisaInterface(pisaI));
@@ -110,11 +119,19 @@ public class SimpleInterface {
 		
 		return list;
 	}
-	
+
+	/**
+	 * Create a list of SimpleInterfaces (operators+chain ids) via enumerating all pairwise
+	 * combinations of operators-chainIds.
+	 * @param bioUnit
+	 * @param cell
+	 * @param asymIds2chainIds
+	 * @return the list or null if {@value #MAX_NUM_INTERFACE_COMBINATIONS} is exceeded, where calculation would take too long
+	 */
 	public static List<SimpleInterface> createSimpleInterfaceListFromPdbBioUnit(
 			BioAssemblyInfo bioUnit, CrystalCell cell, HashMap<String, String> asymIds2chainIds) {
 	
-		List<SimpleInterface> list = new ArrayList<SimpleInterface>();
+		List<SimpleInterface> list = new ArrayList<>();
 		
 		int id = 1;
 		
@@ -162,6 +179,12 @@ public class SimpleInterface {
 						id++;
 					}
 
+					if (list.size()> MAX_NUM_INTERFACE_COMBINATIONS) {
+						// Cases like 1m4x_1 (5040 operators) or 1m4x_3 (420 operators) take forever to run
+						// Because algorithm is O(n2) currently
+						logger.warn("Exceeded the max allowed number of SimpleInterfaces ({}) for PDB biounit matching for biounit id {}. Will not do PDB biounit matching.", MAX_NUM_INTERFACE_COMBINATIONS, bioUnit.getId());
+						return null;
+					}
 					//System.out.println(i+" "+j+" "+si);
 				}
 			}
@@ -186,23 +209,4 @@ public class SimpleInterface {
 		return false;
 	}
 
-//	private class ChainOperator {
-//
-//		private String chainId;
-//		private Matrix4d operator;
-//		
-//		public ChainOperator(String chainId, Matrix4d operator) {
-//			this.chainId = chainId;
-//			this.operator = operator;
-//		}
-//
-//		public String getChainId() {
-//			return chainId;
-//		}
-//
-//		public Matrix4d getOperator() {
-//			return operator;
-//		}
-//		
-//	}
 }

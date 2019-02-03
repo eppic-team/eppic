@@ -32,7 +32,7 @@ import org.biojava.nbio.core.util.SingleLinkageClusterer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.CallType;
+import eppic.commons.util.CallType;
 import eppic.db.tools.helpers.DirectedInterface;
 import eppic.db.tools.helpers.Interface;
 import eppic.db.tools.helpers.InterfaceCluster;

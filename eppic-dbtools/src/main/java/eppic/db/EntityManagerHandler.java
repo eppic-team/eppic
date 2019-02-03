@@ -26,6 +26,10 @@ public class EntityManagerHandler {
 		emf = Persistence.createEntityManagerFactory("eppicjpa", dbSettings);
 	}
 
+	public static EntityManagerFactory getEntityManagerFactory() {
+		return emf;
+	}
+
 	public static EntityManager getEntityManager() {
 		if (emf == null) {
 			String msg = "EntityManagerHandler must be initialised by calling initFactory()";

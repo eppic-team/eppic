@@ -11,8 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,11 +47,11 @@ public class UploadToDb {
 		String help = 
 				"Usage: UploadToDB\n" +
 				"  -D <string>  : the database name to use\n"+
-				"  -d <dir>     : root directory of eppic output files with subdirectories as PDB codes \n" +
-				" [-l]          : if specified subdirs under root dir (-d) are considered to be in PDB divided layout\n"+
-				"                 (this affects the behaviour of -d and -f).\n"+
-				"                 Default: subdirs under root are taken directly as PDB codes \n"+
-				" [-f <file>]   : file specifying a list of PDB codes indicating subdirs of root \n"+
+				"  -d <dir>     : root dir of eppic output files with subdirs as job dirs (user jobs only, no PDB ids jobs) \n" +
+				" [-l]          : if specified, subdirs under root dir (-d) are considered to be in PDB divided \n" +
+				"                 layout and leaf dirs must be PDB ids (this affects the behaviour of -d and -f).\n"+
+				"                 Default: subdirs under root are taken directly as job dirs (user jobs) \n"+
+				" [-f <file>]   : file specifying a list of PDB ids indicating subdirs of root \n"+
 				"                 directory to take (default: uses all subdirs in the root directory) \n" +
 				" [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
 				"                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
@@ -130,19 +131,19 @@ public class UploadToDb {
 		}
 		
 		// Get the Directories to be processed
-		File[] jobsDirectories;
+		List<File> jobsDirectories = new ArrayList<>();
 		if(choosefromFile!=null){
 			List<String> pdbCodes = readListFile(choosefromFile);
-			List<File> chosenFilesList = new ArrayList<>();
 			for (String pdbCode:pdbCodes) {
-				chosenFilesList.add(getDirectory(isDividedLayout, jobDirectoriesRoot, pdbCode));
+				jobsDirectories.add(getDirectory(isDividedLayout, jobDirectoriesRoot, pdbCode));
 			}
-			jobsDirectories = chosenFilesList.toArray(new File[chosenFilesList.size()]);
 		}
 		else {
 			jobsDirectories = listAllDirs(isDividedLayout, jobDirectoriesRoot);
 		}
-		
+
+		List<JobDir> jobDirs = listSerializedFiles(jobsDirectories, isDividedLayout);
+
 		//Print the MODE of usage
 		if(modeNew) System.out.println("\n\nMODE SELECTED: Insert New Entries\n");
 		if(modeEverything) System.out.println("\n\nMODE SELECTED: Force Insert, which will insert everything in DB\n");
@@ -151,7 +152,7 @@ public class UploadToDb {
 		if (isDividedLayout) {
 			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to have PDB divided layout, i.e. "+jobDirectoriesRoot+File.separatorChar+DIVIDED_ROOT+File.separatorChar+"<PDB-code-middle-2-letters>");
 		} else {
-			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to be PDB codes directly, no PDB divided layout will be used. ");
+			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to be user jobs, no PDB divided layout will be used. ");
 		}
 
 		System.out.println("Will use " + numWorkers + " workers");
@@ -162,8 +163,8 @@ public class UploadToDb {
 		List<Future<Stats>> allResults = new ArrayList<>();
 
 		long totalStart = System.currentTimeMillis();
-		int setSize = jobsDirectories.length / numWorkers;
-		int remainder = jobsDirectories.length % numWorkers;
+		int setSize = jobDirs.size() / numWorkers;
+		int remainder = jobDirs.size() % numWorkers;
 		int j = 0;
 		int offset = 0;
 
@@ -171,10 +172,10 @@ public class UploadToDb {
 			if (i == numWorkers-1) {
 				setSize = setSize + remainder;
 			}
-			File[] singleSet = new File[setSize];
+			JobDir[] singleSet = new JobDir[setSize];
 			int k = 0;
 			for (; j<offset + setSize; j++) {
-				singleSet[k] = jobsDirectories[j];
+				singleSet[k] = jobDirs.get(j);
 				k++;
 			}
 			offset = j;
@@ -199,7 +200,7 @@ public class UploadToDb {
 
 		}
 		
-		System.out.println("Completed all "+jobsDirectories.length+" entries in "+((totalEnd-totalStart)/1000)+" s");
+		System.out.println("Completed all "+jobDirs.size()+" entries in "+((totalEnd-totalStart)/1000)+" s");
 		if (modeNew) {
 			System.out.println("Already present: "+ allStats.countPresent+", uploaded: "+ allStats.countUploaded+", couldn't insert: "+allStats.pdbsWithWarnings.size());
 			System.out.println("There were "+ allStats.countErrorJob+" error jobs in "+ allStats.countUploaded+" uploaded entries.");
@@ -236,23 +237,24 @@ public class UploadToDb {
 		return pdbScoreItem;
 	}
 	
-	private static File[] listAllDirs(boolean isDividedLayout, File rootDir) {
+	private static List<File> listAllDirs(boolean isDividedLayout, File rootDir) {
+		List<File> allDirs = new ArrayList<>();
 		if (isDividedLayout) {
-			File dividedRoot = new File(rootDir,DIVIDED_ROOT);
-			
-			List<File> allDirs = new ArrayList<File>();
+			File dividedRoot = new File(rootDir, DIVIDED_ROOT);
 			
 			for (File indexDir:dividedRoot.listFiles()) {
-				for (File dir:indexDir.listFiles()) {
-					allDirs.add(dir);
-				}
+				allDirs.addAll(Arrays.asList(indexDir.listFiles()));
 			}
 						
-			return allDirs.toArray(new File[allDirs.size()]);
+			return allDirs;
 			
 		} else {
-			return rootDir.listFiles();
+			for (File dir:rootDir.listFiles()) {
+				if (dir.getName().equals(DIVIDED_ROOT)) continue;
+				allDirs.add(dir);
+			}
 		}
+		return allDirs;
 	}
 
 	private static File getDirectory(boolean isDividedLayout, File rootDir, String pdbCode) {
@@ -266,7 +268,7 @@ public class UploadToDb {
 	
 	private static List<String> readListFile(File file) {
 		
-		List<String> pdbCodes = new ArrayList<String>();
+		List<String> pdbCodes = new ArrayList<>();
 
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
@@ -286,7 +288,66 @@ public class UploadToDb {
 		return pdbCodes;
 	}
 
-	private static Stats loadSet(File[] jobsDirectories) {
+	private static List<JobDir> listSerializedFiles(List<File> dirs, boolean isDividedLayout) {
+
+		List<JobDir> serializedFiles = new ArrayList<>();
+		for (File dir : dirs) {
+			//Check if it really is a directory
+			if (!dir.isDirectory()) {
+				if (choosefromFile != null)
+					logger.warn("Job id {} specified in list file (-f), but directory {} is not present. Skipping",
+							dir.getName(), dir);
+				continue;
+			}
+
+			//Check for 4 letter code directories starting with a number, only in divided case
+			if (isDividedLayout && !dir.getName().matches("^\\d\\w\\w\\w$")) {
+				logger.info("Dir name doesn't look like a PDB code, skipping directory {}", dir);
+				continue;
+			}
+
+			String inputName = null;
+			File serializedFile = null;
+			if (isDividedLayout) {
+				serializedFile = new File(dir, dir.getName() + ".webui.dat");
+				if (!serializedFile.exists())
+					serializedFile = null;
+
+			} else {
+				for (File f : dir.listFiles()) {
+					if (f.getName().endsWith(".webui.dat")) {
+						serializedFile = f;
+					}
+				}
+
+				Optional<File> mostRecentFile =
+						Arrays
+								.stream(dir.listFiles())
+								.filter(File::isFile)
+								.min(Comparator.comparingLong(File::lastModified));
+
+				if (mostRecentFile.isPresent()) {
+					inputName = mostRecentFile.get().getName();
+					logger.info("Input name for job {} is {}", dir.getName(), inputName);
+					if (!inputName.toLowerCase().endsWith(".pdb") &&
+							!inputName.toLowerCase().endsWith(".cif") &&
+							!inputName.toLowerCase().endsWith(".pdb.gz") &&
+							!inputName.toLowerCase().endsWith(".cif.gz")) {
+						logger.warn("Input name '{}' found in dir {} (via looking for oldest file in dir) does not have one of the usual pdb/cif extensions",
+								inputName, dir);
+					}
+				} else {
+					logger.warn("Could not find the oldest file in dir {}. inputName won't be available", dir);
+				}
+			}
+
+			// we keep the null serializedFiles to persist error jobs
+			serializedFiles.add(new JobDir(dir, serializedFile, inputName));
+		}
+		return serializedFiles;
+	}
+
+	private static Stats loadSet(JobDir[] jobsDirectories) {
 
 		// Start the Process
 		int i = -1;
@@ -297,32 +358,13 @@ public class UploadToDb {
 
 		Stats stats = new Stats();
 
-
 		EntityManager em = dbh.getEntityManager();
-		for (File jobDirectory : jobsDirectories) {
+		for (JobDir jobDirectory : jobsDirectories) {
 			i++;
-
-			//Check if it really is a directory
-			if (!jobDirectory.isDirectory()){
-				if(choosefromFile!=null)
-					logger.warn(jobDirectory.getName()+" specified in list file (-f), " +
-							"but directory "+jobDirectory+"is not present, Skipping");
-				continue;
-			}
-
-			//Check for 4 letter code directories starting with a number
-			if (!jobDirectory.getName().matches("^\\d\\w\\w\\w$")){
-				logger.info("Dir name doesn't look like a PDB code, skipping directory " + jobDirectory);
-				continue;
-			}
 
 			long start = System.currentTimeMillis();
 
-			String currentPDB = jobDirectory.getName();
-
-			// Get the PDB-Score Item to be read
-			File webuiFile = new File(jobDirectory, currentPDB + ".webui.dat");
-			boolean isSerializedFilePresent = webuiFile.isFile();
+			String jobId = jobDirectory.dir.getName();
 
 			try {
 
@@ -330,72 +372,40 @@ public class UploadToDb {
 
 				//MODE FORCE
 				if (modeEverything) {
-					boolean ifRemoved = dbh.removeJob(currentPDB);
+					boolean ifRemoved = dbh.removeJob(jobId);
 					if (ifRemoved) msg = "Found.. Removing and Updating.. ";
 					else msg = "Not Found.. Adding.. ";
-					if(isSerializedFilePresent) {
-						PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
-						// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-						if (pdbScoreItem == null) continue;
-
-						dbh.persistFinishedJob(em,pdbScoreItem);
-					}
-					else {
-						dbh.persistErrorJob(em, currentPDB);
-					}
-					//continue;
+					if (!persistOne(stats, em, jobDirectory, jobId)) continue;
 				}
 
 				//MODE NEW INSERT
 				if (modeNew){
-					int isPresent = dbh.checkJobExist(currentPDB);
+					int isPresent = dbh.checkJobExist(jobId);
 					if(isPresent == 0){ // not present
 						msg = "Not Present.. Adding.. ";
-						if(isSerializedFilePresent) {
-							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
-							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-							if (pdbScoreItem == null) continue;
+						if (!persistOne(stats, em, jobDirectory, jobId)) continue;
 
-							dbh.persistFinishedJob(em,pdbScoreItem);
-						}
-						else {
-							dbh.persistErrorJob(em, currentPDB);
-							stats.countErrorJob++;
-						}
-						stats.countUploaded++;
 					} else if (isPresent ==2) {
 						// already present but as an error, we have to remove and reinsert
-						boolean ifRemoved = dbh.removeJob(currentPDB);
+						boolean ifRemoved = dbh.removeJob(jobId);
 						if (ifRemoved) msg = "Found as error.. Removing and Updating.. ";
 						else {
-							logger.warn("{} Not Found, but there should be an error job. Skipping..", currentPDB);
+							logger.warn("{} Not Found, but there should be an error job. Skipping..", jobId);
 							continue;
 						}
 
-						if(isSerializedFilePresent) {
-							PdbInfoDB pdbScoreItem = readFromSerializedFile(webuiFile);
-							// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-							if (pdbScoreItem == null) continue;
-
-							dbh.persistFinishedJob(em,pdbScoreItem);
-						}
-						else {
-							dbh.persistErrorJob(em, currentPDB);
-							stats.countErrorJob++;
-						}
-						stats.countUploaded++;
+						if (!persistOne(stats, em, jobDirectory, jobId)) continue;
 
 					} else {
 						// already present and is not an error
 						stats.countPresent++;
 						msg = "Already Present.. Skipping.. ";
 					}
-					//continue;
 				}
 
 				//MODE REMOVE
 				if (modeRemove) {
-					boolean ifRemoved = dbh.removeJob(currentPDB);
+					boolean ifRemoved = dbh.removeJob(jobId);
 					if (ifRemoved) {
 						msg = "Removed.. ";
 						stats.countRemoved++;
@@ -403,11 +413,10 @@ public class UploadToDb {
 					else {
 						msg = "Not Found.. ";
 					}
-					//continue;
 				}
 
 				long end = System.currentTimeMillis();
-                logger.info("{} {} : {} s", currentPDB, msg, ((end-start)/1000));
+                logger.info("{} {} : {} s", jobId, msg, ((end-start)/1000));
 
 				if (i%TIME_STATS_EVERY1==0) {
 					avgTimeEnd1 = System.currentTimeMillis();
@@ -432,11 +441,36 @@ public class UploadToDb {
 				if (em.getTransaction().isActive()) {
 					em.getTransaction().rollback();
 				}
-				logger.warn("Problems while inserting "+currentPDB+". Error: "+e.getMessage());
-				stats.pdbsWithWarnings.add(currentPDB);
+				logger.warn("Problems while inserting "+jobId+". Error: "+e.getMessage());
+				stats.pdbsWithWarnings.add(jobId);
 			}
 		}
 		return stats;
+	}
+
+	/**
+	 * Persist one job, either normally or with error job. Returns false if the serialized file
+	 * exists but can't be deserialized.
+	 * @param stats
+	 * @param em
+	 * @param jobDirectory
+	 * @param jobId
+	 * @return
+	 */
+	private static boolean persistOne(Stats stats, EntityManager em, JobDir jobDirectory, String jobId) {
+		if(jobDirectory.serializedFile!=null) {
+			PdbInfoDB pdbScoreItem = readFromSerializedFile(jobDirectory.serializedFile);
+			// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+			if (pdbScoreItem == null) return false;
+
+			dbh.persistFinishedJob(em, pdbScoreItem, jobId, jobDirectory.inputName);
+		}
+		else {
+			dbh.persistErrorJob(em, jobId);
+			stats.countErrorJob++;
+		}
+		stats.countUploaded++;
+		return true;
 	}
 
 	private static class Stats {
@@ -452,6 +486,17 @@ public class UploadToDb {
 			this.countRemoved += stats.countRemoved;
 			this.countErrorJob += stats.countErrorJob;
 			pdbsWithWarnings.addAll(stats.pdbsWithWarnings);
+		}
+	}
+
+	private static class JobDir {
+		File dir;
+		File serializedFile;
+		String inputName;
+		public JobDir(File dir, File serializedFile, String inputName) {
+			this.dir = dir;
+			this.serializedFile = serializedFile;
+			this.inputName = inputName;
 		}
 	}
 }

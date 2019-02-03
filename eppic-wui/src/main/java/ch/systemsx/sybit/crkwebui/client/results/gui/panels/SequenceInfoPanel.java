@@ -118,12 +118,12 @@ public class SequenceInfoPanel extends FieldSet
 	/**
 	 * Sets the heading of the toolbar
 	 */
-	public void fillHeading(String uniprot_version){
+	public void fillHeading(String uniprotVersion){
 		String fullHeading = AppPropertiesManager.CONSTANTS.info_panel_homologs_info();
 
-		if(uniprot_version != null)
+		if(uniprotVersion != null)
 			fullHeading = fullHeading+" ("+AppPropertiesManager.CONSTANTS.info_panel_uniprot() +" " +
-					EscapedStringGenerator.generateEscapedString(uniprot_version)+ ")";
+					EscapedStringGenerator.generateEscapedString(uniprotVersion)+ ")";
 
 		this.setHeadingHtml(
 				StyleGenerator.defaultFontStyleString(fullHeading));

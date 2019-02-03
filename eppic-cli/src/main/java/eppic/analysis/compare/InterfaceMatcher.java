@@ -175,8 +175,8 @@ public class InterfaceMatcher {
 	
 	private void matchThem() {
 		
-		ours2theirs = new TreeMap<Integer, SimpleInterface>();
-		theirs2ours = new TreeMap<Integer, InterfaceDB>();
+		ours2theirs = new TreeMap<>();
+		theirs2ours = new TreeMap<>();
 				
 		for (InterfaceClusterDB ic:ourInterfaceClusters) {
 			for (InterfaceDB ourI:ic.getInterfaces()) {

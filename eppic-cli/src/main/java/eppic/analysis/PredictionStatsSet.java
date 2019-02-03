@@ -2,8 +2,8 @@ package eppic.analysis;
 
 import java.io.PrintStream;
 
-import eppic.CallType;
 import eppic.ScoringType;
+import eppic.commons.util.CallType;
 
 public class PredictionStatsSet {
 

@@ -36,15 +36,22 @@ public class PdbToUniProtMapper implements Serializable {
 
 	
 	/**
-	 * The alignments between the PDB sequence and the UniProt reference sequence.
+	 * The alignment(s) between the PDB sequence(s) and the UniProt reference sequence.
+	 * Keys are author chain ids (Chain#getName()).
 	 * In SequencePair the first sequence is called "query" (the PDB sequence here)
 	 * and the second sequence is called "target" (the UniProt sequence here).
 	 * If the sequence comes from SEQRES only 1 alignment for the representative sequence is stored,
 	 * if the sequence comes from ATOM, then an alignment for every chain is stored.
 	 */
-	private Map<String, SequencePair<ProteinSequence,AminoAcidCompound>> alignments;
+	private Map<String, FullAlignment> alignments;
 	
 	private EntityInfo entity;
+
+	/**
+	 * The sequences corresponding to this entity. Keys are author chain ids (Chain#getName()).
+	 * If the sequence comes from SEQRES only 1 sequence is stored for the representative chain,
+	 * if the sequence comes from ATOM, then a sequence for every chain is stored.
+	 */
 	private Map<String, String> sequences;
 	private UnirefEntry uniProtReference;
 	
@@ -71,14 +78,36 @@ public class PdbToUniProtMapper implements Serializable {
 		initSequences();
 
 	}
-	
+
+	/**
+	 * Set the UniProt reference sequence. The alignment will be calculated from full sequences with BioJava's
+	 * Needleman-Wunsch implementation. Equivalent to {@link #setUniProtReference(UnirefEntry, Interval, Interval)}
+	 * with both Interval parameters set to null.
+	 * @param uniref
+	 * @throws CompoundNotFoundException
+	 */
 	public void setUniProtReference(UnirefEntry uniref) throws CompoundNotFoundException {
 		
+		setUniProtReference(uniref, null, null);
+
+	}
+
+	/**
+	 * Set the UniProt reference sequence and aligned regions, the alignment will be calculated
+	 * for the given aligned regions. If both intervals are null the alignment is calculated from
+	 * full sequences with BioJava's Needleman-Wunsch implementation.
+	 * @param uniref
+	 * @param uniProtInterv
+	 * @param pdbInterv
+	 * @throws CompoundNotFoundException
+	 */
+	public void setUniProtReference(UnirefEntry uniref, Interval uniProtInterv, Interval pdbInterv) throws CompoundNotFoundException {
+
 		this.uniProtReference = uniref;
-		
-		initAlignments();
-		
-		initMatchingInterval();
+
+		initAlignments(uniProtInterv, pdbInterv);
+
+		initMatchingInterval(uniProtInterv, pdbInterv);
 
 	}
 	
@@ -89,7 +118,7 @@ public class PdbToUniProtMapper implements Serializable {
 	 */
 	private void initSequences() {
 		
-		sequences = new TreeMap<String, String>();
+		sequences = new TreeMap<>();
 			
 		Chain chain = entity.getRepresentative();
 		// it looks like biojava interprets MSEs as METs, at least for the sequence, so no issues here
@@ -122,9 +151,9 @@ public class PdbToUniProtMapper implements Serializable {
 		}
 	}
 	
-	private void initAlignments() throws CompoundNotFoundException {
+	private void initAlignments(Interval uniProtInterv, Interval pdbInterv) throws CompoundNotFoundException {
 		
-		this.alignments = new TreeMap<String, SequencePair<ProteinSequence,AminoAcidCompound>>();
+		this.alignments = new TreeMap<>();
 		
 		if (sequenceFromAtom) {
 			LOGGER.info("PDB sequences are from ATOM, will have one alignment per member chain of entity {}",entity.getMolId());
@@ -133,12 +162,12 @@ public class PdbToUniProtMapper implements Serializable {
 		
 		for (String chainId: sequences.keySet()) {
 			
-			SequencePair<ProteinSequence,AminoAcidCompound> alignment = getAlignment(chainId, uniProtReference.getSequence());
+			FullAlignment alignment = computeAlignment(chainId, uniProtReference.getSequence(), uniProtInterv, pdbInterv);
 			
 			alignments.put(chainId, alignment);
 			
 			
-			LOGGER.info("Chain "+chainId+" PDB "+(sequenceFromAtom?"ATOM":"SEQRES")+" to UniProt alignmnent:\n"+getAlignmentString(alignment));
+			LOGGER.info("Chain "+chainId+" PDB "+(sequenceFromAtom?"ATOM":"SEQRES")+" to UniProt alignmnent:\n"+alignment.getAlignmentString());
 			LOGGER.info("Query (chain "+chainId+") length: "+sequences.get(chainId).length());
 			LOGGER.info("UniProt ("+uniProtReference.getUniId()+") length: "+uniProtReference.getLength());
 			LOGGER.info("Alignment length: "+alignment.getLength());
@@ -146,27 +175,32 @@ public class PdbToUniProtMapper implements Serializable {
 		
 	}
 
-	private SequencePair<ProteinSequence,AminoAcidCompound> getAlignment(String chainId, String upSequence) throws CompoundNotFoundException {
+	private FullAlignment computeAlignment(String chainId, String upSequence, Interval uniProtInterv, Interval pdbInterv) throws CompoundNotFoundException {
 
 		String pdbSequence = sequences.get(chainId);
+		String upSequenceForAli = upSequence;
+		if (pdbInterv!=null) {
+			pdbSequence = pdbSequence.substring(pdbInterv.beg - 1, pdbInterv.end);
+		}
+		if (uniProtInterv!=null) {
+			upSequenceForAli = upSequence.substring(uniProtInterv.beg - 1, uniProtInterv.end);
+		}
 		
 		// and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
 		SubstitutionMatrix<AminoAcidCompound> matrix = SubstitutionMatrixHelper.getBlosum50();
 		// setting (20,1) to have a large enough difference so that behaviour is like eppic 2  
 		GapPenalty penalty = new SimpleGapPenalty(20, 1);
 
-		SequencePair<ProteinSequence,AminoAcidCompound> alignment = null;
-		
 		// before move to Biojava, we had as tags of the sequences:  "chain"+representativeChain and query.getUniId()
 		ProteinSequence s1 = new ProteinSequence(pdbSequence);
-		ProteinSequence s2 = new ProteinSequence(upSequence);
+		ProteinSequence s2 = new ProteinSequence(upSequenceForAli);
 
 		NeedlemanWunsch<ProteinSequence,AminoAcidCompound> nw = 
-				new NeedlemanWunsch<ProteinSequence,AminoAcidCompound>(s1,s2, penalty, matrix);
-		
-		alignment = nw.getPair();
+				new NeedlemanWunsch<>(s1,s2, penalty, matrix);
 
-		return alignment;
+		SequencePair<ProteinSequence,AminoAcidCompound> alignment = nw.getPair();
+
+		return new FullAlignment(alignment, sequences.get(chainId), upSequence, pdbInterv, uniProtInterv);
 	}
 	
 	/**
@@ -178,7 +212,7 @@ public class PdbToUniProtMapper implements Serializable {
 		
 		for (String chainId : alignments.keySet()) {
 
-			SequencePair<ProteinSequence,AminoAcidCompound> alignment = alignments.get(chainId);
+			FullAlignment alignment = alignments.get(chainId);
 
 			int shortestSeqLength = Math.min(uniProtReference.getLength(), sequences.get(chainId).length());
 			double id = (double)alignment.getNumIdenticals()/(double)shortestSeqLength;
@@ -322,7 +356,7 @@ public class PdbToUniProtMapper implements Serializable {
 	 * only the first alignment of the group of alignments is returned.
 	 * @return
 	 */
-	public SequencePair<ProteinSequence,AminoAcidCompound> getAlignment() {
+	public FullAlignment getAlignment() {
 		return alignments.values().iterator().next();
 	}
 	
@@ -414,7 +448,13 @@ public class PdbToUniProtMapper implements Serializable {
 	 * would give interval 3,7 because it is the interval that maximally matches all the member chains' sequences
 	 *   
 	 */
-	private void initMatchingInterval() {
+	private void initMatchingInterval(Interval uniProtInterv, Interval pdbInterv) {
+
+		if (uniProtInterv!=null && pdbInterv!=null) {
+			matchingIntervalUniProtCoords = uniProtInterv;
+			matchingIntervalPdbCoords = pdbInterv;
+			return;
+		}
 
 		// either we have one alignment for the representative or multiple for each member chain
 		// we go through all of them and find the largest matching interval
@@ -425,18 +465,18 @@ public class PdbToUniProtMapper implements Serializable {
 		int pdbBeg = -1;
 		int pdbEnd = -1;
 		
-		for (SequencePair<ProteinSequence,AminoAcidCompound> pair:this.alignments.values()) {
-			int upBeg = getFirstMatchingPos(pair, false);
-			int upEnd = getLastMatchingPos(pair, false);
+		for (FullAlignment pair:this.alignments.values()) {
+			int upBeg = pair.getFirstMatchingPos(false);
+			int upEnd = pair.getLastMatchingPos(false);
 			
 			if (upBeg!=-1 && upBeg<=minBeg) {				
 				minBeg = upBeg;
-				pdbBeg = getFirstMatchingPos(pair, true);
+				pdbBeg = pair.getFirstMatchingPos(true);
 			}
 			
 			if (upEnd!=-1 && upEnd>=maxEnd) {
 				maxEnd = upEnd;
-				pdbEnd = getLastMatchingPos(pair, true);
+				pdbEnd = pair.getLastMatchingPos(true);
 			}
 		}
 		
@@ -465,7 +505,7 @@ public class PdbToUniProtMapper implements Serializable {
 		
 		Chain c = g.getChain();
 		
-		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
+		FullAlignment alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
 			alignment = alignments.get(c.getName());
@@ -484,16 +524,8 @@ public class PdbToUniProtMapper implements Serializable {
 					g.toString());
 			return false;
 		}
-		
-		int alnIdx = alignment.getQuery().getAlignmentIndexAt(resser);
-		AminoAcidCompound cmpnd1 = alignment.getCompoundInQueryAt(alnIdx);
-		AminoAcidCompound cmpnd2 = alignment.getCompoundInTargetAt(alnIdx);
-		// a gap-to-gap matching is in principle impossible
-		if (cmpnd1.getShortName().equals("-") && cmpnd2.getShortName().equals("-")) {
-			LOGGER.error("Alignment position {} maps to gaps in both PDB and UniProt reference sequences, this is most likely a bug!",
-					alnIdx);
-		}
-		return cmpnd1.equals(cmpnd2);
+		return alignment.isMatchingPos(resser, true);
+
 	}
 	
 	/**
@@ -512,7 +544,7 @@ public class PdbToUniProtMapper implements Serializable {
 
 		Chain c = g.getChain();
 
-		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
+		FullAlignment  alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
 			alignment = alignments.get(c.getName());
@@ -532,14 +564,13 @@ public class PdbToUniProtMapper implements Serializable {
 
 			return -1;
 		}
-		
-		int alnIdx = alignment.getQuery().getAlignmentIndexAt(resser);
-		if (alignment.hasGap(alnIdx)) {
-			// maps to gap in target (UniProt)
+
+		if (alignment.hasGap(resser, true)) {
 			return -1;
 		}
+
 		// this gets the position in uniprot sequence with indices starting at 1
-		int uniprotPos = alignment.getIndexInTargetAt(alnIdx);
+		int uniprotPos = alignment.getSeqPosOtherSeq(resser, true);
 
 		if (!positionWithinSubinterval) {
 			return uniprotPos;
@@ -562,12 +593,12 @@ public class PdbToUniProtMapper implements Serializable {
 	 * corresponding group in the structure (from chain as given in chainId).
 	 * TODO beware this does not work well yet when sequence is from ATOM 
 	 * @param uniProtIndex the 1-based index in the full UniProt sequence
-	 * @param chainId the chainId of the chain where we want to extract the group from
+	 * @param chainId the author chainId of the chain where we want to extract the group from
 	 * @return the mapped PDB group or null if it maps to a gap
 	 */
 	public Group getPdbGroupFromUniProtIndex(int uniProtIndex, String chainId) {
 		
-		SequencePair<ProteinSequence,AminoAcidCompound>  alignment = null;
+		FullAlignment  alignment = null;
 		if (sequenceFromAtom) {
 			// we get the corresponding alignment for the chain
 			alignment = alignments.get(chainId);
@@ -578,13 +609,12 @@ public class PdbToUniProtMapper implements Serializable {
 				LOGGER.warn("More than 1 alignment for entity {} contained in pdb-to-uniprot mapper, expected only 1: something is wrong!",
 						entity.getMolId());
 		}
-		
-		int alnIdx = alignment.getTarget().getAlignmentIndexAt(uniProtIndex);		
-		if (alignment.hasGap(alnIdx)) {
+
+		if (alignment.hasGap(uniProtIndex, false)) {
 			return null;
 		}
 		
-		int resser = alignment.getIndexInQueryAt(alnIdx);
+		int resser = alignment.getSeqPosOtherSeq(uniProtIndex, false);
 		
 		// getting the relevant chain
 		Chain chain = null;
@@ -655,63 +685,5 @@ public class PdbToUniProtMapper implements Serializable {
 			return entity.getAlignedResIndex(g, g.getChain());
 		}
 	}
-	
-	/**
-	 * Returns the the given alignment as a nicely formatted
-	 * alignment string in several lines with a middle line of matching characters,
-	 * e.g. 
-	 * chainA  AAAA--BCDEFGICCC
-	 *         ||.|  ||.|||:|||
-	 * QABCD1  AABALCBCJEFGLCCC
-	 * @return
-	 */
-	private static String getAlignmentString(SequencePair<ProteinSequence,AminoAcidCompound> alignment) {
-		return alignment.toString(100);
-	}
-	
-	/**
-	 * Return the position (in sequence 1 or 2 depending of parameter) of the first occurrence of a match (identity)
-	 * 
-	 * @param pair the pair of aligned sequences
-	 * @param first true if we want the position in sequence 1, false if we want the position in sequence 2  
-	 * @return the position or -1 if there are no matches
-	 */
-	private static int getFirstMatchingPos(SequencePair<ProteinSequence,AminoAcidCompound> pair, boolean first) {
-		int pos1 = 1;
-		int pos2 = 1;
-		for (int i=1;i<=pair.getLength();i++) {
-			AminoAcidCompound current1 = pair.getCompoundAt(1, i);
-			AminoAcidCompound current2 = pair.getCompoundAt(2, i);
-			if (current1.equals(current2)) {
-				if (first) return pos1;
-				else return pos2;
-			}
-			if (!current1.getShortName().equals("-")) pos1++;
-			if (!current2.getShortName().equals("-")) pos2++;
-		}
-		return -1;
-	}
-	
-	/**
-	 * Return the position (in sequence 1 or 2 depending of parameter) of the last occurrence of a match (identity)
-	 * 
-	 * @param pair the pair of aligned sequences 
-	 * @param first true if we want the position in sequence 1, false if we want the position in sequence 2  
-	 * @return the position or -1 if there are no matches
-	 */
-	private static int getLastMatchingPos(SequencePair<ProteinSequence,AminoAcidCompound> pair, boolean first) {
-		int pos1 = pair.getQuery().getOriginalSequence().getLength();
-		int pos2 = pair.getTarget().getOriginalSequence().getLength();
-		for (int i=pair.getLength();i>0;i--) {
-			AminoAcidCompound current1 = pair.getCompoundAt(1, i);
-			AminoAcidCompound current2 = pair.getCompoundAt(2, i);
-			if (current1.equals(current2)) {
-				if (first) return pos1;
-				else return pos2;
-			}
-			if (!current1.getShortName().equals("-")) pos1--;
-			if (!current2.getShortName().equals("-")) pos2--;
-		}
-		return -1;		
-	}
+
 }

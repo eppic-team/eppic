@@ -88,8 +88,8 @@ gunzip -c uniref100.fasta.gz | makeblastdb -dbtype prot -logfile makeblastdb.log
    - Blast+ binaries, downloadable from 
      http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
 
-   - Blastclust binary found in legacy blast package, downloadable from 
-     http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download
+   - MMseqs2 binary, downloadable from 
+     https://github.com/soedinglab/MMseqs2
      
    - Clustalo, downloadable from http://www.clustal.org/omega/
 
@@ -110,7 +110,7 @@ gunzip -c uniref100.fasta.gz | makeblastdb -dbtype prot -logfile makeblastdb.log
    
      - BLAST_DB_DIR
      - BLAST_DB
-     - BLASTCLUST_BIN
+     - MMSEQS_BIN
      - BLASTP_BIN
      - CLUSTALO_BIN
    

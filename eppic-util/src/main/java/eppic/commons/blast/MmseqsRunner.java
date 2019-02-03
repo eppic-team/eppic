@@ -17,7 +17,7 @@ public class MmseqsRunner {
     private static final Logger logger = LoggerFactory.getLogger(MmseqsRunner.class);
 
     private static final String MMSEQS_TSV_SUFFIX = "_cluster.tsv";
-    private static final String MMSEQS_REQSEQ_SUFFIX = "_req_seq.fasta";
+    private static final String MMSEQS_REPSEQ_SUFFIX = "_rep_seq.fasta";
     private static final String MMSEQS_ALLSEQS_SUFFIX = "_all_seqs.fasta";
 
     private MmseqsRunner() {
@@ -30,7 +30,7 @@ public class MmseqsRunner {
      * @param inFile the input FASTA file
      * @param outFilePrefix the output file path, to be considered as prefix for all output files produced
      * @param clusteringPercentId the percent identity to cluster, e.g. 30
-     * @param clusteringCoverage the coverage to apply to both query and target sequences
+     * @param clusteringCoverage the coverage to apply to both query and target sequences, e.g. 0.90
      * @param numThreads number of threads to run mmseqs2
      * @return a list with list of cluster members
      * @throws IOException
@@ -43,7 +43,7 @@ public class MmseqsRunner {
         // command to run mmseqs2 for 30% clustering over 0.9 coverage on both sequences
         // mmseqs easy-cluster pdb_seqres_pr.fasta clusterOutput tmp --min-seq-id 0.3 -c 0.9 -s 8 --max-seqs 1000 --cluster-mode 1
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
 
         File tmpDir = new File(outFilePrefix.getParent(), "tmp-" + outFilePrefix.getName());
 
@@ -101,9 +101,9 @@ public class MmseqsRunner {
         // reached and thus files not removed on exit
         outFile.delete();
         // other files that mmseqs creates
-        File reqseqFile = new File(outFilePrefix.getParent(), outFilePrefix.getName() + MMSEQS_REQSEQ_SUFFIX);
+        File repseqFile = new File(outFilePrefix.getParent(), outFilePrefix.getName() + MMSEQS_REPSEQ_SUFFIX);
         File allseqsFile = new File(outFilePrefix.getParent(), outFilePrefix.getName() + MMSEQS_ALLSEQS_SUFFIX);
-        reqseqFile.delete();
+        repseqFile.delete();
         allseqsFile.delete();
 
         return clusters;

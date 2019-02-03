@@ -1,78 +1,70 @@
 package eppic.tools;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import eppic.EppicParams;
-import eppic.commons.sequence.NoMatchFoundException;
-import eppic.commons.sequence.SiftsConnection;
-import eppic.commons.sequence.UniprotLocalConnection;
-import eppic.commons.sequence.UnirefEntry;
+import eppic.commons.sequence.*;
 import eppic.commons.util.Interval;
 import gnu.getopt.Getopt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 
 /**
- * @author biyani_n
  *
+ * Script to write out all unique uniprot sequence segments present in the SIFTS file into FASTA file/s.
+ * The sequences are pulled from UniProt JAPI remotely (since 3.2.0, before it was from local UniProt db).
+ *
+ * @author Nikhil Biyani
+ * @author Jose Duarte
  */
 public class WriteUniqueUniprots {
+
+	private static final Logger logger = LoggerFactory.getLogger(WriteUniqueUniprots.class);
 	
-	public SiftsConnection sc;
-	public UniprotLocalConnection uniLC;
-	
-	public WriteUniqueUniprots(String scPath, String uniprotdb, String dbHost, String dbPort, String dbUser, String dbPwd) throws IOException, SQLException{
-			sc = new SiftsConnection(scPath);
-			uniLC = new UniprotLocalConnection(uniprotdb, dbHost, dbPort, dbUser, dbPwd);
+	private SiftsConnection sc;
+	private UniProtConnection uc;
+
+	public WriteUniqueUniprots(String scPath) throws IOException {
+		sc = new SiftsConnection(scPath);
+		uc = new UniProtConnection();
 	}
-	
-	/**
-	 * Gets argument from command line which gives a path of where the fasta files are to be written
-	 * 
-	 * @param args
-	 * @throws IOException 
-	 * @throws NoMatchFoundException 
-	 * @throws SQLException 
-	 */
-	public static void main(String[] args) throws IOException, SQLException, NoMatchFoundException {
+
+	public static void main(String[] args) throws IOException {
 		
 		String help =
 				"Usage: WriteUniqueUnirots\n" +
-						"Creates fasta (.fa) files of unique mapings of PDB to Uniprot\n" +
-						" -s <dir>  	: Sifts Connection file path \n" +
-						" -u <dbName>   : Uniprot Database Name \n" +
-						" [-o <dir>] 	: Directory where output files are to be written\n" +
-						" [-g <file>]   : an eppic-cli configuration file with config parameters \n" +
-						"                 for uniprot local db connection. If not provided it will \n" +
-						"                 be read from ~/.eppic.conf \n";
-		
-		Getopt g = new Getopt("UploadToDB", args, "s:u:o:g:h?");
+						"Creates fasta (.fa) file/s of unique mappings of PDB to Uniprot\n" +
+						" -s <file>  	  : SIFTS file path \n" +
+						" [-f <file>]     : a file with a list of PDB ids. Only sequences corresponding\n" +
+						"                   to these PDB ids will be written out. If not provided, then\n" +
+						"                   all sequences in SIFTS files are written out\n" +
+						" -o <dir/file>   : If directory, sequences are written to individual FASTA \n"+
+						"                   files in the directory.\n" +
+						"                   If file all sequences are written to it as a single FASTA\n";
+
+		Getopt g = new Getopt("UploadToDB", args, "s:f:o:h?");
 		
 		String scFilePath = null;
-		String uniprotdbName = null;
-		String outdirPath = "";
-		boolean ifOutdir = false;
-		File configFile = null;
-		
+		File outPath = null;
+		File listFile = null;
+
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
 			case 's':
 				scFilePath = g.getOptarg();
 				break;
-			case 'u':
-				uniprotdbName = g.getOptarg();
+			case 'f':
+				listFile = new File(g.getOptarg());
 				break;
 			case 'o':
-				ifOutdir = true;
-				outdirPath = g.getOptarg();
-				break;
-			case 'g':
-				configFile = new File(g.getOptarg());
+				outPath = new File(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -87,87 +79,161 @@ public class WriteUniqueUniprots {
 		
 		//Check if the file for sifts connection exits!
 		if( scFilePath == null || !(new File(scFilePath)).isFile()) {
-			System.err.println("Hey Jim, Can you check if the SIFTS Connection file really exists! " +
+			System.err.println("Hey Jim, Can you check if the SIFTS file really exists! " +
 					"I am having trouble in reading it.");
-			System.err.println(help);
 			System.exit(1);
 		}
-		
-		//Check if the uniprotdbName is provided by the user
-		if( uniprotdbName == null){
-			System.err.println("Hey Jim, Could you please provide me with a unipotDB Name with option -u");
-			System.err.println(help);
-			System.exit(1);
-		}
-		
-		//Check if outdir if provided really exists
-		if(ifOutdir && !(new File(outdirPath)).isDirectory() ){
-			System.err.println("Hey Jim, Can you check the Output Directory path: " + outdirPath +
-					" I am having trouble in recognizing it!!");
+
+		if (outPath == null) {
+			System.err.println("Output file or dir must be provided with -o");
 			System.err.println(help);
 			System.exit(1);
 		}
 
-		EppicParams params = new EppicParams();
-		if (configFile == null) {
-			configFile = new File(System.getProperty("user.home"), EppicParams.CONFIG_FILE_NAME);
+		boolean singleFastaFile;
+		if (outPath.isDirectory()) {
+			singleFastaFile = false;
+		} else {
+			singleFastaFile = true;
 		}
-		params.readConfigFile(configFile);
-		
-		//Initialize the variable
-		try{
-			WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath, uniprotdbName,
-					params.getLocalUniprotDbHost(), params.getLocalUniprotDbPort(),
-					params.getLocalUniprotDbUser(), params.getLocalUniprotDbPwd());
-			HashMap<String, ArrayList<Interval>> uniqueMap = wuni.sc.getUniqueMappings();
-			PrintWriter outList = new PrintWriter(new File (outdirPath, "queries.list"));
-		
-			int countFishy = 0;
-			int countErrLength = 0;
-			
-			for(String uniprotid:uniqueMap.keySet()) {
-				try {
-					UnirefEntry uniEntry = wuni.uniLC.getUnirefEntry(uniprotid);
-					String uniSeq = uniEntry.getSequence();
-					for(Interval interv:uniqueMap.get(uniprotid)){
-						//Create fasta files
-						String fileName = outdirPath + uniprotid + "." + interv.beg + "-" + interv.end + ".fa";
-						int maxLen = 60;
-						
-						if(interv.beg >= interv.end || interv.beg <= 0){
-							System.err.println("Warning: Fishy mapping in uniprot for "+uniprotid+"_"+interv.beg+"-"+interv.end);
-							countFishy++;
-							continue;
-						}
-						if(uniSeq.length() >= interv.end){
-							File outFile = new File (fileName); 
-							PrintWriter out = new PrintWriter(outFile);
-							out.println(">"+uniprotid+"_"+interv.beg+"-"+interv.end);
-							String uniSubSeq = uniSeq.substring(interv.beg-1, interv.end);
-							for(int i=0; i<uniSubSeq.length(); i+=maxLen) {
-								out.println(uniSubSeq.substring(i, Math.min(i+maxLen, uniSubSeq.length())));
-							}
-							outList.println(uniprotid+"."+interv.beg+"-"+interv.end);
-							out.close();
-						}
-						else{
-							System.err.println("Warning: Length of query seq ("+uniSeq.length()+") smaller than interval end of uniprot seq for "+uniprotid+"_"+interv.beg+"-"+interv.end);
-							countErrLength++;
-						}
-					
+
+
+		WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath);
+		Set<String> pdbIds = null;
+		if (listFile!=null) {
+			pdbIds = readListFile(listFile);
+		}
+		Map<String, List<Interval>> uniqueMap = wuni.sc.getUniqueMappings(pdbIds);
+
+		int countFishy = 0;
+		int countErrLength = 0;
+		int countPeptide = 0;
+
+		int countNotFound = 0;
+		int countCantRetrieve = 0;
+
+		PrintWriter out = null;
+
+		if (singleFastaFile) {
+			out = new PrintWriter(outPath);
+		}
+
+		int countMappings = 0;
+		for (List<Interval> list : uniqueMap.values()) {
+			countMappings += list.size();
+		}
+
+		logger.info("Total of {} unique UniProt ids and {} unique segment mappings.",
+				uniqueMap.size(), countMappings);
+
+		if (pdbIds!=null) {
+			logger.info("Mappings correspond to {} PDB ids", pdbIds.size());
+		} else {
+			logger.info("Mappings correspond to ALL current PDB ids as present in SIFTS file {}", scFilePath);
+		}
+
+		for (String uniprotid : uniqueMap.keySet()) {
+
+			try {
+				UnirefEntry uniEntry = wuni.uc.getUnirefEntryWithRetry(uniprotid);
+				String uniSeq = uniEntry.getSequence();
+				for (Interval interv : uniqueMap.get(uniprotid)) {
+					//Create fasta files
+					int maxLen = 60;
+
+					if (interv.beg >= interv.end) {
+						logger.warn("Inverted or 0-size interval in uniprot mapping {}_{}-{}", uniprotid, interv.beg, interv.end);
+						countFishy++;
+						continue;
 					}
+					if (interv.beg <= 0) {
+						logger.warn("Negative starting position in uniprot mapping {}_{}-{}", uniprotid, interv.beg, interv.end);
+						countFishy++;
+						continue;
+					}
+
+					if (uniSeq.length() < interv.end) {
+						logger.warn("Length of query seq ({}) smaller than interval end of uniprot seq for {}_{}-{}", uniSeq.length(), uniprotid, interv.beg, interv.end);
+						countErrLength++;
+						continue;
+					}
+
+					if (interv.getLength() <= EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+						logger.info("Not writing mapping {}_{}-{} to fasta file, because it is below the peptide cutoff ({})",
+								uniprotid, interv.beg, interv.end, EppicParams.PEPTIDE_LENGTH_CUTOFF);
+						countPeptide++;
+						continue;
+					}
+
+					if (!singleFastaFile) {
+						File outFile = new File(outPath, uniprotid + "." + interv.beg + "-" + interv.end + ".fa");
+						out = new PrintWriter(outFile);
+					}
+					out.println(">" + uniprotid + "_" + interv.beg + "-" + interv.end);
+					String uniSubSeq = uniSeq.substring(interv.beg - 1, interv.end);
+					for (int i = 0; i < uniSubSeq.length(); i += maxLen) {
+						out.println(uniSubSeq.substring(i, Math.min(i + maxLen, uniSubSeq.length())));
+					}
+					if (!singleFastaFile) {
+						out.close();
+					}
+
 				}
-				catch(NoMatchFoundException er){
-					System.err.println("Warning: FileNotFoundException: " + er.getMessage());
-				}
+			} catch (NoMatchFoundException er) {
+				logger.warn("Could not find {} from JAPI. Skipping", uniprotid);
+				countNotFound++;
+			} catch (ServiceException e) {
+				logger.warn("ServiceException while retrieving UniProt {} from JAPI. Error: {}", uniprotid, e.getMessage());
+				countCantRetrieve++;
 			}
-			outList.close();
-			if(countFishy > 0) System.err.println("Warning: Oops! total encountered fishy mappings: "+countFishy);
-			if(countErrLength > 0) System.err.println("Warning: Oops! total encountered problems in the length: "+countErrLength);
 		}
-		catch(IOException ex){
-			System.err.println("Error in inputs: " + ex.getClass() + " " + ex.getMessage());
+
+		if (singleFastaFile) {
+			out.close();
+		}
+
+		if (countFishy > 0)
+			logger.warn("Total encountered fishy mappings (inverted/0-size intervals and negative starting positions): {}", countFishy);
+
+		if (countErrLength > 0)
+			logger.warn("Total encountered problems in the length: {}", countErrLength);
+
+		if (countNotFound > 0) {
+			logger.warn("Could not find {} ids via JAPI", countNotFound);
+		}
+
+		if (countCantRetrieve > 0) {
+			logger.warn("Could not retrieve {} ids via JAPI", countCantRetrieve);
+		}
+
+		if (countPeptide > 0) {
+			logger.info("There were a total of {} peptide sequences that were not written to fasta file", countPeptide);
+		}
+
+		if ( (countNotFound + countCantRetrieve) > 0.10 * uniqueMap.size()) {
+			logger.error("More than 10% of ids could not be found or retrieved. Dumping sequences was unsuccessful. Is there a new UniProt JAPI version?");
 			System.exit(1);
 		}
+
+		logger.info("Finished dumping sequences successfully");
+	}
+
+	private static Set<String> readListFile(File listFile) throws IOException {
+		Set<String> set = new HashSet<>();
+		try (BufferedReader br = new BufferedReader(new FileReader(listFile))) {
+			String line;
+			while ((line = br.readLine())!=null) {
+				if (line.trim().isEmpty()) continue;
+				if (line.startsWith("#")) continue;
+
+				String pdbId = line.trim();
+				if (pdbId.length()!=4) {
+					logger.warn("Found string of length !=4 in file {}: {}. Skipping", listFile.toString(), pdbId);
+					continue;
+				}
+				set.add(pdbId);
+			}
+		}
+		return set;
 	}
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.commons.util.CallType;
 import eppic.model.db.AssemblyContentDB;
 import eppic.model.db.AssemblyDB;
 import eppic.model.db.ChainClusterDB;

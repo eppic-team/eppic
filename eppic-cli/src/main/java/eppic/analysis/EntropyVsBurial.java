@@ -1,10 +1,10 @@
 package eppic.analysis;
 
-import eppic.CallType;
 import eppic.ChainEvolContext;
 import eppic.ChainEvolContextList;
 import eppic.InterfaceEvolContext;
 import eppic.InterfaceEvolContextList;
+import eppic.commons.util.CallType;
 import gnu.getopt.Getopt;
 
 import java.io.File;

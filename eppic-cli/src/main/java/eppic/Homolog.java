@@ -1,8 +1,9 @@
-package eppic.commons.sequence;
+package eppic;
 
 import java.io.Serializable;
 
 import eppic.commons.blast.BlastHsp;
+import eppic.commons.sequence.UnirefEntry;
 
 
 /**

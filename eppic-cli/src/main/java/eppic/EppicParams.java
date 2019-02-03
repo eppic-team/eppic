@@ -82,8 +82,8 @@ public class EppicParams {
 	public static final int		  NUM_CLASHES_FOR_ERROR = 30;
 	/** If more clashes than this in an interface, the warning message will not be detailed */
 	public static final int		  MAX_NUM_CLASHES_TO_REPORT_WUI = 20;
-	/** Shorter chains will be considered peptides */
-	public static final int	      PEPTIDE_LENGTH_CUTOFF = 20; 
+	/** Shorter chains will be considered peptides. No evol analysis is performed. */
+	public static final int	      PEPTIDE_LENGTH_CUTOFF = 30;
 	/** Maximum allowed ratio of unreliable residues for calling nopred */
 	public static final double     MAX_ALLOWED_UNREL_RES = 0.1; 
 	/** 
@@ -93,8 +93,6 @@ public class EppicParams {
 	public static final int        MIN_NUMBER_CORE_RESIDUES_EVOL_SCORE = 2;
 	/** Value to use when core/rim ratio is infinity (rim score=0), some arbitrary large value, unlikely to happen in realistic cases */
 	public static final double     SCORERATIO_INFINITY_VALUE = 1000;
-	/** For sequences (strictly) below this length value no blast will be performed */
-	public static final int		   MIN_SEQ_LENGTH_FOR_BLASTING = 10;
 	/** The maximum length of an engineered insertion when a single chain maps to multiple segments with a single UniProt reference */
 	public static final int		   NUM_GAP_RES_FOR_CHIMERIC_FUSION = 10;
 	// the hard limits aka "duarte" limits: areas above/below which it is very unlikely to have xtal/bio interfaces
@@ -157,12 +155,11 @@ public class EppicParams {
 	// default sifts file location
 	private static final String   DEF_SIFTS_FILE = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";	
 	private static final boolean  DEF_USE_SIFTS = true;
-	
+
 	// default blast settings
 	private static final File     DEF_BLASTP_BIN = new File("/usr/bin/blastp"); // from blast+ package
-	private static final File     DEF_BLASTCLUST_BIN = new File("/usr/bin/blastclust"); // from legacy blast package
-	private static final String   DEF_BLAST_DATA_DIR = "/usr/share/blast";
-	
+	private static final File     DEF_MMSEQS_BIN = new File("/usr/bin/mmseqs2");
+
 	// default aligner programs execs: blank files, so that we can control that one and only one is set (see checkConfigFileInput)
 	private static final File	  DEF_CLUSTALO_BIN = new File("");
 	
@@ -283,11 +280,15 @@ public class EppicParams {
 	private boolean generateModelSerializedFile;
 	
 	private boolean noBlast;
+
+	private boolean useLocalUniProtInfo;
 	
 	private File progressLogFile;
 	private PrintStream progressLog;
 	
 	private File configFile;
+
+	private File dbConfigFile;
 	
 	private boolean debug;
 	
@@ -309,12 +310,11 @@ public class EppicParams {
 	private String   siftsFile;
 	
 	private boolean  useSifts;
-	
-	private File     blastclustBin;
+
 	private File     blastpBin;
-	
-	private String   blastDataDir; // dir with blosum matrices only needed for blastclust
-	
+
+	private File     mmseqsBin;
+
 	private File	 clustaloBin;
 	
 	private File	 pymolExe;
@@ -350,12 +350,6 @@ public class EppicParams {
 	// and finally the ones with no defaults
 	private String   blastDbDir; // no default
 	private String   blastDb;    // no default
-	
-	private String   localUniprotDbName; // no default
-	private String   localUniprotDbHost;
-	private String   localUniprotDbPort;
-	private String   localUniprotDbUser;
-	private String   localUniprotDbPwd;
 
 	private File 	 hbplusExe;
 	
@@ -391,6 +385,7 @@ public class EppicParams {
 		this.generateThumbnails = false;
 		this.generateModelSerializedFile = false;
 		this.noBlast = false;
+		this.useLocalUniProtInfo = false;
 		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
@@ -402,7 +397,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:uh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:G:Uuh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -483,6 +478,12 @@ public class EppicParams {
 			case 'g':
 				configFile = new File(g.getOptarg());
 				break;
+			case 'G':
+				dbConfigFile = new File(g.getOptarg());
+				break;
+			case 'U':
+				useLocalUniProtInfo = true;
+				break;
 			case 'u':
 				debug = true;
 				break;
@@ -556,9 +557,13 @@ public class EppicParams {
 		"  [-w]         :  if specified a serialized webui.dat file will be produced. Coordinate files are removed in \n" +
         "                  this mode, so the -p option will have no effect.\n" +
 		"  [-B]         :  if specified no blasting will be performed at all: a) UniProt references are taken\n"+
-		"                  from SIFTS only, b) only blast cache files are used.\n"+
+		"                  from SIFTS only, b) only sequence search cache is used.\n"+
 		"                  Useful for precomputation from scratch to avoid the dependency on\n"+
 		"                  blast index files.\n"+
+		"  [-G <file>]  :  config file for JPA db connection, needed to query the sequence search cache\n"+
+		"                  and to get UniProt info (sequences, taxonomy) from local db\n"+
+		"  [-U]         :  use local UniProt info via JPA db connection. Requires a config file (-G).\n"+
+		"                  If not provided, default is to use UniProt JAPI to retrieve UniProt info\n"+
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
 		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +
@@ -603,7 +608,14 @@ public class EppicParams {
 		if (configFile!=null && !configFile.exists()) {
 			throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
 		}
-		
+
+		if (dbConfigFile!=null && !dbConfigFile.exists()) {
+			throw new EppicException(null, "Specified config file "+dbConfigFile+" doesn't exist",true);
+		}
+
+		if (noBlast && dbConfigFile == null) {
+			throw new EppicException(null, "The no-blast mode (-B) requires using a db config file to query sequence search cache (-G)", true);
+		}
 	
 		if (homologsSearchMode==null) {
 			// invalid string passed as homologs search mode
@@ -619,6 +631,9 @@ public class EppicParams {
 			tempCoordFilesDir = outDir;
 		}
 
+		if (useLocalUniProtInfo && dbConfigFile == null) {
+			throw new EppicException(null, "A db config file must be provided (-G) when using local UniProt info from db (-U)", true);
+		}
 	}
 	
 	public void checkConfigFileInput() throws EppicException {
@@ -675,13 +690,8 @@ public class EppicParams {
 					throw new EppicException(null,"The BLASTP_BIN path given in config file does not exist: "+blastpBin,true);
 				}
 			}
-			if (!blastclustBin.exists()) {
-				throw new EppicException(null,"The BLASTCLUST_BIN path given in config file does not exist: "+blastclustBin,true);
-			}
-			if (! new File(blastDataDir).isDirectory()) {
-				throw new EppicException(null,"BLAST_DATA_DIR must be set to a valid value in config file. Directory "+blastDataDir+ " doesn't exist.",true);
-			} else if (! new File(blastDataDir,"BLOSUM62").exists()) {
-				throw new EppicException(null, "BLAST_DATA_DIR parameter in config file must be set to a dir containing a blast BLOSUM62 file. No BLOSUM62 file in "+blastDataDir, true);
+			if (!mmseqsBin.exists()) {
+				throw new EppicException(null,"The MMSEQS_BIN path given in config file does not exist: "+mmseqsBin,true);
 			}
 			
 			// alignment programs: we allow one and only one to be set
@@ -913,7 +923,11 @@ public class EppicParams {
 	public boolean isNoBlast() {
 		return noBlast;
 	}
-	
+
+	public boolean isUseLocalUniProtInfo() {
+		return useLocalUniProtInfo;
+	}
+
 	public PrintStream getProgressLog() {
 		return progressLog;
 	}
@@ -924,6 +938,10 @@ public class EppicParams {
 	
 	public File getConfigFile() {
 		return configFile;
+	}
+
+	public File getDbConfigFile() {
+		return dbConfigFile;
 	}
 	
 	public boolean getDebug() {
@@ -954,12 +972,6 @@ public class EppicParams {
 			// variables without defaults
 			blastDbDir    	= p.getProperty("BLAST_DB_DIR");
 			blastDb        	= p.getProperty("BLAST_DB");
-			
-			localUniprotDbName = p.getProperty("LOCAL_UNIPROT_DB_NAME");
-			localUniprotDbHost = p.getProperty("LOCAL_UNIPROT_DB_HOST");
-			localUniprotDbPort = p.getProperty("LOCAL_UNIPROT_DB_PORT");
-			localUniprotDbUser = p.getProperty("LOCAL_UNIPROT_DB_USER");
-			localUniprotDbPwd  = p.getProperty("LOCAL_UNIPROT_DB_PWD");
 
 			atomCachePath      = p.getProperty("ATOM_CACHE_PATH");
 						
@@ -975,13 +987,11 @@ public class EppicParams {
 			
 			siftsFile       = p.getProperty("SIFTS_FILE", DEF_SIFTS_FILE);
 			useSifts        = Boolean.parseBoolean(p.getProperty("USE_SIFTS", Boolean.valueOf(DEF_USE_SIFTS).toString()));
-			
-			blastclustBin   = new File(p.getProperty("BLASTCLUST_BIN", DEF_BLASTCLUST_BIN.toString()));
-			
+
 			blastpBin	    = new File(p.getProperty("BLASTP_BIN", DEF_BLASTP_BIN.toString()));
-			
-			blastDataDir    = p.getProperty("BLAST_DATA_DIR", DEF_BLAST_DATA_DIR);
-			
+
+			mmseqsBin       = new File(p.getProperty("MMSEQS_BIN", DEF_MMSEQS_BIN.toString()));
+
 			// for alignment programs we either read them or set them to null
 			clustaloBin		= new File(p.getProperty("CLUSTALO_BIN", DEF_CLUSTALO_BIN.toString()));
 			
@@ -1017,7 +1027,7 @@ public class EppicParams {
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC", Boolean.valueOf(DEF_USE_UNIPARC).toString()));
 			
 			usePdbResSer	 = Boolean.parseBoolean(p.getProperty("USE_PDB_RES_SER", Boolean.valueOf(DEF_USE_PDB_RES_SER).toString()));
-			
+
 			alphabet = new AAAlphabet(p.getProperty("CUSTOM_ALPHABET", DEF_ENTROPY_ALPHABET.toString()));
 			
 			
@@ -1051,15 +1061,11 @@ public class EppicParams {
 	public File getBlastpBin() {
 		return blastpBin;
 	}
-	
-	public File getBlastclustBin() {
-		return blastclustBin;
+
+	public File getMmseqsBin() {
+		return mmseqsBin;
 	}
 
-	public String getBlastDataDir() {
-		return blastDataDir;
-	}
-	
 	public File getClustaloBin() {
 		return clustaloBin;
 	}
@@ -1118,26 +1124,6 @@ public class EppicParams {
 
 	public String getBlastDb() {
 		return blastDb;
-	}
-	
-	public String getLocalUniprotDbName() {
-		return localUniprotDbName;
-	}
-
-	public String getLocalUniprotDbHost() {
-		return localUniprotDbHost;
-	}
-
-	public String getLocalUniprotDbPort() {
-		return localUniprotDbPort;
-	}
-
-	public String getLocalUniprotDbUser() {
-		return localUniprotDbUser;
-	}
-
-	public String getLocalUniprotDbPwd() {
-		return localUniprotDbPwd;
 	}
 	
 	public boolean isUseUniparc() {

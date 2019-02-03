@@ -1,4 +1,4 @@
-package eppic.commons.sequence;
+package eppic;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,18 +17,24 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import eppic.commons.blast.*;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.UniProtInfoDAO;
+import eppic.db.dao.jpa.UniProtInfoDAOJpa;
+import eppic.model.dto.UniProtInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import eppic.commons.blast.BlastException;
-import eppic.commons.blast.BlastHit;
-import eppic.commons.blast.BlastHitList;
-import eppic.commons.blast.BlastHsp;
-import eppic.commons.blast.BlastRunner;
-import eppic.commons.blast.BlastXMLParser;
 import eppic.commons.sequence.AAAlphabet;
-import eppic.commons.util.Goodies;
+import eppic.commons.sequence.AlignmentConstructionException;
+import eppic.commons.sequence.ClustaloRunner;
+import eppic.commons.sequence.FileFormatException;
+import eppic.commons.sequence.MultipleSequenceAlignment;
+import eppic.commons.sequence.NoMatchFoundException;
+import eppic.commons.sequence.Sequence;
+import eppic.commons.sequence.UniProtConnection;
+import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
 import uk.ac.ebi.kraken.interfaces.uniparc.UniParcEntry;
 import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
@@ -42,10 +47,10 @@ import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
  * 
  * @see Homolog
  * 
- * @author duarte_j
+ * @author Jose Duarte
  *
  */
-public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
+public class HomologList implements  Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -54,16 +59,13 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	private static final String 	BLASTOUT_SUFFIX = "blast.out.xml";
 	private static final String 	FASTA_SUFFIX = ".fa";
 	private static final String 	BLAST_BASENAME = "homSearch";
-	private static final String     BLASTCLUST_BASENAME = "homClustering";
-	private static final String     BLASTCLUST_OUT_SUFFIX = ".blastclust.out";
-	private static final String 	BLASTCLUST_SAVE_SUFFIX = ".blastclust.save";
-	 
+	private static final String     CLUSTERING_BASENAME = "homClustering";
+
 	private static final boolean 	BLAST_NO_FILTERING = true;
 	private static final String 	UNIPROT_VER_FILE = "reldate.txt";
 	
-	private static final int        BLASTCLUST_STARTING_CLUSTERING_ID = 98;
-	private static final int		CLUSTERING_ID_STEP = 1;
-	private static final double 	BLASTCLUST_CLUSTERING_COVERAGE = 0.99;
+	public static final int         CLUSTERING_ID = 90;
+	private static final double     CLUSTERING_COVERAGE = 0.99;
 	
 	
 	private static final boolean 	DEBUG = false;
@@ -81,9 +83,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	private double idCutoff; 						// the identity cutoff (see filterToMinIdAndCoverage() )
 	private double qCoverageCutoff;					// the query coverage cutoff (see filterToMinIdAndCoverage() )
 	private String uniprotVer;						// the version of uniprot used in blasting, read from the reldate.txt uniprot file
-	
-	private int usedClusteringPercentId;			// the value of clustering id actually used in redundancy elimination
-	
+
 	private MultipleSequenceAlignment aln;	  		// the protein sequences alignment
 
 	private AAAlphabet alphabet;					// the reduced alphabet used to calculate entropies
@@ -133,83 +133,43 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * @param blastDbDir
 	 * @param blastDb
 	 * @param blastNumThreads
-	 * @param cacheFile a file with the cached gzipped xml blast output file, if null blast will be always run
-	 * @param noBlast whether the "no blast" mode is enabled: if true no blast is performed at all, if false blast 
+	 * @param cachedHitList a BlastHitList coming from a cache of precomputed sequence search run
+	 * @param noBlast whether the "no blast" mode is enabled: if true no blast is performed at all, if false blast
 	 * is attempted if needed
 	 * @throws IOException
 	 * @throws BlastException
 	 * @throws InterruptedException
 	 */
-	public void searchWithBlast(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, int maxNumSeqs, File cacheFile, boolean noBlast) 
+	public void searchWithBlast(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, int maxNumSeqs, BlastHitList cachedHitList, boolean noBlast)
 			throws IOException, BlastException, InterruptedException {
-		
-		File outBlast = null;
-		boolean fromCache = false;
+
 		BlastHitList blastList = null;
 		
 		this.uniprotVer = readUniprotVer(blastDbDir);
-		
-		// note we also check for size in case empty cache files are around (can happen often because
-		// of the way we create the files from blast redirecting to stdout)
-		if (cacheFile!=null && cacheFile.exists() && cacheFile.length()>0L) {
 
-			outBlast = cacheFile;
-			fromCache = true;
-			LOGGER.info("Reading blast results from cache file "+cacheFile);
+		if (cachedHitList!=null && cachedHitList.size()>0) {
 
-			try {
-				// note that by setting second parameter to true we are ignoring the DTD url to avoid unnecessary network connections
-				BlastXMLParser blastParser = new BlastXMLParser(outBlast, true);
-				blastList = blastParser.getHits();
-				
-				// 500 is blast's default, we don't want to check this if we are under default
-				if (maxNumSeqs>BlastRunner.BLAST_DEFAULT_MAX_HITS && blastList.size()<maxNumSeqs) { 
-					// we are asking for more max hits than present in the file, we have to blast again
-					LOGGER.info("Blast cache file exits ("+cacheFile+") but it contains only "+blastList.size()+" hits. Need to re-blast as a max of "+maxNumSeqs+" hits have been requested");
-					fromCache = false;
-					blastList = null;
-				} else {
-					// if we do take the cache file we have to do some sanity checks
-					String blastqueryid = blastList.getQueryId();
-					blastqueryid = blastqueryid.replaceAll("_.*", "");
-					if (!blastqueryid.equals(this.ref.getUniId())) {
-						throw new IOException("Query id "+blastqueryid+" from cache file "+cacheFile+
-								" does not match the id from the sequence: "+this.ref.getUniId());
-					}
-					String uniprotVerFromCache = readUniprotVer(cacheFile.getParent());
-					if (!uniprotVerFromCache.equals(uniprotVer)) {						
-						LOGGER.warn("Uniprot version from blast db dir "+blastDbDir+
-								" ("+uniprotVer+") does not match version in cache dir "+cacheFile.getParent()+" ("+uniprotVerFromCache+")");
-					}
-					if (!blastList.getDb().substring(blastList.getDb().lastIndexOf("/")+1).equals(blastDb)) {
-						LOGGER.error("Blast db used in cache file ("+cacheFile+") different from one requested "+blastDb);
-						LOGGER.error("Please check the blast cache directory.");
-						System.exit(1);
-					}
-				}
-			} catch (SAXException e) {
-				// The file is there and can be read, but somehow corrupted or incomplete.
-				if (noBlast) {
-					throw new IOException("Cache file "+cacheFile+" does not comply with blast XML format. Error: "+
-							e.getMessage()+ ". Will not try blasting because the \"no blast\" mode (-B option) was specified.");
-				} else {
-					// Let's issue a warning and consider there was no file so that we go and blast again
-					// so that the file will eventually get overwritten and the error corrected
-					LOGGER.warn("Cache file "+cacheFile+" does not comply with blast XML format. "
-							+ "Error: "+e.getMessage()+". Will ignore file and try blasting.");
-					fromCache = false;
-				}
-				
+			LOGGER.info("Using sequence search results from cache.");
+
+			blastList = cachedHitList;
+
+			// if we do take the cache, we have to do some sanity checks
+			String blastqueryid = blastList.getQueryId();
+			blastqueryid = blastqueryid.replaceAll("_.*", "");
+			if (!blastqueryid.equals(this.ref.getUniId())) {
+				throw new IOException("Query id " + blastqueryid + " from cache " +
+						" does not match the id from the sequence: " + this.ref.getUniId());
 			}
+
+		} else if (noBlast) {
+				throw new IOException("The \"no blast\" mode was specified (-B option) and entry does not exist in sequence search cache ");
+
 		} else {
-			if (noBlast) {
-				throw new IOException("The \"no blast\" mode was specified (-B option) and blast cache file " +
-						cacheFile + " does not exist or is empty.");
-			}
-		}
-		
-		if (!fromCache) {
-			outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
+
+			// perform the sequence search
+			// TODO rewrite by running mmseqs or calling the mmseqs search microservice
+
+			File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
 			File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
 			// NOTE: we blast the reference uniprot sequence using only the interval specified
 			this.ref.getSeq().getInterval(this.refInterval).writeToFastaFile(inputSeqFile);
@@ -226,15 +186,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			LOGGER.info("Run blast: "+blastRunner.getLastBlastCommand());
 			
 			LOGGER.info("Blasted against "+blastDbDir+"/"+blastDb);
-			if (cacheFile!=null) {
-				try {
-					LOGGER.info("Writing blast cache file "+cacheFile);
-					Goodies.gzipFile(outBlast, cacheFile);
-					cacheFile.setWritable(true, false);
-				} catch (IOException e) {
-					LOGGER.warn("Couldn't write the blast cache file "+cacheFile+". Error: "+e.getMessage());
-				}
-			} 
+
 			try {
 				// note that by setting second parameter to true we are ignoring the DTD url to avoid unnecessary network connections
 				BlastXMLParser blastParser = new BlastXMLParser(outBlast, true);
@@ -245,8 +197,12 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 				System.exit(1);
 			}
 		}
-		
-		this.list = new ArrayList<Homolog>();
+
+		if (blastList.size()==0) {
+			LOGGER.warn("The size of the sequence search hit list is 0 for {}.", this.ref.getUniId());
+		}
+
+		this.list = new ArrayList<>();
 		for (BlastHit hit:blastList) {
 			for (BlastHsp hsp:hit) {
 				String sid = hit.getSubjectId();
@@ -287,13 +243,12 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	}
 	
 	public static String readUniprotVer(String blastDbDir) {
-		String ver = "unknown";
+		String ver = null;
 		File uniprotVerFile = new File(blastDbDir,UNIPROT_VER_FILE);
-		try {
-			
-			BufferedReader br = new BufferedReader(new FileReader(uniprotVerFile));
+		try (
+			BufferedReader br = new BufferedReader(new FileReader(uniprotVerFile));) {
 			String line;
-			Pattern p = Pattern.compile("^UniProt.*Release\\s([\\d._]+)\\s.*");
+			Pattern p = Pattern.compile("^UniProt.*Release\\s([\\d._]+).*");
 			while ((line=br.readLine())!=null){
 				Matcher m = p.matcher(line);
 				if (m.matches()) {
@@ -301,9 +256,13 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 					break;
 				}
 			}
-			br.close();
+			if (ver == null) {
+				LOGGER.warn("Couldn't find a UniProt version in file {}", uniprotVerFile);
+				ver = "unknown";
+			}
 		} catch(IOException e) {
-			LOGGER.warn("Couldn't read UniProt version from file "+uniprotVerFile);
+			LOGGER.warn("Couldn't read UniProt release file {} to find UniProt version", uniprotVerFile);
+			ver = "unknown";
 		}
 		return ver;
 	}
@@ -327,7 +286,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			LOGGER.warn("UniProt version used for blast ("+uniprotVer+") and UniProt version being queried with JAPI ("+japiVer+") don't match!");
 		}
 		
-		List<String> uniprotIds = new ArrayList<String>();
+		List<String> uniprotIds = new ArrayList<>();
 		
 		for (Homolog hom:subList) {
 			
@@ -338,7 +297,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 		
 		List<UnirefEntry> unirefs = uniprotConn.getMultipleUnirefEntries(uniprotIds);
 		
-		HashMap<String,UnirefEntry> unirefsmap = new HashMap<String,UnirefEntry>();
+		HashMap<String,UnirefEntry> unirefsmap = new HashMap<>();
 		for (UnirefEntry uniref:unirefs) {
 			unirefsmap.put(uniref.getUniId(), uniref);
 		}
@@ -392,21 +351,35 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	
 	/**
 	 * Retrieves both uniprot and uniparc data from local db
-	 * @param uniprotConn
-	 * @throws SQLException
 	 */
-	public void retrieveUniprotKBData(UniprotLocalConnection uniprotConn) throws SQLException {
-		if (!uniprotConn.getVersion().equals(this.uniprotVer)){
-			LOGGER.warn("UniProt version used for blast ("+uniprotVer+") and UniProt version being queried from local database ("+uniprotConn.getVersion()+") don't match!");
-		}
-		List<String> uniIds = new ArrayList<String>();
+	public void retrieveUniprotKBData() throws DaoException {
+
+		UniProtInfoDAO uniProtInfoDAO = new UniProtInfoDAOJpa();
+
+		List<String> uniIds = new ArrayList<>();
 		for (Homolog hom:subList) {
 			uniIds.add(hom.getUniId());
 		}
-		
-		List<UnirefEntry> unirefs = uniprotConn.getMultipleUnirefEntries(uniIds);
 
-		HashMap<String,UnirefEntry> unirefsmap = new HashMap<String,UnirefEntry>();
+		List<UnirefEntry> unirefs = new ArrayList<>();
+		for (String uniId : uniIds) {
+			UniProtInfo uniProtInfo = uniProtInfoDAO.getUniProtInfo(uniId);
+			if (uniProtInfo!=null) {
+				UnirefEntry entry = new UnirefEntry();
+				entry.setUniprotId(uniId);
+				entry.setId(uniId); // TODO check if this is needed
+				entry.setSequence(uniProtInfo.getSequence());
+				List<String> taxons = new ArrayList<>();
+				taxons.add(uniProtInfo.getFirstTaxon());
+				taxons.add(uniProtInfo.getLastTaxon());
+				entry.setTaxons(taxons);
+				unirefs.add(entry);
+			} else {
+				LOGGER.warn("No UniProt info found in db for {}", uniId);
+			}
+		}
+
+		HashMap<String,UnirefEntry> unirefsmap = new HashMap<>();
 		for (UnirefEntry uniref:unirefs) {
 			unirefsmap.put(uniref.getUniId(), uniref);
 		}
@@ -527,7 +500,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 * Two external programs are supported: t_coffee or clustalo. Only one of the two can be passed, 
 	 * the other one must be null, if both are null or both are set then an IllegalArgumentException is thrown
 	 * @param clustaloBin
-	 * @param nThreads number of CPU cores t_coffee should use
+	 * @param nThreads number of CPU cores external program should use
 	 * @param alnCacheFile
 	 * @throws IOException 
 	 */
@@ -578,9 +551,7 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 				}
 				
 				
-			} catch (FileFormatException e) {
-				throw new IOException(e);
-			} catch (AlignmentConstructionException e) {
+			} catch (FileFormatException|AlignmentConstructionException e) {
 				throw new IOException(e);
 			}
 			
@@ -598,11 +569,9 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 			// c) existing cache file given but with wrong content 
 			try {
 				this.aln = new MultipleSequenceAlignment(alnFile.getAbsolutePath(), MultipleSequenceAlignment.FASTAFORMAT);
-			} catch (FileFormatException e) {
+			} catch (FileFormatException|AlignmentConstructionException e) {
 				throw new IOException(e);
-			} catch (AlignmentConstructionException e) {
-				throw new IOException(e);
-			}		
+			}
 		}
 		
 
@@ -758,117 +727,71 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	
 	/**
 	 * Reduces the size of the subset of homologs by reducing the sequence redundancy in it.
-	 * The procedure is based on clustering the sequences at successively smaller clustering sequence 
-	 * identities in steps of {@value #CLUSTERING_ID_STEP}, starting with {@link #BLASTCLUST_STARTING_CLUSTERING_ID}.
+	 * The procedure is based on clustering the sequences at {@link #CLUSTERING_ID} sequence identity.
 	 * This procedure will thus always remove duplicates (100% identical pairs).
 	 * Note that the sequences used for clustering are the HSP matching regions only.
-	 * The last cluster list whose size is above the given maxDesiredHomologs is the one taken, then
-	 * from the chosen list of clusters one representative is chosen from each cluster and the other
+	 * One representative is chosen from each cluster and the other
 	 * cluster members discarded.
-	 * @param maxDesiredHomologs
-	 * @param blastBinDir
-	 * @param blastDataDir
-	 * @param blastNumThreads
+	 * @param maxDesiredHomologs the maximum number of desired homologs
+	 * @param mmseqsBin the mmseqs2 executable
+	 * @param outDir dir where mmseqs2 will write its output to
+	 * @param numThreads the number of threads for mmseqs
 	 * @throws IOException 
 	 * @throws BlastException 
 	 * @throws InterruptedException 
 	 */
-	public void reduceRedundancy(int maxDesiredHomologs, File blastclustBin, String blastDataDir, int blastNumThreads) 
+	public void reduceRedundancy(int maxDesiredHomologs, File mmseqsBin, File outDir, int numThreads)
 			throws IOException, InterruptedException, BlastException {
-		
-		LOGGER.info("Proceeding to perform redundancy reduction for homologs of "+ref.getUniId()+" by clustering of blast HSP regions");
-				
-		File inputSeqFile = File.createTempFile(BLASTCLUST_BASENAME,FASTA_SUFFIX);
-		File outblastclustFile = File.createTempFile(BLASTCLUST_BASENAME,BLASTCLUST_OUT_SUFFIX);
-		File saveFile = File.createTempFile(BLASTCLUST_BASENAME,BLASTCLUST_SAVE_SUFFIX);
-		
-		writeToFasta(inputSeqFile, false);
-				
-		// first the real run of blastclust (we save neighbors with -s and reuse them in the loop after)
-		BlastRunner blastRunner = new BlastRunner(null);
-		long start = System.currentTimeMillis();
-		blastRunner.runBlastclust(blastclustBin, inputSeqFile, outblastclustFile, true, BLASTCLUST_STARTING_CLUSTERING_ID, BLASTCLUST_CLUSTERING_COVERAGE, blastDataDir, saveFile, blastNumThreads);
-		long end = System.currentTimeMillis();
-		LOGGER.info("Run initial blastclust ("+((end-start)/1000)+"s): "+blastRunner.getLastBlastCommand());
-		
-		int clusteringId = BLASTCLUST_STARTING_CLUSTERING_ID;
-		int countIterations = 0;
-		
-		List<List<String>> lastclusterslist = null;
-		List<List<String>> currentclusterslist = null;
 
-		while (true) {
-			
-			countIterations++;
-			LOGGER.info("Clustering iteration "+countIterations+
-					". Clustering with "+clusteringId+"% identity (and "+
-					String.format("%4.2f", BLASTCLUST_CLUSTERING_COVERAGE)+" coverage on both neighbors)");
-			
-			currentclusterslist = blastRunner.runBlastclust(blastclustBin, outblastclustFile, true, clusteringId, BLASTCLUST_CLUSTERING_COVERAGE, saveFile, blastNumThreads);
-			LOGGER.info("Run blastclust from saved neighbors: "+blastRunner.getLastBlastCommand());
-			
-			LOGGER.info("Clustering with "+clusteringId+"% id resulted in "+currentclusterslist.size()+" clusters");
-			
-			// note that in order not to loop forever if the number of clusters don't shrink, we use the second
-			// condition (clusteringId<idCutoff), using idCutoff seems to make some sense, but in a way it's totally arbitrary
-			if (currentclusterslist.size()<=maxDesiredHomologs || clusteringId<idCutoff*100) break; 
-			
-			lastclusterslist = currentclusterslist;
-			
-			clusteringId -= CLUSTERING_ID_STEP;
-		}		
+		if (getSizeFilteredSubset()<=1) {
+			LOGGER.info("1 or fewer homologs in the filtered list, no need to cluster them for sequence redundancy elimination");
+			return;
+		}
+		
+		LOGGER.info("Proceeding to perform redundancy reduction for homologs of {} by clustering of sequences", ref.getUniId());
+				
+		File inputSeqFile = File.createTempFile(CLUSTERING_BASENAME,FASTA_SUFFIX);
+
+		writeToFasta(inputSeqFile, false);
+
+		// mmseqs by default does 504 hits per query. Thus 504 is the max possible number of sequences to cluster
+		// and max number of possible sequences if nothing is clustered
+
+		long start = System.currentTimeMillis();
+		List<List<String>> clusters = MmseqsRunner.runMmseqsEasyCluster(mmseqsBin, inputSeqFile, new File(outDir, "seqClustering"), CLUSTERING_ID, CLUSTERING_COVERAGE, numThreads);
+		long end = System.currentTimeMillis();
+		LOGGER.info("Ran mmseqs2 sequence clustering for redundancy reduction in {}s", ((end-start)/1000));
 
 		if (!DEBUG) {
-			// note that if blastclust throws an exception then this is not reached and thus files not removed on exit
-			outblastclustFile.deleteOnExit();
+			// note that if mmseqs throws an exception then this is not reached and thus files not removed on exit
 			inputSeqFile.deleteOnExit();
-			saveFile.deleteOnExit();
 		}
+
+		LOGGER.info("Redundancy elimination at {}% identity resulted in {} clusters", CLUSTERING_ID, clusters.size());
 		
-		
-		// the currentclusterslist will contain the one that went under the maxDesiredHomologs, while lastclusterslist 
-		// will be over the maxDesiredHomologs
-		// thus we use lastclusterslist
-		// except if we only do one iteration, in which case we need to take currentclusterslist (lastclusterslist will be null)
-		List<List<String>> clusters = null;
-		if (lastclusterslist==null) {
-			clusters = currentclusterslist;
-			usedClusteringPercentId = clusteringId;
-		} else {
-			clusters = lastclusterslist;
-			usedClusteringPercentId = clusteringId+CLUSTERING_ID_STEP;			
-		}
-		LOGGER.info("Redundancy elimination will proceed with clusters of "+usedClusteringPercentId+"% identity");		
-		
-		HashSet<String> membersToRemove = new HashSet<String>(); 
+		HashSet<String> membersToRemove = new HashSet<>();
 		int i = 0;
 		for (List<String> cluster:clusters) {
 			i++;
 			if (cluster.size()>1) {
-				String msg = "Cluster "+i+" representative: "+cluster.get(0)+". Removed: ";			
+				StringBuilder msg = new StringBuilder("Cluster "+i+" representative: "+cluster.get(0)+". Removed: ");
 				// we then proceed to remove all but first
 				for (int j=1;j<cluster.size();j++) {
 					membersToRemove.add(cluster.get(j));
 					//Homolog toRemove = getHomolog(cluster.get(j));
 					//subList.remove(toRemove);
-					msg += cluster.get(j)+" ";
+					msg.append(cluster.get(j)).append(" ");
 				}								
-				LOGGER.info(msg);
+				LOGGER.info(msg.toString());
 			}
 		}
-		
-		Iterator<Homolog> it = subList.iterator();
-		while (it.hasNext()) {
-			Homolog hom = it.next();
-			if (membersToRemove.contains(hom.getIdentifier())) {
-				it.remove();
-			}
-		}
+
+		subList.removeIf(hom -> membersToRemove.contains(hom.getIdentifier()));
 		
 		LOGGER.info("Size of homolog list after redundancy reduction: "+subList.size());
 		
-		if (subList.size()>maxDesiredHomologs*1.50) {
-			LOGGER.warn("Size of final homologs list ("+subList.size()+") is larger than 50% of the max number of sequences required");
+		if (subList.size()>maxDesiredHomologs*2.00) {
+			LOGGER.info("Size of final homologs list ({}) is larger than 2x of the max number of sequences required ({})", subList.size(), maxDesiredHomologs);
 		}
 
 	}
@@ -914,15 +837,6 @@ public class HomologList implements  Serializable {//Iterable<UniprotHomolog>,
 	 */
 	public double getQCovCutoff() {
 		return qCoverageCutoff;
-	}
-	
-	/**
-	 * Returns the percent clustering identity that was used for redundancy reduction 
-	 * procedure, see {@link #reduceRedundancy(int, String, String, int, int, boolean)}
-	 * @return
-	 */
-	public int getUsedClusteringPercentId() {
-		return usedClusteringPercentId;
 	}
 	
 	/**

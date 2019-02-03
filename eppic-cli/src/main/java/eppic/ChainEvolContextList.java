@@ -5,8 +5,15 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
+import eppic.db.EntityManagerHandler;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.UniProtMetadataDAO;
+import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
+import eppic.db.jpautils.DbConfigGenerator;
+import eppic.model.dto.UniProtMetadata;
 import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.EntityType;
 import org.biojava.nbio.structure.Structure;
@@ -14,11 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.commons.blast.BlastException;
-import eppic.commons.sequence.HomologList;
 import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.UniProtConnection;
-import eppic.commons.sequence.UniprotLocalConnection;
 import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 
@@ -44,28 +49,17 @@ public class ChainEvolContextList implements Serializable {
 	
 	private boolean useLocalUniprot;
 	private transient UniProtConnection uniprotJapiConn;
-	private transient UniprotLocalConnection uniprotLocalConn;
-	
+
 	private transient SiftsConnection siftsConn;
 
-	
-	public ChainEvolContextList(Structure pdb, EppicParams params) throws SQLException {
+
+	public ChainEvolContextList(Structure pdb, EppicParams params) {
 		this.pdb = pdb;
-		
-		this.cecs = new TreeMap<String, ChainEvolContext>();
-		
-		if (!params.isNoBlast()) {
-			// if we fail to read a version, it will stay null. Should we rather throw exception?
-			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
-			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
-		}
-		
-		if (params.getLocalUniprotDbName()!=null) {
-			this.useLocalUniprot = true;
-		} else {
-			this.useLocalUniprot = false;
-		}
-		
+
+		this.cecs = new TreeMap<>();
+
+		this.useLocalUniprot = params.isUseLocalUniProtInfo();
+
 		for (EntityInfo chainCluster:pdb.getEntityInfos()) {
 
 			if (chainCluster.getType() == EntityType.POLYMER) {
@@ -81,22 +75,12 @@ public class ChainEvolContextList implements Serializable {
 		
 	}
 	
-	public ChainEvolContextList(List<Sequence> sequences, EppicParams params) throws SQLException {
+	public ChainEvolContextList(List<Sequence> sequences, EppicParams params) {
 		this.pdb = null;
 		
-		this.cecs = new TreeMap<String, ChainEvolContext>();
+		this.cecs = new TreeMap<>();
 
-		if (!params.isNoBlast()) {
-			// if we fail to read a version, it will stay null. Should we rather throw exception?
-			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
-			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
-		}
-		
-		if (params.getLocalUniprotDbName()!=null) {
-			this.useLocalUniprot = true;
-		} else {
-			this.useLocalUniprot = false;
-		}
+        this.useLocalUniprot = params.isUseLocalUniProtInfo();
 		
 		for (Sequence sequence: sequences) {
 						
@@ -105,6 +89,36 @@ public class ChainEvolContextList implements Serializable {
 			cecs.put(sequence.getName(), cec);
 		}
 		
+	}
+
+	public void initUniProtVer(EppicParams params) throws EppicException {
+		if (!params.isNoBlast()) {
+			// if we fail to read a version, it will stay null. Should we rather throw exception?
+			this.uniprotVer = HomologList.readUniprotVer(params.getBlastDbDir());
+			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
+		} else if (useLocalUniprot) {
+			openConnections(params);
+			UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
+			try {
+				UniProtMetadata uniProtMetadata = dao.getUniProtMetadata();
+				this.uniprotVer = uniProtMetadata.getVersion();
+			} catch (DaoException e) {
+				LOGGER.warn("Could not retrieve UniProt version from database");
+			}
+		} else {
+			// japi connection
+			try {
+				this.uniprotVer = uniprotJapiConn.getVersion();
+			} catch (ServiceException e) {
+				LOGGER.warn("Could not retrieve UniProt version from UniProt JAPI");
+			}
+		}
+		// in other cases it stays null
+
+		if (uniprotVer != null) {
+			LOGGER.info("Using UniProt version {}", uniprotVer);
+		}
+
 	}
 	
 	public void addChainEvolContext(String representativeChain, ChainEvolContext cec) {
@@ -170,11 +184,7 @@ public class ChainEvolContextList implements Serializable {
 	public boolean isUseLocalUniprot() {
 		return useLocalUniprot;
 	}
-	
-	public UniprotLocalConnection getUniProtLocalConnection() {
-		return uniprotLocalConn;
-	}
-	
+
 	public UniProtConnection getUniProtJapiConnection() {
 		return uniprotJapiConn;
 	}
@@ -245,6 +255,9 @@ public class ChainEvolContextList implements Serializable {
 	private void blastForHomologs(EppicParams params) throws EppicException {
 		params.getProgressLog().println("Blasting for homologs");
 		params.getProgressLog().print("chains: ");
+
+		openConnections(params);
+
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
@@ -257,13 +270,16 @@ public class ChainEvolContextList implements Serializable {
 
 			} catch (BlastException e) {
 				throw new EppicException(e,"Couldn't run blast to retrieve homologs: "+e.getMessage() ,true);
-			} catch (IOException e) {
-				throw new EppicException(e,"Problem while blasting for sequence homologs: "+e.getMessage(),true);
+			} catch (IOException|DaoException e) {
+				throw new EppicException(e,"Problem while performing sequence search for sequence homologs: "+e.getMessage(),true);
 			} catch (InterruptedException e) {
 				throw new EppicException(e,"Thread interrupted while blasting for sequence homologs: "+e.getMessage(),true);
 			}
 
 		}
+
+		closeConnections();
+
 		params.getProgressLog().println();
 	}
 	
@@ -288,8 +304,6 @@ public class ChainEvolContextList implements Serializable {
 				chainEvCont.retrieveHomologsData();
 			} catch (IOException e) {
 				throw new EppicException(e, "Problems while retrieving homologs data: "+e.getMessage(),true);
-			} catch (SQLException e) {
-				throw new EppicException(e, "Problems while retrieving homologs data from UniProt local database: "+e.getMessage(), true);
 			} catch (ServiceException e) {
 				throw new EppicException(e, "Problems while retrieving homologs data from UniProt JAPI: "+e.getMessage(), true);
 			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
@@ -329,14 +343,9 @@ public class ChainEvolContextList implements Serializable {
 				chainEvCont.applyIdentityCutoff(params);
 
 
-			} catch (IOException e) {
-				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
-			} catch (InterruptedException e) {
-				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
-			} catch (BlastException e) {
-				throw new EppicException(e, "Problems while running blastclust for redundancy reduction of homologs: "+e.getMessage(), true);
+			} catch (IOException|InterruptedException|BlastException e) {
+				throw new EppicException(e, "Problems while performing redundancy reduction of homologs: "+e.getMessage(), true);
 			}
-
 			
 		}
 	}
@@ -433,14 +442,18 @@ public class ChainEvolContextList implements Serializable {
 	
 	public void openConnections(EppicParams params) throws EppicException {
 		if (useLocalUniprot) {
+			// init jpa db connection so that querying cache works in chainEvCont.blastForHomologs(params)
+			// and so that uniprot data can be retrieved in retrieveQueryData and retrieveHomologsData
 			try {
-				this.uniprotLocalConn = new UniprotLocalConnection(
-						params.getLocalUniprotDbName(), params.getLocalUniprotDbHost(),
-						params.getLocalUniprotDbPort(), params.getLocalUniprotDbUser(),
-						params.getLocalUniprotDbPwd());
-				LOGGER.info("Opening local UniProt connection to retrieve UniProtKB data. Local database: "+params.getLocalUniprotDbName());
-			} catch (SQLException e) {
-				throw new EppicException(e, "Could not open connection to local UniProt database " + params.getLocalUniprotDbName(), true);
+
+				if (EntityManagerHandler.getEntityManagerFactory() == null) {
+					LOGGER.info("Initialising JPA connection to for sequence search data and uniprot data.");
+					Map<String, String> props = DbConfigGenerator.createDatabaseProperties(params.getDbConfigFile());
+					EntityManagerHandler.initFactory(props);
+				}
+
+			} catch (IOException e) {
+				throw new EppicException(e, "Could not init db JPA config from file " + params.getDbConfigFile() + ": " +e.getMessage(), true);
 			}
 		} else {
 			this.uniprotJapiConn = new UniProtConnection();
@@ -449,16 +462,10 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void closeConnections() {
-		if (useLocalUniprot) {
-			try {
-				this.uniprotLocalConn.close();
-				LOGGER.info("Connection to local UniProt database closed");
-			} catch (SQLException e) {
-				LOGGER.warn("Could not close MySQL connection to UniProt local database. Error: " + e.getMessage());
-			}
-		} else {
+		if (!useLocalUniprot) {
 			this.uniprotJapiConn.close();
 			LOGGER.info("Connection to UniProt JAPI closed");
 		}
+		// else { // the JPA connection can't really be closed, nothing to do
 	}
 }
