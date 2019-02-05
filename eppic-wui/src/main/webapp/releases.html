@@ -14,6 +14,16 @@
 
 		<h1>Release log</h1>
 
+		<h2>3.2.0 - 5th February 2019</h2>
+		<ul class="eppic-iframe-log-list">
+			<li>Precomputation now uses <a href="https://github.com/soedinglab/MMseqs2" target="_blank">mmseqs2</a> for much faster sequence search. User jobs still rely on blastp.</li>
+			<li>New behaviour: a single redundancy reduction step (clustering at 90% sequence identity) is performed on sequence homologs for MSA</li>
+			<li>BioJava dependency updated to next release 5.2.1. Includes performance improvements for ASA calculation</li>
+			<li>Thumbnail creation now works for large viral capsid entries</li>
+			<li>No evolutionary analysis is performed anymore for protein chains with length <=30 residues</li>
+			<li>Some bug fixes.</li>
+		</ul>
+
 		<h2>3.1.0 - 29th August 2018</h2>
 		<ul class="eppic-iframe-log-list">
 			<li>New feature: REST API for more fine grained data downloading. All graph data including assembly symmetry operators is now available through API.</li>

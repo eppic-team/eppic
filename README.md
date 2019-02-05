@@ -19,6 +19,7 @@ The software is divided into submodules:
 * **eppic-model:** Data model, used by all other modules.
 * **eppic-dbtools:** The DAO layer (with a JPA implementation). Also includes some tools for managing the database.
 * **eppic-rest:** The REST API, new since 3.1.0.
+* **eppic-util:** Common utilities
 
 Please note that the project was previously in two separate repositories (eppic-cli and eppic-wui) and has now been unified into a single repository here.
 
