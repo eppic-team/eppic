@@ -1,6 +1,8 @@
 package eppic.rest.endpoints;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import eppic.db.dao.JobDAO;
+import eppic.db.dao.jpa.JobDAOJpa;
 import eppic.rest.service.UtilService;
 
 import javax.ws.rs.GET;
@@ -21,10 +23,12 @@ public class UtilResource {
     @GET
     @Path("/alive")
     public String alive() {
-        if (UtilService.isAlive()) {
-            return "true";
-        } else {
+        JobDAO jobDAO = new JobDAOJpa();
+
+        if (jobDAO.isJobsEmpty()) {
             return "false";
+        } else {
+            return "true";
         }
     }
 

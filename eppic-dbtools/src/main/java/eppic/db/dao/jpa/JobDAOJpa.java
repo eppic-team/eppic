@@ -741,4 +741,40 @@ public class JobDAOJpa implements JobDAO
 	public JobDB getJob(String jobId) throws DaoException {
 		return getJob(EntityManagerHandler.getEntityManager(),jobId);
 	}
+
+	@Override
+	public boolean isJobsEmpty() {
+
+		EntityManager entityManager = null;
+
+		try
+		{
+			entityManager = EntityManagerHandler.getEntityManager();
+
+			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
+			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
+			criteriaQuery.select(jobRoot);
+
+			List<JobDB> jobs = entityManager.createQuery(criteriaQuery)
+					.setFirstResult(0) // offset
+					.setMaxResults(1) // limit
+					.getResultList();
+
+			if (jobs == null)
+				return true;
+
+			return jobs.size() == 0;
+		}
+		catch(Throwable e)
+		{
+			return true;
+		}
+		finally
+		{
+			if (entityManager!=null)
+				entityManager.close();
+		}
+
+	}
 }
