@@ -62,7 +62,6 @@ public class EppicParams {
 	protected static final String  SERIALIZED_MODEL_FILE_SUFFIX = ".webui.dat";
 	protected static final String  SCORES_FILE_SUFFIX = ".scores";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
-	protected static final String  BLAST_CACHE_FILE_SUFFIX = ".blast.xml.gz";
 	protected static final String  ASSEMBLIES_FILE_SUFFIX = ".assemblies";
 	public static final String     ASSEMBLIES_COORD_FILES_SUFFIX = ".assembly";
 	public static final String     ASSEMBLIES_DIAGRAM_FILES_SUFFIX = ".diagram";
@@ -197,7 +196,6 @@ public class EppicParams {
 	private static final boolean  DEF_USE_PDB_CODE_FROM_FILE = false;
 
 	// default cache dirs
-	private static final String   DEF_BLAST_CACHE_DIR = null;
 	private static final String   DEF_ALN_CACHE_DIR = null;
 	
 	// default use uniparc
@@ -339,7 +337,6 @@ public class EppicParams {
 	
 	private boolean  usePdbCodeFromFile;
 			
-	private String   blastCacheDir;
 	private String   alnCacheDir;
 	
 	private boolean  useUniparc;
@@ -1021,7 +1018,6 @@ public class EppicParams {
 			
 			usePdbCodeFromFile = Boolean.parseBoolean(p.getProperty("USE_PDB_CODE_FROM_FILE", Boolean.valueOf(DEF_USE_PDB_CODE_FROM_FILE).toString()));
 			
-			blastCacheDir    = p.getProperty("BLAST_CACHE_DIR", DEF_BLAST_CACHE_DIR);
 			alnCacheDir		 = p.getProperty("ALN_CACHE_DIR", DEF_ALN_CACHE_DIR);
 			
 			useUniparc       = Boolean.parseBoolean(p.getProperty("USE_UNIPARC", Boolean.valueOf(DEF_USE_UNIPARC).toString()));
@@ -1110,10 +1106,6 @@ public class EppicParams {
 		return usePdbCodeFromFile;
 	}
 
-	public String getBlastCacheDir() {
-		return blastCacheDir;
-	}
-	
 	public String getAlnCacheDir() {
 		return alnCacheDir;
 	}
