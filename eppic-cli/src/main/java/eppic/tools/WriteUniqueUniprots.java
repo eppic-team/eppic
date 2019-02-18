@@ -132,7 +132,15 @@ public class WriteUniqueUniprots {
 			logger.info("Mappings correspond to ALL current PDB ids as present in SIFTS file {}", scFilePath);
 		}
 
+		int counter = 0;
 		for (String uniprotid : uniqueMap.keySet()) {
+
+			if ( (countNotFound + countCantRetrieve) > 0.10 * uniqueMap.size()) {
+				// let's abort as soon as we see many errors, so that we get alerted as early as possible
+				logger.error("More than 10% of ids could not be found or retrieved. Aborting after processing {} UniProt ids. Is there a new UniProt JAPI version?", counter);
+				System.exit(1);
+			}
+			counter++;
 
 			try {
 				UnirefEntry uniEntry = wuni.uc.getUnirefEntryWithRetry(uniprotid);
