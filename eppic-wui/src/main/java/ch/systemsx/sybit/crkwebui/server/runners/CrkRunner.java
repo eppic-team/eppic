@@ -53,9 +53,6 @@ public class CrkRunner
 		File logFile = new File(destinationDirectoryName, CrkWebServiceImpl.PROGRESS_LOG_FILE_NAME);
 		LogHandler.writeToLogFile(logFile, "Job submitted - please wait\n");
 
-		File runFile = new File(destinationDirectoryName, CrkWebServiceImpl.RUN_FILE_NAME);
-		runFile.createNewFile();
-
 		RunJobDataValidator.validateJobId(runJobData.getJobId());
 		RunJobDataValidator.validateInput(runJobData.getInput());
 		RunJobDataValidator.validateInputParameters(runJobData.getInputParameters());

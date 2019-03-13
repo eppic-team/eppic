@@ -130,8 +130,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	// the file where the progress log of the eppic CLI program is written to (using -L option), used to be called 'crklog'
 	public static final String PROGRESS_LOG_FILE_NAME 	= "eppic_wui_progress.log";
-	// the file to signal that a job is running, used to be called 'crkrun'
-	public static final String RUN_FILE_NAME 			= "eppic_run";
 
 	// the file to signal a killed job
 	public static final String KILLED_FILE_NAME 		= "killed";
