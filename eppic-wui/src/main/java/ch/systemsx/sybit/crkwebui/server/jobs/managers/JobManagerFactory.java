@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
-import ch.systemsx.sybit.crkwebui.server.jobs.managers.drmaa.DrmaaJobManager;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 
 /**
@@ -36,9 +35,7 @@ public class JobManagerFactory
 			{
 			
 				LOGGER.info("Initialising DrmaaJobManager for queuing system {} with jobsDirectory {}", queuingSystemName, jobsDirectory);
-				jobManager = new DrmaaJobManager(queuingSystemName, 
-												 queuingSystemProperties,
-												 jobsDirectory);
+				jobManager = new NativeJobManager(jobsDirectory);
 			}
 		}
 
