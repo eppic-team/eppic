@@ -218,6 +218,8 @@ public class Main {
 
 					pdb = parser.parsePDBFile(new FileInputStream(params.getInFile()));
 					
+				} else {
+					throw new EppicException(null, "Could not guess if file is PDB or mmCIF. If PDB file please make sure your file's first line starts with one of the usual tokens, e.g. REMARK, ATOM, CRYST1", true);
 				}
 
 
