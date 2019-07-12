@@ -22,7 +22,7 @@ public class JobResource {
 
     @GET
     @Path("/pdb/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getPdb(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -40,7 +40,7 @@ public class JobResource {
 
     @GET
     @Path("/interfaceClusters/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getInterfaceClusters(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -60,7 +60,7 @@ public class JobResource {
 
     @GET
     @Path("/interfaces/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getInterfaces(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -80,7 +80,7 @@ public class JobResource {
 
     @GET
     @Path("/sequences/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getSequences(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -100,7 +100,7 @@ public class JobResource {
 
     @GET
     @Path("/interfaceResidues/{jobId}/{interfId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getInterfaceResidues(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -122,7 +122,7 @@ public class JobResource {
 
     @GET
     @Path("/assemblies/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getAssemblies(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -142,7 +142,7 @@ public class JobResource {
 
     @GET
     @Path("/contacts/{jobId}/{interfId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getContacts(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -164,7 +164,7 @@ public class JobResource {
 
     @GET
     @Path("/assemblyByPdbId/{jobId}/{pdbAssemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getAssemblyByPdbId(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -184,7 +184,7 @@ public class JobResource {
 
     @GET
     @Path("/assembly/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getAssembly(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -204,7 +204,7 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraph/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getLatticeGraph(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -224,7 +224,7 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraphByInterfaceIds/{jobId}/{interfaceIds}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getLatticeGraphByInterfaceIdList(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -244,7 +244,7 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraphByInterfaceClusterIds/{jobId}/{interfaceClusterIds}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getLatticeGraphByInterfaceClusterIdList(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -264,7 +264,7 @@ public class JobResource {
 
     @GET
     @Path("/assemblyDiagram/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getAssemblyDiagram(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
