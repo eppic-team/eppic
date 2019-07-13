@@ -3,7 +3,6 @@ package eppic.rest.commons;
 
 import eppic.db.EntityManagerHandler;
 import eppic.rest.filter.CORSResponseFilter;
-import io.swagger.v3.core.util.Json;
 import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;
 import io.swagger.v3.oas.integration.OpenApiConfigurationException;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
@@ -22,9 +21,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
@@ -61,8 +57,9 @@ public class InitJerseyRestApp extends ResourceConfig {
         register(LoggingFeature.class);
 
         //Configure and Initialize Swagger
-        logger.info("Initialising swagger bean config");
+        logger.info("Initialising swagger/openapi config");
         generateDocumentation(servletConfig, servletContext);
+        logger.info("Done initialising swagger/openapi config");
 
         logger.info("Initialising JPA/hibernate");
         EntityManagerHandler.initFactory(AppConstants.DB_SETTINGS);
@@ -75,7 +72,7 @@ public class InitJerseyRestApp extends ResourceConfig {
      * <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md">specification</a> format.
      *
      * @param servletConfig object used by a servlet container to pass information to a servlet during initialization.
-     * @since 3.0
+     * @param servletContext the servlet context
      */
     private static void generateDocumentation(@Context ServletConfig servletConfig, ServletContext servletContext) {
 
@@ -116,18 +113,6 @@ public class InitJerseyRestApp extends ResourceConfig {
         Server server = new Server();
         server.setUrl(basePath);
         oas.setServers(singletonList(server));
-
-        // save documentation as file
-        String api = Json.pretty(oas);
-        String path = servletConfig.getServletContext().getRealPath(AppConstants.REST_API_DOCS_DIR);
-
-        try {
-            Files.write(Paths.get(path, AppConstants.REST_API_DOCS_FILE), api.getBytes());
-
-        } catch (IOException e) {
-            logger.error("Failed to write API documentation as file in ", path);
-            throw new RuntimeException(e);
-        }
 
     }
 }
