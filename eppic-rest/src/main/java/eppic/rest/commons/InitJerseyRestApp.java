@@ -3,18 +3,28 @@ package eppic.rest.commons;
 
 import eppic.db.EntityManagerHandler;
 import eppic.rest.filter.CORSResponseFilter;
-import io.swagger.jaxrs.config.BeanConfig;
-import io.swagger.jaxrs.listing.ApiListingResource;
-import io.swagger.jaxrs.listing.SwaggerSerializers;
+import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;
+import io.swagger.v3.oas.integration.OpenApiConfigurationException;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.integration.api.OpenApiContext;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.message.filtering.SelectableEntityFilteringFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
+import java.util.stream.Stream;
+
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toSet;
 
 @ApplicationPath("/")
 public class InitJerseyRestApp extends ResourceConfig {
@@ -25,7 +35,7 @@ public class InitJerseyRestApp extends ResourceConfig {
     // note the filter package with the CORS filter needs to be in the resources to scan or CORS filter won't work - JD 2017-11-16
     public static final String PACKAGES_TO_SCAN = RESOURCE_PACKAGE + ";" + "eppic.rest.filter";
 
-    public InitJerseyRestApp(@Context ServletContext servletContext) {
+    public InitJerseyRestApp(@Context ServletConfig servletConfig, @Context ServletContext servletContext) {
 
         // ServletContext needed only for application context path in swagger,
         // see https://stackoverflow.com/questions/19450202/get-servletcontext-in-application/27785718
@@ -46,14 +56,9 @@ public class InitJerseyRestApp extends ResourceConfig {
         // registering logging feature https://stackoverflow.com/questions/2332515/how-to-get-jersey-logs-at-server
         register(LoggingFeature.class);
 
-        //Hooking up Swagger-Core
-        logger.info("Registering swagger core");
-        register(ApiListingResource.class);
-        register(SwaggerSerializers.class);
-
         //Configure and Initialize Swagger
         logger.info("Initialising swagger bean config");
-        createSwaggerBeanConfig(servletContext);
+        generateDocumentation(servletConfig, servletContext);
 
         logger.info("Initialising JPA/hibernate");
         EntityManagerHandler.initFactory(AppConstants.DB_SETTINGS);
@@ -62,20 +67,52 @@ public class InitJerseyRestApp extends ResourceConfig {
     }
 
     /**
-     * Setting up swagger, see https://github.com/swagger-api/swagger-core/wiki/Swagger-Core-Jersey-2.X-Project-Setup-1.5
+     * Generate and store REST API documentation in Open API 3.0
+     * <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md">specification</a> format.
+     *
+     * @param servletConfig object used by a servlet container to pass information to a servlet during initialization.
+     * @since 3.0
      */
-    private static void createSwaggerBeanConfig(ServletContext servletContext){
-        BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setVersion(AppConstants.PROJECT_VERSION);
-        beanConfig.setSchemes(new String[]{"http"});
-        String basePath = servletContext.getContextPath() + AppConstants.RESOURCES_PREFIX_FULL;
-        logger.info("Setting swagger base path to {}", basePath);
-        beanConfig.setBasePath(basePath);
-        beanConfig.setResourcePackage(RESOURCE_PACKAGE);
-        beanConfig.setDescription( "List of services currently provided" );
-        beanConfig.setTitle( "EPPIC REST API" );
-        beanConfig.setScan(true);
-    }
+    private static void generateDocumentation(@Context ServletConfig servletConfig, ServletContext servletContext) {
 
+        // scan through REST services annotations to build OpenAPI context
+        SwaggerConfiguration config = new SwaggerConfiguration()
+                .prettyPrint(true)
+                .resourcePackages(Stream.of(RESOURCE_PACKAGE).collect(toSet()));
+
+        OpenApiContext ctx;
+        try {
+            ctx = new JaxrsOpenApiContextBuilder<>()
+                    .servletConfig(servletConfig)
+                    .openApiConfiguration(config)
+                    .buildContext(true);
+        } catch (OpenApiConfigurationException e) {
+            logger.error("Failed to build Open API Context:", e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        OpenAPI oas = ctx.read();
+
+        // add more documentation to header
+        Info info = new Info();
+        info.setTitle("EPPIC REST API");
+        info.setVersion(AppConstants.PROJECT_VERSION);
+        info.setDescription("Provides programmatic access to assemblies/interfaces information " +
+                "stored in the EPPIC database.");
+        Contact contact = new Contact();
+        contact.setName("RCSB PDB");
+        contact.setEmail("eppic@systemsx.ch");
+        contact.setUrl("www.eppic-web.org");
+        info.setContact(contact);
+
+        oas.setInfo(info);
+
+        // configure base path
+        String basePath = servletContext.getContextPath() + AppConstants.RESOURCES_PREFIX_FULL;
+        Server server = new Server();
+        server.setUrl(basePath);
+        oas.setServers(singletonList(server));
+
+    }
 }
 
