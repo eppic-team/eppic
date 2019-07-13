@@ -22,7 +22,7 @@
 
         <jaxrs.version>2.1</jaxrs.version>
         <jersey2.version>2.27</jersey2.version>
-        <swagger.version>2.0.6</swagger.version>
+        <swagger.version>2.0.8</swagger.version>
     </properties>
 
     <url>http://maven.apache.org</url>
@@ -266,6 +266,28 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-maven-plugin</artifactId>
+                <version>${swagger.version}</version>
+                <configuration>
+                    <outputFileName>openapi</outputFileName>
+                    <outputPath>${project.build.directory}/${project.name}/</outputPath>
+                    <outputFormat>JSONANDYAML</outputFormat>
+                    <resourcePackages>
+                        <package>eppic.rest.endpoints</package>
+                    </resourcePackages>
+                    <prettyPrint>true</prettyPrint>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>resolve</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
         </plugins>
     </build>
