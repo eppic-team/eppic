@@ -3,6 +3,7 @@ package eppic.rest.commons;
 
 import eppic.db.EntityManagerHandler;
 import eppic.rest.filter.CORSResponseFilter;
+import io.swagger.v3.core.util.Json;
 import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;
 import io.swagger.v3.oas.integration.OpenApiConfigurationException;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
@@ -21,6 +22,9 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
@@ -112,6 +116,18 @@ public class InitJerseyRestApp extends ResourceConfig {
         Server server = new Server();
         server.setUrl(basePath);
         oas.setServers(singletonList(server));
+
+        // save documentation as file
+        String api = Json.pretty(oas);
+        String path = servletConfig.getServletContext().getRealPath(AppConstants.REST_API_DOCS_DIR);
+
+        try {
+            Files.write(Paths.get(path, AppConstants.REST_API_DOCS_FILE), api.getBytes());
+
+        } catch (IOException e) {
+            logger.error("Failed to write API documentation as file in ", path);
+            throw new RuntimeException(e);
+        }
 
     }
 }
