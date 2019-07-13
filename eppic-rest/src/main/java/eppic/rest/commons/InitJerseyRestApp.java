@@ -6,7 +6,6 @@ import eppic.rest.filter.CORSResponseFilter;
 import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;
 import io.swagger.v3.oas.integration.OpenApiConfigurationException;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
-import io.swagger.v3.oas.integration.api.OpenApiContext;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -21,10 +20,9 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toSet;
 
 @ApplicationPath("/")
 public class InitJerseyRestApp extends ResourceConfig {
@@ -58,7 +56,7 @@ public class InitJerseyRestApp extends ResourceConfig {
 
         //Configure and Initialize Swagger
         logger.info("Initialising swagger/openapi config");
-        generateDocumentation(servletConfig, servletContext);
+        initOpenApiDocs(servletConfig, servletContext);
         logger.info("Done initialising swagger/openapi config");
 
         logger.info("Initialising JPA/hibernate");
@@ -74,27 +72,10 @@ public class InitJerseyRestApp extends ResourceConfig {
      * @param servletConfig object used by a servlet container to pass information to a servlet during initialization.
      * @param servletContext the servlet context
      */
-    private static void generateDocumentation(@Context ServletConfig servletConfig, ServletContext servletContext) {
+    private static void initOpenApiDocs(@Context ServletConfig servletConfig, ServletContext servletContext) {
 
-        // scan through REST services annotations to build OpenAPI context
-        SwaggerConfiguration config = new SwaggerConfiguration()
-                .prettyPrint(true)
-                .resourcePackages(Stream.of(RESOURCE_PACKAGE).collect(toSet()));
+        OpenAPI oas = new OpenAPI();
 
-        OpenApiContext ctx;
-        try {
-            ctx = new JaxrsOpenApiContextBuilder<>()
-                    .servletConfig(servletConfig)
-                    .openApiConfiguration(config)
-                    .buildContext(true);
-        } catch (OpenApiConfigurationException e) {
-            logger.error("Failed to build Open API Context:", e.getMessage());
-            throw new RuntimeException(e.getMessage(), e);
-        }
-
-        OpenAPI oas = ctx.read();
-
-        // add more documentation to header
         Info info = new Info();
         info.setTitle("EPPIC REST API");
         info.setVersion(AppConstants.PROJECT_VERSION);
@@ -112,7 +93,23 @@ public class InitJerseyRestApp extends ResourceConfig {
         String basePath = servletContext.getContextPath() + AppConstants.RESOURCES_PREFIX_FULL;
         Server server = new Server();
         server.setUrl(basePath);
-        oas.setServers(singletonList(server));
+        oas.setServers(Collections.singletonList(server));
+
+        // scan through REST services annotations to build OpenAPI context
+        SwaggerConfiguration config = new SwaggerConfiguration()
+                .openAPI(oas)
+                .prettyPrint(true)
+                .resourcePackages(Stream.of(RESOURCE_PACKAGE).collect(Collectors.toSet()));
+
+        try {
+            new JaxrsOpenApiContextBuilder<>()
+                    .servletConfig(servletConfig)
+                    .openApiConfiguration(config)
+                    .buildContext(true);
+        } catch (OpenApiConfigurationException e) {
+            logger.error("Failed to build Open API Context:", e.getMessage());
+            throw new RuntimeException(e.getMessage(), e);
+        }
 
     }
 }
