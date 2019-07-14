@@ -274,8 +274,10 @@
                     <outputFileName>openapi</outputFileName>
                     <outputPath>${project.build.directory}/${project.name}/</outputPath>
                     <outputFormat>JSONANDYAML</outputFormat>
+                    <!-- The prettyPrint setting in openapi-config.json does not work -->
+                    <prettyPrint>true</prettyPrint>
 
-                    <configurationFilePath>swagger-config.json</configurationFilePath>
+                    <configurationFilePath>${project.basedir}/src/main/resources/openapi-config.json</configurationFilePath>
 
                 </configuration>
                 <executions>
