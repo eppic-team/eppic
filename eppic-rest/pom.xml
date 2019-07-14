@@ -274,10 +274,9 @@
                     <outputFileName>openapi</outputFileName>
                     <outputPath>${project.build.directory}/${project.name}/</outputPath>
                     <outputFormat>JSONANDYAML</outputFormat>
-                    <resourcePackages>
-                        <package>eppic.rest.endpoints</package>
-                    </resourcePackages>
-                    <prettyPrint>true</prettyPrint>
+
+                    <configurationFilePath>swagger-config.json</configurationFilePath>
+
                 </configuration>
                 <executions>
                     <execution>

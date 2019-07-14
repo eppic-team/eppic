@@ -102,7 +102,7 @@ public class JobResource {
     @Path("/sequences/{jobId}")
     @Produces({MediaType.APPLICATION_JSON})
     @Tag(name = "Sequences service",
-            description = "provides sequence information related to a PDB molecular entity.")
+            description = "provides sequence information (alignment to reference UniProt and sequence homologs) for all molecular entities of a structure.")
     @Operation(
             summary = "Get sequence information by job id (either PDB id or alphanumerical user job id).")
     public Response getSequences(
