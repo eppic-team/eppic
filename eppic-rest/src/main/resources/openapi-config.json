@@ -19,7 +19,7 @@
     },
 
     "servers": [{
-      "url": "/api/v3/"
+      "url": "/rest/api/v3/"
     }]
   }
 }
