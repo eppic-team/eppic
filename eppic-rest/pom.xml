@@ -106,18 +106,8 @@
             <version>${jersey2.version}</version>
         </dependency>
 
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-jaxrs2</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-jaxrs2-servlet-initializer</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
+        <!-- Swagger core, needed for swagger annotations. Building the openapi json happens with
+             maven plugin -->
 
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
