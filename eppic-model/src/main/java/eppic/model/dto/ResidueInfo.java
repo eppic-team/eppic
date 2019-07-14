@@ -1,7 +1,11 @@
 package eppic.model.dto;
 
 import java.io.Serializable;
+
+import eppic.model.adapters.DoubleNaNXmlAdapter;
 import eppic.model.db.ResidueInfoDB;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * DTO class for ResidueInfo
@@ -23,7 +27,8 @@ public class ResidueInfo implements Serializable {
 	private int uniProtNumber;
 	
 	private boolean mismatchToRef;
-	
+
+	@XmlJavaTypeAdapter(type=Double.class, value= DoubleNaNXmlAdapter.class)
 	private double entropyScore;
 	
 	
