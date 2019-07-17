@@ -1,8 +1,6 @@
 package eppic.rest.endpoints;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import eppic.db.dao.JobDAO;
-import eppic.db.dao.jpa.JobDAOJpa;
 import eppic.rest.service.UtilService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -26,12 +24,12 @@ public class UtilResource {
     @Tag(name = "Alive service")
     @Produces(MediaType.TEXT_PLAIN)
     public String alive() {
-        JobDAO jobDAO = new JobDAOJpa();
 
-        if (jobDAO.isJobsEmpty()) {
-            return "false";
-        } else {
+
+        if (UtilService.isDbHealthy() && UtilService.isTempDiskHealthy()) {
             return "true";
+        } else {
+            return "false";
         }
     }
 
