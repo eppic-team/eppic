@@ -16,6 +16,8 @@ public class UtilService {
 
     private static final Logger logger = LoggerFactory.getLogger(UtilService.class);
 
+    private static final long DISK_SPACE_LEFT_FOR_WARNING = 10000 * 1000; // 10 MB
+
     public static ObjectNode getInfo() {
         InetAddress ip;
         String hostname = "unknown";
@@ -50,7 +52,7 @@ public class UtilService {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 
         long space = tmpDir.getUsableSpace();
-        if (space < 1000000) { // below 1 MB
+        if (space < DISK_SPACE_LEFT_FOR_WARNING) {
             logger.error("Java is reporting very low disk usable space in {} dir: only {} bytes available", tmpDir, space);
             return false;
         } else {
