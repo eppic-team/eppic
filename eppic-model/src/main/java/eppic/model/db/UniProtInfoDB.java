@@ -1,14 +1,28 @@
 package eppic.model.db;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import java.io.Serializable;
 
+@Entity
+@Table(name="UniProtInfo",
+        indexes = @Index(name = "uniId_idx", columnList = "uniId", unique = true))
 public class UniProtInfoDB implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy= GenerationType.TABLE) // In OGM (mongodb) IDENTITY does not work, but TABLE seems to work ok.
     private int uid;
 
     private String uniId;
+
+    @Column(length = 40000)
     private String sequence;
 
     private String firstTaxon;

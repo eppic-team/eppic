@@ -13,7 +13,7 @@ import javax.persistence.Table;
 public class DataDownloadTracking{
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy=GenerationType.TABLE)
 	private long uid;
 	
 	private String ip;
