@@ -4,14 +4,10 @@ import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.model.db.HitHspDB;
-import eppic.model.db.HitHspDB_;
 import eppic.model.dto.HitHsp;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,13 +71,8 @@ public class HitHspDAOJpa implements HitHspDAO {
         try {
             entityManager = EntityManagerHandler.getEntityManager();
 
-            CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<HitHspDB> criteriaQuery = criteriaBuilder.createQuery(HitHspDB.class);
-
-            Root<HitHspDB> root = criteriaQuery.from(HitHspDB.class);
-            criteriaQuery.where(criteriaBuilder.equal(root.get(HitHspDB_.queryId), queryId));
-
-            TypedQuery<HitHspDB> query = entityManager.createQuery(criteriaQuery);
+            TypedQuery<HitHspDB> query = entityManager.createQuery( "SELECT o FROM HitHspDB o WHERE o.queryId = :queryId", HitHspDB.class);
+            query.setParameter("queryId", queryId);
 
             for (HitHspDB hitHspDB : query.getResultList()) {
                 hitHsps.add(HitHsp.create(hitHspDB));
@@ -107,19 +98,21 @@ public class HitHspDAOJpa implements HitHspDAO {
         try {
             entityManager = EntityManagerHandler.getEntityManager();
 
-            CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<HitHspDB> criteriaQuery = criteriaBuilder.createQuery(HitHspDB.class);
+            TypedQuery<HitHspDB> query = entityManager.createQuery( "SELECT o FROM HitHspDB o " +
+                    "WHERE o.queryId = :queryId " +
+                    "AND o.subjectId = :subjectId " +
+                    "AND o.queryStart = :queryStart " +
+                    "AND o.queryEnd = :queryEnd " +
+                    "AND o.subjectStart = :subjectStart " +
+                    "AND o.subjectEnd = :subjectEnd"
+                    , HitHspDB.class);
 
-            Root<HitHspDB> root = criteriaQuery.from(HitHspDB.class);
-            criteriaQuery.where(
-                    criteriaBuilder.equal(root.get(HitHspDB_.queryId), queryId),
-                    criteriaBuilder.equal(root.get(HitHspDB_.subjectId), subjectId),
-                    criteriaBuilder.equal(root.get(HitHspDB_.queryStart), queryStart),
-                    criteriaBuilder.equal(root.get(HitHspDB_.queryEnd), queryEnd),
-                    criteriaBuilder.equal(root.get(HitHspDB_.subjectStart), subjectStart),
-                    criteriaBuilder.equal(root.get(HitHspDB_.subjectEnd), subjectEnd));
-
-            TypedQuery<HitHspDB> query = entityManager.createQuery(criteriaQuery);
+            query.setParameter("queryId", queryId);
+            query.setParameter("subjectId", subjectId);
+            query.setParameter("queryStart", queryStart);
+            query.setParameter("queryEnd", queryEnd);
+            query.setParameter("subjectStart", subjectStart);
+            query.setParameter("subjectEnd", subjectEnd);
 
             for (HitHspDB hitHspDB : query.getResultList()) {
                 if (hitHsp != null) {
