@@ -5,7 +5,7 @@
 	version="2.1">
 	
 	<persistence-unit name="eppicjpa" transaction-type="RESOURCE_LOCAL">
-    	<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    	<provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
 		
 		<!-- we used to have some more parameters before upgrading jpa  
 		<description>Persistence unit for the EPPIC WUI application</description>
@@ -17,10 +17,11 @@
 		<validation-mode>NONE</validation-mode>
 		-->
 		<properties>
-			<property name="hibernate.show_sql" value="false" />
-			<property name="hibernate.format_sql" value="true" />
-			<!-- Note that this can be overridden in eppic-dbtools via the eppic-db.properties file - JD 2018-04-17 -->
-			<property name="hibernate.hbm2ddl.auto" value="validate" />
+
+			<property name="hibernate.ogm.datastore.create_database" value="false" />
+
+			<property name="hibernate.ogm.datastore.provider" value="mongodb"/>
+
 		</properties>
 	</persistence-unit>
 	

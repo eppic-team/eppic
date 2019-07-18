@@ -29,19 +29,10 @@ public class DbConfigGenerator {
 		Properties properties = new Properties();
 		properties.load(new FileInputStream(configurationFile));
 
-		String port = "3306"; // default mysql port
 		String host = null;
 
 		String user = null;
 		String pwd = null;
-
-		// default hbm2ddl mode is validate so that in normal production operations there's no risk of altering the schema
-		String hbm2ddlMode = "validate";
-		String showSql = "false";
-
-		// port is the only optional property
-		if (properties.getProperty("port")!=null && !properties.getProperty("port").isEmpty()) 
-			port = properties.getProperty("port").trim();
 
 		if (properties.getProperty("user")!=null && !properties.getProperty("user").isEmpty()) {
 			user = properties.getProperty("user").trim();
@@ -58,13 +49,7 @@ public class DbConfigGenerator {
 		} else {
 			throw new IOException("Missing property 'host' in config file "+configurationFile);
 		}
-		// one more (optional) property to be able to control externally the behaviour of hibernate on startup (create tables, update, validate etc)
-		if (properties.getProperty("hibernate.hbm2ddl.auto")!=null && !properties.getProperty("hibernate.hbm2ddl.auto").isEmpty()) {
-			hbm2ddlMode = properties.getProperty("hibernate.hbm2ddl.auto").trim();
-		}
-		if (properties.getProperty("hibernate.show_sql")!=null && !properties.getProperty("hibernate.show_sql").isEmpty()) {
-			showSql = properties.getProperty("hibernate.show_sql").trim();
-		}
+
 		
 		if (dbName == null) {
 			// in this case the dbname must be present in file
@@ -79,22 +64,20 @@ public class DbConfigGenerator {
 
 		
 		Map<String, String> map = new HashMap<>();
-		
-		map.put("javax.persistence.jdbc.driver", "com.mysql.jdbc.Driver");
-		//map.put("javax.persistence.nonJtaDataSource", "");
 
-		String url = "jdbc:mysql://"+host+":"+port+"/"+dbName;
-		map.put("javax.persistence.jdbc.url", url);
-		map.put("javax.persistence.jdbc.user", user); 
-		map.put("javax.persistence.jdbc.password", pwd);
+		// MONGODB OGM parameters, see http://www.kode12.com/kode12/hibernate-ogm/hibernate-ogm-basics-mongodb/
+		//			<property name="hibernate.ogm.datastore.database" value="kode12" />
+		//			<property name="hibernate.ogm.datastore.host" value="localhost" />
+		//			<property name="hibernate.ogm.datastore.create_database" value="true" />
+		//			<property name="hibernate.ogm.datastore.username" value="root" />
+		//			<property name="hibernate.ogm.datastore.password" value="root" />
 
-		map.put("hibernate.hbm2ddl.auto", hbm2ddlMode);
-		map.put("hibernate.show_sql", showSql);
 
-		map.put("hibernate.c3p0.min_size", "5");
-		map.put("hibernate.c3p0.max_size", "20");
-		map.put("hibernate.c3p0.timeout", "1800");
-		map.put("hibernate.c3p0.max_statements", "50");		
+		map.put("hibernate.ogm.datastore.database", dbName);
+		map.put("hibernate.ogm.datastore.host", host);
+		//map.put("hibernate.ogm.datastore.username", user);
+		//map.put("hibernate.ogm.datastore.password", pwd);
+
 
 		return map;
 
