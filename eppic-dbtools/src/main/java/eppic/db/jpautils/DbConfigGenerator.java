@@ -1,5 +1,8 @@
 package eppic.db.jpautils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,6 +12,8 @@ import java.util.Properties;
 
 
 public class DbConfigGenerator {
+
+	private static final Logger logger = LoggerFactory.getLogger(DbConfigGenerator.class);
 
 
 	/**
@@ -34,16 +39,14 @@ public class DbConfigGenerator {
 		String user = null;
 		String pwd = null;
 
+		// user and pwd are optional properties
 		if (properties.getProperty("user")!=null && !properties.getProperty("user").isEmpty()) {
 			user = properties.getProperty("user").trim();
-		} else {
-			throw new IOException("Missing property 'user' in config file "+configurationFile);
 		}
 		if (properties.getProperty("password")!=null && !properties.getProperty("password").isEmpty()) {
 			pwd = properties.getProperty("password").trim();
-		} else {
-			throw new IOException("Missing property 'password' in config file "+configurationFile);
 		}
+
 		if (properties.getProperty("host")!=null && !properties.getProperty("host").isEmpty()) {
 			host = properties.getProperty("host").trim();
 		} else {
@@ -60,7 +63,7 @@ public class DbConfigGenerator {
 			}
 		}
 
-		//System.out.println("Using database "+dbName+" in host "+host);
+		logger.debug("Properties read from file: user: '{}', pwd: *****, database: '{}', host: '{}'", user, dbName, host);
 
 		
 		Map<String, String> map = new HashMap<>();
@@ -75,8 +78,11 @@ public class DbConfigGenerator {
 
 		map.put("hibernate.ogm.datastore.database", dbName);
 		map.put("hibernate.ogm.datastore.host", host);
-		//map.put("hibernate.ogm.datastore.username", user);
-		//map.put("hibernate.ogm.datastore.password", pwd);
+
+		if (user!=null)
+			map.put("hibernate.ogm.datastore.username", user);
+		if (pwd!=null)
+			map.put("hibernate.ogm.datastore.password", pwd);
 
 
 		return map;
