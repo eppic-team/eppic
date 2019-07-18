@@ -27,9 +27,10 @@ public class TestJpa {
         if (dbSettings == null) {
             loadProperties();
         }
-        EntityManager em = EntityManagerHandler.getEntityManager();
         UniProtInfoDAO dao = new UniProtInfoDAOJpa();
         dao.insertUniProtInfo("P1234567", "AATGRYYTEWSDFGHKLLAADCVVIIE", "Homo", "Sapiens");
+        dao.insertUniProtInfo("P1234568", "AATGRYYTEWSDFGHKLLAADCVVIIEACD", "Mus", "Musculus");
+        dao.insertUniProtInfo("P1234569", "AATGRYYTEWSDFGHKLLAADCVVIIEACDEF", "Sus", "Scrofa");
 
     }
 

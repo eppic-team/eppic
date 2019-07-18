@@ -1017,7 +1017,8 @@
 		</table>
 		<attributes>
 			<id name="uid">
-				<generated-value strategy="IDENTITY" />
+				<!-- In OGM (mongodb) IDENTITY does not work, but TABLE seems to work ok. -->
+				<generated-value strategy="TABLE" />
 			</id>
 			<basic name="uniId">
 			</basic>
