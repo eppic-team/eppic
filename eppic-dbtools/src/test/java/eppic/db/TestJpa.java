@@ -4,8 +4,10 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.db.dao.jpa.UniProtInfoDAOJpa;
 import eppic.db.jpautils.DbConfigGenerator;
+import eppic.model.dto.UniProtInfo;
 import org.junit.Ignore;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import javax.persistence.EntityManager;
 import java.io.File;
@@ -36,11 +38,15 @@ public class TestJpa {
 
     @Ignore
     @Test
-    public void testReading() throws IOException{
+    public void testReading() throws IOException, DaoException {
         if (dbSettings == null) {
             loadProperties();
         }
         EntityManager em = EntityManagerHandler.getEntityManager();
+        UniProtInfoDAO dao = new UniProtInfoDAOJpa();
+        UniProtInfo uniProtInfo = dao.getUniProtInfo("P1234567");
 
+        assertEquals("P1234567", uniProtInfo.getUniId());
+        assertEquals("AATGRYYTEWSDFGHKLLAADCVVIIE", uniProtInfo.getSequence());
     }
 }
