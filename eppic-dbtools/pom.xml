@@ -21,12 +21,6 @@
 
 		<dependency>
 			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-			<version>${hibernate.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<version>${hibernate.validator.version}</version>
 		</dependency>
@@ -35,8 +29,15 @@
 			<groupId>org.hibernate.ogm</groupId>
 			<artifactId>hibernate-ogm-mongodb</artifactId>
 			<version>${hibernate.ogm.version}</version>
-
 		</dependency>
+
+		<!-- Due to some problem when packaging the uber (shaded) jar, it is important to have this as the last hibernate dep - JD 2019-07-18 -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate.version}</version>
+		</dependency>
+
 
 		<!-- logging -->
 
