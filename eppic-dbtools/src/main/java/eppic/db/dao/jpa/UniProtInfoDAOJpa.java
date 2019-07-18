@@ -4,14 +4,10 @@ import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.model.db.UniProtInfoDB;
-import eppic.model.db.UniProtInfoDB_;
 import eppic.model.dto.UniProtInfo;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 public class UniProtInfoDAOJpa implements UniProtInfoDAO {
 
@@ -54,13 +50,8 @@ public class UniProtInfoDAOJpa implements UniProtInfoDAO {
         try {
             entityManager = EntityManagerHandler.getEntityManager();
 
-            CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<UniProtInfoDB> criteriaQuery = criteriaBuilder.createQuery(UniProtInfoDB.class);
-
-            Root<UniProtInfoDB> root = criteriaQuery.from(UniProtInfoDB.class);
-            criteriaQuery.where(criteriaBuilder.equal(root.get(UniProtInfoDB_.uniId), uniId));
-
-            TypedQuery<UniProtInfoDB> query = entityManager.createQuery(criteriaQuery);
+            TypedQuery<UniProtInfoDB> query = entityManager.createQuery( "SELECT o FROM UniProtInfoDB o WHERE o.uniId = :uniId", UniProtInfoDB.class);
+            query.setParameter("uniId", uniId);
 
             for (UniProtInfoDB uniProtInfoDB : query.getResultList()) {
                 if (uniProtInfo!=null) {
