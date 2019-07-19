@@ -3,13 +3,13 @@ package eppic.db.dao.jpa;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtMetadataDAO;
+
 import eppic.model.db.UniProtMetadataDB;
 import eppic.model.dto.UniProtMetadata;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
+
 
 
 public class UniProtMetadataDAOJpa implements UniProtMetadataDAO {
@@ -48,11 +48,7 @@ public class UniProtMetadataDAOJpa implements UniProtMetadataDAO {
         try {
             entityManager = EntityManagerHandler.getEntityManager();
 
-            CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<UniProtMetadataDB> criteriaQuery = criteriaBuilder.createQuery(UniProtMetadataDB.class);
-            criteriaQuery.from(UniProtMetadataDB.class);
-
-            TypedQuery<UniProtMetadataDB> query = entityManager.createQuery(criteriaQuery);
+            TypedQuery<UniProtMetadataDB> query = entityManager.createQuery( "SELECT o FROM UniProtMetadataDB o", UniProtMetadataDB.class);
 
             UniProtMetadataDB uniProtMetadataDB = query.getSingleResult();
 
