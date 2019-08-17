@@ -52,6 +52,9 @@ public class AppConstants {
      */
     public static final Map<String,String> DB_SETTINGS = readDbProperties();
 
+    public static final String REST_API_DOCS_DIR = "api-docs";
+    public static final String REST_API_DOCS_FILE = "eppic-restful-api-docs.json";
+
 
     public static Properties getBuildProperties() {
         InputStream propstream = Thread.currentThread().getContextClassLoader().getResourceAsStream(ABOUT_PROPERTIES_FILE_NAME);

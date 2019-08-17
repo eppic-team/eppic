@@ -49,6 +49,7 @@
 
     <!-- the variable ${project.artifact.selectedVersion.majorVersion} gets expanded by maven at build time
      It gives the major version based on the version defined in pom file - JD 2017-11-03 -->
+    <!-- Notice that this path is also set in openapi-config.json -->
     <servlet-mapping>
         <servlet-name>jersey-rest-service</servlet-name>
         <url-pattern>/api/v${project.artifact.selectedVersion.majorVersion}/*</url-pattern>

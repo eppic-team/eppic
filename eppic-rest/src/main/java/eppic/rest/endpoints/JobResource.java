@@ -6,7 +6,11 @@ import eppic.model.dto.views.AssemblyDiagram;
 import eppic.model.dto.views.LatticeGraph;
 import eppic.rest.commons.Utils;
 import eppic.rest.service.JobService;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -17,12 +21,20 @@ import java.util.List;
 import java.util.SortedSet;
 
 @Path("/job")
-@Api(tags = {"job"})
 public class JobResource {
 
     @GET
     @Path("/pdb/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "PDB info service",
+            description = "provides general information about PDB structures.")
+    @Operation(
+            summary = "Get PDB structure description by job id (either PDB id or alphanumerical user job id).",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                    schema = @Schema(implementation = PdbInfo.class))),
+                    @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getPdb(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -40,7 +52,11 @@ public class JobResource {
 
     @GET
     @Path("/interfaceClusters/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Interface cluster service",
+            description = "provides information about an interface cluster (interface type or unique binding mode).")
+    @Operation(
+            summary = "Get interface cluster information by job id (either PDB id or alphanumerical user job id).")
     public Response getInterfaceClusters(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -60,7 +76,11 @@ public class JobResource {
 
     @GET
     @Path("/interfaces/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Interface service",
+            description = "provides information about an interface.")
+    @Operation(
+            summary = "Get interface information by job id (either PDB id or alphanumerical user job id).")
     public Response getInterfaces(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -80,7 +100,11 @@ public class JobResource {
 
     @GET
     @Path("/sequences/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Sequences service",
+            description = "provides sequence information (alignment to reference UniProt and sequence homologs) for all molecular entities of a structure.")
+    @Operation(
+            summary = "Get sequence information by job id (either PDB id or alphanumerical user job id).")
     public Response getSequences(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -100,7 +124,11 @@ public class JobResource {
 
     @GET
     @Path("/interfaceResidues/{jobId}/{interfId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Interface residues service",
+            description = "provides information about interface residues.")
+    @Operation(
+            summary = "Get interface residues information by job id (either PDB id or alphanumerical user job id) and EPPIC interface id.")
     public Response getInterfaceResidues(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -122,7 +150,11 @@ public class JobResource {
 
     @GET
     @Path("/assemblies/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Assemblies service",
+            description = "provides information about all assemblies of a structure.")
+    @Operation(
+            summary = "Get assemblies information by job id (either PDB id or alphanumerical user job id).")
     public Response getAssemblies(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
@@ -142,7 +174,11 @@ public class JobResource {
 
     @GET
     @Path("/contacts/{jobId}/{interfId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Contacts service",
+            description = "provides information about contacts across an interface.")
+    @Operation(
+            summary = "Get interface contacts information by job id (either PDB id or alphanumerical user job id) and EPPIC interface id.")
     public Response getContacts(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -163,11 +199,20 @@ public class JobResource {
     }
 
     @GET
-    @Path("/assemblyByPdbId/{jobId}/{pdbAssemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Path("/assemblyByPdbId/{pdbId}/{pdbAssemblyId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Assembly by PDB id service",
+            description = "provides information about an assembly.")
+    @Operation(
+            summary = "Get EPPIC assembly information by PDB id and PDB assembly id.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                    schema = @Schema(implementation = Assembly.class))),
+                    @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getAssemblyByPdbId(
             @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
+            @PathParam("pdbId") String jobId,
             @PathParam("pdbAssemblyId") String pdbAssemblyId) throws DaoException {
 
         // TODO validate pdbAssemblyId is int
@@ -184,7 +229,16 @@ public class JobResource {
 
     @GET
     @Path("/assembly/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Assembly service",
+            description = "provides information about an assembly.")
+    @Operation(
+            summary = "Get assembly information by job id (either PDB id or alphanumerical user job id) and EPPIC assembly id.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                    schema = @Schema(implementation = Assembly.class))),
+                    @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getAssembly(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -204,7 +258,16 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraph/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Lattice graph by assembly id service",
+            description = "provides information about the lattice graph.")
+    @Operation(
+            summary = "Get lattice graph by job id (either PDB id or alphanumerical user job id) and EPPIC assembly id.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                    schema = @Schema(implementation = LatticeGraph.class))),
+                    @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getLatticeGraph(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -224,7 +287,16 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraphByInterfaceIds/{jobId}/{interfaceIds}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Lattice graph by interface ids service",
+            description = "provides information about the lattice graph.")
+    @Operation(
+            summary = "Get lattice graph by job id (either PDB id or alphanumerical user job id) and EPPIC interface ids.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                    schema = @Schema(implementation = LatticeGraph.class))),
+                    @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getLatticeGraphByInterfaceIdList(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -244,7 +316,16 @@ public class JobResource {
 
     @GET
     @Path("/latticeGraphByInterfaceClusterIds/{jobId}/{interfaceClusterIds}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Lattice graph by interface cluster ids service",
+            description = "provides information about the lattice graph.")
+    @Operation(
+            summary = "Get lattice graph by job id (either PDB id or alphanumerical user job id) and EPPIC interface cluster ids.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                    schema = @Schema(implementation = LatticeGraph.class))),
+                    @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getLatticeGraphByInterfaceClusterIdList(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,
@@ -264,7 +345,16 @@ public class JobResource {
 
     @GET
     @Path("/assemblyDiagram/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=utf-8"})
+    @Produces({MediaType.APPLICATION_JSON})
+    @Tag(name = "Assembly diagram by assembly id service",
+            description = "provides information about the assembly diagram (2D graph).")
+    @Operation(
+            summary = "Get assembly diagram information by job id (either PDB id or alphanumerical user job id) and EPPIC assembly id.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK",
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                                    schema = @Schema(implementation = AssemblyDiagram.class))),
+                    @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getAssemblyDiagram(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId,

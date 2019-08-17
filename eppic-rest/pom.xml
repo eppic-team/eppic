@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.eppic-web</groupId>
         <artifactId>eppic</artifactId>
-        <version>3.2.1-SNAPSHOT</version>
+        <version>3.2.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>eppic-rest</artifactId>
@@ -22,6 +22,7 @@
 
         <jaxrs.version>2.1</jaxrs.version>
         <jersey2.version>2.27</jersey2.version>
+        <swagger.version>2.0.8</swagger.version>
     </properties>
 
     <url>http://maven.apache.org</url>
@@ -105,12 +106,15 @@
             <version>${jersey2.version}</version>
         </dependency>
 
-        <!-- swagger interface -->
+        <!-- Swagger core, needed for swagger annotations. Building the openapi json happens with
+             maven plugin -->
+
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-jersey2-jaxrs</artifactId>
-            <version>1.5.20</version>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-core</artifactId>
+            <version>${swagger.version}</version>
         </dependency>
+        <!-- End Swagger -->
 
         <dependency>
             <groupId>junit</groupId>
@@ -252,6 +256,29 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-maven-plugin</artifactId>
+                <version>${swagger.version}</version>
+                <configuration>
+                    <outputFileName>openapi</outputFileName>
+                    <outputPath>${project.build.directory}/${project.name}/</outputPath>
+                    <outputFormat>JSONANDYAML</outputFormat>
+                    <!-- The prettyPrint setting in openapi-config.json does not work -->
+                    <prettyPrint>true</prettyPrint>
+
+                    <configurationFilePath>${project.basedir}/src/main/resources/openapi-config.json</configurationFilePath>
+
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>resolve</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
         </plugins>
     </build>
