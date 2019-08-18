@@ -231,10 +231,16 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
 		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 
-		String queuingSystem = properties.getProperty("queuing_system");
-		if(queuingSystem == null)
+		int numWorkersJobManager;
+		String numWorkers = properties.getProperty("num_workers");
+		if(numWorkers == null)
 		{
-			throw new ServletException("Queuing system not specified");
+			throw new ServletException("Number of workers for job manager not specified");
+		}
+		try {
+			numWorkersJobManager = Integer.parseInt(numWorkers);
+		} catch (NumberFormatException e) {
+			throw new ServletException("Property num_workers did not specify an integer correctly");
 		}
 
 		int nrOfThreadForSubmission = Integer.parseInt(properties.getProperty("nr_of_threads_for_submission","1"));
@@ -261,7 +267,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE) ||
 			properties.get(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
 		
-			initializeJobManager(queuingSystem);
+			initializeJobManager(numWorkersJobManager);
 		} else {
 			logger.warn("{} is set to true in config file. There will be no queuing system available!",ApplicationSettingsGenerator.DEVELOPMENT_MODE);
 		}
@@ -368,20 +374,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	}
 
-	private void initializeJobManager(String queuingSystem) throws ServletException {
-		logger.info("Proceeding to initialise job manager for queuing system {}", queuingSystem);
-		String queueingSystemConfigFile = CONFIG_FILES_LOCATION+"/" + queuingSystem + QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX;		
-		
-		Properties queuingSystemProperties = new Properties();
+	private void initializeJobManager(int numWorkersJobManager) throws ServletException {
+		logger.info("Proceeding to initialise job manager ");
+
 		try {
-			InputStream queuingSystemPropertiesStream = new FileInputStream(new File(queueingSystemConfigFile));
-			queuingSystemProperties.load(queuingSystemPropertiesStream);
-			logger.info("Read queuing system properties from file {}", queueingSystemConfigFile);
-		} catch (IOException e) {
-			throw new ServletException("Properties file '"+queueingSystemConfigFile+"' for " + queuingSystem + " can not be read. Error: "+e.getMessage());
-		}
-		try {
-			jobManager = JobManagerFactory.getJobManager(queuingSystem, queuingSystemProperties, generalDestinationDirectoryName);
+			jobManager = JobManagerFactory.getJobManager(generalDestinationDirectoryName, numWorkersJobManager);
 		}catch(JobManagerException e) {
 			throw new ServletException(e);
 		}

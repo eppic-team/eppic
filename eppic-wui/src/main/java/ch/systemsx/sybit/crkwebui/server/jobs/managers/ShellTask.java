@@ -1,7 +1,5 @@
 package ch.systemsx.sybit.crkwebui.server.jobs.managers;
 
-import eppic.commons.util.StreamGobbler;
-
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -9,15 +7,20 @@ import java.util.concurrent.Callable;
 public class ShellTask implements Callable<Integer> {
 
     private List<String> cmd;
+    private File outDir;
     private File stdOut;
     private File stdErr;
 
     private Process process;
 
-    public ShellTask(List<String> cmd, File stdOut, File stdErr) {
+    private boolean isRunning;
+
+    public ShellTask(List<String> cmd, File outDir, File stdOut, File stdErr) {
         this.cmd = cmd;
+        this.outDir = outDir;
         this.stdOut = stdOut;
         this.stdErr = stdErr;
+        isRunning = false;
     }
 
     @Override
@@ -26,20 +29,23 @@ public class ShellTask implements Callable<Integer> {
 
         builder.command(cmd);
 
-        // TODO change
-        //builder.directory(new File(System.getProperty("user.home")));
-        process = builder.start();
+        builder.directory(outDir);
 
-        StreamGobbler s1 = new StreamGobbler ("stdout", process.getInputStream ());
-        StreamGobbler s2 = new StreamGobbler ("stderr", process.getErrorStream ());
-        s1.start();
-        s2.start();
-        // TODO write stdout and stderr to provided files
+        process = builder.start();
+        isRunning = true;
+
+        builder.redirectOutput(stdOut);
+        builder.redirectError(stdErr);
 
         return process.waitFor();
     }
 
     public void stop() {
-        process.destroyForcibly(); //TODO or destroy?
+        process.destroy(); //TODO or destroyForcibly?
+        isRunning = false;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 }

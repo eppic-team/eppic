@@ -5,8 +5,8 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.List;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
@@ -30,7 +30,7 @@ import eppic.model.db.PdbInfoDB;
  */
 public class JobStatusUpdater implements Runnable
 {
-	//private static final Logger logger = LoggerFactory.getLogger(JobStatusUpdater.class);
+	private static final Logger logger = LoggerFactory.getLogger(JobStatusUpdater.class);
 	
 	/**
 	 * The polling interval in milliseconds
@@ -112,21 +112,17 @@ public class JobStatusUpdater implements Runnable
 					{
 						handleJobFinishedWithError(unfinishedJob);
 					}
-					catch (JobHandlerException e)
+					catch (JobHandlerException|DaoException e)
 					{
-						e.printStackTrace();
+						logger.error(e.getMessage(), e);
 					}
-					catch (DaoException e)
-					{
-						e.printStackTrace();
-					}
+
 				}
 				
 				Thread.sleep(POLLING_INTERVAL);
 			}
-			catch (Throwable t)
-			{
-				t.printStackTrace();
+			catch (Throwable t) {
+				logger.error(t.getMessage(), t);
 			}
 			
 			isUpdating = false;
@@ -178,7 +174,7 @@ public class JobStatusUpdater implements Runnable
 	{
 		File jobDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobStatusDetails.getJobId());
 		
-		File directoryContent[] = DirectoryContentReader.getFilesNamesWithPrefix(jobDirectory,
+		File[] directoryContent = DirectoryContentReader.getFilesNamesWithPrefix(jobDirectory,
 																					jobStatusDetails.getJobId() + ".e");
 		File errorLogFile = null;
 		if((directoryContent != null) && (directoryContent.length > 0))
@@ -198,7 +194,7 @@ public class JobStatusUpdater implements Runnable
 			catch(Throwable t)
 	        {
 				errorMsg = "Unknown error";
-	        	t.printStackTrace();
+	        	logger.error("Exception caught. Error: {}", t.getMessage());
 	        }
 		}
 
@@ -247,7 +243,7 @@ public class JobStatusUpdater implements Runnable
 
 	/**
 	 * Retrieves result of processing from specified file.
-	 * @param resultFileName file containing result of processing
+	 * @param resultFile file containing result of processing
 	 * @return pdb score item
 	 * @throws DeserializationException when can not retrieve result from specified file
 	 */

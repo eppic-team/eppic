@@ -5,6 +5,8 @@ import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import eppic.model.shared.StatusOfJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,27 +24,33 @@ import java.util.concurrent.Future;
 public class NativeJobManager implements JobManager
 {
 
+	private static final Logger logger = LoggerFactory.getLogger(NativeJobManager.class);
 	private int submissionId;
 	private ExecutorService executor;
 	private Map<String, Future<Integer>> jobsStatus;
+
 	/**
 	 * Map of submission ids to job ids
 	 */
-	private Map<String, String> jobs;
+	//private Map<String, String> jobs;
+
+	private Map<String, ShellTask> tasks;
 
 	private String jobsDirectory;
 
 	/**
 	 * Creates instance of drmaa job manager.
 	 * @param jobsDirectory directory where results of jobs are stored
+	 * @param numWorkers the number of worker slots
 	 * @throws JobManagerException when session can not be initialized
 	 */
-	public NativeJobManager(String jobsDirectory) throws JobManagerException
+	public NativeJobManager(String jobsDirectory, int numWorkers) throws JobManagerException
 	{
 
 		executor = Executors.newFixedThreadPool(numWorkers);
-		jobs = new HashMap<>();
+		//jobs = new HashMap<>();
 		jobsStatus = new HashMap<>();
+		tasks = new HashMap<>();
 
 		this.jobsDirectory = jobsDirectory;
 		this.submissionId = 0;
@@ -66,13 +74,13 @@ public class NativeJobManager implements JobManager
 			cmd.add(javaVMExec);
 			cmd.addAll(command);
 
-			ShellTask shellTask = new ShellTask(cmd, stdOut, stdErr);
+			ShellTask shellTask = new ShellTask(cmd, new File(jobDirectory), stdOut, stdErr);
 			Future<Integer> future = executor.submit(shellTask);
 
-			jobsStatus.put(jobId, future);
-
 			submissionId++;
-			jobs.put(String.valueOf(submissionId), jobId);
+			jobsStatus.put(String.valueOf(submissionId), future);
+			//jobs.put(String.valueOf(submissionId), jobId);
+			tasks.put(String.valueOf(submissionId), shellTask);
 
 	      	return String.valueOf(submissionId);
 		}
@@ -89,16 +97,23 @@ public class NativeJobManager implements JobManager
 
 		try
 		{
-			Future<Integer> future = jobsStatus.get(jobId);
+			Future<Integer> future = jobsStatus.get(submissionId);
 
 			if (future.isCancelled()) {
 				statusOfJob = StatusOfJob.STOPPED;
 			} else if (future.isDone()) {
-				if(checkIfJobWasFinishedSuccessfully(jobId)) {
-					statusOfJob = StatusOfJob.FINISHED;
+				int finishStatus = future.get();
+				if (finishStatus == 0) {
+					if(checkIfJobWasFinishedSuccessfully(jobId)) {
+						statusOfJob = StatusOfJob.FINISHED;
+					} else {
+						logger.warn("Job {} reported success but the finish file could not be found. Considering it in error state", jobId);
+						statusOfJob = StatusOfJob.ERROR;
+					}
 				} else {
 					statusOfJob = StatusOfJob.ERROR;
 				}
+
 			} else {
 				// TODO this can be running or waiting...
 				statusOfJob = StatusOfJob.RUNNING;
@@ -116,14 +131,13 @@ public class NativeJobManager implements JobManager
 	@Override
 	public void stopJob(String submissionId) throws JobHandlerException
 	{
+		ShellTask shellTask = tasks.get(submissionId);
+		if (shellTask == null) {
+			throw new JobHandlerException("Task with submissionId "+submissionId+" was not found. Something is wrong!");
+		}
 		try
 		{
-			if((submissionId != null) &&
-				(session.getJobProgramStatus(submissionId) != Session.FAILED) &&
-				(session.getJobProgramStatus(submissionId) != Session.DONE))
-			{
-				session.control(submissionId, Session.TERMINATE);
-			}
+			shellTask.stop();
 		}
 		catch (Throwable t)
 		{
