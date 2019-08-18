@@ -57,8 +57,7 @@ public class NativeJobManager implements JobManager
 	}
 
 	@Override
-	public String startJob(String javaVMExec,
-			               String jobId,
+	public String startJob(String jobId,
 						   List<String> command,
 						   String jobDirectory,
 						   int nrOfThreadsForSubmission) throws JobHandlerException
@@ -70,11 +69,7 @@ public class NativeJobManager implements JobManager
 			File stdErr = new File(jobDirectory, jobId + ".e");
 			File stdOut = new File(jobDirectory, jobId + ".o");
 
-			List<String> cmd = new ArrayList<>();
-			cmd.add(javaVMExec);
-			cmd.addAll(command);
-
-			ShellTask shellTask = new ShellTask(cmd, new File(jobDirectory), stdOut, stdErr);
+			ShellTask shellTask = new ShellTask(command, new File(jobDirectory), stdOut, stdErr);
 			Future<Integer> future = executor.submit(shellTask);
 
 			submissionId++;

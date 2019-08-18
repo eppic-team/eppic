@@ -21,11 +21,10 @@ public interface JobManager
 	 * @return submissionId
 	 * @throws JobHandlerException when job can not be successfully started
 	 */
-	String startJob(String javaVMExec,
-			               String jobId, 
-						   List<String> command, 
-						   String jobDirectory, 
-						   int nrOfThreadsForSubmission) throws JobHandlerException;
+	String startJob(String jobId,
+					List<String> command,
+					String jobDirectory,
+					int nrOfThreadsForSubmission) throws JobHandlerException;
 
 	/**
 	 * Retrieves current status of specified job.
