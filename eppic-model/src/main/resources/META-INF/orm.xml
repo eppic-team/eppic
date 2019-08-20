@@ -711,42 +711,6 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.db.RunParametersDB" name="RunParameters">
-		<table name="RunParameters" />
-		<attributes>
-			<id name="uid">
-				<generated-value strategy="IDENTITY" />
-			</id>
-			<basic name="homSoftIdCutoff"></basic>
-			<basic name="homHardIdCutoff"></basic>
-			<basic name="queryCovCutoff"></basic>
-			<basic name="minNumSeqsCutoff"></basic>
-			<basic name="maxNumSeqsCutoff"></basic>
-			<basic name="alphabet"></basic>
-			<basic name="caCutoffForGeom"></basic>
-			<basic name="caCutoffForCoreRim"></basic>
-			<basic name="caCutoffForCoreSurface"></basic>
-			<basic name="geomCallCutoff"></basic>
-			<basic name="crCallCutoff"></basic>
-			<basic name="csCallCutoff"></basic>
-			<basic name="searchMode"></basic>
-
-			<basic name="uniProtVersion">
-				<column length="10" />
-			</basic>
-			<basic name="eppicVersion">
-				<column length="35" />
-			</basic>
-			<basic name="eppicBuild">
-				<!-- Setting it to 50 after looking at some examples with length just over 40 - JD 2016-11-27 -->
-				<column length="50" />
-			</basic>
-
-			<one-to-one name="pdbInfo" mapped-by="runParameters">
-			</one-to-one>
-		</attributes>
-	</entity>
-
 	<entity class="eppic.model.db.ChainClusterDB" name="ChainCluster">
 		<table name="ChainCluster" />
 		<entity-listeners>
@@ -825,50 +789,6 @@
 		</attributes>
 	</entity>
 
-	<entity class="eppic.model.db.SeqClusterDB" name="SeqCluster">
-		<table name="SeqCluster" />
-		<attributes>
-			<id name="uid">
-				<generated-value strategy="IDENTITY" />
-			</id>
-
-			
-			<basic name="pdbCode"></basic>
-
-			<!-- 
-			The chain code is actually case sensitive but MySQL by default uses a case insensitive 
-			collation (ci). The WUI actually needs it to be case sensitive since the repChain is 
-			part of the primary key when the sequence clusters are queried by providing a 
-			pdbCode+repChain in the URL. 
-			Instead of explicitly defining a case sensitive	collation for this column only, we do 
-			it for the whole server using the 'collation-server=latin1_general_cs' setting. Otherwise
-			other things break while trying to query (in offline analyses), e.g. one needs to use binary
-			comparisons to be case sensitive but the binary comparisons don't use indexes and thus they 
-			are slow.
-			See issues 
-			https://github.com/eppic-team/eppic-wui/issues/4 
-			https://github.com/eppic-team/eppic/issues/36 
-			-->
-			<basic name="repChain">
-				<column length="4" />
-			</basic>
-			
-			<basic name="c100"></basic>
-			<basic name="c95"></basic>
-			<basic name="c90"></basic>
-			<basic name="c80"></basic>
-			<basic name="c70"></basic>
-			<basic name="c60"></basic>
-			<basic name="c50"></basic>
-			<basic name="c40"></basic>
-			<basic name="c30"></basic>
-
-			<one-to-one name="chainCluster">
-			</one-to-one>
-			
-		</attributes>
-	</entity>
-
 	<entity class="eppic.model.db.HomologDB" name="Homolog">
 		<table name="Homolog" />
 		<entity-listeners>
@@ -903,94 +823,6 @@
 
 			<many-to-one name="chainCluster">
 			</many-to-one>
-
-		</attributes>
-	</entity>
-
-	<entity class="eppic.model.db.UniProtRefWarningDB" name="UniProtRefWarning">
-		<table name="UniProtRefWarning" />
-		<attributes>
-			<id name="uid">
-				<generated-value strategy="IDENTITY" />
-			</id>
-			<basic name="text">
-				<column length="10000" />
-			</basic>
-
-			<many-to-one name="chainCluster">
-			</many-to-one>
-		</attributes>
-	</entity>
-
-	<entity class="eppic.model.db.HitHspDB" name="HitHsp">
-		<table name="HitHsp">
-			<!-- All requests will be via queryId, so this is important -->
-			<index name="queryId_idx" column-list="queryId" unique="false"/>
-		</table>
-		<attributes>
-			<id name="uid">
-				<generated-value strategy="IDENTITY" />
-			</id>
-			<basic name="queryId">
-			</basic>
-			<basic name="subjectId">
-			</basic>
-			<basic name="percentIdentity">
-			</basic>
-			<basic name="aliLength">
-			</basic>
-			<basic name="numMismatches">
-			</basic>
-			<basic name="numGapOpenings">
-			</basic>
-			<basic name="queryStart">
-			</basic>
-			<basic name="queryEnd">
-			</basic>
-			<basic name="subjectStart">
-			</basic>
-			<basic name="subjectEnd">
-			</basic>
-			<basic name="eValue">
-			</basic>
-			<basic name="bitScore">
-			</basic>
-		</attributes>
-	</entity>
-
-	<entity class="eppic.model.db.UniProtMetadataDB" name="UniProtMetadata">
-		<table name="UniProtMetadata">
-		</table>
-		<attributes>
-			<id name="uid">
-				<generated-value strategy="IDENTITY" />
-			</id>
-			<basic name="uniRefType">
-			</basic>
-			<basic name="version">
-			</basic>
-		</attributes>
-	</entity>
-
-	<entity class="eppic.model.db.UniProtInfoDB" name="UniProtInfo">
-		<table name="UniProtInfo">
-			<!-- All requests will be via uniId, so this is important -->
-			<index name="uniId_idx" column-list="uniId" unique="true"/>
-		</table>
-		<attributes>
-			<id name="uid">
-				<generated-value strategy="IDENTITY" />
-			</id>
-			<basic name="uniId">
-			</basic>
-			<basic name="sequence">
-				<!-- As of Sept 2018, info from uniprot.org: the longest sequence is A0A1V4K6M4 at 36,991 AA  -->
-				<column length="40000" />
-			</basic>
-			<basic name="firstTaxon">
-			</basic>
-			<basic name="lastTaxon">
-			</basic>
 
 		</attributes>
 	</entity>
