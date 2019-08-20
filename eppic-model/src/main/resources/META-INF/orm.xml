@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_1.xsd"
 	version="2.1">
 	<description>EPPIC JPA entities</description>
-	<package>EPPIC entities</package>
+	<package>eppic.model.db</package>
 
 	<entity class="eppic.model.db.UserSessionDB" name="UserSession">
 		<table name="UserSession" />
