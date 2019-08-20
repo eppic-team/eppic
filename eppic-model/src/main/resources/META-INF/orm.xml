@@ -655,44 +655,6 @@
 		
 		</attributes>
 	</entity>
-	
-	<entity class="eppic.model.db.ContactDB" name="Contact">
-		<table name="Contact" />
-		<entity-listeners>
-			<entity-listener
-				class="eppic.model.adapters.ContactListener">
-			</entity-listener>
-		</entity-listeners>			
-		<attributes>
-			<id name="uid">
-				<generated-value strategy="IDENTITY" />
-			</id>
-			<basic name="firstResNumber"></basic>
-			<basic name="firstResType">
-				<column length="3" />
-			</basic>
-			<basic name="firstBurial"></basic>			
-			<basic name="secondResNumber"></basic>
-			<basic name="secondResType">
-				<column length="3" />
-			</basic>
-			<basic name="secondBurial"></basic>
-			
-			<basic name="minDistance"></basic>
-			<basic name="numAtoms"></basic>
-			<basic name="numHBonds"></basic>
-			<basic name="disulfide"></basic>
-			<basic name="clash"></basic>			
-
-			<basic name="pdbCode">
-				<column length="4" />
-			</basic>
-			<basic name="interfaceId"></basic>			
-
-			<many-to-one name="interfaceItem">
-			</many-to-one>
-		</attributes>
-	</entity>
 
 	<entity class="eppic.model.db.InterfaceScoreDB" name="InterfaceScore">
 		<table name="InterfaceScore" />
