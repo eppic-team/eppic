@@ -1,28 +1,49 @@
 package eppic.model.db;
 
+import eppic.model.adapters.ClusterScoreListener;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "InterfaceClusterScore")
+@EntityListeners(ClusterScoreListener.class)
 public class InterfaceClusterScoreDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int uid;
-	
+
+	@Column(length = 4)
 	private String pdbCode;
 	private int clusterId;
-	
+
+	@Column(length = 6)
 	private String callName;
-	
+
+	@Column(length = 10000)
 	private String callReason;
-	
+
+	@Column(nullable = true)
 	private double score;	
 	private double confidence;
-	
+	@Column(nullable = true)
 	private double score1;
+	@Column(nullable = true)
 	private double score2;
-	
+	@Column(length = 15)
 	private String method;
-	
+
+	@ManyToOne
 	private InterfaceClusterDB interfaceCluster;
 	
 	public int getUid() {

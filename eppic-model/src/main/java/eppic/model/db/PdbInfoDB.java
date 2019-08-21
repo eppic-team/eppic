@@ -1,25 +1,42 @@
 package eppic.model.db;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
+@Entity
+@Table(name = "PdbInfo")
 public class PdbInfoDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int uid;
-	
+
+	@Column(length = 10000)
 	private String title;
 	private Date releaseDate;
+	@Column(length = 10)
 	private String spaceGroup;
 	private double resolution;
 	private double rfreeValue;
+	@Column(length = 255)
 	private String expMethod;
-	
+
+	@Column(length = 4)
 	private String pdbCode;
 	
 	// the stoichiometry of the pdb structure
@@ -66,15 +83,20 @@ public class PdbInfoDB implements Serializable {
 	 * The maximum number of clashes in any interface. Used for warnings in UI.
 	 */
 	private int maxNumClashesAnyInterface;
-	
+
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private RunParametersDB runParameters;
-	
+
+	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<ChainClusterDB> chainClusters;
 
+	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<InterfaceClusterDB> interfaceClusters;
-	
+
+	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<AssemblyDB> assemblies;
-	
+
+	@OneToOne(fetch = FetchType.LAZY)
 	private JobDB job;
 	
 	public PdbInfoDB() {
