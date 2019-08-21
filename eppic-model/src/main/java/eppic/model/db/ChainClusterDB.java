@@ -44,9 +44,9 @@ public class ChainClusterDB implements Serializable {
 	private int pdbStart;
 	private int pdbEnd;
 
-	@Column(length = 40000)
+	@Column(length = 40000, columnDefinition = "TEXT")
 	private String pdbAlignedSeq;
-	@Column(length = 40000)
+	@Column(length = 40000, columnDefinition = "TEXT")
 	private String refAlignedSeq;
 	
 	private boolean hasUniProtRef;
@@ -55,7 +55,7 @@ public class ChainClusterDB implements Serializable {
 	private List<UniProtRefWarningDB> uniProtRefWarnings;
 	
 	private int numHomologs;
-	@Column(length = 40000)
+	@Column(length = 40000, columnDefinition = "TEXT")
 	private String msaAlignedSeq;
 	
 	private double seqIdCutoff;

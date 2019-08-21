@@ -35,7 +35,7 @@ public class HomologDB implements Serializable {
 	private int subjectStart;
 	private int subjectEnd;
 
-	@Column(length = 40000)
+	@Column(length = 40000, columnDefinition = "TEXT")
 	private String alignedSeq;
 
 	@ManyToOne

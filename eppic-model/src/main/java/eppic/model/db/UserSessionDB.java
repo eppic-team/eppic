@@ -30,7 +30,7 @@ public class UserSessionDB implements Serializable {
 	private String ip;
 
 	@ManyToMany
-	@JoinTable(joinColumns = @JoinColumn(name = "userSession_uid", referencedColumnName = "uid"),
+	@JoinTable(name = "UserSessionJob", joinColumns = @JoinColumn(name = "userSession_uid", referencedColumnName = "uid"),
 			inverseJoinColumns = @JoinColumn(name = "job_uid", referencedColumnName = "uid"))
 	private Set<JobDB> jobs;
 	
