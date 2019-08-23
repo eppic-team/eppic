@@ -1,7 +1,19 @@
 package eppic.model.db;
 
+import eppic.model.adapters.ResidueBurialListener;
+
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "ResidueBurial")
+@EntityListeners(ResidueBurialListener.class)
 public class ResidueBurialDB implements Serializable {
 
 
@@ -12,16 +24,24 @@ public class ResidueBurialDB implements Serializable {
 	public static final short RIM_EVOLUTIONARY = 1;
 	public static final short CORE_EVOLUTIONARY = 2;
 	public static final short CORE_GEOMETRY = 3;
-	
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int uid;
 	
 	private boolean side; // 0 or 1 for 1st or 2nd partner of interface (used to be 1 or 2)
 	private double asa;
 	private double bsa;
+
+	// TODO the field is now a short, we should double check that it translates to a data
+	//			     type that takes less space than int in mysql. Other solution would be to force type
+	//			     smallint here but I don't know how to do that
 	private short region; // one of the constants above
 
+	@ManyToOne
 	private InterfaceDB interfaceItem;
-	
+
+	@ManyToOne
 	private ResidueInfoDB residueInfo;
 	
 	public ResidueBurialDB() {
