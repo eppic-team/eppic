@@ -22,7 +22,7 @@ public class TestNativeJobManager {
     private static final String jobDir = System.getProperty("java.io.tmpdir");
     private static File script;
 
-    private static final int SLEEP_TIME = 10;
+    private static final int SLEEP_TIME = 4;
 
     @BeforeClass
     public static void init() throws JobManagerException, IOException {
@@ -45,7 +45,7 @@ public class TestNativeJobManager {
     }
 
     @Test
-    public void testSubmit() throws JobHandlerException, InterruptedException, IOException {
+    public void testBasicSubmit() throws JobHandlerException, InterruptedException {
         String jobId = "abcdefgh";
         File dir = new File (jobDir, jobId);
         List<String> cmd = new ArrayList<>();
@@ -64,8 +64,56 @@ public class TestNativeJobManager {
         assertEquals(StatusOfJob.RUNNING, statusOfJob);
 
         // after full time is over, it should be finished
-        Thread.sleep(SLEEP_TIME*1000 - SLEEP_TIME*1000/2 + 2000);
+        Thread.sleep(SLEEP_TIME*1000/2 + 1000);
         statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        assertEquals(StatusOfJob.FINISHED, statusOfJob);
+    }
+
+    @Test
+    public void testQueuing() throws JobHandlerException, InterruptedException {
+        String jobId1 = "abc";
+        String jobId2 = "def";
+        String jobId3 = "ghi";
+        File dir1 = new File (jobDir, jobId1);
+        File dir2 = new File (jobDir, jobId2);
+        File dir3 = new File (jobDir, jobId3);
+
+        List<String> cmd = new ArrayList<>();
+        cmd.add(script.toString());
+
+        String submissionId1 = jobManager.startJob(jobId1, cmd , dir1.toString(),1);
+        String submissionId2 = jobManager.startJob(jobId2, cmd , dir2.toString(),1);
+        String submissionId3 = jobManager.startJob(jobId3, cmd , dir3.toString(),1);
+
+        assertNotEquals(submissionId1, submissionId2);
+        assertNotEquals(submissionId1, submissionId3);
+
+        // queue is of size 2: 2 running and the 3rd task should be queuing
+        Thread.sleep(SLEEP_TIME*1000/2);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId1, submissionId1);
+        assertEquals(StatusOfJob.RUNNING, statusOfJob);
+
+        statusOfJob = jobManager.getStatusOfJob(jobId2, submissionId2);
+        assertEquals(StatusOfJob.RUNNING, statusOfJob);
+
+        statusOfJob = jobManager.getStatusOfJob(jobId3, submissionId3);
+        assertEquals(StatusOfJob.QUEUING, statusOfJob);
+
+        Thread.sleep(SLEEP_TIME*1000/2 + 1000);
+
+        // 2 should be done, 3rd running
+        statusOfJob = jobManager.getStatusOfJob(jobId1, submissionId1);
+        assertEquals(StatusOfJob.FINISHED, statusOfJob);
+
+        statusOfJob = jobManager.getStatusOfJob(jobId2, submissionId2);
+        assertEquals(StatusOfJob.FINISHED, statusOfJob);
+
+        statusOfJob = jobManager.getStatusOfJob(jobId3, submissionId3);
+        assertEquals(StatusOfJob.RUNNING, statusOfJob);
+
+        Thread.sleep(SLEEP_TIME*1000 + 1000);
+
+        statusOfJob = jobManager.getStatusOfJob(jobId3, submissionId3);
         assertEquals(StatusOfJob.FINISHED, statusOfJob);
     }
 }
