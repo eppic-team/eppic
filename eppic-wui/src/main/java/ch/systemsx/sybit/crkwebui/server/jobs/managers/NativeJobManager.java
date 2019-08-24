@@ -3,17 +3,14 @@ package ch.systemsx.sybit.crkwebui.server.jobs.managers;
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import eppic.model.shared.StatusOfJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -108,8 +105,11 @@ public class NativeJobManager implements JobManager
 //						statusOfJob = StatusOfJob.ERROR;
 //					}
 				} else if (finishStatus == ShellTask.CANT_START_PROCESS_ERROR_CODE) {
-					logger.warn("Something went wrong when starting job execution");
+					logger.warn("Something went wrong when starting job execution for job {}", jobId);
 					statusOfJob = StatusOfJob.ERROR;
+				} else if (finishStatus == ShellTask.SIGTERM_ERROR_CODE) {
+					logger.warn("The job '{}' was stopped", jobId);
+					statusOfJob = StatusOfJob.STOPPED;
 				} else {
 					logger.warn("Job {} reported non-0 exit status {}", jobId, finishStatus);
 					statusOfJob = StatusOfJob.ERROR;

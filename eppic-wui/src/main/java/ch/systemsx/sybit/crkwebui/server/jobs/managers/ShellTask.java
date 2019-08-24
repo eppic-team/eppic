@@ -8,6 +8,7 @@ import java.util.concurrent.Callable;
 public class ShellTask implements Callable<Integer> {
 
     public static final int CANT_START_PROCESS_ERROR_CODE = -1;
+    public static final int SIGTERM_ERROR_CODE = 143;
 
     private List<String> cmd;
     private File stdOut;

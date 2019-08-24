@@ -132,4 +132,24 @@ public class TestNativeJobManager {
         assertEquals(StatusOfJob.ERROR, statusOfJob);
 
     }
+
+    @Test
+    public void testStopping() throws JobHandlerException, InterruptedException {
+        String jobId = "abcdefgh";
+        File dir = new File (jobDir, jobId);
+        List<String> cmd = new ArrayList<>();
+        cmd.add(script.toString());
+
+        String submissionId = jobManager.startJob(jobId, cmd , dir.toString(),1);
+
+        Thread.sleep(SLEEP_TIME*1000/2);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        assertEquals(StatusOfJob.RUNNING, statusOfJob);
+        jobManager.stopJob(submissionId);
+        Thread.sleep(100);
+        statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+
+        assertEquals(StatusOfJob.STOPPED, statusOfJob);
+
+    }
 }
