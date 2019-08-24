@@ -45,7 +45,7 @@ public class TestNativeJobManager {
     }
 
     @Test
-    public void testSubmit() throws JobHandlerException, InterruptedException {
+    public void testSubmit() throws JobHandlerException, InterruptedException, IOException {
         String jobId = "abcdefgh";
         File dir = new File (jobDir, jobId);
         List<String> cmd = new ArrayList<>();
@@ -53,13 +53,19 @@ public class TestNativeJobManager {
 
         String submissionId = jobManager.startJob(jobId, cmd , dir.toString(),1);
         assertNotNull(submissionId);
+
+        // initially should be queuing, it takes some small time to schedule it
         StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        assertEquals(StatusOfJob.QUEUING, statusOfJob);
+
+        // after half of the time, it should be running
+        Thread.sleep(SLEEP_TIME*1000/2);
+        statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
         assertEquals(StatusOfJob.RUNNING, statusOfJob);
 
-        Thread.sleep(SLEEP_TIME*1000 + 5000);
-
+        // after full time is over, it should be finished
+        Thread.sleep(SLEEP_TIME*1000 - SLEEP_TIME*1000/2 + 2000);
         statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
-
         assertEquals(StatusOfJob.FINISHED, statusOfJob);
     }
 }

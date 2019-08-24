@@ -39,13 +39,11 @@ public class NativeJobManager implements JobManager
 	private String jobsDirectory;
 
 	/**
-	 * Creates instance of drmaa job manager.
+	 * Creates instance of native job manager.
 	 * @param jobsDirectory directory where results of jobs are stored
 	 * @param numWorkers the number of worker slots
-	 * @throws JobManagerException when session can not be initialized
 	 */
-	public NativeJobManager(String jobsDirectory, int numWorkers) throws JobManagerException
-	{
+	public NativeJobManager(String jobsDirectory, int numWorkers) {
 
 		executor = Executors.newFixedThreadPool(numWorkers);
 		//jobs = new HashMap<>();
@@ -69,7 +67,7 @@ public class NativeJobManager implements JobManager
 			File stdErr = new File(jobDirectory, jobId + ".e");
 			File stdOut = new File(jobDirectory, jobId + ".o");
 
-			ShellTask shellTask = new ShellTask(command, new File(jobDirectory), stdOut, stdErr);
+			ShellTask shellTask = new ShellTask(command, stdOut, stdErr);
 			Future<Integer> future = executor.submit(shellTask);
 
 			submissionId++;
@@ -88,7 +86,7 @@ public class NativeJobManager implements JobManager
 	@Override
 	public StatusOfJob getStatusOfJob(String jobId, String submissionId) throws JobHandlerException
 	{
-		StatusOfJob statusOfJob = StatusOfJob.QUEUING;
+		StatusOfJob statusOfJob;
 
 		try
 		{
@@ -99,19 +97,26 @@ public class NativeJobManager implements JobManager
 			} else if (future.isDone()) {
 				int finishStatus = future.get();
 				if (finishStatus == 0) {
-					if(checkIfJobWasFinishedSuccessfully(jobId)) {
-						statusOfJob = StatusOfJob.FINISHED;
-					} else {
-						logger.warn("Job {} reported success but the finish file could not be found. Considering it in error state", jobId);
-						statusOfJob = StatusOfJob.ERROR;
-					}
+					statusOfJob = StatusOfJob.FINISHED;
+					// TODO do we also want to check for the finished file??
+//					if(checkIfJobWasFinishedSuccessfully(jobId)) {
+//						statusOfJob = StatusOfJob.FINISHED;
+//					} else {
+//						logger.warn("Job {} reported success but the finish file could not be found. Considering it in error state", jobId);
+//						statusOfJob = StatusOfJob.ERROR;
+//					}
 				} else {
+					logger.warn("Job {} reported non-0 exit status {}", jobId, finishStatus);
 					statusOfJob = StatusOfJob.ERROR;
 				}
 
 			} else {
-				// TODO this can be running or waiting...
-				statusOfJob = StatusOfJob.RUNNING;
+				ShellTask task = tasks.get(submissionId);
+				if (task.isRunning()) {
+					statusOfJob = StatusOfJob.RUNNING;
+				} else {
+					statusOfJob = StatusOfJob.QUEUING;
+				}
 			}
 
 		}

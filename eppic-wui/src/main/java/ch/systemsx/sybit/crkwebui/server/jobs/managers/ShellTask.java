@@ -7,7 +7,6 @@ import java.util.concurrent.Callable;
 public class ShellTask implements Callable<Integer> {
 
     private List<String> cmd;
-    private File outDir;
     private File stdOut;
     private File stdErr;
 
@@ -15,9 +14,8 @@ public class ShellTask implements Callable<Integer> {
 
     private boolean isRunning;
 
-    public ShellTask(List<String> cmd, File outDir, File stdOut, File stdErr) {
+    public ShellTask(List<String> cmd, File stdOut, File stdErr) {
         this.cmd = cmd;
-        this.outDir = outDir;
         this.stdOut = stdOut;
         this.stdErr = stdErr;
         isRunning = false;
@@ -28,8 +26,6 @@ public class ShellTask implements Callable<Integer> {
         ProcessBuilder builder = new ProcessBuilder();
 
         builder.command(cmd);
-
-        builder.directory(outDir);
 
         process = builder.start();
         isRunning = true;
