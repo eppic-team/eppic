@@ -116,4 +116,20 @@ public class TestNativeJobManager {
         statusOfJob = jobManager.getStatusOfJob(jobId3, submissionId3);
         assertEquals(StatusOfJob.FINISHED, statusOfJob);
     }
+
+    @Test
+    public void testCantSubmit() throws JobHandlerException, InterruptedException {
+        String jobId = "abcdefgh";
+        File dir = new File (jobDir, jobId);
+        List<String> cmd = new ArrayList<>();
+        cmd.add("unexistingScript.sh");
+
+        String submissionId = jobManager.startJob(jobId, cmd , dir.toString(),1);
+        assertNotNull(submissionId);
+
+        Thread.sleep(SLEEP_TIME*1000/2);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        assertEquals(StatusOfJob.ERROR, statusOfJob);
+
+    }
 }

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -95,6 +96,7 @@ public class NativeJobManager implements JobManager
 			if (future.isCancelled()) {
 				statusOfJob = StatusOfJob.STOPPED;
 			} else if (future.isDone()) {
+
 				int finishStatus = future.get();
 				if (finishStatus == 0) {
 					statusOfJob = StatusOfJob.FINISHED;
@@ -105,18 +107,24 @@ public class NativeJobManager implements JobManager
 //						logger.warn("Job {} reported success but the finish file could not be found. Considering it in error state", jobId);
 //						statusOfJob = StatusOfJob.ERROR;
 //					}
+				} else if (finishStatus == ShellTask.CANT_START_PROCESS_ERROR_CODE) {
+					logger.warn("Something went wrong when starting job execution");
+					statusOfJob = StatusOfJob.ERROR;
 				} else {
 					logger.warn("Job {} reported non-0 exit status {}", jobId, finishStatus);
 					statusOfJob = StatusOfJob.ERROR;
 				}
 
+
 			} else {
+
 				ShellTask task = tasks.get(submissionId);
 				if (task.isRunning()) {
 					statusOfJob = StatusOfJob.RUNNING;
 				} else {
 					statusOfJob = StatusOfJob.QUEUING;
 				}
+
 			}
 
 		}

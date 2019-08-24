@@ -1,10 +1,13 @@
 package ch.systemsx.sybit.crkwebui.server.jobs.managers;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 public class ShellTask implements Callable<Integer> {
+
+    public static final int CANT_START_PROCESS_ERROR_CODE = -1;
 
     private List<String> cmd;
     private File stdOut;
@@ -27,7 +30,12 @@ public class ShellTask implements Callable<Integer> {
 
         builder.command(cmd);
 
-        process = builder.start();
+        try {
+            process = builder.start();
+        } catch (IOException e) {
+            // if file not found or can't be executed
+            return CANT_START_PROCESS_ERROR_CODE;
+        }
         isRunning = true;
 
         builder.redirectOutput(stdOut);
