@@ -10,7 +10,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -31,8 +33,9 @@ public class TestNativeJobManager {
     }
 
     @AfterClass
-    public static void destroy() {
-        //script.delete();
+    public static void destroy() throws JobHandlerException {
+        script.delete();
+        jobManager.finalize();
     }
 
     private static void writeScript() throws IOException {
@@ -40,6 +43,8 @@ public class TestNativeJobManager {
         PrintWriter pw = new PrintWriter(script);
         pw.println("#!/bin/sh");
         pw.println("sleep " + SLEEP_TIME);
+        pw.println("echo \"Done!\"");
+        pw.println("echo \"Some stderr\" 1>&2");
         pw.close();
         script.setExecutable(true);
     }
@@ -151,5 +156,40 @@ public class TestNativeJobManager {
 
         assertEquals(StatusOfJob.STOPPED, statusOfJob);
 
+    }
+
+    @Test
+    public void testErrorOutputFiles() throws JobHandlerException, InterruptedException, IOException {
+        String jobId = "abcdefgh";
+        File dir = new File (jobDir, jobId);
+        dir.mkdir();
+        File oFile = new File(dir, jobId+".o");
+        File eFile = new File(dir, jobId+".e");
+        oFile.delete();
+        eFile.delete();
+
+        List<String> cmd = new ArrayList<>();
+        cmd.add(script.toString());
+
+        String submissionId = jobManager.startJob(jobId, cmd , dir.toString(),1);
+
+        Thread.sleep(SLEEP_TIME*1000 + 1000);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        assertEquals(StatusOfJob.FINISHED, statusOfJob);
+
+        assertTrue(oFile.exists());
+        assertTrue(eFile.exists());
+
+        BufferedReader br = new BufferedReader(new FileReader(oFile));
+        assertEquals("Done!", br.readLine());
+        br.close();
+
+        br = new BufferedReader(new FileReader(eFile));
+        assertEquals("Some stderr", br.readLine());
+        br.close();
+
+        oFile.delete();
+        eFile.delete();
+        dir.delete();
     }
 }

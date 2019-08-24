@@ -31,6 +31,14 @@ public class ShellTask implements Callable<Integer> {
 
         builder.command(cmd);
 
+        // only write if dir exists, otherwise process fails
+        if (stdOut.getParentFile().exists()) {
+            builder.redirectOutput(stdOut);
+        }
+        if (stdErr.getParentFile().exists()) {
+            builder.redirectError(stdErr);
+        }
+
         try {
             process = builder.start();
         } catch (IOException e) {
@@ -38,9 +46,6 @@ public class ShellTask implements Callable<Integer> {
             return CANT_START_PROCESS_ERROR_CODE;
         }
         isRunning = true;
-
-        builder.redirectOutput(stdOut);
-        builder.redirectError(stdErr);
 
         return process.waitFor();
     }
