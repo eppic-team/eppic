@@ -850,7 +850,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		try
 		{
-			jobManager.finalize();
+			jobManager.close();
 		}
 		catch (JobHandlerException e)
 		{

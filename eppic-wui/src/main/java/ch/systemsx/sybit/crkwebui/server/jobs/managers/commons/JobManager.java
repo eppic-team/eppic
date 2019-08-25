@@ -46,5 +46,5 @@ public interface JobManager
 	 * Shutdown job manager.
 	 * @throws JobHandlerException when finalization of the resources fails
 	 */
-	void finalize() throws JobHandlerException;
+	void close() throws JobHandlerException;
 }

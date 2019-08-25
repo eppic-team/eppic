@@ -36,7 +36,7 @@ public class TestNativeJobManager {
     @AfterClass
     public static void destroy() throws JobHandlerException {
         script.delete();
-        jobManager.finalize();
+        jobManager.close();
     }
 
     private static void writeScript() throws IOException {

@@ -215,7 +215,7 @@ public class NativeJobManager implements JobManager
 	}
 
 	@Override
-	public void finalize() throws JobHandlerException
+	public void close() throws JobHandlerException
 	{
 		try
 		{
