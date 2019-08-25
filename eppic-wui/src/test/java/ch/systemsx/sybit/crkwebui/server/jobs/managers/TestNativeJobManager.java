@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TestNativeJobManager {
@@ -191,5 +192,34 @@ public class TestNativeJobManager {
         oFile.delete();
         eFile.delete();
         dir.delete();
+    }
+
+    @Test
+    public void testClearQueue() throws JobHandlerException, InterruptedException {
+        String jobId1 = "abc";
+        String jobId2 = "def";
+        File dir1 = new File (jobDir, jobId1);
+        File dir2 = new File (jobDir, jobId2);
+
+        List<String> cmd = new ArrayList<>();
+        cmd.add(script.toString());
+
+        ((NativeJobManager)jobManager).clearQueue(new Date(System.currentTimeMillis() - 3600 * 1000));
+
+        assertEquals(0, ((NativeJobManager)jobManager).getSize());
+
+        String submissionId1 = jobManager.startJob(jobId1, cmd , dir1.toString(),1);
+        String submissionId2 = jobManager.startJob(jobId2, cmd , dir2.toString(),1);
+
+        assertEquals(2, ((NativeJobManager)jobManager).getSize());
+
+        Thread.sleep(SLEEP_TIME*1000+1000);
+
+        assertEquals(2, ((NativeJobManager)jobManager).getSize());
+
+        ((NativeJobManager)jobManager).clearQueue(new Date(System.currentTimeMillis() - 3600 * 1000));
+
+        assertEquals(0, ((NativeJobManager)jobManager).getSize());
+
     }
 }

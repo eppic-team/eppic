@@ -2,6 +2,7 @@ package ch.systemsx.sybit.crkwebui.server.jobs.managers;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -15,17 +16,24 @@ public class ShellTask implements Callable<Integer> {
     private File stdOut;
     private File stdErr;
 
+    private String jobId;
+
     private Process process;
 
     private boolean isRunning;
 
     private Future<Integer> output;
 
-    public ShellTask(List<String> cmd, File stdOut, File stdErr) {
+    private Date submissionDate;
+    private Date executionDate;
+
+    public ShellTask(List<String> cmd, File stdOut, File stdErr, String jobId) {
         this.cmd = cmd;
         this.stdOut = stdOut;
         this.stdErr = stdErr;
         isRunning = false;
+        submissionDate = new Date();
+        this.jobId = jobId;
     }
 
     @Override
@@ -49,6 +57,7 @@ public class ShellTask implements Callable<Integer> {
             return CANT_START_PROCESS_ERROR_CODE;
         }
         isRunning = true;
+        executionDate = new Date();
 
         return process.waitFor();
     }
@@ -68,5 +77,17 @@ public class ShellTask implements Callable<Integer> {
 
     public Future<Integer> getOutput() {
         return output;
+    }
+
+    public Date getSubmissionDate() {
+        return submissionDate;
+    }
+
+    public Date getExecutionDate() {
+        return executionDate;
+    }
+
+    public String getJobId() {
+        return jobId;
     }
 }

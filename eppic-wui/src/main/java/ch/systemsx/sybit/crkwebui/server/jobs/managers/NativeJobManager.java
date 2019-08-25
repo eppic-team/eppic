@@ -8,7 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -25,10 +27,6 @@ public class NativeJobManager implements JobManager
 	private static final Logger logger = LoggerFactory.getLogger(NativeJobManager.class);
 	private int submissionId;
 	private ExecutorService executor;
-
-
-	 // Map of submission ids to job ids
-	//private Map<String, String> jobs;
 
 	/**
 	 * Submission ids to tasks
@@ -65,7 +63,7 @@ public class NativeJobManager implements JobManager
 			File stdErr = new File(jobDirectory, jobId + ".e");
 			File stdOut = new File(jobDirectory, jobId + ".o");
 
-			ShellTask shellTask = new ShellTask(command, stdOut, stdErr);
+			ShellTask shellTask = new ShellTask(command, stdOut, stdErr, jobId);
 			Future<Integer> future = executor.submit(shellTask);
 
 			submissionId++;
@@ -227,5 +225,35 @@ public class NativeJobManager implements JobManager
 		{
 			throw new JobHandlerException(e);
 		}
+	}
+
+	/**
+	 * Clear from queue jobs submitted before the given date and that are not running or queuing.
+	 * @param maxDateToKeep jobs before this date will be removed
+	 */
+	public void clearQueue(Date maxDateToKeep) {
+		Iterator<String> it = tasks.keySet().iterator();
+		while (it.hasNext()) {
+			String submissionId = it.next();
+			ShellTask task = tasks.get(submissionId);
+			try {
+				StatusOfJob statusOfJob = getStatusOfJob(task.getJobId(), submissionId);
+				if (task.getSubmissionDate().after(maxDateToKeep) &&
+						statusOfJob != StatusOfJob.RUNNING && statusOfJob != StatusOfJob.QUEUING) {
+					it.remove();
+				}
+			} catch (JobHandlerException e) {
+				logger.warn("Could not get job status for jobId '{}', submissionId '{}'. Will not remove it.",
+						task.getJobId(), submissionId);
+			}
+		}
+	}
+
+	/**
+	 * Gets the size of all jobs ever submitted to this job manager.
+	 * @return the size
+	 */
+	public int getSize() {
+		return tasks.size();
 	}
 }
