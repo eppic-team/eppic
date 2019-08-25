@@ -25,13 +25,14 @@ public class NativeJobManager implements JobManager
 	private static final Logger logger = LoggerFactory.getLogger(NativeJobManager.class);
 	private int submissionId;
 	private ExecutorService executor;
-	private Map<String, Future<Integer>> jobsStatus;
 
-	/**
-	 * Map of submission ids to job ids
-	 */
+
+	 // Map of submission ids to job ids
 	//private Map<String, String> jobs;
 
+	/**
+	 * Submission ids to tasks
+ 	 */
 	private Map<String, ShellTask> tasks;
 
 	private String jobsDirectory;
@@ -45,7 +46,6 @@ public class NativeJobManager implements JobManager
 
 		executor = Executors.newFixedThreadPool(numWorkers);
 		//jobs = new HashMap<>();
-		jobsStatus = new HashMap<>();
 		tasks = new HashMap<>();
 
 		this.jobsDirectory = jobsDirectory;
@@ -69,8 +69,8 @@ public class NativeJobManager implements JobManager
 			Future<Integer> future = executor.submit(shellTask);
 
 			submissionId++;
-			jobsStatus.put(String.valueOf(submissionId), future);
 			//jobs.put(String.valueOf(submissionId), jobId);
+			shellTask.setOutput(future);
 			tasks.put(String.valueOf(submissionId), shellTask);
 
 	      	return String.valueOf(submissionId);
@@ -88,7 +88,7 @@ public class NativeJobManager implements JobManager
 
 		try
 		{
-			Future<Integer> future = jobsStatus.get(submissionId);
+			Future<Integer> future = tasks.get(submissionId).getOutput();
 
 			if (future.isCancelled()) {
 				statusOfJob = StatusOfJob.STOPPED;

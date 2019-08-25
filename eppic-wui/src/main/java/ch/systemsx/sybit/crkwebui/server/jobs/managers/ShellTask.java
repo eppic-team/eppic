@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 public class ShellTask implements Callable<Integer> {
 
@@ -17,6 +18,8 @@ public class ShellTask implements Callable<Integer> {
     private Process process;
 
     private boolean isRunning;
+
+    private Future<Integer> output;
 
     public ShellTask(List<String> cmd, File stdOut, File stdErr) {
         this.cmd = cmd;
@@ -51,11 +54,19 @@ public class ShellTask implements Callable<Integer> {
     }
 
     public void stop() {
-        process.destroy(); //TODO or destroyForcibly?
+        process.destroy();
         isRunning = false;
     }
 
     public boolean isRunning() {
         return isRunning;
+    }
+
+    void setOutput(Future<Integer> future) {
+        this.output = future;
+    }
+
+    public Future<Integer> getOutput() {
+        return output;
     }
 }
