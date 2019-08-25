@@ -36,6 +36,7 @@ public class TestNativeJobManager {
     @AfterClass
     public static void destroy() throws JobHandlerException {
         script.delete();
+        ((NativeJobManager)jobManager).logJobHistory();
         jobManager.close();
     }
 
@@ -204,7 +205,7 @@ public class TestNativeJobManager {
         List<String> cmd = new ArrayList<>();
         cmd.add(script.toString());
 
-        ((NativeJobManager)jobManager).clearQueue(new Date(System.currentTimeMillis() - 3600 * 1000));
+        ((NativeJobManager)jobManager).clearQueue(1000);
 
         assertEquals(0, ((NativeJobManager)jobManager).getSize());
 
@@ -217,7 +218,7 @@ public class TestNativeJobManager {
 
         assertEquals(2, ((NativeJobManager)jobManager).getSize());
 
-        ((NativeJobManager)jobManager).clearQueue(new Date(System.currentTimeMillis() - 3600 * 1000));
+        ((NativeJobManager)jobManager).clearQueue(1000);
 
         assertEquals(0, ((NativeJobManager)jobManager).getSize());
 

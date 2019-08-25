@@ -3,6 +3,7 @@ package ch.systemsx.sybit.crkwebui.server.jobs.managers;
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
+import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import eppic.model.shared.StatusOfJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -228,17 +229,18 @@ public class NativeJobManager implements JobManager
 	}
 
 	/**
-	 * Clear from queue jobs submitted before the given date and that are not running or queuing.
-	 * @param maxDateToKeep jobs before this date will be removed
+	 * Clear from queue jobs submitted more than the given milliseconds ago and that are not running or queuing.
+	 * @param millisecondsAgo remove anything older than this number of milliseconds ago
 	 */
-	public void clearQueue(Date maxDateToKeep) {
+	public void clearQueue(long millisecondsAgo) {
 		Iterator<String> it = tasks.keySet().iterator();
+		long maxTime = System.currentTimeMillis() - millisecondsAgo;
 		while (it.hasNext()) {
 			String submissionId = it.next();
 			ShellTask task = tasks.get(submissionId);
 			try {
 				StatusOfJob statusOfJob = getStatusOfJob(task.getJobId(), submissionId);
-				if (task.getSubmissionDate().after(maxDateToKeep) &&
+				if (task.getSubmissionTime() < maxTime &&
 						statusOfJob != StatusOfJob.RUNNING && statusOfJob != StatusOfJob.QUEUING) {
 					it.remove();
 				}
@@ -255,5 +257,19 @@ public class NativeJobManager implements JobManager
 	 */
 	public int getSize() {
 		return tasks.size();
+	}
+
+	public void logJobHistory() {
+		logger.info("A total of {} jobs are in job history", getSize());
+		for (String submId : tasks.keySet()) {
+			ShellTask task = tasks.get(submId);
+			try {
+				StatusOfJob statusOfJob = getStatusOfJob(task.getJobId(), submId);
+				logger.info("Job '{}' has status {}. It was queuing {} s and executing {} s",
+						task.getJobId(), statusOfJob, task.getTimeInQueue() / 1000, task.getTimeRunning() / 1000);
+			} catch (JobHandlerException e) {
+				logger.warn("Can not log info for job '{}'. Error: {}", task.getJobId(), e.getMessage());
+			}
+		}
 	}
 }

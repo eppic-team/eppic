@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.server.jobs.managers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -24,15 +23,17 @@ public class ShellTask implements Callable<Integer> {
 
     private Future<Integer> output;
 
-    private Date submissionDate;
-    private Date executionDate;
+    // in milliseconds
+    private long submissionTime;
+    private long executionTime;
+    private long finishTime;
 
     public ShellTask(List<String> cmd, File stdOut, File stdErr, String jobId) {
         this.cmd = cmd;
         this.stdOut = stdOut;
         this.stdErr = stdErr;
         isRunning = false;
-        submissionDate = new Date();
+        submissionTime = System.currentTimeMillis();
         this.jobId = jobId;
     }
 
@@ -57,9 +58,14 @@ public class ShellTask implements Callable<Integer> {
             return CANT_START_PROCESS_ERROR_CODE;
         }
         isRunning = true;
-        executionDate = new Date();
 
-        return process.waitFor();
+        executionTime = System.currentTimeMillis();
+
+        int exitStatus = process.waitFor();
+
+        finishTime = System.currentTimeMillis();
+
+        return exitStatus;
     }
 
     public void stop() {
@@ -79,15 +85,37 @@ public class ShellTask implements Callable<Integer> {
         return output;
     }
 
-    public Date getSubmissionDate() {
-        return submissionDate;
+    public long getSubmissionTime() {
+        return submissionTime;
     }
 
-    public Date getExecutionDate() {
-        return executionDate;
+    public long getExecutionTime() {
+        return executionTime;
+    }
+
+    public long getFinishTime() {
+        return finishTime;
     }
 
     public String getJobId() {
         return jobId;
+    }
+
+    /**
+     * Get the number of milliseconds that this task was queuing. Return does not make sense when task is not
+     * executed yet.
+     * @return
+     */
+    public long getTimeInQueue() {
+        return executionTime - submissionTime;
+    }
+
+    /**
+     * Get the number of milliseconds that this task was running. Return does not make sense when task has
+     * not finished executing yet.
+     * @return
+     */
+    public long getTimeRunning() {
+        return finishTime - executionTime;
     }
 }

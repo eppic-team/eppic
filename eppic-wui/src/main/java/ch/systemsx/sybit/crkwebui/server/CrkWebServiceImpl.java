@@ -16,6 +16,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
+import ch.systemsx.sybit.crkwebui.server.jobs.managers.NativeJobManager;
 import eppic.db.dao.*;
 import eppic.db.dao.jpa.*;
 import eppic.model.dto.*;
@@ -850,11 +851,14 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		try
 		{
+			if (jobManager instanceof NativeJobManager) {
+				((NativeJobManager) jobManager).logJobHistory();
+			}
 			jobManager.close();
 		}
 		catch (JobHandlerException e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 	}
 
