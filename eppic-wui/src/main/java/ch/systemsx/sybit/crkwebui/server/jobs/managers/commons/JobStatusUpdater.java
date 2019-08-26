@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.List;
 
+import ch.systemsx.sybit.crkwebui.server.jobs.managers.NativeJobManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +37,11 @@ public class JobStatusUpdater implements Runnable
 	 * The polling interval in milliseconds
 	 */
 	public static final int POLLING_INTERVAL = 2000;
+
+	/**
+	 * The interval where the queue state is logged, in seconds
+	 */
+	public static final int LOG_QUEUE_INTERVAL = 60;
 	
 	private volatile boolean running;
 	private volatile boolean isUpdating;
@@ -123,6 +129,13 @@ public class JobStatusUpdater implements Runnable
 			}
 			catch (Throwable t) {
 				logger.error(t.getMessage(), t);
+			}
+
+			// log queue state every
+			if ((System.currentTimeMillis()/1000)%LOG_QUEUE_INTERVAL <= POLLING_INTERVAL/1000) {
+				if (jobManager instanceof NativeJobManager) {
+					((NativeJobManager) jobManager).logJobHistory();
+				}
 			}
 			
 			isUpdating = false;
