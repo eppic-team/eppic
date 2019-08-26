@@ -220,6 +220,7 @@ public class NativeJobManager implements JobManager
 	{
 		try
 		{
+			logger.info("Shutting down native job manager");
 			executor.shutdownNow();
 		}
 		catch (Throwable e)

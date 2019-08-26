@@ -840,6 +840,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	@Override
 	public void destroy()
 	{
+		logger.info("Destroying CrkWebService");
+
 		super.destroy();
 
 		jobStatusUpdater.setRunning(false);
