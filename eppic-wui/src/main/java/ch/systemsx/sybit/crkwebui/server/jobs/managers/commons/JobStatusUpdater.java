@@ -39,7 +39,7 @@ public class JobStatusUpdater implements Runnable
 	public static final int POLLING_INTERVAL = 2000;
 
 	/**
-	 * The interval to log the queue state, in milliseconds
+	 * The default interval to log the queue state, in milliseconds
 	 */
 	public static final int LOG_QUEUE_INTERVAL = 60 * 60 * 1000; // every hour
 	
@@ -51,6 +51,7 @@ public class JobStatusUpdater implements Runnable
 	private EmailSender emailSender;
 	private EmailMessageData emailMessageData;
 	private String generalDestinationDirectoryName;
+	private int logQueueInterval;
 
 	public JobStatusUpdater(JobManager jobManager,
 							JobDAO jobDAO,
@@ -66,6 +67,7 @@ public class JobStatusUpdater implements Runnable
 		this.emailSender = emailSender;
 		this.emailMessageData = emailMessageData;
 		this.generalDestinationDirectoryName = generalDestinationDirectoryName;
+		this.logQueueInterval = LOG_QUEUE_INTERVAL;
 	}
 
 	@Override
@@ -132,7 +134,7 @@ public class JobStatusUpdater implements Runnable
 			}
 
 			// log queue state every LOG_QUEUE_INTERVAL
-			if (System.currentTimeMillis()%LOG_QUEUE_INTERVAL < POLLING_INTERVAL) {
+			if (System.currentTimeMillis()%logQueueInterval < POLLING_INTERVAL) {
 				if (jobManager instanceof NativeJobManager) {
 					((NativeJobManager) jobManager).logJobHistory();
 				}
@@ -314,5 +316,10 @@ public class JobStatusUpdater implements Runnable
 	 */
 	public boolean isUpdating() {
 		return isUpdating;
+	}
+
+	public void setLogQueueInterval(int logQueueInterval) {
+		logger.info("Will report queue contents every {} ms", logQueueInterval);
+		this.logQueueInterval = logQueueInterval;
 	}
 }

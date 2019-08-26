@@ -93,6 +93,7 @@ public class NativeJobManager implements JobManager
 					statusOfJob = StatusOfJob.FINISHED;
 				} else {
 					// can't say much more. It could be running, it could be stopped, it could be in error. Let's just say we don't know about it
+					logger.info("Job '{}' is unknown to the native job manager and its finish file could not be found. Considering it NONEXISTING", jobId);
 					statusOfJob = StatusOfJob.NONEXISTING;
 				}
 			} else {
@@ -268,8 +269,8 @@ public class NativeJobManager implements JobManager
 			ShellTask task = tasks.get(submId);
 			try {
 				StatusOfJob statusOfJob = getStatusOfJob(task.getJobId(), submId);
-				logger.info("Job '{}' has status {}. It was queuing {} s and executing {} s",
-						task.getJobId(), statusOfJob, task.getTimeInQueue() / 1000, task.getTimeRunning() / 1000);
+				logger.info("Job '{}' (submission id {}) has status {}. It was queuing {} s and executing {} s",
+						task.getJobId(), submId, statusOfJob, task.getTimeInQueue() / 1000, task.getTimeRunning() / 1000);
 			} catch (JobHandlerException e) {
 				logger.warn("Can not log info for job '{}'. Error: {}", task.getJobId(), e.getMessage());
 			}

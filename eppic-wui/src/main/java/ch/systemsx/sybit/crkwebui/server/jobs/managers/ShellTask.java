@@ -102,20 +102,33 @@ public class ShellTask implements Callable<Integer> {
     }
 
     /**
-     * Get the number of milliseconds that this task was queuing. Return does not make sense when task is not
-     * executed yet.
-     * @return
+     * Get the number of milliseconds that this task was queuing
+     * @return the queuing time in milliseconds
      */
     public long getTimeInQueue() {
+        if (executionTime == 0) {
+            return System.currentTimeMillis() - submissionTime;
+        }
         return executionTime - submissionTime;
     }
 
     /**
-     * Get the number of milliseconds that this task was running. Return does not make sense when task has
-     * not finished executing yet.
-     * @return
+     * Get the number of milliseconds that this task was running. If still running, then current running time reported.
+     * If still queuing then -1 returned.
+     * @return the running time in milliseconds
      */
     public long getTimeRunning() {
-        return finishTime - executionTime;
+        long time;
+        // case it is running
+        if (isRunning) {
+            time =  System.currentTimeMillis() - executionTime;
+        } else if (executionTime == 0) {
+            // case it is queuing still
+            time = -1;
+        } else {
+            // case it is done
+            time = finishTime - executionTime;
+        }
+        return time;
     }
 }

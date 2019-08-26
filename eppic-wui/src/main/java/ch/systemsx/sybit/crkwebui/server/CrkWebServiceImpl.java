@@ -357,8 +357,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				assignedMemory,
 				javaVMExec);
 		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE) ||
-			properties.get(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
-			
+			properties.getProperty(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
+
 			logger.info("Proceeding to spawn the job status updater daemon");
 			jobStatusUpdater = new JobStatusUpdater(jobManager,
 					new JobDAOJpa(),
@@ -366,6 +366,17 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 					emailSender,
 					emailMessageData,
 					generalDestinationDirectoryName);
+
+			if (properties.containsKey("queue_reporting_interval")) {
+				try {
+					int interval = Integer.parseInt(properties.getProperty("queue_reporting_interval"));
+					jobStatusUpdater.setLogQueueInterval(interval);
+				} catch (NumberFormatException e) {
+					logger.warn("Property 'queue_reporting_interval' not correctly specified, will use default. Error: {}", e.getMessage());
+				}
+			}
+
+
 			jobDaemon = new Thread(jobStatusUpdater);
 			jobDaemon.start();
 		} else {
