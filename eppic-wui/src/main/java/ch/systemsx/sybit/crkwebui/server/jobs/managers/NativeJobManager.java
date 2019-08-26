@@ -108,10 +108,10 @@ public class NativeJobManager implements JobManager
 					logger.warn("Something went wrong when starting job execution for job {}", jobId);
 					statusOfJob = StatusOfJob.ERROR;
 				} else if (finishStatus == ShellTask.SIGTERM_ERROR_CODE) {
-					logger.warn("The job '{}' was stopped", jobId);
+					logger.info("The job '{}' was stopped", jobId);
 					statusOfJob = StatusOfJob.STOPPED;
 				} else {
-					logger.warn("Job {} reported non-0 exit status {}", jobId, finishStatus);
+					logger.info("Job {} reported non-0 exit status {}", jobId, finishStatus);
 					statusOfJob = StatusOfJob.ERROR;
 				}
 
