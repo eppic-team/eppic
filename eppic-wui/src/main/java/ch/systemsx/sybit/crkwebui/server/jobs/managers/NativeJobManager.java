@@ -86,44 +86,46 @@ public class NativeJobManager implements JobManager
 		{
 			ShellTask task = tasks.get(submissionId);
 			if (task == null) {
-				return StatusOfJob.NONEXISTING;
-			}
-			Future<Integer> future = task.getOutput();
-
-			if (future.isCancelled()) {
-				statusOfJob = StatusOfJob.STOPPED;
-			} else if (future.isDone()) {
-
-				int finishStatus = future.get();
-				if (finishStatus == 0) {
+				// task==null : job is not present in this instance of NativeJobManager, which happens if jetty was restarted
+				// we still try to see if we can find it in file system, in case the process kept running and could finish
+				if(checkIfJobWasFinishedSuccessfully(jobId)) {
+					logger.info("Job '{}' is unknown to the native job manager. However its finish file was found. Considering it FINISHED", jobId);
 					statusOfJob = StatusOfJob.FINISHED;
-					// TODO do we also want to check for the finished file??
-//					if(checkIfJobWasFinishedSuccessfully(jobId)) {
-//						statusOfJob = StatusOfJob.FINISHED;
-//					} else {
-//						logger.warn("Job {} reported success but the finish file could not be found. Considering it in error state", jobId);
-//						statusOfJob = StatusOfJob.ERROR;
-//					}
-				} else if (finishStatus == ShellTask.CANT_START_PROCESS_ERROR_CODE) {
-					logger.warn("Something went wrong when starting job execution for job {}", jobId);
-					statusOfJob = StatusOfJob.ERROR;
-				} else if (finishStatus == ShellTask.SIGTERM_ERROR_CODE) {
-					logger.info("The job '{}' was stopped", jobId);
-					statusOfJob = StatusOfJob.STOPPED;
 				} else {
-					logger.info("Job {} reported non-0 exit status {}", jobId, finishStatus);
-					statusOfJob = StatusOfJob.ERROR;
+					// can't say much more. It could be running, it could be stopped, it could be in error. Let's just say we don't know about it
+					statusOfJob = StatusOfJob.NONEXISTING;
 				}
-
-
 			} else {
+				Future<Integer> future = task.getOutput();
 
-				if (task.isRunning()) {
-					statusOfJob = StatusOfJob.RUNNING;
+				if (future.isCancelled()) {
+					statusOfJob = StatusOfJob.STOPPED;
+				} else if (future.isDone()) {
+
+					int finishStatus = future.get();
+					if (finishStatus == 0) {
+						statusOfJob = StatusOfJob.FINISHED;
+					} else if (finishStatus == ShellTask.CANT_START_PROCESS_ERROR_CODE) {
+						logger.warn("Something went wrong when starting job execution for job {}", jobId);
+						statusOfJob = StatusOfJob.ERROR;
+					} else if (finishStatus == ShellTask.SIGTERM_ERROR_CODE) {
+						logger.info("The job '{}' was stopped", jobId);
+						statusOfJob = StatusOfJob.STOPPED;
+					} else {
+						logger.info("Job {} reported non-0 exit status {}", jobId, finishStatus);
+						statusOfJob = StatusOfJob.ERROR;
+					}
+
+
 				} else {
-					statusOfJob = StatusOfJob.QUEUING;
-				}
 
+					if (task.isRunning()) {
+						statusOfJob = StatusOfJob.RUNNING;
+					} else {
+						statusOfJob = StatusOfJob.QUEUING;
+					}
+
+				}
 			}
 
 		}
