@@ -3,13 +3,11 @@ package ch.systemsx.sybit.crkwebui.server.jobs.managers;
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import eppic.model.shared.StatusOfJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +42,6 @@ public class NativeJobManager implements JobManager
 	public NativeJobManager(String jobsDirectory, int numWorkers) {
 
 		executor = Executors.newFixedThreadPool(numWorkers);
-		//jobs = new HashMap<>();
 		tasks = new HashMap<>();
 
 		this.jobsDirectory = jobsDirectory;
@@ -87,7 +84,11 @@ public class NativeJobManager implements JobManager
 
 		try
 		{
-			Future<Integer> future = tasks.get(submissionId).getOutput();
+			ShellTask task = tasks.get(submissionId);
+			if (task == null) {
+				return StatusOfJob.NONEXISTING;
+			}
+			Future<Integer> future = task.getOutput();
 
 			if (future.isCancelled()) {
 				statusOfJob = StatusOfJob.STOPPED;
@@ -117,7 +118,6 @@ public class NativeJobManager implements JobManager
 
 			} else {
 
-				ShellTask task = tasks.get(submissionId);
 				if (task.isRunning()) {
 					statusOfJob = StatusOfJob.RUNNING;
 				} else {

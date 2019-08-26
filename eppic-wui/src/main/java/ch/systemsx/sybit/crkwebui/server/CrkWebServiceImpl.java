@@ -16,7 +16,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 
-import ch.systemsx.sybit.crkwebui.server.jobs.managers.NativeJobManager;
 import eppic.db.dao.*;
 import eppic.db.dao.jpa.*;
 import eppic.model.dto.*;
@@ -842,6 +841,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	{
 		super.destroy();
 
+		// TODO it seems that destroy() doesn't get called upon jetty killing. So the app is not shutting down correctly
+
 		logger.info("Destroying CrkWebService");
 
 		jobStatusUpdater.setRunning(false);
@@ -853,9 +854,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		try
 		{
-			if (jobManager instanceof NativeJobManager) {
-				((NativeJobManager) jobManager).logJobHistory();
-			}
 			jobManager.close();
 		}
 		catch (JobHandlerException e)

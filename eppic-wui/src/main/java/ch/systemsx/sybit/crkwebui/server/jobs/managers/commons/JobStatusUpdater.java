@@ -41,7 +41,7 @@ public class JobStatusUpdater implements Runnable
 	/**
 	 * The interval where the queue state is logged, in seconds
 	 */
-	public static final int LOG_QUEUE_INTERVAL = 60;
+	public static final int LOG_QUEUE_INTERVAL = 3600;
 	
 	private volatile boolean running;
 	private volatile boolean isUpdating;
@@ -131,7 +131,7 @@ public class JobStatusUpdater implements Runnable
 				logger.error(t.getMessage(), t);
 			}
 
-			// log queue state every
+			// log queue state every LOG_QUEUE_INTERVAL
 			if ((System.currentTimeMillis()/1000)%LOG_QUEUE_INTERVAL <= POLLING_INTERVAL/1000) {
 				if (jobManager instanceof NativeJobManager) {
 					((NativeJobManager) jobManager).logJobHistory();
