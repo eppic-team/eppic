@@ -96,8 +96,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	public static final String SERVER_PROPERTIES_FILE 	= CONFIG_FILES_LOCATION+"/server.properties";
 	private static final String EMAIL_PROPERTIES_FILE   = CONFIG_FILES_LOCATION + "/email.properties";
 	private static final String INPUT_PARAMS_FILE 		= CONFIG_FILES_LOCATION+"/input_parameters.xml";
-	private static final String QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX = "_queuing_system.properties";
-	
+
 	// note: grid.properties we read from within-war file, then from server-config dir if there is one
 	// that way we can still externally configure, whilst keeping a default config in the packed war file
 	private static final String GRID_PROPERTIES_FILE_RESOURCE 	= CONFIG_FILES_RESOURCE_LOCATION+"/grid.properties";
@@ -265,7 +264,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		}
 
 		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE) ||
-			properties.get(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
+			properties.getProperty(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
 		
 			initializeJobManager(numWorkersJobManager);
 		} else {
