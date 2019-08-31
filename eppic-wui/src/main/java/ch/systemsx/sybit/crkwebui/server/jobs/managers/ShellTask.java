@@ -65,6 +65,8 @@ public class ShellTask implements Callable<Integer> {
 
         finishTime = System.currentTimeMillis();
 
+        isRunning = false;
+
         return exitStatus;
     }
 
