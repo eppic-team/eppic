@@ -1,6 +1,7 @@
 package ch.systemsx.sybit.crkwebui.server.runners;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -57,28 +58,25 @@ public class CrkRunner
 		RunJobDataValidator.validateInput(runJobData.getInput());
 		RunJobDataValidator.validateInputParameters(runJobData.getInputParameters());
 
-		List<String> crkCommand = CrkCommandGenerator.createCrkCommand(crkApplicationLocation,
+		List<String> eppicCommand = new ArrayList<>();
+		eppicCommand.add(javaVMExec);
+		eppicCommand.addAll(CrkCommandGenerator.createCrkCommand(crkApplicationLocation,
 															  runJobData.getInput(),
 															  inputType,
 															  runJobData.getInputParameters(),
 															  destinationDirectoryName,
 															  nrOfThreadsForSubmission,
-															  assignedMemory);
+															  assignedMemory));
 
 		// logging the command
-		StringBuffer sb = new StringBuffer();
-		for (String token:crkCommand) {
-			sb.append(token+" ");
-		}
-		log.info("Running user job: "+sb.toString());
+		log.info("Running user job: {}", String.join(" ", eppicCommand));
 		
 		if (jobManager==null) {
 			log.error("jobManager is null! A NPE will follow!");
 		}
 		
-	    return jobManager.startJob(javaVMExec,
-	    		                   runJobData.getJobId(), 
-	    						   crkCommand, 
+	    return jobManager.startJob(runJobData.getJobId(),
+	    						   eppicCommand,
 	    						   destinationDirectoryName,
 	    						   nrOfThreadsForSubmission);
 	}

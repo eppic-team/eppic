@@ -1,14 +1,23 @@
 package eppic.model.db;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.io.Serializable;
 
-
+@Entity
+@Table(name = "RunParameters")
 public class RunParametersDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int uid;
-	
 	
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
@@ -31,10 +40,15 @@ public class RunParametersDB implements Serializable {
 	
 	private String searchMode;
 
+	@Column(length = 10)
 	private String uniProtVersion;
+	@Column(length = 35)
 	private String eppicVersion;
+	// Setting it to 50 after looking at some examples with length just over 40 - JD 2016-11-27
+	@Column(length = 50)
 	private String eppicBuild;
-	
+
+	@OneToOne(mappedBy = "runParameters")
 	private PdbInfoDB pdbInfo;
 	
 	public RunParametersDB() {

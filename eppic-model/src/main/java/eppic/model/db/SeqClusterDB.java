@@ -1,14 +1,41 @@
 package eppic.model.db;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "SeqCluster")
 public class SeqClusterDB implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int uid;
+	@Column(length = 4)
 	private String pdbCode;
+
+	// 			The chain code is actually case sensitive but MySQL by default uses a case insensitive
+	//			collation (ci). The WUI actually needs it to be case sensitive since the repChain is
+	//			part of the primary key when the sequence clusters are queried by providing a
+	//			pdbCode+repChain in the URL.
+	//			Instead of explicitly defining a case sensitive	collation for this column only, we do
+	//			it for the whole server using the 'collation-server=latin1_general_cs' setting. Otherwise
+	//			other things break while trying to query (in offline analyses), e.g. one needs to use binary
+	//			comparisons to be case sensitive but the binary comparisons don't use indexes and thus they
+	//			are slow.
+	//			See issues
+	//			https://github.com/eppic-team/eppic-wui/issues/4
+	//			https://github.com/eppic-team/eppic/issues/36
+	@Column(length = 4)
 	private String repChain;
+
 	private int c100;
 	private int c95;
 	private int c90;
@@ -18,7 +45,8 @@ public class SeqClusterDB implements Serializable {
 	private int c50;
 	private int c40;
 	private int c30;
-	 
+
+	@OneToOne
 	private ChainClusterDB chainCluster;
 
 	public SeqClusterDB() {

@@ -21,11 +21,10 @@ public interface JobManager
 	 * @return submissionId
 	 * @throws JobHandlerException when job can not be successfully started
 	 */
-	public String startJob(String javaVMExec,
-			               String jobId, 
-						   List<String> command, 
-						   String jobDirectory, 
-						   int nrOfThreadsForSubmission) throws JobHandlerException;
+	String startJob(String jobId,
+					List<String> command,
+					String jobDirectory,
+					int nrOfThreadsForSubmission) throws JobHandlerException;
 
 	/**
 	 * Retrieves current status of specified job.
@@ -34,18 +33,18 @@ public interface JobManager
 	 * @return status of the job
 	 * @throws JobHandlerException when can not retrieve current status of the job
 	 */
-	public StatusOfJob getStatusOfJob(String jobId, String submissionId) throws JobHandlerException;
+	StatusOfJob getStatusOfJob(String jobId, String submissionId) throws JobHandlerException;
 
 	/**
 	 * Stops execution of the job.
 	 * @param submissionId submission identifier of the job to stop
 	 * @throws JobHandlerException when can not successfully stop the job
 	 */
-	public void stopJob(String submissionId) throws JobHandlerException;
+	void stopJob(String submissionId) throws JobHandlerException;
 
 	/**
 	 * Shutdown job manager.
 	 * @throws JobHandlerException when finalization of the resources fails
 	 */
-	public void finalize() throws JobHandlerException;
+	void close() throws JobHandlerException;
 }

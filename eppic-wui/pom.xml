@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.eppic-web</groupId>
 		<artifactId>eppic</artifactId>
-		<version>3.2.2-SNAPSHOT</version>
+		<version>3.2.3-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>eppic-wui</artifactId>
@@ -86,21 +86,10 @@
 		<dependency>
 			<groupId>com.gwtplatform</groupId>
 			<artifactId>gwtp-processors</artifactId>
-			<version>1.2.1</version>
+			<version>1.6</version>
 		</dependency>
 
 		<!--  others -->
-		<dependency>
-			<groupId>us.levk</groupId>
-			<artifactId>drmaa-common</artifactId>
-			<version>1.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>us.levk</groupId>
-			<artifactId>drmaa-gridengine</artifactId>
-			<version>6.2u5</version>
-		</dependency>
 
 
 		<dependency>
@@ -131,7 +120,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlets</artifactId>
-			<version>9.2.24.v20180105</version>
+			<version>9.4.20.v20190813</version>
 		</dependency>
 
 		<!-- For json output in DataDownloadServlet : eclipselink JAXB implementation
@@ -146,7 +135,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.10</version>
+			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 

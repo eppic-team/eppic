@@ -1,16 +1,33 @@
 package eppic.model.db;
 
+import eppic.model.adapters.ContactListener;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "Contact")
+@EntityListeners(ContactListener.class)
 public class ContactDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int uid;
 	
 	private int firstResNumber;
 	private int secondResNumber;
+	@Column(length = 3)
 	private String firstResType;
+	@Column(length = 3)
 	private String secondResType;
 	
 	private double firstBurial;
@@ -26,8 +43,10 @@ public class ContactDB implements Serializable {
 	private boolean disulfide;
 	
 	private int interfaceId;
+	@Column(length = 4)
 	private String pdbCode;
-	
+
+	@ManyToOne
 	private InterfaceDB interfaceItem;
 
 	public int getUid() {

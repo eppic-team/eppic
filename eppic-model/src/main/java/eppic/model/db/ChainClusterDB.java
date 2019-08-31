@@ -1,14 +1,33 @@
 package eppic.model.db;
 
+import eppic.model.adapters.ChainClusterListener;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
 
+@Entity
+@Table(name = "ChainCluster")
+@EntityListeners(ChainClusterListener.class)
 public class ChainClusterDB implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
-	
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int uid;
-	
+
+	@Column(length = 4)
 	private String repChain;	 // the PDB chain code of representative chain
 	private String memberChains; // comma separated list of member PDB chain codes
 	
@@ -24,15 +43,19 @@ public class ChainClusterDB implements Serializable {
 	
 	private int pdbStart;
 	private int pdbEnd;
-	
+
+	@Column(length = 40000, columnDefinition = "TEXT")
 	private String pdbAlignedSeq;
+	@Column(length = 40000, columnDefinition = "TEXT")
 	private String refAlignedSeq;
 	
 	private boolean hasUniProtRef;
-		
+
+	@OneToMany(mappedBy = "chainCluster", cascade = CascadeType.ALL)
 	private List<UniProtRefWarningDB> uniProtRefWarnings;
 	
 	private int numHomologs;
+	@Column(length = 40000, columnDefinition = "TEXT")
 	private String msaAlignedSeq;
 	
 	private double seqIdCutoff;
@@ -40,15 +63,20 @@ public class ChainClusterDB implements Serializable {
 	
 	private String firstTaxon;
 	private String lastTaxon;
-	
+
+	@OneToMany(mappedBy = "chainCluster", cascade = CascadeType.ALL)
 	private List<HomologDB> homologs;
-	
+
+	@Column(length = 4)
 	private String pdbCode;
-	
+
+	@ManyToOne
 	private PdbInfoDB pdbInfo;
-	
+
+	@OneToOne(mappedBy = "chainCluster", cascade = CascadeType.ALL)
 	private SeqClusterDB seqCluster;
-	
+
+	@OneToMany(mappedBy = "chainCluster", cascade = CascadeType.ALL)
 	private List<ResidueInfoDB> residueInfos;
 	
 	public ChainClusterDB() {

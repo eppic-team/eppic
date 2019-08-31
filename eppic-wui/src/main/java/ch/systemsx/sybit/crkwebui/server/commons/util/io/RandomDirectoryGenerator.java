@@ -3,6 +3,8 @@ package ch.systemsx.sybit.crkwebui.server.commons.util.io;
 import java.io.File;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is used to generate directory with random job id as name.
@@ -11,6 +13,9 @@ import org.apache.commons.lang.RandomStringUtils;
  */
 public class RandomDirectoryGenerator 
 {
+
+	private static final Logger logger = LoggerFactory.getLogger(RandomDirectoryGenerator.class);
+
 	/**
 	 * Creates unique directory for randomly generated job id.
 	 * @param generalDestinationDirectoryName directory where jobid subdirectory will be created
@@ -31,7 +36,12 @@ public class RandomDirectoryGenerator
 
 			if (!randomDirectory.exists()) 
 			{
-				randomDirectory.mkdir();
+				boolean couldCreate = randomDirectory.mkdir();
+				if (!couldCreate) {
+					logger.warn("Could not create job directory {}", randomDirectory);
+				} else {
+					logger.info("Job directory {} created", randomDirectory);
+				}
 				isDirectorySet = true;
 			}
 		}

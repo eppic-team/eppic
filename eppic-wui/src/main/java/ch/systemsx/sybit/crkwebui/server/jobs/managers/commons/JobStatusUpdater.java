@@ -5,8 +5,9 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.List;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import ch.systemsx.sybit.crkwebui.server.jobs.managers.NativeJobManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
@@ -30,12 +31,17 @@ import eppic.model.db.PdbInfoDB;
  */
 public class JobStatusUpdater implements Runnable
 {
-	//private static final Logger logger = LoggerFactory.getLogger(JobStatusUpdater.class);
+	private static final Logger logger = LoggerFactory.getLogger(JobStatusUpdater.class);
 	
 	/**
 	 * The polling interval in milliseconds
 	 */
 	public static final int POLLING_INTERVAL = 2000;
+
+	/**
+	 * The default interval to log the queue state, in milliseconds
+	 */
+	public static final int LOG_QUEUE_INTERVAL = 60 * 60 * 1000; // every hour
 	
 	private volatile boolean running;
 	private volatile boolean isUpdating;
@@ -45,6 +51,7 @@ public class JobStatusUpdater implements Runnable
 	private EmailSender emailSender;
 	private EmailMessageData emailMessageData;
 	private String generalDestinationDirectoryName;
+	private int logQueueInterval;
 
 	public JobStatusUpdater(JobManager jobManager,
 							JobDAO jobDAO,
@@ -60,6 +67,7 @@ public class JobStatusUpdater implements Runnable
 		this.emailSender = emailSender;
 		this.emailMessageData = emailMessageData;
 		this.generalDestinationDirectoryName = generalDestinationDirectoryName;
+		this.logQueueInterval = LOG_QUEUE_INTERVAL;
 	}
 
 	@Override
@@ -112,21 +120,24 @@ public class JobStatusUpdater implements Runnable
 					{
 						handleJobFinishedWithError(unfinishedJob);
 					}
-					catch (JobHandlerException e)
+					catch (JobHandlerException|DaoException e)
 					{
-						e.printStackTrace();
+						logger.error(e.getMessage(), e);
 					}
-					catch (DaoException e)
-					{
-						e.printStackTrace();
-					}
+
 				}
 				
 				Thread.sleep(POLLING_INTERVAL);
 			}
-			catch (Throwable t)
-			{
-				t.printStackTrace();
+			catch (Throwable t) {
+				logger.error(t.getMessage(), t);
+			}
+
+			// log queue state every LOG_QUEUE_INTERVAL
+			if (System.currentTimeMillis()%logQueueInterval < POLLING_INTERVAL) {
+				if (jobManager instanceof NativeJobManager) {
+					((NativeJobManager) jobManager).logJobHistory();
+				}
 			}
 			
 			isUpdating = false;
@@ -178,7 +189,7 @@ public class JobStatusUpdater implements Runnable
 	{
 		File jobDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobStatusDetails.getJobId());
 		
-		File directoryContent[] = DirectoryContentReader.getFilesNamesWithPrefix(jobDirectory,
+		File[] directoryContent = DirectoryContentReader.getFilesNamesWithPrefix(jobDirectory,
 																					jobStatusDetails.getJobId() + ".e");
 		File errorLogFile = null;
 		if((directoryContent != null) && (directoryContent.length > 0))
@@ -198,7 +209,7 @@ public class JobStatusUpdater implements Runnable
 			catch(Throwable t)
 	        {
 				errorMsg = "Unknown error";
-	        	t.printStackTrace();
+	        	logger.error("Exception caught. Error: {}", t.getMessage());
 	        }
 		}
 
@@ -247,7 +258,7 @@ public class JobStatusUpdater implements Runnable
 
 	/**
 	 * Retrieves result of processing from specified file.
-	 * @param resultFileName file containing result of processing
+	 * @param resultFile file containing result of processing
 	 * @return pdb score item
 	 * @throws DeserializationException when can not retrieve result from specified file
 	 */
@@ -305,5 +316,10 @@ public class JobStatusUpdater implements Runnable
 	 */
 	public boolean isUpdating() {
 		return isUpdating;
+	}
+
+	public void setLogQueueInterval(int logQueueInterval) {
+		logger.info("Will report queue contents every {} ms", logQueueInterval);
+		this.logQueueInterval = logQueueInterval;
 	}
 }

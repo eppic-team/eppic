@@ -1,30 +1,52 @@
 package eppic.model.db;
 
+import eppic.model.adapters.InterfaceListener;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "Interface")
+@EntityListeners(InterfaceListener.class)
 public class InterfaceDB implements Serializable {
 	
 	
 	private static final long serialVersionUID = 1L;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int uid;
-	
+
+	@Column(length = 4)
 	private String pdbCode;
 	
 	private int interfaceId;
 	private int clusterId;
 	
 	private double area;
+	@Column(length = 4)
 	private String chain1;
+	@Column(length = 4)
 	private String chain2;
 
+	@Column(length = 25)
 	private String operator;
 	
 	/**
-	 * The types are the short names of {@link org.biojava.bio.structure.xtal.TransformType} enum
+	 * The types are the short names of org.biojava.bio.structure.xtal.TransformType enum
 	 */
+	@Column(length = 5)
 	private String operatorType;
 	
 	private boolean infinite;
@@ -52,13 +74,18 @@ public class InterfaceDB implements Serializable {
 	private int xtalTrans_z;
 	
 	private int globalInterfClusterId;
-	
+
+	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
 	private List<InterfaceWarningDB> interfaceWarnings;
-	
+
+	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
 	private List<InterfaceScoreDB> interfaceScores;
+	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
 	private List<ResidueBurialDB> residueBurials;
+	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
 	private List<ContactDB> contacts;
-	
+
+	@ManyToOne
 	private InterfaceClusterDB interfaceCluster;
 
 	public InterfaceDB() {

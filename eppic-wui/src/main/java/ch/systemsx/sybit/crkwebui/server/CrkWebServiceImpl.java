@@ -96,8 +96,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	public static final String SERVER_PROPERTIES_FILE 	= CONFIG_FILES_LOCATION+"/server.properties";
 	private static final String EMAIL_PROPERTIES_FILE   = CONFIG_FILES_LOCATION + "/email.properties";
 	private static final String INPUT_PARAMS_FILE 		= CONFIG_FILES_LOCATION+"/input_parameters.xml";
-	private static final String QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX = "_queuing_system.properties";
-	
+
 	// note: grid.properties we read from within-war file, then from server-config dir if there is one
 	// that way we can still externally configure, whilst keeping a default config in the packed war file
 	private static final String GRID_PROPERTIES_FILE_RESOURCE 	= CONFIG_FILES_RESOURCE_LOCATION+"/grid.properties";
@@ -231,10 +230,16 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
 		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 
-		String queuingSystem = properties.getProperty("queuing_system");
-		if(queuingSystem == null)
+		int numWorkersJobManager;
+		String numWorkers = properties.getProperty("num_workers");
+		if(numWorkers == null)
 		{
-			throw new ServletException("Queuing system not specified");
+			throw new ServletException("Number of workers for job manager not specified");
+		}
+		try {
+			numWorkersJobManager = Integer.parseInt(numWorkers);
+		} catch (NumberFormatException e) {
+			throw new ServletException("Property num_workers did not specify an integer correctly");
 		}
 
 		int nrOfThreadForSubmission = Integer.parseInt(properties.getProperty("nr_of_threads_for_submission","1"));
@@ -259,9 +264,9 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		}
 
 		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE) ||
-			properties.get(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
+			properties.getProperty(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
 		
-			initializeJobManager(queuingSystem);
+			initializeJobManager(numWorkersJobManager);
 		} else {
 			logger.warn("{} is set to true in config file. There will be no queuing system available!",ApplicationSettingsGenerator.DEVELOPMENT_MODE);
 		}
@@ -351,8 +356,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 				assignedMemory,
 				javaVMExec);
 		if(!properties.containsKey(ApplicationSettingsGenerator.DEVELOPMENT_MODE) ||
-			properties.get(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
-			
+			properties.getProperty(ApplicationSettingsGenerator.DEVELOPMENT_MODE).equals("true")) {
+
 			logger.info("Proceeding to spawn the job status updater daemon");
 			jobStatusUpdater = new JobStatusUpdater(jobManager,
 					new JobDAOJpa(),
@@ -360,6 +365,17 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 					emailSender,
 					emailMessageData,
 					generalDestinationDirectoryName);
+
+			if (properties.containsKey("queue_reporting_interval")) {
+				try {
+					int interval = Integer.parseInt(properties.getProperty("queue_reporting_interval"));
+					jobStatusUpdater.setLogQueueInterval(interval);
+				} catch (NumberFormatException e) {
+					logger.warn("Property 'queue_reporting_interval' not correctly specified, will use default. Error: {}", e.getMessage());
+				}
+			}
+
+
 			jobDaemon = new Thread(jobStatusUpdater);
 			jobDaemon.start();
 		} else {
@@ -368,20 +384,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	}
 
-	private void initializeJobManager(String queuingSystem) throws ServletException {
-		logger.info("Proceeding to initialise job manager for queuing system {}", queuingSystem);
-		String queueingSystemConfigFile = CONFIG_FILES_LOCATION+"/" + queuingSystem + QUEUING_SYSTEM_PROPERTIES_FILE_SUFFIX;		
-		
-		Properties queuingSystemProperties = new Properties();
+	private void initializeJobManager(int numWorkersJobManager) throws ServletException {
+		logger.info("Proceeding to initialise job manager ");
+
 		try {
-			InputStream queuingSystemPropertiesStream = new FileInputStream(new File(queueingSystemConfigFile));
-			queuingSystemProperties.load(queuingSystemPropertiesStream);
-			logger.info("Read queuing system properties from file {}", queueingSystemConfigFile);
-		} catch (IOException e) {
-			throw new ServletException("Properties file '"+queueingSystemConfigFile+"' for " + queuingSystem + " can not be read. Error: "+e.getMessage());
-		}
-		try {
-			jobManager = JobManagerFactory.getJobManager(queuingSystem, queuingSystemProperties, generalDestinationDirectoryName);
+			jobManager = JobManagerFactory.getJobManager(generalDestinationDirectoryName, numWorkersJobManager);
 		}catch(JobManagerException e) {
 			throw new ServletException(e);
 		}
@@ -844,6 +851,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 	{
 		super.destroy();
 
+		// TODO it seems that destroy() doesn't get called upon jetty killing. So the app is not shutting down correctly
+
+		logger.info("Destroying CrkWebService");
+
 		jobStatusUpdater.setRunning(false);
 
 		while(jobStatusUpdater.isUpdating())
@@ -853,11 +864,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 		try
 		{
-			jobManager.finalize();
+			jobManager.close();
 		}
 		catch (JobHandlerException e)
 		{
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 	}
 

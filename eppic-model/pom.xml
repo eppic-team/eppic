@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.eppic-web</groupId>
 		<artifactId>eppic</artifactId>
-		<version>3.2.2-SNAPSHOT</version>
+		<version>3.2.3-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>eppic-model</artifactId>
@@ -13,13 +13,26 @@
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
 			<artifactId>hibernate-jpa-2.1-api</artifactId>
-			<version>1.0.0.Final</version>
+			<version>1.0.2.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-jpamodelgen</artifactId>
 			<version>${hibernate.version}</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<!-- These 2 are needed for compiling under JRE 11 (these libs are not included anymore) -->
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
 		</dependency>
 
 	</dependencies>
@@ -40,7 +53,7 @@
 			<plugin>
 				<groupId>org.bsc.maven</groupId>
 				<artifactId>maven-processor-plugin</artifactId>
-				<version>2.2.4</version>
+				<version>3.3.2</version>
 				<executions>
 					<execution>
 						<id>process</id>
@@ -49,7 +62,7 @@
 						</goals>
 						<phase>generate-sources</phase>
 						<configuration>
-							<outputDirectory>target/metamodel</outputDirectory>
+							<outputDirectory>${project.build.directory}/metamodel</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -57,7 +70,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.8</version>
+				<version>1.12</version>
 				<executions>
 					<execution>
 						<id>add-source</id>
@@ -89,37 +102,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<!--This plugin's configuration is used to store Eclipse m2e settings 
-				only. It has no influence on the Maven build itself. -->
-			<plugin>
-				<groupId>org.eclipse.m2e</groupId>
-				<artifactId>lifecycle-mapping</artifactId>
-				<configuration>
-					<lifecycleMappingMetadata>
-						<pluginExecutions>
-							<pluginExecution>
-								<pluginExecutionFilter>
-									<groupId>
-										org.codehaus.mojo
-									</groupId>
-									<artifactId>
-										gwt-maven-plugin
-									</artifactId>
-									<versionRange>
-										[2.6.1,)
-									</versionRange>
-									<goals>
-										<goal>resources</goal>
-									</goals>
-								</pluginExecutionFilter>
-								<action>
-									<ignore />
-								</action>
-							</pluginExecution>
-						</pluginExecutions>
-					</lifecycleMappingMetadata>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

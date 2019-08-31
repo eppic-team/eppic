@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.eppic-web</groupId>
         <artifactId>eppic</artifactId>
-        <version>3.2.2-SNAPSHOT</version>
+        <version>3.2.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>eppic-rest</artifactId>
@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlets</artifactId>
-            <version>9.2.24.v20180105</version>
+            <version>9.4.20.v20190813</version>
         </dependency>
 
         <!-- Jersey -->
@@ -238,6 +238,7 @@
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>**/about.properties</include>
+                                        <include>**/openapi-config.json</include>
                                     </includes>
                                 </resource>
                                 <resource>
@@ -248,6 +249,7 @@
                                     </includes>
                                     <excludes>
                                         <exclude>**/about.properties</exclude>
+                                        <exclude>**/openapi-config.json</exclude>
                                     </excludes>
                                 </resource>
                             </resources>
@@ -267,7 +269,7 @@
                     <!-- The prettyPrint setting in openapi-config.json does not work -->
                     <prettyPrint>true</prettyPrint>
 
-                    <configurationFilePath>${project.basedir}/src/main/resources/openapi-config.json</configurationFilePath>
+                    <configurationFilePath>${project.build.outputDirectory}/openapi-config.json</configurationFilePath>
 
                 </configuration>
                 <executions>
