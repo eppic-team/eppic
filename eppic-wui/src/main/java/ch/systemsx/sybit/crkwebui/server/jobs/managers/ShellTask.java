@@ -57,17 +57,24 @@ public class ShellTask implements Callable<Integer> {
             // if file not found or can't be executed
             return CANT_START_PROCESS_ERROR_CODE;
         }
+
         isRunning = true;
 
         executionTime = System.currentTimeMillis();
 
-        int exitStatus = process.waitFor();
+        try {
+            int exitStatus = process.waitFor();
 
-        finishTime = System.currentTimeMillis();
+            finishTime = System.currentTimeMillis();
 
-        isRunning = false;
+            isRunning = false;
 
-        return exitStatus;
+            return exitStatus;
+
+        } catch (InterruptedException e){
+            isRunning = false;
+            throw e;
+        }
     }
 
     public void stop() {
