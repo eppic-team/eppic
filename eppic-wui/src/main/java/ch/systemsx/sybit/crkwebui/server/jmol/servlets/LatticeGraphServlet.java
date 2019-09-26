@@ -108,15 +108,12 @@ public class LatticeGraphServlet extends BaseServlet
 			// Construct filename for AU cif file
 			File auFile = getAuFileName(dir, input);
 			
-			String inputFileNameNoGz = auFile.getName();
-			if (auFile.getName().endsWith(".gz")) {
-				inputFileNameNoGz = auFile.getName().substring(0, auFile.getName().lastIndexOf(".gz"));
-			} else if (auFile.getName().endsWith(".GZ")) {
-				inputFileNameNoGz = auFile.getName().substring(0, auFile.getName().lastIndexOf(".GZ"));
-					
-			}
-			// the URL has no gz at the end because it's served as plain text via content-encoding: gzip
-			String auURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputFileNameNoGz;
+			String inputFileName = auFile.getName();
+
+			// Since jetty 9.4, it looks like grabbing http://.../divided/ab/1abc/1abc.cif does not work when the file is stored as cif.gz
+			// Instead, only http://.../divided/ab/1abc/1abc.cif.gz works
+			// NGL does support reading .cif.gz, so we can just pass that directly
+			String auURI = DirLocatorUtil.getJobUrlPath(resultsLocation, jobId) + "/" + inputFileName;
 
 			outputStream = new PrintWriter(response.getOutputStream());
 			//String molviewerurl = properties.getProperty("urlNglJs");
