@@ -97,7 +97,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		this.exhaustiveEnumeration = true;
 		
 		this.structure = structure;
-		this.latticeGraph = new LatticeGraph<ChainVertex,InterfaceEdge>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
+		this.latticeGraph = new LatticeGraph<>(structure, interfaces,ChainVertex.class,InterfaceEdge.class);
 				
 		initEntityMaps();
 		
@@ -161,19 +161,19 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 */
 	private void findValidAssemblies() {
 				
-		Set<Assembly> validAssemblies = new HashSet<Assembly>();
+		Set<Assembly> validAssemblies = new HashSet<>();
 		
 		// in contracted case this will find the distinct interfaces for the contracted graph
 		int numInterfaceClusters = GraphUtils.getNumDistinctInterfaces(latticeGraph.getGraph());
 		
 		// the list of nodes in the tree found to be invalid: all of their children will also be invalid
-		List<Assembly> invalidNodes = new ArrayList<Assembly>();		
+		List<Assembly> invalidNodes = new ArrayList<>();
 		
 		Assembly emptyAssembly = new Assembly(this, new PowerSet(numInterfaceClusters));
 		
 		validAssemblies.add(emptyAssembly); // the empty assembly (no engaged interfaces) is always a valid assembly
 		
-		Set<Assembly> prevLevel = new HashSet<Assembly>();
+		Set<Assembly> prevLevel = new HashSet<>();
 		prevLevel.add(emptyAssembly);
 		Set<Assembly> nextLevel = null;
 
@@ -181,7 +181,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 
 			logger.debug("Traversing level {} of tree: {} parent nodes",k,prevLevel.size());
 
-			nextLevel = new HashSet<Assembly>();
+			nextLevel = new HashSet<>();
 
 			for (Assembly p:prevLevel) {
 				List<Assembly> children = p.getChildren(invalidNodes);
@@ -201,13 +201,13 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 						if (validAssemblies.size() > MAX_ALLOWED_ASSEMBLIES) {
 							logger.warn("Exceeded the default max number of allowed assemblies ({}). Will do assembly enumeration from heteromeric-contracted graph", MAX_ALLOWED_ASSEMBLIES);
 							largeNumAssemblies = true;
-							all = new HashSet<Assembly>();
+							all = new HashSet<>();
 							return;
 						}
 					}
 				}
 			}
-			prevLevel = new HashSet<Assembly>(nextLevel); 
+			prevLevel = new HashSet<>(nextLevel);
 
 		}
 
@@ -217,7 +217,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	}
 
 	private void initGroups() {
-		this.groups = new TreeMap<Integer, AssemblyGroup>();
+		this.groups = new TreeMap<>();
 
 		for (Assembly assembly:all) {
 
@@ -285,10 +285,10 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	
 	private void initEntityMaps() {
 		// since the entityIds are not guaranteed to be 1 to n, we need to map them to indices
-		entityId2Idx = new HashMap<Integer,Integer>();
-		idx2EntityId = new HashMap<Integer,Integer>();
-		chainIds2Idx = new HashMap<String, Integer>();
-		idx2ChainIds = new HashMap<Integer, String>();
+		entityId2Idx = new HashMap<>();
+		idx2EntityId = new HashMap<>();
+		chainIds2Idx = new HashMap<>();
+		idx2ChainIds = new HashMap<>();
 
 		int i = 0;
 		for (EntityInfo c:structure.getEntityInfos()) {
@@ -480,7 +480,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 	 * @return
 	 */
 	public List<Assembly> getUniqueAssemblies() {
-		List<Assembly> representatives = new ArrayList<Assembly>();
+		List<Assembly> representatives = new ArrayList<>();
 		
 		
 		for (AssemblyGroup cluster:clusters) {
@@ -629,7 +629,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 			} else {
 				// if not a unique assembly, choose the lowest stoichiometry
 				for (Integer i:indices) {
-					if (i == Collections.min(indices))
+					if (i.intValue() == Collections.min(indices))
 						uniques.get(i).setCall(CallType.BIO);
 					else
 						uniques.get(i).setCall(CallType.CRYSTAL);
