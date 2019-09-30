@@ -275,4 +275,32 @@ public class TestContractedAssemblyEnumeration {
 		
 
 	}
+
+	@Test
+	public void testNonCrystallographicGives1Assembly() throws IOException, StructureException {
+
+		// since 3.2.3 we don't try to enumerate assemblies for non-crystallographic,
+		// instead we just give the all-edges assembly as the only possibility
+		Structure s = TestLatticeGraph.getStructure("5xnl");
+
+		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
+
+		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, false);
+
+		assertEquals(1, crystalAssemblies.size());
+
+		System.out.printf("%d assemblies found for EM entry 5xnl: \n", crystalAssemblies.size());
+
+		for (Assembly a : crystalAssemblies) {
+
+			// TODO getDescription fails because getSymmetry fails.
+			//  We are always assuming that stoichiometries are even in the list of valid assembies
+			//  and adding the assembly as given breaks that assumption in many cases
+			System.out.println("assembly "+a.toString() + " -- " + getDescription(a));
+
+			// there's 160+ interfaces so the string must be long
+			assertTrue(a.toString().length()>100);
+		}
+
+	}
 }

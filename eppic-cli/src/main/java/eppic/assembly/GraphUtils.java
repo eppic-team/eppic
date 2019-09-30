@@ -172,7 +172,7 @@ public class GraphUtils {
 	 * @return
 	 */
 	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getNumDistinctInterfaces(UndirectedGraph<V, E> g) {
-		Set<Integer> interfClusterIds = new HashSet<Integer>();
+		Set<Integer> interfClusterIds = new HashSet<>();
 		for (E e:g.edgeSet()) {
 			interfClusterIds.add(e.getClusterId());
 		}
@@ -185,7 +185,7 @@ public class GraphUtils {
 	 * @return
 	 */
 	public static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> SortedSet<Integer> getDistinctInterfaceClusters(UndirectedGraph<V,E> g) {
-		SortedSet<Integer> interfClusterIds = new TreeSet<Integer>();
+		SortedSet<Integer> interfClusterIds = new TreeSet<>();
 		for (E e:g.edgeSet()) {
 			interfClusterIds.add(e.getClusterId());
 		}
@@ -198,7 +198,7 @@ public class GraphUtils {
 	 * @return
 	 */
 	public static <V extends ChainVertexInterface, E extends InterfaceEdgeInterface> SortedSet<Integer> getDistinctInterfaces(UndirectedGraph<V,E> g) {
-		SortedSet<Integer> interfIds = new TreeSet<Integer>();
+		SortedSet<Integer> interfIds = new TreeSet<>();
 		for (E e:g.edgeSet()) {
 			interfIds.add(e.getInterfaceId());
 		}

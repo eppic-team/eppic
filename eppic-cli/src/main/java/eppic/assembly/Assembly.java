@@ -194,14 +194,14 @@ public class Assembly {
 	 */
 	public List<Assembly> getChildren(List<Assembly> invalidParents) {
 
-		List<PowerSet> powersetInvalidParents = new ArrayList<PowerSet>();
+		List<PowerSet> powersetInvalidParents = new ArrayList<>();
 		for (Assembly ia:invalidParents) {
 			powersetInvalidParents.add(ia.engagedSet);
 		}
 		
 		List<PowerSet> powersetChildren = this.engagedSet.getChildren(powersetInvalidParents);
 		
-		List<Assembly> children = new ArrayList<Assembly>();		
+		List<Assembly> children = new ArrayList<>();
 		
 		for (PowerSet c:powersetChildren) {
 			children.add(new Assembly(crystalAssemblies, c));

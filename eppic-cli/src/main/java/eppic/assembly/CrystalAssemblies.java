@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -105,31 +106,37 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		GraphContractor<ChainVertex, InterfaceEdge> graphContractor = null;
 
-		if (forceContracted) {
-			logger.info("Doing assemblies enumeration with graph contraction, since forceContracted is true");
-			graphContractor = latticeGraph.contractGraph(InterfaceEdge.class);
-			exhaustiveEnumeration = false;
-		} 
+		if (!structure.isCrystallographic()) {
+			addAssemblyAsGiven();
 
-		findValidAssemblies();
+		} else {
 
-		if (!forceContracted && largeNumAssemblies) {
+			if (forceContracted) {
+				logger.info("Doing assemblies enumeration with graph contraction, since forceContracted is true");
+				graphContractor = latticeGraph.contractGraph(InterfaceEdge.class);
+				exhaustiveEnumeration = false;
+			}
 
-			logger.info("Structure has more than {} assemblies in full enumeration, will contract heteromeric interfaces to enumerate assemblies.", MAX_ALLOWED_ASSEMBLIES);
-
-			graphContractor = latticeGraph.contractGraph(InterfaceEdge.class);
-			
 			findValidAssemblies();
-			
-			exhaustiveEnumeration = false;
-		}
-		
-		if (graphContractor!=null) { // i.e. if we did contracted enumeration above
-			
-			// after the enumeration with the simplified contracted graph, we need to go back and 
-			// express everything in terms of the full graph
-			convertToFullGraph(graphContractor);
 
+			if (!forceContracted && largeNumAssemblies) {
+
+				logger.info("Structure has more than {} assemblies in full enumeration, will contract heteromeric interfaces to enumerate assemblies.", MAX_ALLOWED_ASSEMBLIES);
+
+				graphContractor = latticeGraph.contractGraph(InterfaceEdge.class);
+
+				findValidAssemblies();
+
+				exhaustiveEnumeration = false;
+			}
+
+			if (graphContractor != null) { // i.e. if we did contracted enumeration above
+
+				// after the enumeration with the simplified contracted graph, we need to go back and
+				// express everything in terms of the full graph
+				convertToFullGraph(graphContractor);
+
+			}
 		}
 
 		initGroups();
@@ -214,6 +221,15 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		this.all = validAssemblies;
 		
 
+	}
+
+	private void addAssemblyAsGiven() {
+		this.all = new HashSet<>();
+		SortedSet<Integer> interfClusterIds = GraphUtils.getDistinctInterfaceClusters(latticeGraph.getGraph());
+
+		Assembly a = generateAssembly(interfClusterIds);
+
+		this.all.add(a);
 	}
 
 	private void initGroups() {
