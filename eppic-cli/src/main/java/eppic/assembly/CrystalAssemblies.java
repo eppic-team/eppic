@@ -604,7 +604,7 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		
 		// This is done when multiple assemblies are high scoring
 		indx = 0;
-		List<Integer> indices = new ArrayList<Integer>();
+		List<Integer> indices = new ArrayList<>();
 		for (Assembly a:uniques) {
 			if (a.getScore() == maxScore){
 				indices.add(indx);
@@ -628,8 +628,9 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 				uniques.get(maxIndx).setCall(CallType.BIO);
 			} else {
 				// if not a unique assembly, choose the lowest stoichiometry
+				int minIndex = Collections.min(indices);
 				for (Integer i:indices) {
-					if (i.intValue() == Collections.min(indices))
+					if (i == minIndex)
 						uniques.get(i).setCall(CallType.BIO);
 					else
 						uniques.get(i).setCall(CallType.CRYSTAL);
