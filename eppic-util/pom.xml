@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>uk.ac.ebi.uniprot</groupId>
 			<artifactId>japi</artifactId>
-			<version>1.0.28</version>
+			<version>1.0.30</version>
 			<exclusions>
 				<!-- This should fix the problem of multiple bindings (warning at startup). But it doesn't because something
                 in the UniProt japi calls a logback function at runtime and then the JVM crashes with a NoClassDefFoundError.
