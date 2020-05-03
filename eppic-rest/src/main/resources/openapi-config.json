@@ -10,7 +10,7 @@
       "description": "Provides programmatic access to assemblies/interfaces information stored in the EPPIC database.",
       "termsOfService": "http://www.eppic-web.org",
       "contact": {
-        "email": "eppic@systemsx.ch"
+        "email": "info@rcsb.org"
       },
       "license": {
         "name": "Apache 2.0",

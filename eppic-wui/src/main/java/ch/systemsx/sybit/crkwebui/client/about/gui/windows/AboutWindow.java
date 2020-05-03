@@ -51,7 +51,7 @@ public class AboutWindow extends ResizableWindow
 				"</tr>" +
 				"<tr>" +
 				"<td></td>" +
-				"<td>eppic@systemsx.ch</td>" +
+				"<td>info@rcsb.org</td>" +
 				"<td>" +
 				"</tr>" +
 				"</table>"));

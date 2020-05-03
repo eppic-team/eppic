@@ -57,7 +57,7 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
         } else {
 
             response = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
-            msg = "Internal server error. If the problem persists, please report it to " + "eppic@systemsx.ch";
+            msg = "Internal server error. If the problem persists, please report it to " + "info@rcsb.org";
             logger.error("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
         }
 

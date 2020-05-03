@@ -25,7 +25,7 @@ public class EppicParams {
 	
 	// CONSTANTS
 	public static final String     PROGRAM_NAME    = "eppic";	
-	public static final String 	   CONTACT_EMAIL   = "eppic@systemsx.ch";
+	public static final String 	   CONTACT_EMAIL   = "info@rcsb.org";
 	
 	// the version and git sha come from the about.properties file, so they can't be final
 	public static String	   	   PROGRAM_VERSION;
