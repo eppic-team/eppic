@@ -455,7 +455,7 @@ public class Main {
 
 		modelAdaptor.setAssemblies(validAssemblies);
 
-		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb);
+		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb, interfaces);
 
 	}
 	

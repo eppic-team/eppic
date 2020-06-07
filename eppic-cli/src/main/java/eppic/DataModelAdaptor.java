@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import eppic.assembly.*;
 import eppic.assembly.gui.InterfaceEdge3DSourced;
@@ -77,9 +78,6 @@ public class DataModelAdaptor {
 	
 	// a temp map to hold the warnings per interface, used in order to eliminate duplicate warnings
 	private HashMap<Integer,HashSet<String>> interfId2Warnings;
-	
-	// a map to convert between asym ids and chain ids so that we can match PDB biounits correctly
-	private HashMap<String,String> asymIds2chainIds;
 
 	// data required to deal with entries with NCS ops (viral capsids mostly), if not an NCS entry then both should be null
 	private Map<String,String> chainOrigNames;
@@ -190,26 +188,6 @@ public class DataModelAdaptor {
 		pdbInfo.setNumChainClusters(chainClusterDBs.size());
 		pdbInfo.setChainClusters(chainClusterDBs);
 
-		initAsymIds2chainIdsMap(pdb);
-	}
-	
-	/**
-	 * Initialize the map of asym ids to chain ids, this is a hack needed to work around the
-	 * limitations of the data structure in Biojava 4.2. The map is used in the PDB biounit to our
-	 * own interfaces matching.
-	 * <p/>
-	 * Note that the map should work in most cases, but it's not guaranteed because there is a one-to-many
-	 * relationship between author chain ids and asym ids (internal ids). This is the best we can do 
-	 * with the data available from Biojava 4.2
-	 * TODO check if we still need with BioJava 5
-	 * @param pdb the structure
-	 */
-	private void initAsymIds2chainIdsMap(Structure pdb) {
-		asymIds2chainIds = new HashMap<>();
-		
-		for (Chain c : pdb.getChains()) {
-			asymIds2chainIds.put(c.getId(), c.getName());
-		}
 	}
 
 	private ChainClusterDB createChainCluster(EntityInfo compound, Map<String,String> chainOrigNames) {
@@ -878,8 +856,9 @@ public class DataModelAdaptor {
 	 * @param bioAssemblies
 	 * @param validAssemblies
 	 * @param pdb
+	 * @param interfaces
 	 */
-	public void setPdbBioUnits(Map<Integer, BioAssemblyInfo> bioAssemblies, CrystalAssemblies validAssemblies, Structure pdb) {
+	public void setPdbBioUnits(Map<Integer, BioAssemblyInfo> bioAssemblies, CrystalAssemblies validAssemblies, Structure pdb, StructureInterfaceList interfaces) {
 		
 		// see https://github.com/eppic-team/eppic/issues/139
 		
@@ -887,12 +866,12 @@ public class DataModelAdaptor {
 			LOGGER.info("No bio assembly annotations present, will not add bio assemblies info to data model");
 			return;
 		}
-		
+
+		AssemblyMatcher assemblyMatcher = new AssemblyMatcher(validAssemblies, interfaces);
 		for (Entry<Integer, BioAssemblyInfo> entry : bioAssemblies.entrySet()) {
 			int bioAssemblyNumber = entry.getKey();
 			BioAssemblyInfo bioAssembly = entry.getValue();
-			
-			setPdbBioUnit(bioAssemblyNumber, bioAssembly, validAssemblies, pdb);
+			setPdbBioUnit(bioAssemblyNumber, bioAssembly, assemblyMatcher);
 		}
 		
 	}
@@ -901,36 +880,16 @@ public class DataModelAdaptor {
 	 * Populate the data model with 1 PDB biounit annotation.
 	 * @param bioAssemblyNumber
 	 * @param bioAssembly
-	 * @param validAssemblies
-	 * @param pdb
+	 * @param assemblyMatcher
 	 */
-	private void setPdbBioUnit(int bioAssemblyNumber, BioAssemblyInfo bioAssembly, CrystalAssemblies validAssemblies, Structure pdb) {
+	private void setPdbBioUnit(int bioAssemblyNumber, BioAssemblyInfo bioAssembly, AssemblyMatcher assemblyMatcher) {
 
 		if (bioAssembly == null) {
 			LOGGER.info("No bio assembly annotation present, will not add bio assembly info to data model");
 			return;
 		}
-		
-		CrystalCell cell = null;
-		if (validAssemblies.getStructure().getCrystallographicInfo()!=null && validAssemblies.getStructure().isCrystallographic()) {
-			cell = validAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
-		}
-		
-		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);
 
-		// Cases like 1m4x_1 (5040 operators) or 1m4x_3 (420 operators) take forever to run
-		// matchToInterfaceClusters() and SimpleInterface.createSimpleInterfaceListFromPdbBioUnit() within
-		// Because algorithm is O(n2) currently
-		if (matchingClusterIds==null)
-			return;
-
-		int[] matchingClusterIdsArray = new int[matchingClusterIds.size()];
-		Iterator<Integer> it = matchingClusterIds.iterator();
-		for (int i=0;i<matchingClusterIds.size();i++) matchingClusterIdsArray[i] = it.next(); 
-		
-		Assembly pdbAssembly = validAssemblies.generateAssembly(matchingClusterIdsArray);
-		
-		Assembly matchingAssembly = getMatchingAssembly(pdbAssembly, validAssemblies);
+		Assembly matchingAssembly = assemblyMatcher.getMatchingAssembly(bioAssembly);
 		AssemblyDB matchingAssemblyDB = null;
 		if (matchingAssembly!=null) {
 			for (AssemblyDB a:pdbInfo.getAssemblies()) {
@@ -949,58 +908,38 @@ public class DataModelAdaptor {
 		as.setPdbCode(pdbInfo.getPdbCode());
 		
 		if (matchingAssemblyDB!=null) {
-
 			as.setAssembly(matchingAssemblyDB);
-			
-			// we use the symmetry detected with biojava's quat symmetry detection just to double check that we get it right in eppic
-			String[] symmetries = getSymmetry(pdb, bioAssemblyNumber);
-			
-			if (!getSymmetryString(matchingAssemblyDB.getAssemblyContents()).equals(symmetries[0])) {
-				LOGGER.warn("Symmetry calculated from graph is {} whilst detected from biounit is {}",
-						getSymmetryString(matchingAssemblyDB.getAssemblyContents()),symmetries[0]);
-			}
-			
-			// we represent the stoichiometries in db with parenthesis, e.g. A(2), we need to strip them before comparing 
-			String stoFromEppic = getStoichiometryString(matchingAssemblyDB.getAssemblyContents());
-			stoFromEppic = stoFromEppic.replaceAll("[()]", "");
-			
-			if (!stoFromEppic.equals(symmetries[1])) {
-				LOGGER.warn("Stoichiometry calculated from graph is {} whilst detected from biounit is {}",
-						stoFromEppic,symmetries[1]);
-			}
 			matchingAssemblyDB.addAssemblyScore(as);
 			
 		} else {
-			LOGGER.warn("PDB given assembly {} does not match any of the topologically valid assemblies.",
-					pdbAssembly.toString());
+			LOGGER.warn("PDB assembly id {} does not match any of the topologically valid assemblies.",
+					bioAssemblyNumber);
 
 			// the assembly is not one of our valid assemblies, we'll have to insert an invalid assembly to the list
 			
 			
 			AssemblyDB assembly = new AssemblyDB();
-			
 			assembly.setId(INVALID_ASSEMBLY_ID);
-			
 			assembly.setTopologicallyValid(false);
-
 			assembly.setUnitCellAssembly(false);
 			
 			// relations
 			assembly.setPdbInfo(pdbInfo);
 			pdbInfo.addAssembly(assembly);
-						
-			Set<InterfaceClusterDB> interfaceClustersDB = new HashSet<InterfaceClusterDB>();
-			for (int interfClusterId:matchingClusterIds) {
-				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(interfClusterId);
-				interfaceClustersDB.add(icDB);
-				icDB.addAssembly(assembly);
-			}
-			assembly.setInterfaceClusters(interfaceClustersDB);
-			
-			// other data
-			assembly.setPdbCode(pdbInfo.getPdbCode());			
 
-			assembly.setInterfaceClusterIds(pdbAssembly.toString());
+			// TODO with new implementation, we need to find matching cluster ids and interface cluster id string
+//			Set<InterfaceClusterDB> interfaceClustersDB = new HashSet<>();
+//			for (int interfClusterId:matchingClusterIds) {
+//				InterfaceClusterDB icDB = pdbInfo.getInterfaceCluster(interfClusterId);
+//				interfaceClustersDB.add(icDB);
+//				icDB.addAssembly(assembly);
+//			}
+//			assembly.setInterfaceClusters(interfaceClustersDB);
+//
+//			// other data
+//			assembly.setPdbCode(pdbInfo.getPdbCode());
+//
+//			assembly.setInterfaceClusterIds(pdbAssembly.toString());
 						
 			// TODO fill the AssemblyContents
 			//assembly.setMmSize(invalidAssembly.getSize());
@@ -1014,9 +953,7 @@ public class DataModelAdaptor {
 			//assembly.setStoichiometry(symmetries[1]);
 			//assembly.setPseudoSymmetry(symmetries[2]);
 			//assembly.setPseudoStoichiometry(symmetries[3]);
-			//assembly.setPdbCode(pdbInfo.getPdbCode());			
-
-			
+			//assembly.setPdbCode(pdbInfo.getPdbCode());
 			
 			assembly.addAssemblyScore(as);
 			
@@ -1041,92 +978,7 @@ public class DataModelAdaptor {
 			assembly.addAssemblyScore(asxtal);
 		}
 	}
-	
-	private static Assembly getMatchingAssembly(Assembly pdbAssembly, CrystalAssemblies validAssemblies) {
-		
-		for (Assembly a:validAssemblies) {
-			if (a.equals(pdbAssembly)) return a;
-		}
-		
-		// if nothing returns, we still have to try whether any of our assemblies is a parent of pdbAssembly
-		// We need this kind of matching for cases like 3cfh (see issue https://github.com/eppic-team/eppic/issues/47):
-		//   in 3cfh the list of engaged interfaces that we detect from the PDB contains 
-		//   a tiny interface cluster (12) that is thrown away by our validity detector (the
-		//   edge that would make the graph isomorphic is missing because it falls below the 35A2 area cutoff)
-		//   Thus none of our valid assemblies match the PDB one strictly and we need to do the trick below
-		
-		Assembly matching = null;
-		
-		for (Assembly a:validAssemblies) {
-			if (pdbAssembly.isChild(a) && 
-					pdbAssembly.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getCountForIndex(0) ==
-					a.getAssemblyGraph().getSubAssemblies().get(0).getStoichiometry().getCountForIndex(0)) {
-				
-				if (matching!=null) 
-					LOGGER.warn("More than 1 assembly in list of valid assemblies matches the PDB annotated bio unit assembly. Only last one {} will be considered",a.toString());
-				
-				matching = a;
-			}
-		}
-		
-		// if no match it will be null
-		return matching;
-		
-	}
-	
-	/**
-	 * For the given PDB bio unit (first in PDB annotation), map the PDB-annotated interfaces 
-	 * to our interface cluster ids
-	 * @param bioUnit
-	 * @param cell
-	 * @return the list of matching cluster ids
-	 */
-	private Set<Integer> matchToInterfaceClusters(BioAssemblyInfo bioUnit, CrystalCell cell) {
 
-		// the Set will eliminate duplicates if any found, I'm not sure if duplicates are even possible really...
-		Set<Integer> matchingClusterIds = new TreeSet<>();
-
-		List<SimpleInterface> bioUnitInterfaces = SimpleInterface.createSimpleInterfaceListFromPdbBioUnit(bioUnit, cell, asymIds2chainIds);
-		if (bioUnitInterfaces==null) return null;
-
-		InterfaceMatcher im = new InterfaceMatcher(pdbInfo.getInterfaceClusters(),bioUnitInterfaces);
-		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
-			for (InterfaceDB i:ic.getInterfaces()) {
-				if (im.oursMatch(i.getInterfaceId())) {
-					matchingClusterIds.add(ic.getClusterId()); 							 
-				} 
-			}
-		}
-
-		if (!im.checkTheirsMatch()) {
-			StringBuilder msg = new StringBuilder();
-			for (SimpleInterface theirI:im.getTheirsNotMatching()) {
-				msg.append(theirI.toString()).append("\t");
-			}
-
-			// This actually happens even if the mapping is fine. That's because we enumerate the biounit 
-			// interfaces exhaustively, and thus sometimes an interface might not happen in reality because 
-			// 2 molecules don't make a contact. 
-			LOGGER.info("Some interfaces of PDB bio unit "+EppicParams.PDB_BIOUNIT_TO_USE+
-					" do not match any of the EPPIC interfaces."+ 
-					" Non-matching interfaces are: "+msg.toString());
-
-		}
-
-		if (!im.checkOneToOneMapping()) {
-			// This is not really a mapping problem, that's why it is only logged INFO
-			// It will happen in many bona-fide proper mappings:
-			// e.g. 2a7n or 1ae9 (the bio interfaces are in 4-fold or 3-fold xtal axes and thus 
-			//      the operators given in bio-unit are repeated, for instance for 3-fold the operator 
-			//      appears twice to construct the 2 symmetry partners, while in eppic it appears only once)
-			LOGGER.info("Multiple match for an interface of PDB bio unit "+EppicParams.PDB_BIOUNIT_TO_USE);
-		}
-
-		
-		
-		return matchingClusterIds;
-	}
-	
 	protected static String getSymmetryString(List<AssemblyContentDB> acDBs) {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0;i<acDBs.size();i++	) {
@@ -1757,55 +1609,4 @@ public class DataModelAdaptor {
 		return false;
 	}
 	
-	/**
-	 * Finds the symmetry of the biounit with the biojava quat symmetry algorithms
-	 * @param pdb the au of the structure
-	 * @param bioUnitNumber
-	 * @return an array of size 2 with members: symmetry, stoichiometry
-	 */
-	private static String[] getSymmetry(Structure pdb, int bioUnitNumber) {
-		
-		
-		if (pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber)==null || 
-			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms() == null || 
-			pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms().size() == 0){
-			
-			LOGGER.warn("Could not load transformations for PDB biounit {}. Will not assign a symmetry value to it.", bioUnitNumber);
-			return new String[]{null,null};
-		}
-		
-		List<BiologicalAssemblyTransformation> transformations = 
-				pdb.getPDBHeader().getBioAssemblies().get(bioUnitNumber).getTransforms();
-
-		
-		BiologicalAssemblyBuilder builder = new BiologicalAssemblyBuilder();
-
-		Structure bioAssembly = builder.rebuildQuaternaryStructure(pdb, transformations, true, false);
-
-		QuatSymmetryParameters parameters = new QuatSymmetryParameters();
-        parameters.setOnTheFly(true);
-        SubunitClustererParameters clusterParams = new SubunitClustererParameters();
-
-        // TODO not sure if this is still possible in biojava 5
-		//if (!detector.hasProteinSubunits()) {	
-		//	LOGGER.info("No protein chains in biounit {}, can't calculate symmetry. Will not assign a symmetry value to it.", bioUnitNumber);
-		//	return new String[]{null,null};
-		//}		
-
-		QuatSymmetryResults globalResults = QuatSymmetryDetector.calcGlobalSymmetry(bioAssembly, parameters, clusterParams);
-		
-		if (globalResults == null) {
-			LOGGER.warn("No global symmetry found for biounit {}. Will not assign a symmetry value to it.",  bioUnitNumber);
-			return new String[]{null, null};
-		}
-		
-		String symmetry = globalResults.getSymmetry();
-		
-		String stoichiometry = globalResults.getStoichiometry().toString();
-		LOGGER.info("Symmetry {} (stoichiometry {}) found in biounit {}", 
-				symmetry, stoichiometry, bioUnitNumber);
-		
-		return new String[]{symmetry, stoichiometry};
-		
-	}
 }
