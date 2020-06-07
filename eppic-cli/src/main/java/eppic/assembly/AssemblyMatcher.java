@@ -40,8 +40,15 @@ public class AssemblyMatcher {
         BiologicalAssemblyBuilder builder = new BiologicalAssemblyBuilder();
         Structure pdbBioAssembly = builder.rebuildQuaternaryStructure(structure, bioUnit.getTransforms(), true, false);
 
+        InterfaceFinder finder = new InterfaceFinder(pdbBioAssembly);
+        StructureInterfaceList pdbInterfaces = finder.getAllInterfaces();
+        pdbInterfaces.getList().removeIf(i->i.getGroupContacts().size()<MIN_NUM_CONTACTS);
+        pdbInterfaces.getClusters(); // init the clusters
+
+        List<Integer> pdbEntityIds = pdbBioAssembly.getPolyChains().stream().map(c->c.getEntityInfo().getMolId()).collect(Collectors.toList());
+
         for (Assembly a:allAssemblies) {
-            if (areSameAssembly(a, pdbBioAssembly))
+            if (areSameAssembly(a, pdbInterfaces, pdbEntityIds))
                 return a;
         }
 
@@ -57,24 +64,19 @@ public class AssemblyMatcher {
         return null;
     }
 
-    private boolean areSameAssembly(Assembly a, Structure pdbBioAssembly) {
+    private boolean areSameAssembly(Assembly a, StructureInterfaceList pdbInterfaces, List<Integer> pdbEntityIds) {
 
         // TODO check what do do with other subassemblies
         SubAssembly ourSubAssembly = a.getAssemblyGraph().getSubAssemblies().get(0);
 
         // 1. is node stoichiometry same? if not return false
         Stoichiometry<Integer> sto = ourSubAssembly.getStoichiometry();
-        List<Integer> pdbEntityIds = pdbBioAssembly.getPolyChains().stream().
-                map(c->c.getEntityInfo().getMolId()).collect(Collectors.toList());
         Stoichiometry<Integer> pdbSto = new Stoichiometry<>(pdbEntityIds, sto.getValues());
         if (!sto.equals(pdbSto))
             return false;
 
         // 2. is edge (interfaces) "stoichiometry" the same?
-        InterfaceFinder finder = new InterfaceFinder(pdbBioAssembly);
-        StructureInterfaceList pdbInterfaces = finder.getAllInterfaces();
-        pdbInterfaces.getList().removeIf(i->i.getGroupContacts().size()<MIN_NUM_CONTACTS);
-        pdbInterfaces.getClusters(); // init the clusters
+
         UndirectedGraph<ChainVertex, InterfaceEdge> ourGraph = ourSubAssembly.getConnectedGraph();
         Set<InterfaceEdge> engagedIfaces = ourGraph.edgeSet();
         if (engagedIfaces.size() != pdbInterfaces.size())
