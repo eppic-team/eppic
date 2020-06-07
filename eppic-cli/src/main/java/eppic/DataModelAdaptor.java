@@ -889,7 +889,9 @@ public class DataModelAdaptor {
 			return;
 		}
 
+		LOGGER.info("Will find matching assembly for PDB bioassembly {}", bioAssemblyNumber);
 		Assembly matchingAssembly = assemblyMatcher.getMatchingAssembly(bioAssembly);
+		LOGGER.info("Done finding matching assembly for PDB bioassembly {}", bioAssemblyNumber);
 		AssemblyDB matchingAssemblyDB = null;
 		if (matchingAssembly!=null) {
 			for (AssemblyDB a:pdbInfo.getAssemblies()) {
