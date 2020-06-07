@@ -85,9 +85,9 @@ public class AssemblyMatcher {
         List<Integer> icPdb = pdbInterfaces.getList().stream().map(i->i.getCluster().getId()).collect(Collectors.toList());
         if (icOurs.stream().distinct().count() != icPdb.stream().distinct().count())
             return false;
-        Map<Integer, Integer> pdbToOurs = mapInterfaceClusters(engagedIfaces, pdbInterfaces);
         // convert the ids to our ids
-        List<Integer> icPdbInOurs = icPdb.stream().map(pdbToOurs::get).sorted().collect(Collectors.toList());
+        mapInterfaceClusters(engagedIfaces, pdbInterfaces);
+        List<Integer> icPdbInOurs = pdbInterfaces.getList().stream().map(i->i.getCluster().getId()).sorted().collect(Collectors.toList());
         // now we can compare the stoichiometry
         Stoichiometry<Integer> ifaceStoOurs = new Stoichiometry<>(icOurs, null);
         Stoichiometry<Integer> ifaceStoPdb = new Stoichiometry<>(icPdbInOurs, null);
@@ -101,7 +101,13 @@ public class AssemblyMatcher {
         return areIsomorphic(ourGraph, pdbGraph);
     }
 
-    private Map<Integer, Integer> mapInterfaceClusters(Set<InterfaceEdge> refIfaces, StructureInterfaceList ifaces) {
+    /**
+     * Match interface cluster of ifaces to those of refIfaces, assigning new cluster ids so that cluster ids are
+     * like in refIfaces
+     * @param refIfaces the reference interfaces to match to
+     * @param ifaces the interfaces whose cluster ids are reset
+     */
+    private void mapInterfaceClusters(Set<InterfaceEdge> refIfaces, StructureInterfaceList ifaces) {
         Map<Integer, Integer> map = new HashMap<>();
         for (StructureInterfaceCluster cluster : ifaces.getClusters()) {
 
@@ -120,7 +126,6 @@ public class AssemblyMatcher {
             cluster.setId(map.get(cluster.getId()));
         }
 
-        return map;
     }
 
     private static UndirectedGraph<ChainVertex, InterfaceEdge> createGraph(StructureInterfaceList ifaces) {
