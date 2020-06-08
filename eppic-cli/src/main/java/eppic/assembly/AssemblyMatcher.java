@@ -76,7 +76,6 @@ public class AssemblyMatcher {
             return false;
 
         // 2. is edge (interfaces) "stoichiometry" the same?
-
         UndirectedGraph<ChainVertex, InterfaceEdge> ourGraph = ourSubAssembly.getConnectedGraph();
         Set<InterfaceEdge> engagedIfaces = ourGraph.edgeSet();
         if (engagedIfaces.size() != pdbInterfaces.size())
@@ -85,7 +84,7 @@ public class AssemblyMatcher {
         List<Integer> icPdb = pdbInterfaces.getList().stream().map(i->i.getCluster().getId()).collect(Collectors.toList());
         if (icOurs.stream().distinct().count() != icPdb.stream().distinct().count())
             return false;
-        // convert the ids to our ids
+        // convert the ids in pdbInterfaces to our ids
         mapInterfaceClusters(engagedIfaces, pdbInterfaces);
         List<Integer> icPdbInOurs = pdbInterfaces.getList().stream().map(i->i.getCluster().getId()).sorted().collect(Collectors.toList());
         // now we can compare the stoichiometry
@@ -108,7 +107,7 @@ public class AssemblyMatcher {
      * @param ifaces the interfaces whose cluster ids are reset
      */
     private void mapInterfaceClusters(Set<InterfaceEdge> refIfaces, StructureInterfaceList ifaces) {
-        Map<Integer, Integer> map = new HashMap<>();
+        outer:
         for (StructureInterfaceCluster cluster : ifaces.getClusters()) {
 
             for (InterfaceEdge edge : refIfaces) {
@@ -117,13 +116,11 @@ public class AssemblyMatcher {
                 double score = refCluster.getMembers().get(0).getContactOverlapScore(cluster.getMembers().get(0), false);
                 double invScore = refCluster.getMembers().get(0).getContactOverlapScore(cluster.getMembers().get(0), true);
                 if (score > CONTACT_OVERLAP_SCORE_CUTOFF || invScore > CONTACT_OVERLAP_SCORE_CUTOFF) {
-                    map.put(cluster.getId(), refCluster.getId());
+                    cluster.setId(refCluster.getId());
+                    continue outer;
                 }
             }
-
-        }
-        for (StructureInterfaceCluster cluster : ifaces.getClusters()) {
-            cluster.setId(map.get(cluster.getId()));
+            logger.warn("Could not match cluster {} of PDB assembly to one of our clusters", cluster.getId());
         }
 
     }
