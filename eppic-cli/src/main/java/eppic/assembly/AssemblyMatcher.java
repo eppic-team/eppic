@@ -29,6 +29,8 @@ public class AssemblyMatcher {
     private final CrystalAssemblies allAssemblies;
     private final StructureInterfaceList interfaces;
 
+    private int currentPdbBioUnit;
+
     public AssemblyMatcher(CrystalAssemblies allAssemblies, StructureInterfaceList interfaces) {
         this.structure = allAssemblies.getStructure();
         this.allAssemblies = allAssemblies;
@@ -36,6 +38,8 @@ public class AssemblyMatcher {
     }
 
     public Assembly getMatchingAssembly(BioAssemblyInfo bioUnit) {
+
+        currentPdbBioUnit = bioUnit.getId();
 
         BiologicalAssemblyBuilder builder = new BiologicalAssemblyBuilder();
         Structure pdbBioAssembly = builder.rebuildQuaternaryStructure(structure, bioUnit.getTransforms(), true, false);
@@ -120,7 +124,8 @@ public class AssemblyMatcher {
                     continue outer;
                 }
             }
-            logger.warn("Could not match cluster {} of PDB assembly to one of our clusters", cluster.getId());
+            logger.warn("Could not match interface cluster {} ({} group contacts) of PDB assembly {} to one of our clusters",
+                    cluster.getId(), cluster.getMembers().get(0).getGroupContacts().size() ,currentPdbBioUnit);
         }
 
     }
