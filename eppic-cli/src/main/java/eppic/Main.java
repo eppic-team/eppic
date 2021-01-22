@@ -13,11 +13,9 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -130,7 +128,17 @@ public class Main {
 //		if (params.getDebug())
 //			ROOTLOGGER.addAppender(outAppender);
 
+	}
 
+	private void logBuildAndHost() {
+		LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
+		LOGGER.info("Build git SHA: {}", EppicParams.BUILD_GIT_SHA);
+
+		try {
+			LOGGER.info("Running in host "+InetAddress.getLocalHost().getHostName());
+		} catch (UnknownHostException e) {
+			LOGGER.warn("Could not determine host where we are running.");
+		}
 	}
 	
 	public void loadConfigFile() {
@@ -160,7 +168,9 @@ public class Main {
 
 	}
 
-	public void doLoadPdb() throws EppicException {	
+	public long doLoadPdb() throws EppicException {
+
+		long start = System.currentTimeMillis();
 		
 		// Before loading anything we make sure that BioJava is set to DownloadChemCompProvider.
 		// This is in case the default is ReducedChemCompProvider.
@@ -239,6 +249,8 @@ public class Main {
 		modelAdaptor = new DataModelAdaptor();
 		modelAdaptor.setParams(params);
 		modelAdaptor.setPdbMetadata(pdb);
+
+		return System.currentTimeMillis() - start;
 	}
 
 	private Structure readStructureFromPdbCode(FileParsingParameters fileParsingParams) throws StructureException, IOException {
@@ -306,7 +318,9 @@ public class Main {
 		return pdb;
 	}
 
-	public void doFindInterfaces() throws EppicException {
+	public long doFindInterfaces() throws EppicException {
+
+		long start = System.currentTimeMillis();
 
 		params.getProgressLog().println("Calculating possible interfaces...");
 
@@ -340,16 +354,16 @@ public class Main {
 		int clustersSize = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).size();
 		int numInterfaces = interfaces.size();
 		LOGGER.info("Interface clustering done: "+numInterfaces+" interfaces - "+clustersSize+" clusters");
-		String msg = "Interface clusters: ";
+		StringBuilder msg = new StringBuilder("Interface clusters: ");
 		for (int i=0; i<clustersSize;i++) {
 			StructureInterfaceCluster cluster = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).get(i);
-			msg += cluster.getId()+": ";
+			msg.append(cluster.getId()).append(": ");
 			for (StructureInterface interf:cluster.getMembers()) {
-				msg += interf.getId()+" ";
+				msg.append(interf.getId()).append(" ");
 			}
-			if (i!=clustersSize-1) msg += ", ";
+			if (i!=clustersSize-1) msg.append(", ");
 		}
-		LOGGER.info(msg); 
+		LOGGER.info(msg.toString());
 
 		// TODO how to do the cofactors logging now?
 		//if (interfFinder.hasCofactors()) {
@@ -373,8 +387,7 @@ public class Main {
 
 		checkClashes();
 
-		
-		
+		return System.currentTimeMillis() - start;
 	}
 	
 	private void checkClashes() throws EppicException {
@@ -429,22 +442,27 @@ public class Main {
 		
 	}
 	
-	public void doFindAssemblies() throws StructureException { 
-		
+	public long doFindAssemblies() {
+
+		long start = System.currentTimeMillis();
+
 		params.getProgressLog().println("Calculating possible assemblies...");
 		validAssemblies = new CrystalAssemblies(pdb, interfaces, params.isForceContractedAssemblyEnumeration()); 
 
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
-			sb.append(a.toString()+" ");
+			sb.append(a.toString()).append(" ");
 		}
 		LOGGER.info("There are {} topologically possible assemblies: {}", validAssemblies.size(), sb.toString());
 					
 		params.getProgressLog().println("Done");
+
+		return System.currentTimeMillis() - start;
 	}
 	
-	public void doAssemblyScoring() {
+	public long doAssemblyScoring() {
 
+		long start = System.currentTimeMillis();
 
 		if (params.isDoEvolScoring()) {
 			validAssemblies.setInterfaceEvolContextList(iecList);
@@ -452,20 +470,23 @@ public class Main {
 			validAssemblies.score();
 		}
 
-
 		modelAdaptor.setAssemblies(validAssemblies);
 
 		modelAdaptor.setPdbBioUnits(pdb.getPDBHeader().getBioAssemblies(), validAssemblies, pdb);
 
+		return System.currentTimeMillis() - start;
 	}
 	
-	public void doGeomScoring() throws EppicException {
+	public long doGeomScoring() throws EppicException {
+
+		long start = System.currentTimeMillis();
+
 		if (interfaces.size()==0) {
 			// no interfaces found at all, can happen e.g. in NMR structure with 1 chain, e.g. 1nmr
 			LOGGER.info("No interfaces found, nothing to analyse.");
 			params.getProgressLog().println("No interfaces found, nothing to analyse.");
 			// we still continue so that the web interface can pick it up too
-			return;
+			return System.currentTimeMillis() - start;
 		}
 
 		// interface scoring
@@ -502,9 +523,12 @@ public class Main {
 		modelAdaptor.setGeometryScores(gps, gcps);
 		modelAdaptor.setResidueBurialDetails(interfaces);
 
+		return System.currentTimeMillis() - start;
 	}
 	
-	public void doWriteTextOutputFiles() throws EppicException {
+	public long doWriteTextOutputFiles() throws EppicException {
+
+		long start = System.currentTimeMillis();
 		
 		TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), params);
 		
@@ -514,11 +538,9 @@ public class Main {
 		} catch (IOException e) {
 			throw new EppicException(e, "Could not write the homologs alignment files: "+e.getMessage(), true);
 		}
-		
-		
+
 		// we don't write text files if in -w
-		if (params.isGenerateModelSerializedFile()) return;
-		
+		if (params.isGenerateModelSerializedFile()) return System.currentTimeMillis() - start;
 
 		
 		// 1 interfaces info file and contacts info file
@@ -559,13 +581,15 @@ public class Main {
 		} catch (IOException e) {
 			throw new EppicException(e, "Could not write the homologs entropies files: "+e.getMessage(), false);
 		}
-	
-		
+
+		return System.currentTimeMillis() - start;
 	}
 	
-	public void doWriteCoordFiles() throws EppicException {
+	public long doWriteCoordFiles() throws EppicException {
 
-		if (!params.isGenerateOutputCoordFiles()) return; // no -p or -l specified: nothing to do
+		long start = System.currentTimeMillis();
+
+		if (!params.isGenerateOutputCoordFiles()) return System.currentTimeMillis() - start; // no -p or -l specified: nothing to do
 
 		if (params.isGenerateThumbnails()) {
 			params.getProgressLog().println("Writing PyMOL files");
@@ -645,14 +669,18 @@ public class Main {
 		} catch (InterruptedException e) {
 			throw new EppicException(e, "Couldn't generate PyMOL png files, PyMOL thread interrupted: "+e.getMessage(),true);
 		}
+
+		return System.currentTimeMillis() - start;
 	}
 
-	public void doWriteAssemblyDiagrams() throws EppicException {
+	public long doWriteAssemblyDiagrams() throws EppicException {
+
+		long start = System.currentTimeMillis();
 
 		// should not happen, there should always be 1 assembly (the trivial no-interfaces engaged one)
-		if (validAssemblies.getUniqueAssemblies().size() == 0) return; 
+		if (validAssemblies.getUniqueAssemblies().size() == 0) return System.currentTimeMillis() - start;
 
-		if (!params.isGenerateDiagrams()) return;
+		if (!params.isGenerateDiagrams()) return System.currentTimeMillis() - start;
 		
 		params.getProgressLog().println("Writing Assembly Diagram files");
 		writeStep("Generating assembly diagram Thumbnails");
@@ -713,10 +741,11 @@ public class Main {
 
 			}
 
-			
 		} catch( IOException|InterruptedException e) {
 			throw new EppicException(e, "Couldn't write assembly diagrams. " + e.getMessage(), true);
 		}
+
+		return System.currentTimeMillis() - start;
 	}
 
 	// TODO implement the HBplus stuff
@@ -758,7 +787,9 @@ public class Main {
 //	}
 
 
-	public void doWriteFinalFiles() throws EppicException {
+	public long doWriteFinalFiles() throws EppicException {
+
+		long start = System.currentTimeMillis();
 		
 		if (params.isGenerateModelSerializedFile()) {
 			
@@ -774,6 +805,7 @@ public class Main {
 			}
 		}
 
+		return System.currentTimeMillis() - start;
 	}
 	
 	private void findUniqueChains() {
@@ -794,8 +826,11 @@ public class Main {
 		LOGGER.info(sb.toString());
 	}
 	
-	public void doFindEvolContext() throws EppicException {
-		if (interfaces.size()==0) return;
+	public long doFindEvolContext() throws EppicException {
+
+		long start = System.currentTimeMillis();
+
+		if (interfaces.size()==0) return System.currentTimeMillis() - start;
 		
 		findUniqueChains();
 
@@ -815,11 +850,14 @@ public class Main {
 		
 		// d) computing entropies
 		cecs.computeEntropies(params);
-		
+
+		return System.currentTimeMillis() - start;
 	}
 	
-	public void doEvolScoring() throws EppicException {
-		if (interfaces.size()==0) return;
+	public long doEvolScoring() throws EppicException {
+		long start = System.currentTimeMillis();
+
+		if (interfaces.size()==0) return System.currentTimeMillis() - start;
 
 		iecList = new InterfaceEvolContextList(interfaces, cecs);
 		iecList.setUsePdbResSer(params.isUsePdbResSer());
@@ -846,14 +884,16 @@ public class Main {
 				
 		}
 
-		
+		return System.currentTimeMillis() - start;
 	}
 	
-	public void doCombinedScoring() throws EppicException {
-		if (interfaces.size()==0) return;
+	public long doCombinedScoring() throws EppicException {
+		long start = System.currentTimeMillis();
+
+		if (interfaces.size()==0) return System.currentTimeMillis() - start;
 		
 		// interface scoring
-		List<CombinedPredictor> cps = new ArrayList<CombinedPredictor>();
+		List<CombinedPredictor> cps = new ArrayList<>();
 		for (int i=0;i<iecList.size();i++) {
 			CombinedPredictor cp = 
 					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
@@ -862,9 +902,9 @@ public class Main {
 		}
 		
 		// interface cluster scoring
-		List<CombinedClusterPredictor> ccps = new ArrayList<CombinedClusterPredictor>();		
+		List<CombinedClusterPredictor> ccps = new ArrayList<>();
 		for (StructureInterfaceCluster interfaceCluster:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
-			List<CombinedPredictor> ccpsForCluster = new ArrayList<CombinedPredictor>();
+			List<CombinedPredictor> ccpsForCluster = new ArrayList<>();
 			
 			for (int i=0;i<interfaces.size();i++) {
 				if ( interfaces.get(i+1).getCluster().getId()==interfaceCluster.getId()) {
@@ -882,6 +922,8 @@ public class Main {
 		modelAdaptor.setCombinedPredictors(cps, ccps);
 
 		params.getProgressLog().println("Done scoring");
+
+		return System.currentTimeMillis() - start;
 	}
 	
 	private void writeStep(String text) {
@@ -910,7 +952,7 @@ public class Main {
 	
 	/**
 	 * Run the full eppic analysis given a parameters object
-	 * @param params
+	 * @param params the parameters
 	 */
 	public void run(EppicParams params) {
 		this.params = params;
@@ -919,7 +961,7 @@ public class Main {
 	
 	/**
 	 * Run the full eppic analysis given the command line arguments (which are then converted into an {@link EppicParams} object)
-	 * @param args
+	 * @param args the CLI arguments
 	 */
 	public void run(String[] args) {
 		
@@ -936,76 +978,72 @@ public class Main {
 	
 	private void run(boolean loadConfigFile) {
 
-				
-		long start = System.nanoTime();
+		long start = System.currentTimeMillis();
+		long loadPdbTime, findInterfTime, findAssembliesTime, geomScoringTime,
+				findEvolContextTime, evolScoringTime, combinedScoringTime, assemblyScoringTime,
+				writeTextOutputFilesTime, writeCoordFilesTime, writeAssemblyDiagramsTime, writeFinalFilesTime;
+		findEvolContextTime = evolScoringTime = combinedScoringTime = 0;
 
 		try {
-									
 
 			// this has to come after getting the command line args, since it reads the location and name of log file from those
 			setUpLogging();
+			
+			logBuildAndHost();
 
-			
-			LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
-			LOGGER.info("Build git SHA: {}", EppicParams.BUILD_GIT_SHA);
-			
-			if (loadConfigFile)
-				loadConfigFile();
-			
-			try {
-				LOGGER.info("Running in host "+InetAddress.getLocalHost().getHostName());
-			} catch (UnknownHostException e) {
-				LOGGER.warn("Could not determine host where we are running.");
-			}
+			if (loadConfigFile) loadConfigFile();
 			
 			// 0 load pdb
-			doLoadPdb();
+			loadPdbTime = doLoadPdb();
 
 			// 1 finding interfaces
-			doFindInterfaces();
-			
+			findInterfTime = doFindInterfaces();
 					
 			// 2 find the assemblies
-			doFindAssemblies();
-
+			findAssembliesTime = doFindAssemblies();
 			
 			// TODO call doHBPlus when fixed
 			// try hbplus if executable is set, writes pdb files needed for it (which then are overwritten in doWritePdbFiles)
 			//doHBPlus();
 			
-			doGeomScoring();
-			
+			geomScoringTime = doGeomScoring();
+
 			if (params.isDoEvolScoring()) {
 				// 3 finding evolutionary context		
-				doFindEvolContext();
+				findEvolContextTime = doFindEvolContext();
 
 				// 4 scoring
-				doEvolScoring();
+				evolScoringTime = doEvolScoring();
 				
 				// 5 combined scoring
-				doCombinedScoring();
+				combinedScoringTime = doCombinedScoring();
 				
 			}
 			
 			// 6 score assemblies and predict most likely assembly
-			doAssemblyScoring();
+			assemblyScoringTime = doAssemblyScoring();
 			
 			// 7 write TSV files (only if not in -w) 	
-			doWriteTextOutputFiles();
+			writeTextOutputFilesTime = doWriteTextOutputFiles();
 			
 			// 8 write coordinate files (in -p or -l) and pymol png files (-l)
-			doWriteCoordFiles();
+			writeCoordFilesTime = doWriteCoordFiles();
 			
 			// 9 write assembly diagrams (only if in -P)
-			doWriteAssemblyDiagrams();
+			writeAssemblyDiagramsTime = doWriteAssemblyDiagrams();
 			
 			// 10 writing out the model serialized file and "finish" file for web ui (only if in -w)
-			doWriteFinalFiles();
+			writeFinalFilesTime = doWriteFinalFiles();
 
-			
-
-			long end = System.nanoTime();
-			LOGGER.info("Finished successfully (total runtime "+((end-start)/1000000000L)+"s)");
+			long end = System.currentTimeMillis();
+			String partialTimingsStr = "[loadPdbTime, findInterfTime, findAssembliesTime, geomScoringTime, " +
+					"findEvolContextTime, evolScoringTime, combinedScoringTime, assemblyScoringTime, " +
+					"twriteTextOutputFilesTime, writeCoordFilesTime, writeAssemblyDiagramsTime, writeFinalFilesTime]";
+			LOGGER.info("Finished successfully (total runtime {}s). Partial timings in ms {}: {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}",
+					(end-start)/1000L, partialTimingsStr,
+					loadPdbTime, findInterfTime, findAssembliesTime, geomScoringTime,
+					findEvolContextTime, evolScoringTime, combinedScoringTime, assemblyScoringTime,
+					writeTextOutputFilesTime, writeCoordFilesTime, writeAssemblyDiagramsTime, writeFinalFilesTime);
 
 		} catch (EppicException e) {
 			LOGGER.error(e.getMessage());
@@ -1022,7 +1060,6 @@ public class Main {
 					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
 			System.exit(1);
 		}
-		
 		
 	}
 	
