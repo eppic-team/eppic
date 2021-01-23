@@ -1060,7 +1060,7 @@ public class Main {
 					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
 			System.exit(1);
 		}
-		
+
 	}
 	
 	public DataModelAdaptor getDataModelAdaptor() {
