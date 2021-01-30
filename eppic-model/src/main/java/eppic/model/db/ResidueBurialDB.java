@@ -27,15 +27,14 @@ public class ResidueBurialDB implements Serializable {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-	
-	private boolean side; // 0 or 1 for 1st or 2nd partner of interface (used to be 1 or 2)
-	private double asa;
-	private double bsa;
+	private long uid; // note as of Jan 2021, the limit for int (4 bytes in mysql) was reached. Now long
 
-	// TODO the field is now a short, we should double check that it translates to a data
-	//			     type that takes less space than int in mysql. Other solution would be to force type
-	//			     smallint here but I don't know how to do that
+	private boolean side; // 0 or 1 for 1st or 2nd partner of interface (used to be 1 or 2)
+	// note this is by orders of magnitude the largest table. It is critical to save space using the shortest possible types. Switch double->float Jan 2021
+	private float asa;
+	private float bsa;
+
+	// this translates to a smallint in mysql
 	private short region; // one of the constants above
 
 	@ManyToOne
@@ -54,7 +53,7 @@ public class ResidueBurialDB implements Serializable {
 	}
 
 	public void setAsa(double asa) {
-		this.asa = asa;
+		this.asa = (float)asa;
 	}
 
 	public double getBsa() {
@@ -62,7 +61,7 @@ public class ResidueBurialDB implements Serializable {
 	}
 
 	public void setBsa(double bsa) {
-		this.bsa = bsa;
+		this.bsa = (float)bsa;
 	}
 	
 	public short getRegion() {
@@ -93,7 +92,7 @@ public class ResidueBurialDB implements Serializable {
 		this.uid = uid;
 	}
 
-	public int getUid() {
+	public long getUid() {
 		return uid;
 	}
 	
