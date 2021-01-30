@@ -22,7 +22,7 @@ public class Residue implements Serializable
 
 	private static final long serialVersionUID = 1L;
 	
-	private int uid;
+	private long uid;
 	
 	private boolean side;
 	private double asa;
@@ -92,11 +92,11 @@ public class Residue implements Serializable
 		return side;
 	}
 
-	public void setUid(int uid) {
+	public void setUid(long uid) {
 		this.uid = uid;
 	}
 
-	public int getUid() {
+	public long getUid() {
 		return uid;
 	}
 	

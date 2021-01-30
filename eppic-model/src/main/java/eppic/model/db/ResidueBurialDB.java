@@ -88,7 +88,7 @@ public class ResidueBurialDB implements Serializable {
 		return interfaceItem;
 	}
 
-	public void setUid(int uid) {
+	public void setUid(long uid) {
 		this.uid = uid;
 	}
 
