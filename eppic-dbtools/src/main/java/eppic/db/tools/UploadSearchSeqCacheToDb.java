@@ -236,11 +236,11 @@ public class UploadSearchSeqCacheToDb {
                                    int qStart, int qEnd, int sStart, int sEnd, double eValue, int bitScore) {
         try {
 
-            HitHsp hit = hitHspDAO.getHitHsp(queryId, subjectId, qStart, qEnd, sStart, sEnd);
-            if (hit != null) {
-                logger.debug("Hit already present for queryId {}, subjectId {}, qStart {}, qEnd {}, sStart {}, sEnd {}", queryId, subjectId, qStart, qEnd, sStart, sEnd);
-                alreadyPresent.incrementAndGet();
-            } else {
+//            HitHsp hit = hitHspDAO.getHitHsp(queryId, subjectId, qStart, qEnd, sStart, sEnd);
+//            if (hit != null) {
+//                logger.debug("Hit already present for queryId {}, subjectId {}, qStart {}, qEnd {}, sStart {}, sEnd {}", queryId, subjectId, qStart, qEnd, sStart, sEnd);
+//                alreadyPresent.incrementAndGet();
+//            } else {
 
                 //logger.debug("Persisting {}--{}", queryId, subjectId);
                 hitHspDAO.insertHitHsp(
@@ -258,7 +258,7 @@ public class UploadSearchSeqCacheToDb {
                         bitScore
                 );
 
-            }
+//            }
 
         } catch (DaoException e) {
             logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", queryId, subjectId, e.getMessage());

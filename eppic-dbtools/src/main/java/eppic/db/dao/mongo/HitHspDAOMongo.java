@@ -35,7 +35,11 @@ public class HitHspDAOMongo implements HitHspDAO {
         hitHspDB.seteValue(eValue);
         hitHspDB.setBitScore(bitScore);
 
-        MongoUtils.writeObject(mongoDb, collectionName, hitHspDB);
+        try {
+            MongoUtils.writeObject(mongoDb, collectionName, hitHspDB);
+        } catch (Exception e) {
+            throw new DaoException(e);
+        }
 
     }
 
