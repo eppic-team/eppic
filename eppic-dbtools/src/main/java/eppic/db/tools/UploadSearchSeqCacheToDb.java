@@ -1,12 +1,15 @@
 package eppic.db.tools;
 
-import eppic.db.EntityManagerHandler;
+//import eppic.db.EntityManagerHandler;
+import com.mongodb.client.MongoDatabase;
+import eppic.db.MongoUtils;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.db.dao.UniProtMetadataDAO;
-import eppic.db.dao.jpa.HitHspDAOJpa;
-import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
-import eppic.db.jpautils.DbConfigGenerator;
+//import eppic.db.dao.jpa.HitHspDAOJpa;
+//import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
+import eppic.db.dao.mongo.HitHspDAOMongo;
+//import eppic.db.jpautils.DbConfigGenerator;
 import eppic.db.tools.helpers.MonitorThread;
 import eppic.model.dto.HitHsp;
 import eppic.model.dto.UniProtMetadata;
@@ -32,10 +35,12 @@ public class UploadSearchSeqCacheToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadSearchSeqCacheToDb.class);
 
+    private static final String HITHSP_COLLECTION = "hithsp";
+
     private static final long SLEEP_TIME = 10000;
 
-    private static AtomicInteger couldntInsert = new AtomicInteger(0);
-    private static AtomicInteger alreadyPresent = new AtomicInteger(0);
+    private static final AtomicInteger couldntInsert = new AtomicInteger(0);
+    private static final AtomicInteger alreadyPresent = new AtomicInteger(0);
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -109,9 +114,12 @@ public class UploadSearchSeqCacheToDb {
             logger.warn("UniRef version not passed with -v option. UniRef version won't be available in db.");
         }
 
-        initJpaConnection(configFile);
+        DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
+        String connUri = propsReader.getMongoUri();
 
-        HitHspDAO hitHspDAO = new HitHspDAOJpa();
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
+
+        HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb, HITHSP_COLLECTION);
 
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         ThreadPoolExecutor executorPool = new ThreadPoolExecutor(numWorkers, numWorkers, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000000), threadFactory);
@@ -195,35 +203,31 @@ public class UploadSearchSeqCacheToDb {
                 logger.info("{} entries already present and did not re-add them", alreadyPresent.get());
             }
 
+            // TODO rewrite in Mongo
             // a rough way of guessing that the insertion of records was successful
-            if (lineNum - couldntInsert.get() > 1000) {
-                UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
-                UniProtMetadata uniProtMetadata = null;
-                try {
-                    uniProtMetadata = dao.getUniProtMetadata();
-                } catch (DaoException e) {
-                    logger.info("UniProtMetadata could not be find in database. We will persist a new one.");
-                }
-
-                if (uniProtMetadata == null) {
-                    try {
-                        dao.insertUniProtMetadata(uniRefType, uniProtVersion);
-                    } catch (DaoException e) {
-                        logger.warn("Could not persist the UniProt metadata (UniRef type and version). " +
-                                "Things could fail downstream. Error: {}", e.getMessage());
-                    }
-                } else {
-                    logger.info("UniProtMetadata present in database with uniRefType={}, version={}. Will not persist a new one.",
-                            uniProtMetadata.getUniRefType(), uniProtMetadata.getVersion());
-                }
-            }
+//            if (lineNum - couldntInsert.get() > 1000) {
+//                UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
+//                UniProtMetadata uniProtMetadata = null;
+//                try {
+//                    uniProtMetadata = dao.getUniProtMetadata();
+//                } catch (DaoException e) {
+//                    logger.info("UniProtMetadata could not be find in database. We will persist a new one.");
+//                }
+//
+//                if (uniProtMetadata == null) {
+//                    try {
+//                        dao.insertUniProtMetadata(uniRefType, uniProtVersion);
+//                    } catch (DaoException e) {
+//                        logger.warn("Could not persist the UniProt metadata (UniRef type and version). " +
+//                                "Things could fail downstream. Error: {}", e.getMessage());
+//                    }
+//                } else {
+//                    logger.info("UniProtMetadata present in database with uniRefType={}, version={}. Will not persist a new one.",
+//                            uniProtMetadata.getUniRefType(), uniProtMetadata.getVersion());
+//                }
+//            }
         }
 
-    }
-
-    private static void initJpaConnection(File configFile) throws IOException {
-        Map<String,String> props = DbConfigGenerator.createDatabaseProperties(configFile);
-        EntityManagerHandler.initFactory(props);
     }
 
     private static void persist(HitHspDAO hitHspDAO,
