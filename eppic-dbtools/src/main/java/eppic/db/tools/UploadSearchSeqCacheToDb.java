@@ -41,6 +41,8 @@ public class UploadSearchSeqCacheToDb {
     private static final AtomicInteger couldntInsert = new AtomicInteger(0);
     private static final AtomicInteger alreadyPresent = new AtomicInteger(0);
 
+    private static boolean full;
+
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -52,7 +54,8 @@ public class UploadSearchSeqCacheToDb {
                         "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
                         " [-n <int>]    : number of workers. Default 1. \n" +
                         " [-r <string>] : uniref type to be written to db, e.g. UniRef90. If not provided null is written\n" +
-                        " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n";
+                        " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n" +
+                        " [-F]          : if specified load will be in FULL mode (collection dropped, indices created) instead of INCREMENTAL.\n";
 
 
         File blastTabFile = null;
@@ -61,8 +64,9 @@ public class UploadSearchSeqCacheToDb {
         int numWorkers = 1;
         String uniProtVersion = null;
         String uniRefType = null;
+        full = false;
 
-        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:n:r:v:h?");
+        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:n:r:v:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch(c){
@@ -83,6 +87,9 @@ public class UploadSearchSeqCacheToDb {
                     break;
                 case 'v':
                     uniProtVersion = g.getOptarg();
+                    break;
+                case 'F':
+                    full = true;
                     break;
                 case 'h':
                     System.out.println(help);
@@ -119,7 +126,11 @@ public class UploadSearchSeqCacheToDb {
         MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
 
         HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb);
-        MongoUtils.createIndices(mongoDb, HitHspDB.class);
+
+        if (full) {
+            MongoUtils.dropCollection(mongoDb, HitHspDB.class);
+            MongoUtils.createIndices(mongoDb, HitHspDB.class);
+        }
 
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         ThreadPoolExecutor executorPool = new ThreadPoolExecutor(numWorkers, numWorkers, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000000), threadFactory);
@@ -236,12 +247,21 @@ public class UploadSearchSeqCacheToDb {
                                    int qStart, int qEnd, int sStart, int sEnd, double eValue, int bitScore) {
         try {
 
-            HitHsp hit = hitHspDAO.getHitHsp(queryId, subjectId, qStart, qEnd, sStart, sEnd);
-            if (hit != null) {
-                logger.debug("Hit already present for queryId {}, subjectId {}, qStart {}, qEnd {}, sStart {}, sEnd {}", queryId, subjectId, qStart, qEnd, sStart, sEnd);
-                alreadyPresent.incrementAndGet();
+            boolean insert;
+            if (full) {
+                insert = true;
             } else {
+                HitHsp hit = hitHspDAO.getHitHsp(queryId, subjectId, qStart, qEnd, sStart, sEnd);
+                if (hit != null) {
+                    logger.debug("Hit already present for queryId {}, subjectId {}, qStart {}, qEnd {}, sStart {}, sEnd {}", queryId, subjectId, qStart, qEnd, sStart, sEnd);
+                    alreadyPresent.incrementAndGet();
+                    insert = false;
+                } else {
+                    insert = true;
+                }
+            }
 
+            if (insert) {
                 //logger.debug("Persisting {}--{}", queryId, subjectId);
                 hitHspDAO.insertHitHsp(
                         queryId,

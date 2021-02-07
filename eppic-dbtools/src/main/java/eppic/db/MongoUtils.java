@@ -94,6 +94,10 @@ public class MongoUtils {
         return mongoClient.getDatabase(dbName);
     }
 
+    public static void dropCollection(MongoDatabase mongoDb, Class<?> modelClass) {
+        mongoDb.getCollection(getTableMetadataFromJpa(modelClass).name());
+    }
+
     /**
      * Create Mongo indices by reading jpa Table metadata from given model class.
      * @param mongoDb the mongo db
