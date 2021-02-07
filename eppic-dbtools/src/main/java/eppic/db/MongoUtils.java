@@ -7,14 +7,18 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import eppic.db.tools.ConfigurableMapper;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.tools.jconsole.Tab;
 
 import javax.persistence.Index;
 import javax.persistence.Table;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.mongodb.client.model.Indexes.ascending;
+import static com.mongodb.client.model.Projections.excludeId;
 
 public class MongoUtils {
 
@@ -107,6 +111,38 @@ public class MongoUtils {
 
     public static Table getTableMetadataFromJpa(Class<?> modelClass) {
         return modelClass.getAnnotation(Table.class);
+    }
+
+    public static <T> T findOne(MongoDatabase mongoDb, String collectionName, List<String> idFields, List<Object> id, Class<T> modelClass) {
+        Bson q = getIdentifierQuery(idFields, id);
+        return ConfigurableMapper.getMapper().convertValue(mongoDb.getCollection(collectionName).find(q)
+                .projection(excludeId()).first(), modelClass);
+    }
+
+//    public List<Document> findAll(MongoDatabase mongoDb, String collectionName, List<String> id) {
+//        Bson q = getIdentifierQuery(id);
+//        return mongoDb.getCollection(collectionName).find(q)
+//                .projection(excludeId()).into(new ArrayList<>());
+//    }
+
+    public static <T> List<T> findAll(MongoDatabase mongoDb, String collectionName, List<String> idFields, List<Object> id, Class<T> modelClass) {
+        Bson q = getIdentifierQuery(idFields, id);
+        return mongoDb.getCollection(collectionName).find(q)
+                .projection(excludeId())
+                .map(doc -> ConfigurableMapper.getMapper().convertValue(doc, modelClass))
+                .into(new ArrayList<>());
+    }
+
+    public static Bson getIdentifierQuery(List<String> idFields, List<Object> id) {
+
+        if (id.size() != idFields.size())
+            throw new IllegalArgumentException("Size of id must coincide with size of idFields");
+
+        List<Bson> list = new ArrayList<>();
+        for (int i =0; i < id.size(); i++) {
+            list.add(new Document(idFields.get(i), id.get(i)));
+        }
+        return new Document("$and", list);
     }
 
 }
