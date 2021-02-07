@@ -4,10 +4,17 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.IndexOptions;
 import eppic.db.tools.ConfigurableMapper;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.tools.jconsole.Tab;
+
+import javax.persistence.Index;
+import javax.persistence.Table;
+
+import static com.mongodb.client.model.Indexes.ascending;
 
 public class MongoUtils {
 
@@ -81,6 +88,25 @@ public class MongoUtils {
             throw new IllegalArgumentException("dbName must not be null");
 
         return mongoClient.getDatabase(dbName);
+    }
+
+    /**
+     * Create Mongo indices by reading jpa Table metadata from given model class.
+     * @param mongoDb the mongo db
+     * @param modelClass the model class with jpa Table  annotation
+     */
+    public static void createIndices(MongoDatabase mongoDb, Class<?> modelClass) {
+        Table tableMetadata = getTableMetadataFromJpa(modelClass);
+        for (Index index : tableMetadata.indexes()) {
+            final String[] fieldList = index.columnList().split(",");
+            mongoDb.getCollection(tableMetadata.name())
+                    .createIndex(ascending(fieldList), new IndexOptions()
+                            .unique(index.unique()).name(index.name()));
+        }
+    }
+
+    public static Table getTableMetadataFromJpa(Class<?> modelClass) {
+        return modelClass.getAnnotation(Table.class);
     }
 
 }

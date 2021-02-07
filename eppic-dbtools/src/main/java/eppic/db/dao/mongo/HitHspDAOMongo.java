@@ -7,6 +7,7 @@ import eppic.db.dao.HitHspDAO;
 import eppic.model.db.HitHspDB;
 import eppic.model.dto.HitHsp;
 
+import javax.persistence.Table;
 import java.util.List;
 
 public class HitHspDAOMongo implements HitHspDAO {
@@ -14,9 +15,10 @@ public class HitHspDAOMongo implements HitHspDAO {
     private final MongoDatabase mongoDb;
     private final String collectionName;
 
-    public HitHspDAOMongo(MongoDatabase mongoDb, String collectionName) {
+    public HitHspDAOMongo(MongoDatabase mongoDb) {
         this.mongoDb = mongoDb;
-        this.collectionName = collectionName;
+        Table tableMetadata = MongoUtils.getTableMetadataFromJpa(HitHspDB.class);
+        this.collectionName = tableMetadata.name();
     }
 
     @Override

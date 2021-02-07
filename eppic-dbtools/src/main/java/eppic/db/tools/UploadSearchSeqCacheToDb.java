@@ -11,6 +11,7 @@ import eppic.db.dao.UniProtMetadataDAO;
 import eppic.db.dao.mongo.HitHspDAOMongo;
 //import eppic.db.jpautils.DbConfigGenerator;
 import eppic.db.tools.helpers.MonitorThread;
+import eppic.model.db.HitHspDB;
 import eppic.model.dto.HitHsp;
 import eppic.model.dto.UniProtMetadata;
 import gnu.getopt.Getopt;
@@ -34,8 +35,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UploadSearchSeqCacheToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadSearchSeqCacheToDb.class);
-
-    private static final String HITHSP_COLLECTION = "hithsp";
 
     private static final long SLEEP_TIME = 10000;
 
@@ -119,7 +118,8 @@ public class UploadSearchSeqCacheToDb {
 
         MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
 
-        HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb, HITHSP_COLLECTION);
+        HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb);
+        MongoUtils.createIndices(mongoDb, HitHspDB.class);
 
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         ThreadPoolExecutor executorPool = new ThreadPoolExecutor(numWorkers, numWorkers, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000000), threadFactory);

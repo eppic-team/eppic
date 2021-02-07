@@ -27,7 +27,8 @@ public class ConfigurableMapper {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
 
         mapper.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, true);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        // hoping to keep the original camel case in java types by not setting anything
+        //mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         mapper.setDateFormat(df);
