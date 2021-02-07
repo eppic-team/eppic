@@ -37,7 +37,7 @@ public class UploadSearchSeqCacheToDb {
 
     private static final String HITHSP_COLLECTION = "hithsp";
 
-    private static final long SLEEP_TIME = 10000;
+    private static final long SLEEP_TIME = 1000;
 
     private static final AtomicInteger couldntInsert = new AtomicInteger(0);
     private static final AtomicInteger alreadyPresent = new AtomicInteger(0);
