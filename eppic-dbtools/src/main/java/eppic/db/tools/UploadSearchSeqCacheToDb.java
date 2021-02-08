@@ -135,13 +135,6 @@ public class UploadSearchSeqCacheToDb {
             MongoUtils.createIndices(mongoDb, HitHspDB.class);
         }
 
-        ThreadFactory threadFactory = Executors.defaultThreadFactory();
-        ThreadPoolExecutor executorPool = new ThreadPoolExecutor(numWorkers, numWorkers, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000000), threadFactory);
-
-        MonitorThread monitor = new MonitorThread(executorPool, 60);
-        Thread monitorThread = new Thread(monitor);
-        monitorThread.start();
-
         long start = System.currentTimeMillis();
 
         List<HitHspDB> list = new ArrayList<>();
@@ -198,31 +191,17 @@ public class UploadSearchSeqCacheToDb {
                 }
 
                 if (lineNum % 1000 == 0) {
-                    final List<HitHspDB> passedList = new ArrayList<>(list);
+                    persist(hitHspDAO, list);
                     list = new ArrayList<>();
-                    executorPool.submit(() -> persist(hitHspDAO, passedList));
                 }
 
                 if (lineNum % 10000 == 0) {
                     logger.info("Done processing {} lines.", lineNum);
                 }
 
-                if (lineNum % 100 == 0) {
-                    int remCap = executorPool.getQueue().remainingCapacity();
-                    if (remCap<100) {
-                        logger.info("Remaining capacity in queue is {}. Halting main thread for {} s to give time to queue to process submitted jobs", remCap, SLEEP_TIME / 1000);
-                        Thread.sleep(SLEEP_TIME);
-                    }
-                }
             }
 
             logger.info("File {} fully processed", blastTabFile);
-
-            executorPool.shutdown();
-
-            while (!executorPool.isTerminated());
-
-            monitor.shutDown();
 
             long end = System.currentTimeMillis();
 
