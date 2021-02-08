@@ -95,7 +95,7 @@ public class MongoUtils {
     }
 
     public static void dropCollection(MongoDatabase mongoDb, Class<?> modelClass) {
-        mongoDb.getCollection(getTableMetadataFromJpa(modelClass).name());
+        mongoDb.getCollection(getTableMetadataFromJpa(modelClass).name()).drop();
     }
 
     /**
