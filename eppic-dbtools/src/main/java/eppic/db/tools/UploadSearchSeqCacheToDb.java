@@ -1,18 +1,12 @@
 package eppic.db.tools;
 
-//import eppic.db.EntityManagerHandler;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.MongoUtils;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.db.dao.UniProtMetadataDAO;
-//import eppic.db.dao.jpa.HitHspDAOJpa;
-//import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
 import eppic.db.dao.mongo.HitHspDAOMongo;
-//import eppic.db.jpautils.DbConfigGenerator;
-import eppic.db.tools.helpers.MonitorThread;
 import eppic.model.db.HitHspDB;
-import eppic.model.dto.HitHsp;
 import eppic.model.dto.UniProtMetadata;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
@@ -24,8 +18,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -38,13 +30,8 @@ public class UploadSearchSeqCacheToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadSearchSeqCacheToDb.class);
 
-    private static final long SLEEP_TIME = 10000;
-
     private static final AtomicInteger couldntInsert = new AtomicInteger(0);
     private static final AtomicInteger alreadyPresent = new AtomicInteger(0);
-
-    private static boolean full;
-
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -54,21 +41,17 @@ public class UploadSearchSeqCacheToDb {
                         "  -f <file>    : the blast tabular format file containing all hits\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
                         "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
-                        " [-n <int>]    : number of workers. Default 1. \n" +
                         " [-r <string>] : uniref type to be written to db, e.g. UniRef90. If not provided null is written\n" +
-                        " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n" +
-                        " [-F]          : if specified load will be in FULL mode (collection dropped, indices created) instead of INCREMENTAL.\n";
+                        " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n";
 
 
         File blastTabFile = null;
         String dbName = null;
         File configFile = DBHandler.DEFAULT_CONFIG_FILE;
-        int numWorkers = 1;
         String uniProtVersion = null;
         String uniRefType = null;
-        full = false;
 
-        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:n:r:v:Fh?");
+        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:r:v:h?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch(c){
@@ -81,17 +64,11 @@ public class UploadSearchSeqCacheToDb {
                 case 'g':
                     configFile = new File(g.getOptarg());
                     break;
-                case 'n':
-                    numWorkers = Integer.parseInt(g.getOptarg());
-                    break;
                 case 'r':
                     uniRefType = g.getOptarg();
                     break;
                 case 'v':
                     uniProtVersion = g.getOptarg();
-                    break;
-                case 'F':
-                    full = true;
                     break;
                 case 'h':
                     System.out.println(help);
@@ -129,11 +106,9 @@ public class UploadSearchSeqCacheToDb {
 
         HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb);
 
-        if (full) {
-            logger.info("Full mode: dropping collection and recreating index");
-            MongoUtils.dropCollection(mongoDb, HitHspDB.class);
-            MongoUtils.createIndices(mongoDb, HitHspDB.class);
-        }
+        logger.info("Dropping collection and recreating index");
+        MongoUtils.dropCollection(mongoDb, HitHspDB.class);
+        MongoUtils.createIndices(mongoDb, HitHspDB.class);
 
         long start = System.currentTimeMillis();
 

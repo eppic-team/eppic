@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -27,7 +26,7 @@ public class ConfigurableMapper {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
 
         mapper.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, true);
-        // hoping to keep the original camel case in java types by not setting anything
+        // keep the original camel case in java types by not setting anything
         //mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
