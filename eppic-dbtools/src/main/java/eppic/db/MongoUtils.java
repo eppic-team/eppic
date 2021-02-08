@@ -16,6 +16,7 @@ import javax.persistence.Table;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Indexes.ascending;
 import static com.mongodb.client.model.Projections.excludeId;
@@ -35,22 +36,21 @@ public class MongoUtils {
 
         Document document = convertValueToDocument(object);
 
-        writeDocument(mongoDatabase, collectionName, document);
-    }
-
-    /**
-     * Writes a single {@link Document} to a {@param collectionName} collection in the given {@param mongoDatabase}.
-     *
-     *  @param mongoDatabase destination {@link MongoDatabase}
-     *  @param collectionName destination {@link com.mongodb.client.MongoCollection} name
-     *  @param document {@link Document}
-     */
-    private static void writeDocument(MongoDatabase mongoDatabase, String collectionName, Document document) {
-
         try {
             mongoDatabase.getCollection(collectionName).insertOne(document);
         } catch (MongoWriteException e) {
             logger.error("{}: {}. Error category: {}", e.getError().getMessage(), document.toJson(), e.getError().getCategory().name());
+            throw e;
+        }
+    }
+
+    public static <T> void writeObjects(MongoDatabase mongoDatabase, String collectionName, List<T> objects) {
+        List<Document> documents = objects.stream().map(MongoUtils::convertValueToDocument).collect(Collectors.toList());
+
+        try {
+            mongoDatabase.getCollection(collectionName).insertMany(documents);
+        } catch (MongoWriteException e) {
+            logger.error("{}. Error category: {}", e.getError().getMessage(), e.getError().getCategory().name());
             throw e;
         }
     }

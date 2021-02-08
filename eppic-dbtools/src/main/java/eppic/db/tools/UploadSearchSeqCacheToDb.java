@@ -22,6 +22,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -128,6 +130,7 @@ public class UploadSearchSeqCacheToDb {
         HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb);
 
         if (full) {
+            logger.info("Full mode: dropping collection and recreating index");
             MongoUtils.dropCollection(mongoDb, HitHspDB.class);
             MongoUtils.createIndices(mongoDb, HitHspDB.class);
         }
@@ -140,6 +143,8 @@ public class UploadSearchSeqCacheToDb {
         monitorThread.start();
 
         long start = System.currentTimeMillis();
+
+        List<HitHspDB> list = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(blastTabFile));) {
 
@@ -171,13 +176,31 @@ public class UploadSearchSeqCacheToDb {
                     double eValue = Double.parseDouble(tokens[10]);
                     int bitScore = Integer.parseInt(tokens[11]);
 
-                    //Future<Boolean> future = executorService.submit(() -> persist(hitHspDAO, dbToWrite, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
-                    executorPool.submit(() -> persist(hitHspDAO, queryId, subjectId, identity, length, mismatches, gapOpenings, qStart, qEnd, sStart, sEnd, eValue, bitScore));
+                    HitHspDB hitHspDB = new HitHspDB();
+                    hitHspDB.setQueryId(queryId);
+                    hitHspDB.setSubjectId(subjectId);
+                    hitHspDB.setPercentIdentity(identity);
+                    hitHspDB.setAliLength(length);
+                    hitHspDB.setNumMismatches(mismatches);
+                    hitHspDB.setNumGapOpenings(gapOpenings);
+                    hitHspDB.setQueryStart(qStart);
+                    hitHspDB.setQueryEnd(qEnd);
+                    hitHspDB.setSubjectStart(sStart);
+                    hitHspDB.setSubjectEnd(sEnd);
+                    hitHspDB.seteValue(eValue);
+                    hitHspDB.setBitScore(bitScore);
 
+                    list.add(hitHspDB);
 
                 } catch (NumberFormatException e) {
                     logger.warn("Wrong number format for line {} of file {}. Query id is {}. Will ignore line. Error: {}", lineNum, blastTabFile, queryId, e.getMessage());
                     cantParse++;
+                }
+
+                if (lineNum % 1000 == 0) {
+                    final List<HitHspDB> passedList = new ArrayList<>(list);
+                    list = new ArrayList<>();
+                    executorPool.submit(() -> persist(hitHspDAO, passedList));
                 }
 
                 if (lineNum % 10000 == 0) {
@@ -241,47 +264,14 @@ public class UploadSearchSeqCacheToDb {
 
     }
 
-    private static void persist(HitHspDAO hitHspDAO,
-                                   String queryId, String subjectId,
-                                   double identity, int length, int mismatches, int gapOpenings,
-                                   int qStart, int qEnd, int sStart, int sEnd, double eValue, int bitScore) {
+    private static void persist(HitHspDAO hitHspDAO, List<HitHspDB> list) {
+
         try {
-
-            boolean insert;
-            if (full) {
-                insert = true;
-            } else {
-                HitHsp hit = hitHspDAO.getHitHsp(queryId, subjectId, qStart, qEnd, sStart, sEnd);
-                if (hit != null) {
-                    logger.debug("Hit already present for queryId {}, subjectId {}, qStart {}, qEnd {}, sStart {}, sEnd {}", queryId, subjectId, qStart, qEnd, sStart, sEnd);
-                    alreadyPresent.incrementAndGet();
-                    insert = false;
-                } else {
-                    insert = true;
-                }
-            }
-
-            if (insert) {
-                //logger.debug("Persisting {}--{}", queryId, subjectId);
-                hitHspDAO.insertHitHsp(
-                        queryId,
-                        subjectId,
-                        identity,
-                        length,
-                        mismatches,
-                        gapOpenings,
-                        qStart,
-                        qEnd,
-                        sStart,
-                        sEnd,
-                        eValue,
-                        bitScore
-                );
-
-            }
+            //logger.debug("Persisting {}--{}", queryId, subjectId);
+            hitHspDAO.insertHitHsps(list);
 
         } catch (DaoException e) {
-            logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", queryId, subjectId, e.getMessage());
+            logger.error("Could not persist HitHsps with first query {}, first subject {}. Error: {}", list.get(0).getQueryId(), list.get(0).getSubjectId(), e.getMessage());
             couldntInsert.incrementAndGet();
         }
     }

@@ -1,10 +1,13 @@
 package eppic.db.dao;
 
+import eppic.model.db.HitHspDB;
 import eppic.model.dto.HitHsp;
 
 import java.util.List;
 
 public interface HitHspDAO {
+
+    void insertHitHsps(List<HitHspDB> list) throws DaoException;
 
     void insertHitHsp(
             String queryId,

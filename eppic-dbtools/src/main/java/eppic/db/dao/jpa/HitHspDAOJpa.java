@@ -18,6 +18,11 @@ import java.util.List;
 public class HitHspDAOJpa implements HitHspDAO {
 
     @Override
+    public void insertHitHsps(List<HitHspDB> list) throws DaoException {
+
+    }
+
+    @Override
     public void insertHitHsp(String queryId,
                              String subjectId,
                              double percentIdentity,

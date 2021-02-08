@@ -24,6 +24,15 @@ public class HitHspDAOMongo implements HitHspDAO {
     }
 
     @Override
+    public void insertHitHsps(List<HitHspDB> list) throws DaoException {
+        try {
+            MongoUtils.writeObjects(mongoDb, collectionName, list);
+        } catch (Exception e) {
+            throw new DaoException(e);
+        }
+    }
+
+    @Override
     public void insertHitHsp(String queryId, String subjectId, double percentIdentity, int aliLength, int numMismatches, int numGapOpenings, int queryStart, int queryEnd, int subjectStart, int subjectEnd, double eValue, int bitScore) throws DaoException {
         HitHspDB hitHspDB = new HitHspDB();
         hitHspDB.setQueryId(queryId);
