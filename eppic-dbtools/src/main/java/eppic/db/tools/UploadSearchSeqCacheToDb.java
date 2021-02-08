@@ -31,7 +31,6 @@ public class UploadSearchSeqCacheToDb {
     private static final Logger logger = LoggerFactory.getLogger(UploadSearchSeqCacheToDb.class);
 
     private static final AtomicInteger couldntInsert = new AtomicInteger(0);
-    private static final AtomicInteger alreadyPresent = new AtomicInteger(0);
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -176,6 +175,11 @@ public class UploadSearchSeqCacheToDb {
 
             }
 
+            // persist the final chunk
+            if (!list.isEmpty()) {
+                persist(hitHspDAO, list);
+            }
+
             logger.info("File {} fully processed", blastTabFile);
 
             long end = System.currentTimeMillis();
@@ -186,9 +190,6 @@ public class UploadSearchSeqCacheToDb {
             }
             if (couldntInsert.get()!=0) {
                 logger.info("Could not persist {} lines", cantPersist);
-            }
-            if (alreadyPresent.get()!=0) {
-                logger.info("{} entries already present and did not re-add them", alreadyPresent.get());
             }
 
             // TODO rewrite in Mongo
