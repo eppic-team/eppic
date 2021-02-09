@@ -31,6 +31,8 @@ public class UploadSearchSeqCacheToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadSearchSeqCacheToDb.class);
 
+    private static final int BATCH_SIZE = 1000;
+
     private static int couldntInsert = 0;
     private static int alreadyPresent = 0;
 
@@ -177,7 +179,7 @@ public class UploadSearchSeqCacheToDb {
                     cantParse++;
                 }
 
-                if (lineNum % 1000 == 0) {
+                if (lineNum % BATCH_SIZE == 0) {
                     persistWrapper(hitHspDAO, list);
                     list = new ArrayList<>();
                 }

@@ -231,7 +231,6 @@ public class UploadUniprotInfoToDb {
                         currentSequence.append(line.trim());
                     }
                 }
-
             }
 
             // make sure we add the last sequence if it is one of the required ids
@@ -240,9 +239,10 @@ public class UploadUniprotInfoToDb {
                 list.add(currentUniEntry);
             }
 
-            // and persist the last batch
-            persistWrapper(dao, list);
-
+            if (list.size()>0) {
+                // and persist the last batch
+                persistWrapper(dao, list);
+            }
         }
 
         notInFastaUniIds = new HashSet<>(uniqueIds);
