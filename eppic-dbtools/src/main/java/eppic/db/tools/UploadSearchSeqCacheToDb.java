@@ -266,12 +266,17 @@ public class UploadSearchSeqCacheToDb {
 
     private static void persistUniprotMetadata(MongoDatabase mongoDb, String uniRefType, String uniProtVersion) {
         UniProtMetadataDAO dao = new UniProtMetadataDAOMongo(mongoDb);
+
+        UniProtMetadata uniProtMetadata = null;
         try {
-            UniProtMetadata uniProtMetadata = dao.getUniProtMetadata();
+            uniProtMetadata = dao.getUniProtMetadata();
+        } catch (DaoException e) {
+            logger.warn("Could not retrieve UniProtMetadata");
+        }
+        if (uniProtMetadata != null) {
             logger.info("UniProtMetadata present in database with uniRefType={}, version={}. Will not persist a new one.",
                     uniProtMetadata.getUniRefType(), uniProtMetadata.getVersion());
-
-        } catch (DaoException e) {
+        } else {
             logger.info("UniProtMetadata could not be found in database. We will persist a new one: {} -- {}.", uniRefType, uniProtVersion);
             try {
                 dao.insertUniProtMetadata(uniRefType, uniProtVersion);
@@ -280,6 +285,7 @@ public class UploadSearchSeqCacheToDb {
                         "Things could fail downstream. Error: {}", ex.getMessage());
             }
         }
+
     }
 
 }
