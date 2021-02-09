@@ -12,6 +12,7 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.List;
 
 public class UniProtInfoDAOJpa implements UniProtInfoDAO {
 
@@ -43,6 +44,11 @@ public class UniProtInfoDAOJpa implements UniProtInfoDAO {
             if (entityManager != null)
                 entityManager.close();
         }
+    }
+
+    @Override
+    public void insertUniProtInfos(List<UniProtInfoDB> uniProtInfoDBList) throws DaoException {
+        // only used for mongo
     }
 
     @Override

@@ -105,6 +105,7 @@ public class UploadSearchSeqCacheToDb {
 
         HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb);
 
+        // TODO we still need a full vs incremental switch to be able to add the incremental weekly update (an m8 file with only the matches from this week's PDB diff)
         logger.info("Dropping collection and recreating index");
         MongoUtils.dropCollection(mongoDb, HitHspDB.class);
         MongoUtils.createIndices(mongoDb, HitHspDB.class);
