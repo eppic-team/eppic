@@ -6,6 +6,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.db.dao.UniProtMetadataDAO;
 import eppic.db.dao.mongo.HitHspDAOMongo;
+import eppic.db.dao.mongo.UniProtMetadataDAOMongo;
 import eppic.model.db.HitHspDB;
 import eppic.model.dto.HitHsp;
 import eppic.model.dto.UniProtMetadata;
@@ -207,7 +208,12 @@ public class UploadSearchSeqCacheToDb {
                 logger.info("Could not persist {} lines", cantPersist);
             }
 
-            persistUniprotMetadata(lineNum, uniRefType, uniProtVersion);
+            // a rough way of guessing that the insertion of records was successful
+            if (lineNum - couldntInsert > 1000) {
+                persistUniprotMetadata(mongoDb, uniRefType, uniProtVersion);
+            } else {
+                logger.info("It does not look like the insertion of records was successful. Will not try to add UniProtMetadata record.");
+            }
         }
 
     }
@@ -256,30 +262,22 @@ public class UploadSearchSeqCacheToDb {
         }
     }
 
-    private static void persistUniprotMetadata(int lastLineCount, String uniRefType, String uniProtVersion) {
-        // TODO rewrite in Mongo
-        // a rough way of guessing that the insertion of records was successful
-//        if (lastLineCount - couldntInsert > 1000) {
-//            UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
-//            UniProtMetadata uniProtMetadata = null;
-//            try {
-//                uniProtMetadata = dao.getUniProtMetadata();
-//            } catch (DaoException e) {
-//                logger.info("UniProtMetadata could not be find in database. We will persist a new one.");
-//            }
-//
-//            if (uniProtMetadata == null) {
-//                try {
-//                    dao.insertUniProtMetadata(uniRefType, uniProtVersion);
-//                } catch (DaoException e) {
-//                    logger.warn("Could not persist the UniProt metadata (UniRef type and version). " +
-//                            "Things could fail downstream. Error: {}", e.getMessage());
-//                }
-//            } else {
-//                logger.info("UniProtMetadata present in database with uniRefType={}, version={}. Will not persist a new one.",
-//                        uniProtMetadata.getUniRefType(), uniProtMetadata.getVersion());
-//            }
-//        }
+    private static void persistUniprotMetadata(MongoDatabase mongoDb, String uniRefType, String uniProtVersion) {
+        UniProtMetadataDAO dao = new UniProtMetadataDAOMongo(mongoDb);
+        try {
+            UniProtMetadata uniProtMetadata = dao.getUniProtMetadata();
+            logger.info("UniProtMetadata present in database with uniRefType={}, version={}. Will not persist a new one.",
+                    uniProtMetadata.getUniRefType(), uniProtMetadata.getVersion());
+
+        } catch (DaoException e) {
+            logger.info("UniProtMetadata could not be found in database. We will persist a new one: {} -- {}.", uniRefType, uniProtVersion);
+            try {
+                dao.insertUniProtMetadata(uniRefType, uniProtVersion);
+            } catch (DaoException ex) {
+                logger.warn("Could not persist the UniProt metadata (UniRef type and version). " +
+                        "Things could fail downstream. Error: {}", ex.getMessage());
+            }
+        }
     }
 
 }

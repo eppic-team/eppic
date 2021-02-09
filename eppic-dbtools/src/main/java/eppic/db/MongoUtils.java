@@ -123,6 +123,11 @@ public class MongoUtils {
                 .projection(excludeId()).first(), modelClass);
     }
 
+    public static <T> T findFirst(MongoDatabase mongoDb, String collectionName, Class<T> modelClass) {
+        return ConfigurableMapper.getMapper().convertValue(mongoDb.getCollection(collectionName).find()
+                .projection(excludeId()).first(), modelClass);
+    }
+
 //    public List<Document> findAll(MongoDatabase mongoDb, String collectionName, List<String> id) {
 //        Bson q = getIdentifierQuery(id);
 //        return mongoDb.getCollection(collectionName).find(q)
