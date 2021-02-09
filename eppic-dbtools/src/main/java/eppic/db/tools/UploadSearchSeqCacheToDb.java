@@ -7,6 +7,7 @@ import eppic.db.dao.HitHspDAO;
 import eppic.db.dao.UniProtMetadataDAO;
 import eppic.db.dao.mongo.HitHspDAOMongo;
 import eppic.model.db.HitHspDB;
+import eppic.model.dto.HitHsp;
 import eppic.model.dto.UniProtMetadata;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
@@ -18,7 +19,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -30,7 +30,10 @@ public class UploadSearchSeqCacheToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadSearchSeqCacheToDb.class);
 
-    private static final AtomicInteger couldntInsert = new AtomicInteger(0);
+    private static int couldntInsert = 0;
+    private static int alreadyPresent = 0;
+
+    private static boolean full;
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -41,16 +44,18 @@ public class UploadSearchSeqCacheToDb {
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
                         "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
                         " [-r <string>] : uniref type to be written to db, e.g. UniRef90. If not provided null is written\n" +
-                        " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n";
-
+                        " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n" +
+                        " [-F]          : whether FULL mode should be used. Otherwise INCREMENTAL mode. In FULL the collection \n" +
+                        "                 is dropped and indexes reset. FULL is much faster because it uses Mongo batch insert\n";
 
         File blastTabFile = null;
         String dbName = null;
         File configFile = DBHandler.DEFAULT_CONFIG_FILE;
         String uniProtVersion = null;
         String uniRefType = null;
+        full = false;
 
-        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:r:v:h?");
+        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:r:v:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch(c){
@@ -68,6 +73,9 @@ public class UploadSearchSeqCacheToDb {
                     break;
                 case 'v':
                     uniProtVersion = g.getOptarg();
+                    break;
+                case 'F':
+                    full = true;
                     break;
                 case 'h':
                     System.out.println(help);
@@ -105,10 +113,13 @@ public class UploadSearchSeqCacheToDb {
 
         HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb);
 
-        // TODO we still need a full vs incremental switch to be able to add the incremental weekly update (an m8 file with only the matches from this week's PDB diff)
-        logger.info("Dropping collection and recreating index");
-        MongoUtils.dropCollection(mongoDb, HitHspDB.class);
-        MongoUtils.createIndices(mongoDb, HitHspDB.class);
+        if (full) {
+            logger.info("FULL mode: dropping collection and recreating index");
+            MongoUtils.dropCollection(mongoDb, HitHspDB.class);
+            MongoUtils.createIndices(mongoDb, HitHspDB.class);
+        } else {
+            logger.info("INCREMENTAL mode: will respect existing data and check presence before inserting");
+        }
 
         long start = System.currentTimeMillis();
 
@@ -166,7 +177,7 @@ public class UploadSearchSeqCacheToDb {
                 }
 
                 if (lineNum % 1000 == 0) {
-                    persist(hitHspDAO, list);
+                    persistWrapper(hitHspDAO, list);
                     list = new ArrayList<>();
                 }
 
@@ -178,7 +189,7 @@ public class UploadSearchSeqCacheToDb {
 
             // persist the final chunk
             if (!list.isEmpty()) {
-                persist(hitHspDAO, list);
+                persistWrapper(hitHspDAO, list);
             }
 
             logger.info("File {} fully processed", blastTabFile);
@@ -186,41 +197,54 @@ public class UploadSearchSeqCacheToDb {
             long end = System.currentTimeMillis();
 
             logger.info("Processed a total of {} lines in file {}. Time taken: {} s", lineNum, blastTabFile, (end-start)/1000.0);
+            if (!full) {
+                logger.info("We were in INCREMENTAL mode. {} entries were not persisted again because they were already present in db", alreadyPresent);
+            }
             if (cantParse!=0) {
                 logger.info("Could not parse {} lines", cantParse);
             }
-            if (couldntInsert.get()!=0) {
+            if (couldntInsert!=0) {
                 logger.info("Could not persist {} lines", cantPersist);
             }
 
-            // TODO rewrite in Mongo
-            // a rough way of guessing that the insertion of records was successful
-//            if (lineNum - couldntInsert.get() > 1000) {
-//                UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
-//                UniProtMetadata uniProtMetadata = null;
-//                try {
-//                    uniProtMetadata = dao.getUniProtMetadata();
-//                } catch (DaoException e) {
-//                    logger.info("UniProtMetadata could not be find in database. We will persist a new one.");
-//                }
-//
-//                if (uniProtMetadata == null) {
-//                    try {
-//                        dao.insertUniProtMetadata(uniRefType, uniProtVersion);
-//                    } catch (DaoException e) {
-//                        logger.warn("Could not persist the UniProt metadata (UniRef type and version). " +
-//                                "Things could fail downstream. Error: {}", e.getMessage());
-//                    }
-//                } else {
-//                    logger.info("UniProtMetadata present in database with uniRefType={}, version={}. Will not persist a new one.",
-//                            uniProtMetadata.getUniRefType(), uniProtMetadata.getVersion());
-//                }
-//            }
+            persistUniprotMetadata(lineNum, uniRefType, uniProtVersion);
         }
 
     }
 
-    private static void persist(HitHspDAO hitHspDAO, List<HitHspDB> list) {
+    private static void persistWrapper(HitHspDAO dao, List<HitHspDB> list) {
+        if (full) {
+            persistList(dao, list);
+        } else {
+            list.forEach(h -> persistOne(dao, h));
+        }
+
+    }
+
+    private static void persistOne(HitHspDAO hitHspDAO, HitHspDB hit) {
+
+        try {
+
+            HitHsp hitInDb = hitHspDAO.getHitHsp(hit.getQueryId(), hit.getSubjectId(), hit.getQueryStart(), hit.getQueryEnd(), hit.getSubjectStart(), hit.getSubjectEnd());
+            if (hitInDb != null) {
+                logger.debug("Hit already present for queryId {}, subjectId {}, qStart {}, qEnd {}, sStart {}, sEnd {}",
+                        hit.getQueryId(), hit.getSubjectId(), hit.getQueryStart(), hit.getQueryEnd(), hit.getSubjectStart(), hit.getSubjectEnd());
+                alreadyPresent++;
+            } else {
+
+                //logger.debug("Persisting {}--{}", queryId, subjectId);
+                hitHspDAO.insertHitHsp(hit.getQueryId(), hit.getSubjectId(), hit.getPercentIdentity(), hit.getAliLength(), hit.getNumMismatches(), hit.getNumGapOpenings(),
+                        hit.getQueryStart(), hit.getQueryEnd(), hit.getSubjectStart(), hit.getSubjectEnd(), hit.geteValue(), hit.getBitScore());
+
+            }
+
+        } catch (DaoException e) {
+            logger.error("Could not persist HitHsp for query {}, subject {}. Error: {}", hit.getQueryId(), hit.getSubjectId(), e.getMessage());
+            couldntInsert++;
+        }
+    }
+
+    private static void persistList(HitHspDAO hitHspDAO, List<HitHspDB> list) {
 
         try {
             //logger.debug("Persisting {}--{}", queryId, subjectId);
@@ -228,8 +252,34 @@ public class UploadSearchSeqCacheToDb {
 
         } catch (DaoException e) {
             logger.error("Could not persist HitHsps with first query {}, first subject {}. Error: {}", list.get(0).getQueryId(), list.get(0).getSubjectId(), e.getMessage());
-            couldntInsert.incrementAndGet();
+            couldntInsert++;
         }
+    }
+
+    private static void persistUniprotMetadata(int lastLineCount, String uniRefType, String uniProtVersion) {
+        // TODO rewrite in Mongo
+        // a rough way of guessing that the insertion of records was successful
+//        if (lastLineCount - couldntInsert > 1000) {
+//            UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
+//            UniProtMetadata uniProtMetadata = null;
+//            try {
+//                uniProtMetadata = dao.getUniProtMetadata();
+//            } catch (DaoException e) {
+//                logger.info("UniProtMetadata could not be find in database. We will persist a new one.");
+//            }
+//
+//            if (uniProtMetadata == null) {
+//                try {
+//                    dao.insertUniProtMetadata(uniRefType, uniProtVersion);
+//                } catch (DaoException e) {
+//                    logger.warn("Could not persist the UniProt metadata (UniRef type and version). " +
+//                            "Things could fail downstream. Error: {}", e.getMessage());
+//                }
+//            } else {
+//                logger.info("UniProtMetadata present in database with uniRefType={}, version={}. Will not persist a new one.",
+//                        uniProtMetadata.getUniRefType(), uniProtMetadata.getVersion());
+//            }
+//        }
     }
 
 }
