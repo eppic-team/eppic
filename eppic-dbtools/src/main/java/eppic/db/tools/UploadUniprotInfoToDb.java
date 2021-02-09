@@ -196,6 +196,10 @@ public class UploadUniprotInfoToDb {
                         if (list.size() == BATCH_SIZE) {
                             persistWrapper(dao, list);
                             list = new ArrayList<>();
+
+                            if (countDone%1000000 == 0) {
+                                logger.info("Done processing {} entries from FASTA file", countDone);
+                            }
                         }
                     }
 
@@ -260,7 +264,12 @@ public class UploadUniprotInfoToDb {
         UniProtConnection uc = new UniProtConnection();
         UniProtInfoDAO dao = new UniProtInfoDAOMongo(mongoDb);
 
+        int count = 0;
         for (String uniId : notInFastaUniIds) {
+            count++;
+            if (count%1000 == 0) {
+                logger.info("Done processing {} UniProt ids by retrieving data from JAPI", count);
+            }
 
             try {
                 UnirefEntry entry = uc.getUnirefEntryWithRetry(uniId);
@@ -283,13 +292,7 @@ public class UploadUniprotInfoToDb {
     }
 
     private static void persistWrapper(UniProtInfoDAO dao, List<UniProtInfoDB> uniEntries) {
-
         // TODO what to do if it's a isoform id? (i.e. with a "-")
-
-        countDone += uniEntries.size();
-        if (countDone%1000000 == 0) {
-            logger.info("Done processing {} entries from FASTA file", countDone);
-        }
 
         if (full) {
             persistList(dao, uniEntries);
@@ -299,6 +302,8 @@ public class UploadUniprotInfoToDb {
     }
 
     private static void persistOne(UniProtInfoDAO dao, UniProtInfoDB uniEntry) {
+
+        countDone ++;
 
         try {
             UniProtInfo uniProtInfo = dao.getUniProtInfo(uniEntry.getUniId());
@@ -322,6 +327,8 @@ public class UploadUniprotInfoToDb {
     }
 
     private static void persistList(UniProtInfoDAO dao, List<UniProtInfoDB> uniEntries) {
+
+        countDone += uniEntries.size();
 
         try {
             dao.insertUniProtInfos(uniEntries);
