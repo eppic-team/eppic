@@ -40,9 +40,6 @@ import eppic.model.db.JobDB;
 import eppic.model.db.JobDB_;
 import eppic.model.db.PdbInfoDB;
 import eppic.model.db.PdbInfoDB_;
-import eppic.model.db.ResidueBurialDB;
-import eppic.model.db.ResidueBurialDB_;
-import eppic.model.db.ResidueInfoDB;
 import eppic.model.db.SeqClusterDB;
 import eppic.model.db.SeqClusterDB_;
 
@@ -269,44 +266,7 @@ public class DBHandler {
 		// not present
 		return 0;		
 	}
-	
-	/**
-	 * Checks if entries with the given jobIds exist in the DataBase
-	 * Note this returns true whenever the query returns at least 1 record, i.e. it doesn't guarantee
-	 * that the entries are complete with data present in all cascading tables
-	 * @param jobIds
-	 * @return true if present; false if not
-	 */
-	public boolean checkJobsExist(List<String> jobIds){
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
 
-		CriteriaQuery<JobDB> cq = cb.createQuery(JobDB.class);
-		Root<JobDB> rootJob = cq.from(JobDB.class);
-		
-		Predicate predicate = cb.conjunction();
-		for (String jobId:jobIds) {
-		    Predicate newPredicate = cb.equal(rootJob.get(JobDB_.jobId), jobId);
-		    predicate = cb.and(predicate, newPredicate);
-		}
-		cq.where(predicate);
-		
-		
-		// in order to make the query light-weight we only take these 2 fields for which there is 
-		// a corresponding constructor in JobDB
-		// with the simple 'select' above the query is a monster with many joins (following the full hierarchy of Job, PdbInfo etc) 
-		cq.multiselect(rootJob.get(JobDB_.inputName), rootJob.get(JobDB_.inputType));
-		List<JobDB> queryJobList = em.createQuery(cq).getResultList();
-		int querySize = queryJobList.size();
-		
-		em.close();
-		
-		if(querySize>0) return true;
-		else return false;
-		
-	}
-	
 	/**
 	 * Copies a job from this database to another database
 	 * @param dbhCopier DBHandler object to copy to
@@ -544,59 +504,6 @@ public class DBHandler {
 		return deserializePdbList(pdbCodes);
 	}
 	
-	/**
-	 * Gets the sequence cluster id for given pdbCode and clusterLevel
-	 * @param pdbCode
-	 * @param repChain
-	 * @param clusterLevel
-	 * @return
-	 */
-	public int getClusterIdForPdbCode(String pdbCode, String repChain, int clusterLevel) {
-		
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-
-		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
-		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
-		
-		cq.where(cb.equal(root.get(SeqClusterDB_.pdbCode), pdbCode), cb.equal(root.get(SeqClusterDB_.repChain),repChain));
-		cq.select(root);
-		
-		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
-		
-		//em.close();
-		
-		if (results.size()==0) return -1;
-		else if (results.size()>1) {
-			System.err.println("More than 1 SeqClusterDB returned for given PDB code and chain: "+pdbCode+repChain);
-			return -1;
-		}
-		
-		switch (clusterLevel) {
-		case 100:
-			return results.get(0).getC100();
-		case 95:
-			return results.get(0).getC95();
-		case 90:
-			return results.get(0).getC90();
-		case 80:
-			return results.get(0).getC80();
-		case 70:
-			return results.get(0).getC70();
-		case 60:
-			return results.get(0).getC60();
-		case 50:
-			return results.get(0).getC50();
-		case 40:
-			return results.get(0).getC40();
-		case 30:
-			return results.get(0).getC30();
-
-		}
-		
-		return -1;
-	}
 	/**
 	 * Gets the sequence cluster id for given pdbCode and clusterLevel
 	 * @param pdbCode
@@ -915,26 +822,6 @@ public class DBHandler {
 		em.persist(seqCluster);
 		em.getTransaction().commit();
 		em.close();
-	}
-
-	public List<ResidueInfoDB> getResiduesForInterface(InterfaceDB face, boolean side, short region) {
-		EntityManager em = this.getEntityManager();
-
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-
-		CriteriaQuery<ResidueInfoDB> cq = cb.createQuery(ResidueInfoDB.class);
-		Root<ResidueBurialDB> root = cq.from(ResidueBurialDB.class);
-
-		cq.where(cb.and(
-				cb.equal(root.get(ResidueBurialDB_.interfaceItem),face),
-				cb.equal(root.get(ResidueBurialDB_.side), side),
-				cb.greaterThanOrEqualTo(root.get(ResidueBurialDB_.region), region)));
-
-		cq.select(root.get(ResidueBurialDB_.residueInfo));
-
-		List<ResidueInfoDB> results = em.createQuery(cq).getResultList();
-
-		return results;
 	}
 
 	public List<String> getAllPdbCodes() {
