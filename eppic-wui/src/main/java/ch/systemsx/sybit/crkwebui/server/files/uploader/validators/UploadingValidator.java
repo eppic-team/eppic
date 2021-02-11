@@ -2,7 +2,6 @@ package ch.systemsx.sybit.crkwebui.server.files.uploader.validators;
 
 import ch.systemsx.sybit.crkwebui.server.commons.validators.CaptchaValidator;
 import ch.systemsx.sybit.crkwebui.server.files.uploader.data.UploadingData;
-import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
@@ -14,22 +13,16 @@ public class UploadingValidator
 	private CaptchaValidator captchaValidator;
 	private int nrOfAllowedSubmissionsWithoutCaptcha = 1;
 	
-	private boolean doIPBasedVerification;
-	private int defaultNrOfAllowedSubmissionsForIP;
-	
+
 	public UploadingValidator(boolean useCaptcha,
 							  int nrOfAllowedSubmissionsWithoutCaptcha,
 							  String captchaPublicKey,
-							  String captchaPrivateKey,
-							  boolean doIPBasedVerification,
-							  int defaultNrOfAllowedSubmissionsForIP)
+							  String captchaPrivateKey)
 	{
 		this.useCaptcha = useCaptcha;
 		this.nrOfAllowedSubmissionsWithoutCaptcha = nrOfAllowedSubmissionsWithoutCaptcha;
 		this.captchaValidator = new CaptchaValidator(captchaPublicKey, captchaPrivateKey);
 		
-		this.doIPBasedVerification = doIPBasedVerification;
-		this.defaultNrOfAllowedSubmissionsForIP = defaultNrOfAllowedSubmissionsForIP;
 	}
 	
 	/**
@@ -43,27 +36,11 @@ public class UploadingValidator
 	{
 		try
 		{
-			validateIP(ip);
 			validateCaptcha(uploadingData, ip);
 		}
 		catch(Exception e)
 		{
 			throw new ValidationException(e);
-		}
-	}
-	
-	/**
-	 * Validates whether user with specified ip is allowed to upload file.
-	 * @param ip ip of the user
-	 * @throws ValidationException when validation fails
-	 * @throws DaoException when data can not be retrieved from db
-	 */
-	private void validateIP(String ip) throws ValidationException, DaoException
-	{
-		if(doIPBasedVerification)
-		{
-			IPVerifier.verifyIfCanBeSubmitted(ip, 
-											  defaultNrOfAllowedSubmissionsForIP);
 		}
 	}
 	

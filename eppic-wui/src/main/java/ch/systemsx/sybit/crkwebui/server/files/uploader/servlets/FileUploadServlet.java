@@ -136,16 +136,11 @@ public class FileUploadServlet extends BaseServlet {
 		String captchaPublicKey = properties.getProperty("captcha_public_key");
 		String captchaPrivateKey = properties.getProperty("captcha_private_key");
 		int nrOfAllowedSubmissionsWithoutCaptcha = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_without_captcha"));
-		
-		boolean doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
-		int defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 
 		UploadingValidator uploadingValidator = new UploadingValidator(useCaptcha, 
 																	   nrOfAllowedSubmissionsWithoutCaptcha, 
 																	   captchaPublicKey, 
-																	   captchaPrivateKey, 
-																	   doIPBasedVerification, 
-																	   defaultNrOfAllowedSubmissionsForIP);
+																	   captchaPrivateKey);
 		return uploadingValidator;
 	}
 }

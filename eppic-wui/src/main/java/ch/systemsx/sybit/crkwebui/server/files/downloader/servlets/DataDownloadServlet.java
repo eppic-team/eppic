@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
-import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import eppic.model.dto.Assembly;
 import eppic.model.dto.ChainCluster;
@@ -32,14 +31,12 @@ import eppic.model.dto.PdbInfo;
 import eppic.db.dao.AssemblyDAO;
 import eppic.db.dao.ChainClusterDAO;
 import eppic.db.dao.DaoException;
-import eppic.db.dao.DataDownloadTrackingDAO;
 import eppic.db.dao.InterfaceClusterDAO;
 import eppic.db.dao.InterfaceDAO;
 import eppic.db.dao.JobDAO;
 import eppic.db.dao.PDBInfoDAO;
 import eppic.db.dao.jpa.AssemblyDAOJpa;
 import eppic.db.dao.jpa.ChainClusterDAOJpa;
-import eppic.db.dao.jpa.DataDownloadTrackingDAOJpa;
 import eppic.db.dao.jpa.InterfaceClusterDAOJpa;
 import eppic.db.dao.jpa.InterfaceDAOJpa;
 import eppic.db.dao.jpa.JobDAOJpa;
@@ -66,14 +63,12 @@ public class DataDownloadServlet extends BaseServlet{
 		
 	//Parameters
 	//private int maxNumJobIds;
-	private int defaultNrOfAllowedSubmissionsForIP;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
 		//maxNumJobIds = Integer.parseInt(properties.getProperty("max_jobs_in_one_call","1"));
-		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 
 	}
 
@@ -97,13 +92,7 @@ public class DataDownloadServlet extends BaseServlet{
 
 		try
 		{
-			addIPToDB(requestIP);
-
 			DataDownloadServletInputValidator.validateFileDownloadInput(type, jobId, getSeqInfo, getResInfo);
-
-			IPVerifier.verifyIfCanBeSubmitted(requestIP,
-										      defaultNrOfAllowedSubmissionsForIP,
-										      true);
 
 			List<PdbInfo> pdbList = new ArrayList<>();
 
@@ -128,16 +117,6 @@ public class DataDownloadServlet extends BaseServlet{
 		} catch (JAXBException e) {
 			throw new ServletException(e);
 		}
-	}
-
-	/**
-	 * Inserts the ip to the DB
-	 * @param ip
-	 * @throws DaoException
-	 */
-	private void addIPToDB(String ip) throws DaoException{
-		DataDownloadTrackingDAO downloadDAO = new DataDownloadTrackingDAOJpa();
-		downloadDAO.insertNewIP(ip, new Date());
 	}
 
 	/**
