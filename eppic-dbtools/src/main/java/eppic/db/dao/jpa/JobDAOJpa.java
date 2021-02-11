@@ -407,59 +407,6 @@ public class JobDAOJpa implements JobDAO
 	}
 
 	@Override
-	public Date getOldestJobSubmissionDateDuringLastDay(String ip) throws DaoException
-	{
-		EntityManager entityManager = null;
-
-		try
-		{
-			entityManager = EntityManagerHandler.getEntityManager();
-
-			Date currentDate = new Date();
-			long oneDay = 1 * 24 * 60 * 60 * 1000;
-			Timestamp dayBeforeTimestamp = new Timestamp(currentDate.getTime() - oneDay);
-
-			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<Date> criteriaQuery = criteriaBuilder.createQuery(Date.class);
-			
-			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-			criteriaQuery.select(criteriaBuilder.least(jobRoot.get(JobDB_.submissionDate)));
-			
-			Predicate ipCondition = criteriaBuilder.equal(jobRoot.get(JobDB_.ip), ip);
-			Predicate submissionDateCondition = criteriaBuilder.greaterThan(jobRoot.get(JobDB_.submissionDate), dayBeforeTimestamp);
-			Predicate condition = criteriaBuilder.and(ipCondition, submissionDateCondition);
-			criteriaQuery.where(condition);
-			Query query = entityManager.createQuery(criteriaQuery);
-			
-//			Query query = entityManager.createQuery("SELECT MIN(submissionDate) FROM Job WHERE ip = :ip AND submissionDate > :dayBefore", Date.class);
-//			query.setParameter("ip", ip);
-//			query.setParameter("dayBefore", dayBeforeTimestamp);
-
-			Date oldestJobSubmissionDateDuringLastDay  = new Date(dayBeforeTimestamp.getTime());
-
-			@SuppressWarnings("unchecked")
-			List<Date> oldestJobSubmissionDateDuringLastDayResult = query.getResultList();
-
-			if((oldestJobSubmissionDateDuringLastDayResult != null) &&
-			   (oldestJobSubmissionDateDuringLastDayResult.size() > 0))
-			{
-				oldestJobSubmissionDateDuringLastDay = oldestJobSubmissionDateDuringLastDayResult.get(0);
-			}
-
-			return oldestJobSubmissionDateDuringLastDay;
-		}
-		catch(Throwable t)
-		{
-			throw new DaoException(t);
-		}
-		finally
-		{
-			if (entityManager!=null)
-				entityManager.close();
-		}
-	}
-
-	@Override
 	public void untieSelectedJobFromSession(String sessionId, String jobToUntie) throws DaoException
 	{
 		EntityManager entityManager = null;

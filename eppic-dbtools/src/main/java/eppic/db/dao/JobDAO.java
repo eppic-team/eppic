@@ -102,14 +102,6 @@ public interface JobDAO
 	Long getNrOfJobsForIPDuringLastDay(String ip) throws DaoException;
 
 	/**
-	 * Retrieves oldest job submission date during the last day for specified ip address.
-	 * @param ip ip address
-	 * @return oldest job submission date during the last day for specified ip address
-	 * @throws DaoException when can not retrieve information from data storage
-	 */
-	Date getOldestJobSubmissionDateDuringLastDay(String ip) throws DaoException;
-
-	/**
 	 * Removes session - job link for specified job and session.
 	 * @param sessionId identifier of the session
 	 * @param jobToUntie identifier of the job to untie
