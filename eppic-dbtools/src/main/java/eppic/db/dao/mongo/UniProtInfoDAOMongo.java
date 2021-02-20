@@ -1,7 +1,7 @@
 package eppic.db.dao.mongo;
 
 import com.mongodb.client.MongoDatabase;
-import eppic.db.MongoUtils;
+import eppic.db.mongoutils.MongoUtils;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.model.db.UniProtInfoDB;

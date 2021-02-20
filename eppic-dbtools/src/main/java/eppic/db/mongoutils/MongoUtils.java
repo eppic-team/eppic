@@ -1,4 +1,4 @@
-package eppic.db;
+package eppic.db.mongoutils;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;

@@ -1,12 +1,13 @@
 package eppic.db.tools;
 
 import com.mongodb.client.MongoDatabase;
-import eppic.db.MongoUtils;
+import eppic.db.mongoutils.MongoUtils;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.db.dao.UniProtMetadataDAO;
 import eppic.db.dao.mongo.HitHspDAOMongo;
 import eppic.db.dao.mongo.UniProtMetadataDAOMongo;
+import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.model.db.HitHspDB;
 import eppic.model.dto.HitHsp;
 import eppic.model.dto.UniProtMetadata;

@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 import eppic.commons.blast.*;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
-import eppic.db.dao.jpa.UniProtInfoDAOJpa;
+import eppic.db.dao.mongo.UniProtInfoDAOMongo;
 import eppic.model.dto.UniProtInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -354,7 +354,7 @@ public class HomologList implements  Serializable {
 	 */
 	public void retrieveUniprotKBData() throws DaoException {
 
-		UniProtInfoDAO uniProtInfoDAO = new UniProtInfoDAOJpa();
+		UniProtInfoDAO uniProtInfoDAO = new UniProtInfoDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
 
 		List<String> uniIds = new ArrayList<>();
 		for (Homolog hom:subList) {

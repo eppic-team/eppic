@@ -1,4 +1,4 @@
-package eppic.db.tools;
+package eppic.db.mongoutils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,12 +15,17 @@ public class DbPropertiesReader {
     }
 
     public String getMongoUri() {
+        String val = properties.getProperty("mongo.uri");
+        if (val!=null && !val.isEmpty())
+            return val.trim();
+        return null;
+    }
 
-        if (properties.getProperty("mongo.uri")!=null && !properties.getProperty("mongo.uri").isEmpty())
-            return properties.getProperty("mongo.uri").trim();
-
-        else
-            return null;
-
+    public String getDbName() {
+        String val = properties.getProperty("dbname");
+        if (val!=null && !val.isEmpty()) {
+            return val.trim();
+        }
+        return null;
     }
 }

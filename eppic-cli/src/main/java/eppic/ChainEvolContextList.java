@@ -2,17 +2,14 @@ package eppic;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 
-import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtMetadataDAO;
-import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
-import eppic.db.jpautils.DbConfigGenerator;
+import eppic.db.dao.mongo.UniProtMetadataDAOMongo;
+import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.model.dto.UniProtMetadata;
 import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.EntityType;
@@ -34,7 +31,7 @@ public class ChainEvolContextList implements Serializable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChainEvolContextList.class);
 	
 	private Structure pdb;
-	
+
 	/**
 	 * A map of sequence identifier (usually representative chain identifier) to its corresponding ChainEvolContext
 	 */
@@ -98,7 +95,7 @@ public class ChainEvolContextList implements Serializable {
 			LOGGER.info("Using UniProt version "+uniprotVer+" for blasting");
 		} else if (useLocalUniprot) {
 			openConnections(params);
-			UniProtMetadataDAO dao = new UniProtMetadataDAOJpa();
+			UniProtMetadataDAO dao = new UniProtMetadataDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
 			try {
 				UniProtMetadata uniProtMetadata = dao.getUniProtMetadata();
 				this.uniprotVer = uniProtMetadata.getVersion();
@@ -442,18 +439,17 @@ public class ChainEvolContextList implements Serializable {
 	
 	public void openConnections(EppicParams params) throws EppicException {
 		if (useLocalUniprot) {
-			// init jpa db connection so that querying cache works in chainEvCont.blastForHomologs(params)
+			// init db connection so that querying cache works in chainEvCont.blastForHomologs(params)
 			// and so that uniprot data can be retrieved in retrieveQueryData and retrieveHomologsData
 			try {
-
-				if (EntityManagerHandler.getEntityManagerFactory() == null) {
-					LOGGER.info("Initialising JPA connection to for sequence search data and uniprot data.");
-					Map<String, String> props = DbConfigGenerator.createDatabaseProperties(params.getDbConfigFile());
-					EntityManagerHandler.initFactory(props);
+				if (MongoSettingsStore.getMongoSettings() == null) {
+					LOGGER.info("Initialising db connection for sequence search data and uniprot data.");
+					DbPropertiesReader reader = new DbPropertiesReader(params.getDbConfigFile());
+					MongoSettingsStore.init(reader.getDbName(), reader.getMongoUri());
 				}
 
 			} catch (IOException e) {
-				throw new EppicException(e, "Could not init db JPA config from file " + params.getDbConfigFile() + ": " +e.getMessage(), true);
+				throw new EppicException(e, "Could not init db config from file " + params.getDbConfigFile() + ": " +e.getMessage(), true);
 			}
 		} else {
 			this.uniprotJapiConn = new UniProtConnection();
@@ -466,6 +462,6 @@ public class ChainEvolContextList implements Serializable {
 			this.uniprotJapiConn.close();
 			LOGGER.info("Connection to UniProt JAPI closed");
 		}
-		// else { // the JPA connection can't really be closed, nothing to do
+		// else { // the mongo connection can't really be closed, nothing to do
 	}
 }
