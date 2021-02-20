@@ -426,7 +426,7 @@ public class DBHandler {
 	 * @param pdbCode
 	 * @return
 	 */
-	public PdbInfoDB deserializePdb(EntityManager em, String pdbCode) {
+	private PdbInfoDB deserializePdb(EntityManager em, String pdbCode) {
 		CriteriaBuilder cbPDB = em.getCriteriaBuilder();
 
 		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
@@ -824,26 +824,4 @@ public class DBHandler {
 		em.close();
 	}
 
-	public List<String> getAllPdbCodes() {
-		EntityManager em = this.getEntityManager();
-	
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-
-		CriteriaQuery<PdbInfoDB> cq = cb.createQuery(PdbInfoDB.class);
-		Root<PdbInfoDB> root = cq.from(PdbInfoDB.class);
-
-		cq.where(cb.isNotNull(root.get(PdbInfoDB_.pdbCode)));
-		
-		//cq.multiselect(root.get(PdbInfoDB_.pdbCode));
-		
-		List<PdbInfoDB> results = em.createQuery(cq).getResultList();
-		
-		List<String> pdbCodes = new ArrayList<String>();
-		
-		for (PdbInfoDB result:results) {
-			pdbCodes.add(result.getPdbCode());
-		}
-		
-		return pdbCodes;
-	}
 }
