@@ -455,13 +455,8 @@ public class TestLatticeGraph {
 		//_symmetry.cell_setting                     ? 
 		//_symmetry.Int_Tables_number                ? 
 
-		assertTrue(symmetryFields.contains("_symmetry.entry_id"));
-		assertTrue(symmetryFields.contains("_symmetry.cell_setting"));
-		assertTrue(symmetryFields.contains("_symmetry.Int_Tables_number"));
-		// these are the problematic fields
 		assertTrue(symmetryFields.contains("_symmetry.space_group_name_H-M"));
-		assertTrue(symmetryFields.contains("_symmetry.pdbx_full_space_group_name_H-M"));
-		
+
 	}
 	
 
