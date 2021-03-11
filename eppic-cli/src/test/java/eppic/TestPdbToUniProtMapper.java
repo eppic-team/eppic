@@ -9,8 +9,9 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.io.FileParsingParameters;
-import org.biojava.nbio.structure.io.mmcif.ChemCompGroupFactory;
-import org.biojava.nbio.structure.io.mmcif.DownloadChemCompProvider;
+import org.biojava.nbio.structure.chem.ChemCompGroupFactory;
+import org.biojava.nbio.structure.chem.DownloadChemCompProvider;
+import org.biojava.nbio.structure.io.StructureFiletype;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -28,7 +29,7 @@ public class TestPdbToUniProtMapper {
         AtomCache cache = new AtomCache();
         FileParsingParameters params = new FileParsingParameters();
         params.setAlignSeqRes(true);
-        cache.setUseMmCif(true); // with mmtf we get X in place of non-observed residues, due to https://github.com/biojava/biojava/issues/671
+        cache.setFiletype(StructureFiletype.CIF); // with mmtf we get X in place of non-observed residues, due to https://github.com/biojava/biojava/issues/671
         cache.setFileParsingParams(params);
         StructureIO.setAtomCache(cache);
     }

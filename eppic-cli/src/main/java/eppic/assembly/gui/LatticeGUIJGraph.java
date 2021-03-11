@@ -28,6 +28,7 @@ import javax.vecmath.Point3d;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.align.util.AtomCache;
+import org.biojava.nbio.structure.io.StructureFiletype;
 import org.biojava.nbio.structure.symmetry.axis.AxisAligner;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryResults;
 import org.biojava.nbio.structure.symmetry.core.Rotation;
@@ -327,7 +328,7 @@ public class LatticeGUIJGraph {
 		// Load input structure
 		AtomCache cache = new AtomCache();
 		cache.getFileParsingParams().setAlignSeqRes(true);
-		cache.setUseMmCif(true);
+		cache.setFiletype(StructureFiletype.CIF);
 		Structure struc = cache.getStructure(input);
 
 		LatticeGraph3D latticeGraph = new LatticeGraph3D(struc);

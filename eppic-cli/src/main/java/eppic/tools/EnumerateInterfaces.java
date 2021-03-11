@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Vector3d;
 
+import org.biojava.nbio.core.sequence.io.util.IOUtils;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.Pair;
@@ -29,9 +30,8 @@ import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
 import org.biojava.nbio.structure.io.PDBFileParser;
-import org.biojava.nbio.structure.io.mmcif.MMcifParser;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.io.StructureFiletype;
+import org.biojava.nbio.structure.io.cif.CifStructureConverter;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 
@@ -156,7 +156,7 @@ public class EnumerateInterfaces {
 		if (inputFile == null) {
 
 			AtomCache cache = new AtomCache();		
-			cache.setUseMmCif(true);		
+			cache.setFiletype(StructureFiletype.CIF);
 			StructureIO.setAtomCache(cache); 
 
 			try {
@@ -171,21 +171,11 @@ public class EnumerateInterfaces {
 			
 			if (fileType==FileTypeGuesser.CIF_FILE) {
 
-				MMcifParser parser = new SimpleMMcifParser();
-
-				SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-
 				FileParsingParameters fileParsingParams = new FileParsingParameters();
 				// TODO we should parse PDB files with no X padding if no SEQRES is found. Otherwise matching to uniprot doesn't work in many cases
 				//fileParsingParams.set????
 
-				consumer.setFileParsingParameters(fileParsingParams);
-
-				parser.addMMcifConsumer(consumer);
-
-				parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(inputFile)))); 
-
-				pdb = consumer.getStructure();
+				pdb = CifStructureConverter.fromInputStream(new FileInputStream(inputFile), fileParsingParams);
 				
 			} else if (fileType==FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
 

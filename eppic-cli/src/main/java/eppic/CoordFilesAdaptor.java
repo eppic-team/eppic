@@ -5,16 +5,17 @@ import eppic.commons.util.FileTypeGuesser;
 import eppic.model.dto.*;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
 import org.biojava.nbio.structure.*;
-import org.biojava.nbio.structure.io.FileConvert;
 import org.biojava.nbio.structure.io.FileParsingParameters;
 import org.biojava.nbio.structure.io.PDBFileParser;
-import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
-import org.biojava.nbio.structure.io.mmcif.MMcifParser;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
-import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
+import org.biojava.nbio.structure.io.cif.AbstractCifFileSupplier;
+import org.biojava.nbio.structure.io.cif.CifStructureConverter;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.rcsb.cif.CifBuilder;
+import org.rcsb.cif.CifIO;
+import org.rcsb.cif.model.Category;
+import org.rcsb.cif.schema.StandardSchemata;
+import org.rcsb.cif.schema.mm.MmCifBlockBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,7 @@ public class CoordFilesAdaptor {
      */
     public void getAssemblyCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfo pdbInfoDB, Assembly assemblyDB, boolean withEvolScores) throws IOException {
 
-        List<AtomSite> atomSiteList = new ArrayList<>();
+        List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
         for (GraphNode node : assemblyDB.getGraphNodes()) {
 
@@ -120,19 +121,21 @@ public class CoordFilesAdaptor {
 
             nonPolyChains.forEach(nonPolyChain -> Calc.transform(nonPolyChain, op));
 
-            addAtomSites(c, atomSiteList, chainName, opId);
-            nonPolyChains.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, chainName, opId));
+            addAtomSites(c, wrappedAtoms, chainName, opId);
+            nonPolyChains.forEach(nonPolyChain -> addAtomSites(nonPolyChain, wrappedAtoms, chainName, opId));
 
         }
 
         // TODO check what's the right charset to use
 
-        // writing header
-        os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_jobId_" + jobId + "_assemblyId_" + assemblyDB.getId()+ "\n").getBytes());
-        os.write(FileConvert.getAtomSiteHeader().getBytes());
+        MmCifBlockBuilder mmCifBlockBuilder = CifBuilder.enterFile(StandardSchemata.MMCIF)
+                .enterBlock("eppic_jobId_" + jobId + "_assemblyId_" + assemblyDB.getId());
+
+        Category atomSite = wrappedAtoms.stream().collect(AbstractCifFileSupplier.toAtomSite());
+        mmCifBlockBuilder.addCategory(atomSite);
 
         // writing content
-        os.write(MMCIFFileTools.toMMCIF(atomSiteList, AtomSite.class).getBytes());
+        os.write(CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile()));
     }
 
     /**
@@ -162,7 +165,7 @@ public class CoordFilesAdaptor {
      */
     public void getInterfaceCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfo pdbInfoDB, Interface interfaceDB, boolean withEvolScores) throws IOException {
 
-        List<AtomSite> atomSiteList = new ArrayList<>();
+        List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
         String chainName1 = interfaceDB.getChain1();
         String chainName2 = interfaceDB.getChain2();
@@ -215,26 +218,29 @@ public class CoordFilesAdaptor {
         }
 
         // 1: all atoms (poly and non-poly) of first chain
-        addAtomSites(c1, atomSiteList, chainName1, null);
-        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, atomSiteList, chainName1, null));
+        addAtomSites(c1, wrappedAtoms, chainName1, null);
+        nonPolyChains1.forEach(nonPolyChain -> addAtomSites(nonPolyChain, wrappedAtoms, chainName1, null));
 
         // 2: all atoms (poly and non-poly) of second chain
         String opId2 = null;
         if (chainName1.equals(chainName2)) {
             opId2 = String.valueOf(interfaceDB.getOperatorId());
         }
-        addAtomSites(c2, atomSiteList, chainName2, opId2);
+        addAtomSites(c2, wrappedAtoms, chainName2, opId2);
         for (Chain nonPolyChain : nonPolyChains2) {
-            addAtomSites(nonPolyChain, atomSiteList, chainName2, opId2);
+            addAtomSites(nonPolyChain, wrappedAtoms, chainName2, opId2);
         }
 
         // TODO check what's the right charset to use
-        // writing header
-        os.write((SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_jobId_" + jobId + "_interfaceId_" + interfaceDB.getInterfaceId()+ "\n" ).getBytes());
-        os.write(FileConvert.getAtomSiteHeader().getBytes());
-        // writing content
-        os.write(MMCIFFileTools.toMMCIF(atomSiteList, AtomSite.class).getBytes());
 
+        MmCifBlockBuilder mmCifBlockBuilder = CifBuilder.enterFile(StandardSchemata.MMCIF)
+                .enterBlock("eppic_jobId_" + jobId + "_interfaceId_" + interfaceDB.getInterfaceId());
+
+        Category atomSite = wrappedAtoms.stream().collect(AbstractCifFileSupplier.toAtomSite());
+        mmCifBlockBuilder.addCategory(atomSite);
+
+        // writing content
+        os.write(CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile()));
     }
 
     private Structure readCoords(File auFile) throws IOException {
@@ -250,16 +256,8 @@ public class CoordFilesAdaptor {
 
         if (fileType==FileTypeGuesser.CIF_FILE) {
 
-            MMcifParser parser = new SimpleMMcifParser();
-            SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
+            structure = CifStructureConverter.fromInputStream(IOUtils.openFile(auFile), fileParsingParams);
 
-            consumer.setFileParsingParameters(fileParsingParams);
-
-            parser.addMMcifConsumer(consumer);
-
-            parser.parse(new BufferedReader(new InputStreamReader(IOUtils.openFile(auFile))));
-
-            structure = consumer.getStructure();
         } else if (fileType == FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
             PDBFileParser parser = new PDBFileParser();
 
@@ -312,7 +310,7 @@ public class CoordFilesAdaptor {
         }
     }
 
-    private void addAtomSites(Chain c, List<AtomSite> atomSites, String chainName, String opId) {
+    private void addAtomSites(Chain c, List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms, String chainName, String opId) {
         // TODO set atom ids to be unique throughout (problem for sym mates)
 
         // for NCS case (mostly viral capsids) we get the possible ncs suffix in chainName so that we can also add it to the chainId
@@ -328,7 +326,7 @@ public class CoordFilesAdaptor {
             for (Atom a : g.getAtoms()) {
                 String chainId = chainIdWithNcsOpsSuffix + ((opId==null)?"":"_" + opId);
                 String chainNameForOutput = chainName + ((opId==null)?"":"_" + opId);
-                atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainNameForOutput, chainId));
+                wrappedAtoms.add(new AbstractCifFileSupplier.WrappedAtom(1, chainNameForOutput, chainId, a, a.getPDBserial()));
             }
             // we intentionally not write altloc groups
             // if we decide to write out altloc groups then #220 has to be taken into account

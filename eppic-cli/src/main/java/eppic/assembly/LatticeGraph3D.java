@@ -27,12 +27,15 @@ import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.io.FileConvert;
-import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
-import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
+import org.biojava.nbio.structure.io.cif.AbstractCifFileSupplier;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
 import org.jcolorbrewer.ColorBrewer;
+import org.rcsb.cif.CifBuilder;
+import org.rcsb.cif.CifIO;
+import org.rcsb.cif.model.Category;
+import org.rcsb.cif.schema.StandardSchemata;
+import org.rcsb.cif.schema.mm.MmCifBlockBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -438,13 +441,14 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 		// that way we stay as close to the original as possible
 		boolean symRelatedChainsExist = false;
 		int numChains = structure.size();
-		Set<String> uniqueChains = new HashSet<String>();
+		Set<String> uniqueChains = new HashSet<>();
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
 			uniqueChains.add(cv.getChain().getName());
 		}
 		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
 
-		out.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_unit_cell");
+		MmCifBlockBuilder mmCifBlockBuilder = CifBuilder.enterFile(StandardSchemata.MMCIF)
+				.enterBlock("eppic_unit_cell");
 
 		// Cell and space group info
 		PDBCrystallographicInfo crystalInfo = structure.getCrystallographicInfo();
@@ -452,13 +456,35 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 			logger.error("No crystallographic info set for this structure.");
 			// leads to NullPointer
 		} else {
-			out.print(MMCIFFileTools.toMMCIF("_cell", MMCIFFileTools.convertCrystalCellToCell(crystalInfo.getCrystalCell())));
-			out.print(MMCIFFileTools.toMMCIF("_symmetry", MMCIFFileTools.convertSpaceGroupToSymmetry(crystalInfo.getSpaceGroup())));
+			// TODO check that the below is actually written out
+			mmCifBlockBuilder.enterCell()
+					.enterLengthA()
+					.add(crystalInfo.getCrystalCell().getA())
+					.leaveColumn()
+					.enterLengthB()
+					.add(crystalInfo.getCrystalCell().getB())
+					.leaveColumn()
+					.enterLengthC()
+					.add(crystalInfo.getCrystalCell().getC())
+					.leaveColumn()
+					.enterAngleAlpha()
+					.add(crystalInfo.getCrystalCell().getAlpha())
+					.leaveColumn()
+					.enterAngleBeta()
+					.add(crystalInfo.getCrystalCell().getBeta())
+					.leaveColumn()
+					.enterAngleGamma()
+					.add(crystalInfo.getCrystalCell().getGamma())
+					.leaveColumn()
+					.leaveCategory();
+			mmCifBlockBuilder.enterSymmetry()
+					.enterSpaceGroupNameH_M()
+					.add(crystalInfo.getSpaceGroup().getShortSymbol())
+					.leaveColumn()
+					.leaveCategory();
 		}
 
-		out.print(FileConvert.getAtomSiteHeader());
-
-		List<AtomSite> atomSites = new ArrayList<>();
+		List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
 		int atomId = 1;
 		for (ChainVertex3D cv:getGraph().vertexSet()) {
@@ -472,10 +498,10 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 			for (Group g: newChain.getAtomGroups()) {
 				for (Atom a: g.getAtoms()) {
-					if (symRelatedChainsExist) 
-						atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId, atomId));
-					else 
-						atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId));
+					if (symRelatedChainsExist)
+						wrappedAtoms.add(new AbstractCifFileSupplier.WrappedAtom(1, chainId, chainId, a, atomId));
+					else
+						wrappedAtoms.add(new AbstractCifFileSupplier.WrappedAtom(1, chainId, chainId, a, a.getPDBserial()));
 
 					atomId++;
 				}
@@ -487,8 +513,12 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 			}
 		}
 
-		out.print(MMCIFFileTools.toMMCIF(atomSites, AtomSite.class));
+		Category atomSite = wrappedAtoms.stream().collect(AbstractCifFileSupplier.toAtomSite());
+		mmCifBlockBuilder.addCategory(atomSite);
 
+		String mmciftxt = new String(CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile()));
+
+		out.print(mmciftxt);
 
 		out.close();
 	}

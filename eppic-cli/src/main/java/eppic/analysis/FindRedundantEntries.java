@@ -15,6 +15,7 @@ import org.biojava.nbio.structure.align.util.AtomCache;
 import eppic.commons.blast.BlastException;
 import eppic.commons.blast.BlastRunner;
 import eppic.commons.sequence.Sequence;
+import org.biojava.nbio.structure.io.StructureFiletype;
 
 
 /**
@@ -94,7 +95,7 @@ public class FindRedundantEntries {
 		PrintStream ps = new PrintStream(file);
 
 		AtomCache cache = new AtomCache();		
-		cache.setUseMmCif(true);		
+		cache.setFiletype(StructureFiletype.CIF);
 		StructureIO.setAtomCache(cache); 
 
 		for (String pdbCode:pdbCodes) {

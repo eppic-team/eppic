@@ -1,13 +1,11 @@
 package eppic;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.URL;
@@ -32,15 +30,15 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
-import org.biojava.nbio.structure.io.MMCIFFileReader;
+import org.biojava.nbio.structure.io.CifFileReader;
 import org.biojava.nbio.structure.io.PDBFileParser;
-import org.biojava.nbio.structure.io.mmcif.ChemCompGroupFactory;
-import org.biojava.nbio.structure.io.mmcif.DownloadChemCompProvider;
-import org.biojava.nbio.structure.io.mmcif.MMcifParser;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.chem.ChemCompGroupFactory;
+import org.biojava.nbio.structure.chem.DownloadChemCompProvider;
+import org.biojava.nbio.structure.io.StructureFiletype;
+import org.biojava.nbio.structure.io.cif.CifStructureConverter;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
+import org.rcsb.cif.model.CifFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,14 +211,8 @@ public class Main {
 
 				if (fileType==FileTypeGuesser.CIF_FILE) {
 
-					MMcifParser parser = new SimpleMMcifParser();
-					SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-					consumer.setFileParsingParameters(fileParsingParams);
-					parser.addMMcifConsumer(consumer);
-					parser.parse(new BufferedReader(new InputStreamReader(IOUtils.openFile(params.getInFile())))); 
+					pdb = CifStructureConverter.fromInputStream(IOUtils.openFile(params.getInFile()), fileParsingParams);
 
-					pdb = consumer.getStructure();
-					
 				} else if (fileType==FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
 
 					PDBFileParser parser = new PDBFileParser();
@@ -262,13 +254,7 @@ public class Main {
 			String pdbCode = params.getPdbCode().toLowerCase();
 			String url = params.getCifRepositoryBaseUrl() + "/" + pdbCode.substring(1, 3) + "/" + pdbCode + "/" + pdbCode + ".cif.gz";
 			URL cifGzUrl = new URL(url);
-			MMcifParser parser = new SimpleMMcifParser();
-			SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-			consumer.setFileParsingParameters(fileParsingParams);
-			parser.addMMcifConsumer(consumer);
-			parser.parse(new BufferedReader(new InputStreamReader(new GZIPInputStream(cifGzUrl.openStream()))));
-
-			pdb = consumer.getStructure();
+			pdb = CifStructureConverter.fromInputStream(new GZIPInputStream(cifGzUrl.openStream()), fileParsingParams);
 
 			// now we get the file and copy it to the output dir if in -w mode
 			if (params.isGenerateModelSerializedFile()) {
@@ -291,7 +277,7 @@ public class Main {
 			} else {
 				cache = new AtomCache();
 			}
-			cache.setUseMmCif(true);
+			cache.setFiletype(StructureFiletype.CIF);
 
 			// we set default fetch behavior to FETCH_IF_OUTDATED which is the closest to rsync
 			if (params.getFetchBehavior() != null) {
@@ -307,7 +293,7 @@ public class Main {
 
 			// now we get the file and copy it to the output dir if in -w mode
 			if (params.isGenerateModelSerializedFile()) {
-				MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
+				CifFileReader reader = new CifFileReader(cache.getPath());
 				reader.setFetchBehavior(cache.getFetchBehavior());
 				reader.setObsoleteBehavior(cache.getObsoleteBehavior());
 				File file = reader.getLocalFile(params.getPdbCode());

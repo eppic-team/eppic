@@ -14,9 +14,10 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureTools;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.gui.BiojavaJmol;
-import org.biojava.nbio.structure.io.MMCIFFileReader;
+import org.biojava.nbio.structure.io.CifFileReader;
 import org.biojava.nbio.structure.io.PDBFileReader;
 import org.biojava.nbio.core.util.FileDownloadUtils;
+import org.biojava.nbio.structure.io.StructureFiletype;
 import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,11 +172,11 @@ public class LatticeGUIJmol {
 		} else if (input.matches("\\d\\w\\w\\w")){ // try as PDB id
 			AtomCache cache = new AtomCache();
 			cache.getFileParsingParams().setAlignSeqRes(true);
-			cache.setUseMmCif(true);
+			cache.setFiletype(StructureFiletype.CIF);
 			struc = cache.getStructure(input);
 			file = getFile(cache,input);
 			if(!file.exists() ) {
-				logger.error(String.format("Error loading {} from {}",input,file.getAbsolutePath()));
+				logger.error("Error loading {} from {}", input, file.getAbsolutePath());
 				System.exit(1);
 			}
 		} else { // give up
@@ -209,13 +210,12 @@ public class LatticeGUIJmol {
 	 * @return
 	 */
 	private static File getFile(AtomCache cache, String name) throws IOException {
-		if(cache.isUseMmCif()) {
-			MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
-			reader.setFetchBehavior(cache	.getFetchBehavior());
+		if(cache.getFiletype() == StructureFiletype.CIF) {
+			CifFileReader reader = new CifFileReader(cache.getPath());
+			reader.setFetchBehavior(cache.getFetchBehavior());
 			reader.setObsoleteBehavior(cache.getObsoleteBehavior());
 
-			File file = reader.getLocalFile(name);
-			return file;
+			return reader.getLocalFile(name);
 		} else {
 			PDBFileReader reader = new PDBFileReader(cache.getPath());
 			reader.setFetchBehavior(cache.getFetchBehavior());
@@ -223,9 +223,7 @@ public class LatticeGUIJmol {
 
 			reader.setFileParsingParameters(cache.getFileParsingParams());
 
-			File file = reader.getLocalFile(name); 
-
-			return file;
+			return reader.getLocalFile(name);
 		}
 	}
 

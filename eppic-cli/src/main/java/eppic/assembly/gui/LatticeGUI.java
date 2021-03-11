@@ -29,9 +29,10 @@ import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.gui.BiojavaJmol;
-import org.biojava.nbio.structure.io.MMCIFFileReader;
+import org.biojava.nbio.structure.io.CifFileReader;
 import org.biojava.nbio.structure.io.PDBFileReader;
 import org.biojava.nbio.core.util.FileDownloadUtils;
+import org.biojava.nbio.structure.io.StructureFiletype;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.CrystalCell;
 import org.biojava.nbio.structure.xtal.CrystalTransform;
@@ -55,7 +56,8 @@ import eppic.assembly.LatticeGraph;
 import eppic.commons.util.IntervalSet;
 
 public class LatticeGUI {
-	private static Logger logger = LoggerFactory.getLogger(LatticeGUI.class);
+
+	private static final Logger logger = LoggerFactory.getLogger(LatticeGUI.class);
 
 
 	public enum WrappingPolicy {
@@ -613,7 +615,7 @@ public class LatticeGUI {
 	/**
 	 * Takes a list of lists. For each row, assigns a color to all list members.
 	 * Returns a map from the list members to the color
-	 * @param inputs Collection of clustered objects which should be colored alike
+	 * @param clusters Collection of clustered objects which should be colored alike
 	 * @param palette Defaults to Dark2 if null
 	 * @return
 	 */
@@ -681,7 +683,7 @@ public class LatticeGUI {
 			struc = StructureTools.getStructure(filename);
 		} else if (input.matches("\\d\\w\\w\\w")){
 			AtomCache cache = new AtomCache();
-			cache.setUseMmCif(true);
+			cache.setFiletype(StructureFiletype.CIF);
 			struc = cache.getStructure(input);
 			File file = getFile(cache,input);
 			if(!file.exists() ) {
@@ -709,9 +711,9 @@ public class LatticeGUI {
 	 * @return
 	 */
 	public static File getFile(AtomCache cache, String name) throws IOException {
-		if(cache.isUseMmCif()) {
+		if(cache.getFiletype() == StructureFiletype.CIF) {
 			logger.info("Looking for {} in mmcif cache",name);
-			MMCIFFileReader reader = new MMCIFFileReader(cache.getPath());
+			CifFileReader reader = new CifFileReader(cache.getPath());
 			reader.setFetchBehavior(cache.getFetchBehavior());
 			reader.setObsoleteBehavior(cache.getObsoleteBehavior());
 
