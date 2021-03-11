@@ -304,7 +304,7 @@ public class TestAssemblyStructure {
                 fos.close();
             }
 
-            Structure structFromAdaptor = CifStructureConverter.fromInputStream(new GZIPInputStream(new ByteArrayInputStream(os.toByteArray())));
+            Structure structFromAdaptor = CifStructureConverter.fromInputStream(new ByteArrayInputStream(os.toByteArray()));
             Structure structFromFile = structFromFiles.get(assemblyDB.getId());
 
             assertEquals(structFromFile.getPolyChains().size(), structFromAdaptor.getPolyChains().size());
