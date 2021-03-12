@@ -17,6 +17,7 @@ import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.asa.AsaCalculator;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.io.StructureFiletype;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
 import org.xml.sax.SAXException;
@@ -79,7 +80,7 @@ public class CompToPisaInterf {
 		System.out.println("Computing interfaces...");
 
 		AtomCache cache = new AtomCache();
-		cache.setUseMmCif(true);
+		cache.setFiletype(StructureFiletype.CIF);
 		StructureIO.setAtomCache(cache); 
 		
 		for (String pdbCode: pdbCodes) {

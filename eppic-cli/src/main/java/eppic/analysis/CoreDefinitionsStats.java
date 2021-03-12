@@ -21,6 +21,7 @@ import org.biojava.nbio.structure.asa.GroupAsa;
 import org.biojava.nbio.structure.contact.Pair;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.io.StructureFiletype;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 
 import eppic.EppicParams;
@@ -124,7 +125,7 @@ public class CoreDefinitionsStats {
 		}
 		
 		AtomCache cache = new AtomCache();
-		cache.setUseMmCif(true);
+		cache.setFiletype(StructureFiletype.CIF);
 		StructureIO.setAtomCache(cache); 
 		
 		TreeMap<String,List<Integer>> entries2interfaces = Utils.readListFile(listFile);

@@ -19,6 +19,7 @@ import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.StructureIO;
 import org.biojava.nbio.structure.align.util.AtomCache;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.biojava.nbio.structure.io.StructureFiletype;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.xml.sax.SAXException;
 
@@ -197,7 +198,7 @@ public class MatchPisaToEppic {
 		}
 		
 		AtomCache cache = new AtomCache();		
-		cache.setUseMmCif(true);		
+		cache.setFiletype(StructureFiletype.CIF);
 		StructureIO.setAtomCache(cache); 
 
 

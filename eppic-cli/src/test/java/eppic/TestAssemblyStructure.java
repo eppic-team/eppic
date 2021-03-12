@@ -10,8 +10,7 @@ import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.EntityFinder;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifConsumer;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
+import org.biojava.nbio.structure.io.cif.CifStructureConverter;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -229,13 +228,7 @@ public class TestAssemblyStructure {
             a.writeToMmCifFile(structFile);
 
             // parse file
-            SimpleMMcifParser parser = new SimpleMMcifParser();
-            SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-            parser.addMMcifConsumer(consumer);
-            BufferedReader buf = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(structFile))));
-            parser.parse(buf);
-            buf.close();
-            Structure s = consumer.getStructure();
+            Structure s = CifStructureConverter.fromInputStream(new GZIPInputStream(new FileInputStream(structFile)));
 
             structFromFiles.put(a.getId(), s);
         }
@@ -252,13 +245,7 @@ public class TestAssemblyStructure {
             ps.close();
 
             // parse file
-            SimpleMMcifParser parser = new SimpleMMcifParser();
-            SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-            parser.addMMcifConsumer(consumer);
-            BufferedReader buf = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(structFile))));
-            parser.parse(buf);
-            buf.close();
-            Structure s = consumer.getStructure();
+            Structure s = CifStructureConverter.fromInputStream(new GZIPInputStream(new FileInputStream(structFile)));
 
             structFromFiles.put(interf.getId(), s);
         }
@@ -317,14 +304,7 @@ public class TestAssemblyStructure {
                 fos.close();
             }
 
-            SimpleMMcifParser parser = new SimpleMMcifParser();
-            SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-            parser.addMMcifConsumer(consumer);
-            BufferedReader buf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
-            parser.parse(buf);
-            buf.close();
-
-            Structure structFromAdaptor = consumer.getStructure();
+            Structure structFromAdaptor = CifStructureConverter.fromInputStream(new ByteArrayInputStream(os.toByteArray()));
             Structure structFromFile = structFromFiles.get(assemblyDB.getId());
 
             assertEquals(structFromFile.getPolyChains().size(), structFromAdaptor.getPolyChains().size());
@@ -422,14 +402,7 @@ public class TestAssemblyStructure {
                     fos.close();
                 }
 
-                SimpleMMcifParser parser = new SimpleMMcifParser();
-                SimpleMMcifConsumer consumer = new SimpleMMcifConsumer();
-                parser.addMMcifConsumer(consumer);
-                BufferedReader buf = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
-                parser.parse(buf);
-                buf.close();
-
-                Structure structFromAdaptor = consumer.getStructure();
+                Structure structFromAdaptor = CifStructureConverter.fromInputStream(new ByteArrayInputStream(os.toByteArray()));
                 Structure structFromFile = structFromFiles.get(interf.getInterfaceId());
 
                 assertEquals(2, structFromFile.getPolyChains().size());

@@ -42,10 +42,7 @@ import org.biojava.nbio.structure.cluster.SubunitClusterer;
 import org.biojava.nbio.structure.cluster.SubunitClustererMethod;
 import org.biojava.nbio.structure.cluster.SubunitClustererParameters;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
-import org.biojava.nbio.structure.io.FileConvert;
-import org.biojava.nbio.structure.io.mmcif.MMCIFFileTools;
-import org.biojava.nbio.structure.io.mmcif.SimpleMMcifParser;
-import org.biojava.nbio.structure.io.mmcif.model.AtomSite;
+import org.biojava.nbio.structure.io.cif.AbstractCifFileSupplier;
 import org.biojava.nbio.structure.symmetry.axis.AxisAligner;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryDetector;
 import org.biojava.nbio.structure.symmetry.core.QuatSymmetryParameters;
@@ -60,6 +57,11 @@ import org.jgrapht.event.EdgeTraversalEvent;
 import org.jgrapht.event.TraversalListener;
 import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.traverse.BreadthFirstIterator;
+import org.rcsb.cif.CifBuilder;
+import org.rcsb.cif.CifIO;
+import org.rcsb.cif.model.Category;
+import org.rcsb.cif.schema.StandardSchemata;
+import org.rcsb.cif.schema.mm.MmCifBlockBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -885,20 +887,16 @@ public class Assembly {
 		boolean symRelatedChainsExist = false;
 		Collection<ChainVertex> structure = getStructurePacked().keySet();
 		int numChains = structure.size();
-		Set<String> uniqueChains = new HashSet<String>();
+		Set<String> uniqueChains = new HashSet<>();
 		for (ChainVertex cv:structure) {
 			uniqueChains.add(cv.getChain().getName());
 		}
 		if (numChains != uniqueChains.size()) symRelatedChainsExist = true;
 
+		MmCifBlockBuilder mmCifBlockBuilder = CifBuilder.enterFile(StandardSchemata.MMCIF)
+				.enterBlock("eppic_assembly_" + getId());
 
-		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
-
-		ps.println(SimpleMMcifParser.MMCIF_TOP_HEADER+"eppic_assembly_"+getId());
-
-		ps.print(FileConvert.getAtomSiteHeader());
-
-		List<AtomSite> atomSites = new ArrayList<>();
+		List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
 		int atomId = 1;
 		for (ChainVertex cv:structure) {
@@ -906,10 +904,10 @@ public class Assembly {
 
 			for (Group g: cv.getChain().getAtomGroups()) {
 				for (Atom a: g.getAtoms()) {
-					if (symRelatedChainsExist) 
-						atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId, atomId));
-					else 
-						atomSites.add(MMCIFFileTools.convertAtomToAtomSite(a, 1, chainId, chainId));
+					if (symRelatedChainsExist)
+						wrappedAtoms.add(new AbstractCifFileSupplier.WrappedAtom(1, chainId, chainId, a, atomId));
+					else
+						wrappedAtoms.add(new AbstractCifFileSupplier.WrappedAtom(1, chainId, chainId, a, a.getPDBserial()));
 
 					atomId++;
 				}
@@ -921,9 +919,13 @@ public class Assembly {
 			}
 		}
 
-		ps.print(MMCIFFileTools.toMMCIF(atomSites, AtomSite.class));
+		Category atomSite = wrappedAtoms.stream().collect(AbstractCifFileSupplier.toAtomSite());
+		mmCifBlockBuilder.addCategory(atomSite);
 
+		String mmciftxt = new String(CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile()));
 
+		PrintStream ps = new PrintStream(new GZIPOutputStream(new FileOutputStream(file)));
+		ps.print(mmciftxt);
 		ps.close();
 	}
 	
