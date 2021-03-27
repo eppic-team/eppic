@@ -5,12 +5,11 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.ResidueInfoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import eppic.model.dto.Assembly;
-import eppic.model.dto.Interface;
-import eppic.model.dto.Residue;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -45,7 +44,7 @@ public class JmolPageGenerator
      * @param webappRoot
      */
 	public static void generatePage(String title, String size, String jobId, String serverUrl,
-			String fileName, Interface interfData, Assembly assemblyData, String nglJsUrl, PrintWriter out, String webappRoot)  {
+									String fileName, InterfaceDB interfData, AssemblyDB assemblyData, String nglJsUrl, PrintWriter out, String webappRoot)  {
 		
 		
 		boolean isCif = true;
@@ -103,7 +102,7 @@ public class JmolPageGenerator
     }
 	
 	@SuppressWarnings("unused")
-	private static String getCommaSeparatedList(List<Residue> residues) {
+	private static String getCommaSeparatedList(List<ResidueInfoDB> residues) {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0;i<residues.size();i++){
 			sb.append(residues.get(i).getPdbResidueNumber());
@@ -112,7 +111,7 @@ public class JmolPageGenerator
 		return sb.toString();
 	}
 	
-	private static String getOrSeparatedList(List<Residue> residues, String chain) {
+	private static String getOrSeparatedList(List<ResidueInfoDB> residues, String chain) {
 		
 		// TODO we should use range selections (with hyphens) to get better performance and shorter strings
 		
@@ -140,7 +139,7 @@ public class JmolPageGenerator
 		return sb.toString();
 	}
 	
-	private static String generateSelectionVarsNgl(Interface interfData, Assembly assemblyData, boolean isCif) {
+	private static String generateSelectionVarsNgl(InterfaceDB interfData, AssemblyDB assemblyData, boolean isCif) {
 		
 		List<String> chains = new ArrayList<>();
 		String coreRimSelectionVarsStr = "";
@@ -172,12 +171,12 @@ public class JmolPageGenerator
 			String colorCore1 = MolViewersHelper.getHexInterf1Color(true);
 			String colorCore2 = MolViewersHelper.getHexInterf2Color(true);
 
-			List<Residue> coreResidues1 = new ArrayList<Residue>();
-			List<Residue> rimResidues1 = new ArrayList<Residue>();
-			List<Residue> coreResidues2 = new ArrayList<Residue>();
-			List<Residue> rimResidues2 = new ArrayList<Residue>();
+			List<ResidueBurialDB> coreResidues1 = new ArrayList<>();
+			List<ResidueBurialDB> rimResidues1 = new ArrayList<>();
+			List<ResidueBurialDB> coreResidues2 = new ArrayList<>();
+			List<ResidueBurialDB> rimResidues2 = new ArrayList<>();
 
-			for (Residue residue:interfData.getResidues() ) {
+			for (ResidueBurialDB residue:interfData.getResidueBurials() ) {
 
 				if (residue.getRegion()==ResidueBurialDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) {
 					if (residue.getSide()==false) {
@@ -272,7 +271,7 @@ public class JmolPageGenerator
 		
 	}
 	
-	private static String getSeleVarStr(String varName, List<Residue> residues, String chain) {
+	private static String getSeleVarStr(String varName, List<ResidueInfoDB> residues, String chain) {
 		if (residues==null || residues.isEmpty()) return "";
 		
 		//return "var "+varName+"  = \"("+getOrSeparatedList(residues, chain) + ") and (sidechain or .CA)\";\n";

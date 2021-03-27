@@ -3,7 +3,7 @@ package eppic.rest.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import eppic.db.dao.JobDAO;
-import eppic.db.dao.jpa.JobDAOJpa;
+import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.rest.commons.AppConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,7 @@ public class UtilService {
     }
 
     public static boolean isDbHealthy() {
-        JobDAO jobDAO = new JobDAOJpa();
+        JobDAO jobDAO = new JobDAOMongo();
         boolean isHealthy = !jobDAO.isJobsEmpty();
         if (!isHealthy) {
             logger.error("DB is either unreachable or empty");

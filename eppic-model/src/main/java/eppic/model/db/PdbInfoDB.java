@@ -426,6 +426,12 @@ public class PdbInfoDB implements Serializable {
 	public void setCrystalFormId(int crystalFormId) {
 		this.crystalFormId = crystalFormId;
 	}
-	
-	
+
+	public AssemblyDB getAssemblyById(int assemblyID){
+		for(AssemblyDB a :assemblies){
+			if(assemblyID == a.getId())
+				return a;
+		}
+		return null;
+	}
 }

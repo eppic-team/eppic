@@ -10,7 +10,6 @@ import eppic.db.dao.UniProtInfoDAO;
 import eppic.db.dao.mongo.UniProtInfoDAOMongo;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.model.db.UniProtInfoDB;
-import eppic.model.dto.UniProtInfo;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -307,7 +306,7 @@ public class UploadUniprotInfoToDb {
         countDone ++;
 
         try {
-            UniProtInfo uniProtInfo = dao.getUniProtInfo(uniEntry.getUniId());
+            UniProtInfoDB uniProtInfo = dao.getUniProtInfo(uniEntry.getUniId());
 
             if (uniProtInfo!=null) {
                 logger.debug("Id already present in db: {}. Skipping", uniEntry.getUniId());

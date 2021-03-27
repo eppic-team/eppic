@@ -71,11 +71,6 @@
 
 
 	<servlet>
-		<servlet-name>CrkService</servlet-name>
-		<servlet-class>ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl</servlet-class>
-	</servlet>
-	
-	<servlet>
 	    <servlet-name>FileUploadService</servlet-name>
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.uploader.servlets.FileUploadServlet</servlet-class>
 	</servlet>
@@ -84,12 +79,7 @@
 	    <servlet-name>FileDownloadService</servlet-name>
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet</servlet-class>
 	</servlet>
-	
-	<servlet>
-	    <servlet-name>DataDownloadService</servlet-name>
-	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.DataDownloadServlet</servlet-class>
-	</servlet>
-	
+
 	<servlet>
 	    <servlet-name>JmolViewerService</servlet-name>
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.jmol.servlets.JmolViewerServlet</servlet-class>

@@ -1,7 +1,6 @@
 package eppic.db.dao;
 
 import eppic.model.db.HitHspDB;
-import eppic.model.dto.HitHsp;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ public interface HitHspDAO {
             double eValue,
             int bitScore) throws DaoException;
 
-    List<HitHsp> getHitHspsForQueryId(String queryId) throws DaoException;
+    List<HitHspDB> getHitHspsForQueryId(String queryId) throws DaoException;
 
-    HitHsp getHitHsp(String queryId, String subjectId, int queryStart, int queryEnd, int subjectStart, int subjectEnd) throws DaoException;
+    HitHspDB getHitHsp(String queryId, String subjectId, int queryStart, int queryEnd, int subjectStart, int subjectEnd) throws DaoException;
 }

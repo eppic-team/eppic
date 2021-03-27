@@ -5,7 +5,6 @@ import eppic.db.mongoutils.MongoUtils;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.model.db.UniProtInfoDB;
-import eppic.model.dto.UniProtInfo;
 
 import javax.persistence.Table;
 import java.util.Collections;
@@ -48,11 +47,11 @@ public class UniProtInfoDAOMongo implements UniProtInfoDAO {
     }
 
     @Override
-    public UniProtInfo getUniProtInfo(String uniId) throws DaoException {
+    public UniProtInfoDB getUniProtInfo(String uniId) throws DaoException {
         // TODO how to keep the field name in a more prominent place. Or how to connect to class field name?
-        UniProtInfo val;
+        UniProtInfoDB val;
         try {
-            val = MongoUtils.findOne(mongoDb, collectionName, Collections.singletonList("uniId"), Collections.singletonList(uniId), UniProtInfo.class);
+            val = MongoUtils.findOne(mongoDb, collectionName, Collections.singletonList("uniId"), Collections.singletonList(uniId), UniProtInfoDB.class);
         } catch (Exception e) {
             throw new DaoException(e);
         }

@@ -5,7 +5,6 @@ import eppic.db.mongoutils.MongoUtils;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtMetadataDAO;
 import eppic.model.db.UniProtMetadataDB;
-import eppic.model.dto.UniProtMetadata;
 
 import javax.persistence.Table;
 
@@ -34,10 +33,10 @@ public class UniProtMetadataDAOMongo implements UniProtMetadataDAO {
     }
 
     @Override
-    public UniProtMetadata getUniProtMetadata() throws DaoException {
-        UniProtMetadata val;
+    public UniProtMetadataDB getUniProtMetadata() throws DaoException {
+        UniProtMetadataDB val;
         try {
-            val = MongoUtils.findFirst(mongoDb, collectionName, UniProtMetadata.class);
+            val = MongoUtils.findFirst(mongoDb, collectionName, UniProtMetadataDB.class);
         } catch (Exception e) {
             throw new DaoException(e);
         }

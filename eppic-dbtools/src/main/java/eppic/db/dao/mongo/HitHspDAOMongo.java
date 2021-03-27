@@ -5,7 +5,6 @@ import eppic.db.mongoutils.MongoUtils;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.model.db.HitHspDB;
-import eppic.model.dto.HitHsp;
 
 import javax.persistence.Table;
 import java.util.Arrays;
@@ -57,11 +56,11 @@ public class HitHspDAOMongo implements HitHspDAO {
     }
 
     @Override
-    public List<HitHsp> getHitHspsForQueryId(String queryId) throws DaoException {
+    public List<HitHspDB> getHitHspsForQueryId(String queryId) throws DaoException {
         // TODO how to keep the field name in a more prominent place. Or how to connect to class field name?
-        List<HitHsp> list;
+        List<HitHspDB> list;
         try {
-            list = MongoUtils.findAll(mongoDb, collectionName, Collections.singletonList("queryId"), Collections.singletonList(queryId), HitHsp.class);
+            list = MongoUtils.findAll(mongoDb, collectionName, Collections.singletonList("queryId"), Collections.singletonList(queryId), HitHspDB.class);
         } catch (Exception e) {
             throw new DaoException(e);
         }
@@ -70,14 +69,14 @@ public class HitHspDAOMongo implements HitHspDAO {
     }
 
     @Override
-    public HitHsp getHitHsp(String queryId, String subjectId, int queryStart, int queryEnd, int subjectStart, int subjectEnd) throws DaoException {
+    public HitHspDB getHitHsp(String queryId, String subjectId, int queryStart, int queryEnd, int subjectStart, int subjectEnd) throws DaoException {
         // TODO how to keep the field names in a more prominent place. Or how to connect to class field names?
-        HitHsp hit;
+        HitHspDB hit;
         try {
             hit = MongoUtils.findOne(mongoDb, collectionName,
                     Arrays.asList("queryId", "subjectId", "queryStart", "queryEnd", "subjectStart", "subjectEnd"),
                     Arrays.asList(queryId, subjectId, queryStart, queryEnd, subjectStart, subjectEnd),
-                    HitHsp.class);
+                    HitHspDB.class);
         } catch (Exception e) {
             throw new DaoException(e);
         }

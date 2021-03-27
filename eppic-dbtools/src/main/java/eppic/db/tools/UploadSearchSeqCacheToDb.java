@@ -9,8 +9,7 @@ import eppic.db.dao.mongo.HitHspDAOMongo;
 import eppic.db.dao.mongo.UniProtMetadataDAOMongo;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.model.db.HitHspDB;
-import eppic.model.dto.HitHsp;
-import eppic.model.dto.UniProtMetadata;
+import eppic.model.db.UniProtMetadataDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -234,7 +233,7 @@ public class UploadSearchSeqCacheToDb {
 
         try {
 
-            HitHsp hitInDb = hitHspDAO.getHitHsp(hit.getQueryId(), hit.getSubjectId(), hit.getQueryStart(), hit.getQueryEnd(), hit.getSubjectStart(), hit.getSubjectEnd());
+            HitHspDB hitInDb = hitHspDAO.getHitHsp(hit.getQueryId(), hit.getSubjectId(), hit.getQueryStart(), hit.getQueryEnd(), hit.getSubjectStart(), hit.getSubjectEnd());
             if (hitInDb != null) {
                 logger.debug("Hit already present for queryId {}, subjectId {}, qStart {}, qEnd {}, sStart {}, sEnd {}",
                         hit.getQueryId(), hit.getSubjectId(), hit.getQueryStart(), hit.getQueryEnd(), hit.getSubjectStart(), hit.getSubjectEnd());
@@ -268,7 +267,7 @@ public class UploadSearchSeqCacheToDb {
     private static void persistUniprotMetadata(MongoDatabase mongoDb, String uniRefType, String uniProtVersion) {
         UniProtMetadataDAO dao = new UniProtMetadataDAOMongo(mongoDb);
 
-        UniProtMetadata uniProtMetadata = null;
+        UniProtMetadataDB uniProtMetadata = null;
         try {
             uniProtMetadata = dao.getUniProtMetadata();
         } catch (DaoException e) {

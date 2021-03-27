@@ -10,7 +10,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtMetadataDAO;
 import eppic.db.dao.mongo.UniProtMetadataDAOMongo;
 import eppic.db.mongoutils.DbPropertiesReader;
-import eppic.model.dto.UniProtMetadata;
+import eppic.model.db.UniProtMetadataDB;
 import org.biojava.nbio.structure.EntityInfo;
 import org.biojava.nbio.structure.EntityType;
 import org.biojava.nbio.structure.Structure;
@@ -97,7 +97,7 @@ public class ChainEvolContextList implements Serializable {
 			openConnections(params);
 			UniProtMetadataDAO dao = new UniProtMetadataDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
 			try {
-				UniProtMetadata uniProtMetadata = dao.getUniProtMetadata();
+				UniProtMetadataDB uniProtMetadata = dao.getUniProtMetadata();
 				this.uniprotVer = uniProtMetadata.getVersion();
 			} catch (DaoException e) {
 				LOGGER.warn("Could not retrieve UniProt version from database");

@@ -1,7 +1,13 @@
 package eppic.rest.endpoints;
 
 import eppic.db.dao.DaoException;
-import eppic.model.dto.*;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.ContactDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.ResidueInfoDB;
 import eppic.model.dto.views.AssemblyDiagram;
 import eppic.model.dto.views.LatticeGraph;
 import eppic.rest.commons.Utils;
@@ -33,14 +39,14 @@ public class JobResource {
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                    schema = @Schema(implementation = PdbInfo.class))),
+                                    schema = @Schema(implementation = PdbInfoDB.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getPdb(
             @Context UriInfo uriInfo,
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        PdbInfo pdbInfo = JobService.getResultData(jobId, false, false, false, false);
+        PdbInfoDB pdbInfo = JobService.getResultData(jobId, false, false, false, false);
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -62,9 +68,9 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<InterfaceCluster> ics = JobService.getInterfaceClusterData(jobId);
+        List<InterfaceClusterDB> ics = JobService.getInterfaceClusterData(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<InterfaceCluster>> entity = new GenericEntity<List<InterfaceCluster>>(ics){};
+        GenericEntity<List<InterfaceClusterDB>> entity = new GenericEntity<List<InterfaceClusterDB>>(ics){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -86,9 +92,9 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<Interface> ics = JobService.getInterfaceData(jobId);
+        List<InterfaceDB> ics = JobService.getInterfaceData(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Interface>> entity = new GenericEntity<List<Interface>>(ics){};
+        GenericEntity<List<InterfaceDB>> entity = new GenericEntity<List<InterfaceDB>>(ics){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -110,9 +116,9 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<ChainCluster> ics = JobService.getSequenceData(jobId);
+        List<ChainClusterDB> ics = JobService.getSequenceData(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<ChainCluster>> entity = new GenericEntity<List<ChainCluster>>(ics){};
+        GenericEntity<List<ChainClusterDB>> entity = new GenericEntity<List<ChainClusterDB>>(ics){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -136,9 +142,9 @@ public class JobResource {
 
         // TODO validate interfId is int
 
-        List<Residue> ics = JobService.getResidueData(jobId, Integer.parseInt(interfId));
+        List<ResidueInfoDB> ics = JobService.getResidueData(jobId, Integer.parseInt(interfId));
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Residue>> entity = new GenericEntity<List<Residue>>(ics){};
+        GenericEntity<List<ResidueInfoDB>> entity = new GenericEntity<List<ResidueInfoDB>>(ics){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -160,9 +166,9 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<Assembly> assemblies = JobService.getAssemblyDataByPdbAssemblyId(jobId);
+        List<AssemblyDB> assemblies = JobService.getAssemblyDataByPdbAssemblyId(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Assembly>> entity = new GenericEntity<List<Assembly>>(assemblies){};
+        GenericEntity<List<AssemblyDB>> entity = new GenericEntity<List<AssemblyDB>>(assemblies){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -186,9 +192,9 @@ public class JobResource {
 
         // TODO validate interfId is int
 
-        List<Contact> cs = JobService.getContactData(jobId, Integer.parseInt(interfId));
+        List<ContactDB> cs = JobService.getContactData(jobId, Integer.parseInt(interfId));
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Contact>> entity = new GenericEntity<List<Contact>>(cs){};
+        GenericEntity<List<ContactDB>> entity = new GenericEntity<List<ContactDB>>(cs){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -208,7 +214,7 @@ public class JobResource {
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                    schema = @Schema(implementation = Assembly.class))),
+                                    schema = @Schema(implementation = AssemblyDB.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getAssemblyByPdbId(
             @Context UriInfo uriInfo,
@@ -217,7 +223,7 @@ public class JobResource {
 
         // TODO validate pdbAssemblyId is int
 
-        Assembly assembly = JobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
+        AssemblyDB assembly = JobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -237,7 +243,7 @@ public class JobResource {
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
                             content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                    schema = @Schema(implementation = Assembly.class))),
+                                    schema = @Schema(implementation = AssemblyDB.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
     public Response getAssembly(
             @Context UriInfo uriInfo,
@@ -246,7 +252,7 @@ public class JobResource {
 
         // TODO validate assemblyId is int
 
-        Assembly assembly = JobService.getAssemblyData(jobId, Integer.parseInt(assemblyId));
+        AssemblyDB assembly = JobService.getAssemblyData(jobId, Integer.parseInt(assemblyId));
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)

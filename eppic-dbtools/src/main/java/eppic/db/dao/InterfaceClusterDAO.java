@@ -3,7 +3,7 @@ package eppic.db.dao;
 import java.util.List;
 import java.util.Set;
 
-import eppic.model.dto.InterfaceCluster;
+import eppic.model.db.InterfaceClusterDB;
 
 /**
  * DAO for Interface clusters
@@ -22,7 +22,7 @@ public interface InterfaceClusterDAO
 	 * @return list of interface clusters
 	 * @throws DaoException when interface cluster items can't be retrieved
 	 */
-	List<InterfaceCluster> getInterfaceClusters(int pdbInfoUid, boolean withScores, boolean withInterfaces) throws DaoException;
+	List<InterfaceClusterDB> getInterfaceClusters(int pdbInfoUid, boolean withScores, boolean withInterfaces) throws DaoException;
 
 	/**
 	 * Retrieves list of interface clusters for a given
@@ -34,5 +34,5 @@ public interface InterfaceClusterDAO
 	 * @return list of interface clusters
 	 * @throws DaoException when interface cluster items can't be retrieved
 	 */
-	List<InterfaceCluster> getInterfaceClusters(int pdbInfoUid, Set<Integer> interfaceClusterIds, boolean withScores, boolean withInterfaces) throws DaoException;
+	List<InterfaceClusterDB> getInterfaceClusters(int pdbInfoUid, Set<Integer> interfaceClusterIds, boolean withScores, boolean withInterfaces) throws DaoException;
 }

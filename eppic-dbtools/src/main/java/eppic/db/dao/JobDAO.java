@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import eppic.model.dto.InputWithType;
-import eppic.model.dto.JobStatusDetails;
 //import eppic.model.dto.ProcessingInProgressData;
 import eppic.model.shared.StatusOfJob;
 import eppic.model.db.JobDB;
@@ -117,12 +116,12 @@ public interface JobDAO
 	 */
 	void setPdbScoreItemForJob(String jobId, PdbInfoDB pdbScoreItem) throws DaoException;
 
-	/**
-	 * Retrieves list of jobs which are not finished yet.
-	 * @return list of jobs which have not been finished yet
-	 * @throws DaoException when can not retrieve list of unfinished jobs
-	 */
-	List<JobStatusDetails> getListOfUnfinishedJobs() throws DaoException;
+//	/**
+//	 * Retrieves list of jobs which are not finished yet.
+//	 * @return list of jobs which have not been finished yet
+//	 * @throws DaoException when can not retrieve list of unfinished jobs
+//	 */
+//	List<JobStatusDetails> getListOfUnfinishedJobs() throws DaoException;
 	
 	/**
 	 * Retrieves submission id for selected job id.

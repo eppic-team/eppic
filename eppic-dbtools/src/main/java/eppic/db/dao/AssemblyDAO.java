@@ -2,7 +2,7 @@ package eppic.db.dao;
 
 import java.util.List;
 
-import eppic.model.dto.Assembly;
+import eppic.model.db.AssemblyDB;
 
 public interface AssemblyDAO {
 
@@ -14,7 +14,7 @@ public interface AssemblyDAO {
 	 * @return the list of assemblies
 	 * @throws DaoException when problems retrieving data from backend db
 	 */
-	List<Assembly> getAssemblies(int pdbInfoUid, boolean withScores, boolean withGraph) throws DaoException;
+	List<AssemblyDB> getAssemblies(int pdbInfoUid, boolean withScores, boolean withGraph) throws DaoException;
 
 	/**
 	 * Retrieves assembly data for the given pdbInfoUid and PDB assembly id
@@ -24,7 +24,7 @@ public interface AssemblyDAO {
 	 * @return the assembly data or null if assembly with given PDB assembly id can't be found
 	 * @throws DaoException when problems retrieving data from backend db
 	 */
-	Assembly getAssemblyByPdbAssemblyId(int pdbInfoUid, int pdbAssemblyId, boolean withGraph) throws DaoException;
+	AssemblyDB getAssemblyByPdbAssemblyId(int pdbInfoUid, int pdbAssemblyId, boolean withGraph) throws DaoException;
 
 	/**
 	 * Retrieves assembly data for the given pdbInfoUid and eppic assembly id
@@ -34,5 +34,5 @@ public interface AssemblyDAO {
 	 * @return the assembly data or null if assembly with given assembly id can't be found
 	 * @throws DaoException when problems retrieving data from backend db
 	 */
-	Assembly getAssembly(int pdbInfoUid, int assemblyId, boolean withGraph) throws DaoException;
+	AssemblyDB getAssembly(int pdbInfoUid, int assemblyId, boolean withGraph) throws DaoException;
 }

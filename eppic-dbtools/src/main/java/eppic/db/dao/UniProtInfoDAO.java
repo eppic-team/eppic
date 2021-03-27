@@ -1,7 +1,6 @@
 package eppic.db.dao;
 
 import eppic.model.db.UniProtInfoDB;
-import eppic.model.dto.UniProtInfo;
 
 import java.util.List;
 
@@ -17,5 +16,5 @@ public interface UniProtInfoDAO {
      * @return
      * @throws DaoException
      */
-    UniProtInfo getUniProtInfo(String uniId) throws DaoException;
+    UniProtInfoDB getUniProtInfo(String uniId) throws DaoException;
 }

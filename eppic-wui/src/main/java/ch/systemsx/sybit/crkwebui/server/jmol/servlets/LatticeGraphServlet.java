@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import eppic.EppicParams;
+import eppic.db.dao.mongo.JobDAOMongo;
+import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.model.db.PdbInfoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +22,9 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadS
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.LatticeGraphPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.LatticeGraphServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import eppic.model.dto.PdbInfo;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
 import eppic.db.dao.PDBInfoDAO;
-import eppic.db.dao.jpa.JobDAOJpa;
-import eppic.db.dao.jpa.PDBInfoDAOJpa;
 import eppic.model.db.JobDB;
 
 /**
@@ -99,8 +99,9 @@ public class LatticeGraphServlet extends BaseServlet
 		{
 			LatticeGraphServletInputValidator.validateLatticeGraphInput(jobId,requestedIfacesStr,requestedClusterStr, requestedAssemblyStr);
 
-			PdbInfo pdbInfo = getPdbInfo(jobId);
-			String input = pdbInfo.getInputName();
+			PdbInfoDB pdbInfo = getPdbInfo(jobId);
+			// FIXME need to fix this after rewrite
+			String input = null;// pdbInfo.getInputName();
 
 			// job directory on local filesystem
 			File dir = DirLocatorUtil.getJobDir(new File(destination_path), jobId);
@@ -177,14 +178,15 @@ public class LatticeGraphServlet extends BaseServlet
 		}
 	}
 	
-	static PdbInfo getPdbInfo(String jobId) throws DaoException {
-		PDBInfoDAO pdbDao = new PDBInfoDAOJpa();
-		PdbInfo pdbinfo = pdbDao.getPDBInfo(jobId);
+	static PdbInfoDB getPdbInfo(String jobId) throws DaoException {
+		PDBInfoDAO pdbDao = new PDBInfoDAOMongo();
+		PdbInfoDB pdbinfo = pdbDao.getPDBInfo(jobId);
 		// Set additional job properties
-		JobDAO jobdao = new JobDAOJpa();
+		JobDAO jobdao = new JobDAOMongo();
 		JobDB job = jobdao.getJob(jobId);
-		pdbinfo.setInputName(job.getInputName());
-		pdbinfo.setInputType(job.getInputType());
+		// TODO what to do with this after rewrite??
+		//pdbinfo.setInputName(job.getInputName());
+		//pdbinfo.setInputType(job.getInputType());
 		return pdbinfo;
 	}
 

@@ -5,7 +5,7 @@ import ch.systemsx.sybit.crkwebui.server.files.uploader.data.UploadingData;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
-import eppic.db.dao.jpa.JobDAOJpa;
+import eppic.db.dao.mongo.JobDAOMongo;
 
 public class UploadingValidator 
 {
@@ -54,7 +54,7 @@ public class UploadingValidator
 	private void validateCaptcha(UploadingData uploadingData,
 								 String ip) throws ValidationException, DaoException
 	{
-		JobDAO jobDAO = new JobDAOJpa();
+		JobDAO jobDAO = new JobDAOMongo();
 		long nrOfSubmittedJobs = jobDAO.getNrOfJobsForIPDuringLastDay(ip);
 		
 		if((useCaptcha) && (nrOfSubmittedJobs > nrOfAllowedSubmissionsWithoutCaptcha))

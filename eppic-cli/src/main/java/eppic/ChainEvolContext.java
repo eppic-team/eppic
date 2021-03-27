@@ -15,9 +15,9 @@ import eppic.db.dao.UniProtMetadataDAO;
 import eppic.db.dao.mongo.HitHspDAOMongo;
 import eppic.db.dao.mongo.UniProtInfoDAOMongo;
 import eppic.db.dao.mongo.UniProtMetadataDAOMongo;
-import eppic.model.dto.HitHsp;
-import eppic.model.dto.UniProtInfo;
-import eppic.model.dto.UniProtMetadata;
+import eppic.model.db.HitHspDB;
+import eppic.model.db.UniProtInfoDB;
+import eppic.model.db.UniProtMetadataDB;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
@@ -248,7 +248,7 @@ public class ChainEvolContext implements Serializable {
 			try {
 				if (parent.isUseLocalUniprot()) {
 					UniProtInfoDAO dao = new UniProtInfoDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
-					UniProtInfo uniProtInfo = dao.getUniProtInfo(queryUniprotId);
+					UniProtInfoDB uniProtInfo = dao.getUniProtInfo(queryUniprotId);
 					if (uniProtInfo == null) {
 						LOGGER.warn("No UniProt info could be found in local db for id {}. Will not be able to do evolutionary analysis for chain {}", queryUniprotId, sequenceId);
 						query = null;
@@ -918,11 +918,11 @@ public class ChainEvolContext implements Serializable {
 
 		HitHspDAO dao = new HitHspDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
 
-		List<HitHsp> hitHsps = dao.getHitHspsForQueryId(queryId);
+		List<HitHspDB> hitHsps = dao.getHitHspsForQueryId(queryId);
 
 		UniProtMetadataDAO uniDao = new UniProtMetadataDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
 
-		UniProtMetadata uniProtMetadata = uniDao.getUniProtMetadata();
+		UniProtMetadataDB uniProtMetadata = uniDao.getUniProtMetadata();
 
 		if (hitHsps.isEmpty()) {
 			LOGGER.warn("Nothing found in sequence search cache for query {}", queryId);
@@ -931,7 +931,7 @@ public class ChainEvolContext implements Serializable {
 		BlastHitList hitList = new BlastHitList();
 
 		int i = 0;
-		for (HitHsp hsp : hitHsps) {
+		for (HitHspDB hsp : hitHsps) {
 
 			if (i==0) {
 				hitList.setDb(uniProtMetadata.getVersion());

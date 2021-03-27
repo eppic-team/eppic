@@ -9,6 +9,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import eppic.db.dao.mongo.AssemblyDAOMongo;
+import eppic.db.dao.mongo.InterfaceDAOMongo;
+import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,17 +24,11 @@ import ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadS
 import ch.systemsx.sybit.crkwebui.server.jmol.generators.JmolPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.JmolViewerServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import eppic.model.dto.Assembly;
-import eppic.model.dto.Interface;
-import eppic.model.dto.PdbInfo;
 import eppic.EppicParams;
 import eppic.db.dao.AssemblyDAO;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.InterfaceDAO;
 import eppic.db.dao.PDBInfoDAO;
-import eppic.db.dao.jpa.AssemblyDAOJpa;
-import eppic.db.dao.jpa.InterfaceDAOJpa;
-import eppic.db.dao.jpa.PDBInfoDAOJpa;
 
 /**
  * Servlet used to open the 3D viewer for interfaces and assemblies.
@@ -117,9 +117,9 @@ public class JmolViewerServlet extends BaseServlet
 				extension = ".cif"; 
 			}
 			
-			Interface interfData;
+			InterfaceDB interfData;
 			
-			Assembly assemblyData;
+			AssemblyDB assemblyData;
 			
 			String fileName;
 			
@@ -170,29 +170,29 @@ public class JmolViewerServlet extends BaseServlet
 		}
 	}
 	
-	private Interface getInterfaceData(String jobId, int interfaceId) throws DaoException {
+	private InterfaceDB getInterfaceData(String jobId, int interfaceId) throws DaoException {
 		
-		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
-		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+		PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 				
-		InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-		Interface interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfaceId, false, true);
+		InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
+		InterfaceDB interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfaceId, false, true);
 		
 
 		return interf;
 	}
 
-	private Assembly getAssemblyData(String jobId, int assemblyId) throws DaoException {
+	private AssemblyDB getAssemblyData(String jobId, int assemblyId) throws DaoException {
 
-		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOJpa();
-		PdbInfo pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+		PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-		AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
+		AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
 		
-		List<Assembly> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true, false);
+		List<AssemblyDB> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true, false);
 		
-		Assembly assembly = null;
-		for (Assembly a:assemblies) {
+		AssemblyDB assembly = null;
+		for (AssemblyDB a:assemblies) {
 			if (a.getId() == assemblyId) assembly = a;
 		}
 		

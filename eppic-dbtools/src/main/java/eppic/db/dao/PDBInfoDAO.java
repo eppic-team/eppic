@@ -1,6 +1,5 @@
 package eppic.db.dao;
 
-import eppic.model.dto.PdbInfo;
 import eppic.model.db.PdbInfoDB;
 
 /**
@@ -16,7 +15,7 @@ public interface PDBInfoDAO
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve pdb info item for job
 	 */
-	PdbInfo getPDBInfo(String jobId) throws DaoException;
+	PdbInfoDB getPDBInfo(String jobId) throws DaoException;
 
 	/**
 	 * Retrieves pdb info item by job identifier with all data. Optionally retrieving clusters and residue data too (lots of data, heavy).
@@ -25,7 +24,7 @@ public interface PDBInfoDAO
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve pdb info item for job
 	 */
-	PdbInfo getPDBInfo(String jobId, boolean withChainClustersAndResidues) throws DaoException;
+	PdbInfoDB getPDBInfo(String jobId, boolean withChainClustersAndResidues) throws DaoException;
 
 	/**
 	 * Persists pdb info item.

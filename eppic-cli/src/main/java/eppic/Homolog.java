@@ -30,8 +30,8 @@ public class Homolog implements Serializable {
 	
 	/**
 	 * Constructs a new UniRef Homolog
-	 * @param blastHit
-	 * @param uniprotEntry
+	 * @param blastHsp
+	 * @param unirefEntry
 	 */
 	public Homolog(BlastHsp blastHsp, UnirefEntry unirefEntry) {
 		this.blastHsp = blastHsp;

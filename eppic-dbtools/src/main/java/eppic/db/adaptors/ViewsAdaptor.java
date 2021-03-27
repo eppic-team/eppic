@@ -1,8 +1,8 @@
 package eppic.db.adaptors;
 
-import eppic.model.dto.Assembly;
-import eppic.model.dto.GraphEdge;
-import eppic.model.dto.GraphNode;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.GraphEdgeDB;
+import eppic.model.db.GraphNodeDB;
 import eppic.model.dto.views.*;
 
 import javax.vecmath.Point3d;
@@ -30,13 +30,13 @@ public class ViewsAdaptor {
      *                         used to extract nodes information
      * @return the lattice graph view object
      */
-    public static LatticeGraph getLatticeGraphView(List<GraphEdge> graphEdges, Assembly unitcellAssembly) {
+    public static LatticeGraph getLatticeGraphView(List<GraphEdgeDB> graphEdges, AssemblyDB unitcellAssembly) {
         LatticeGraph latticeGraph = new LatticeGraph();
 
         // nodes
         List<LatticeGraphVertex> vertices = new ArrayList<>();
         Map<Integer, UnitCellTransform> uniqueTransforms = new TreeMap<>();
-        for (GraphNode node : unitcellAssembly.getGraphNodes()) {
+        for (GraphNodeDB node : unitcellAssembly.getGraphNodes()) {
             LatticeGraphVertex vertex = new LatticeGraphVertex();
             vertex.setChainId(node.getLabel().split("_")[0]);
             vertex.setOpId(Integer.parseInt(node.getLabel().split("_")[1]));
@@ -81,7 +81,7 @@ public class ViewsAdaptor {
 
         List<LatticeGraphEdge> lgEdges =  new ArrayList<>();
         // edges
-        for (GraphEdge edge : graphEdges) {
+        for (GraphEdgeDB edge : graphEdges) {
             LatticeGraphEdge lgEdge = new LatticeGraphEdge();
             lgEdge.setColor(edge.getColor());
             lgEdge.setXtalTrans("("+edge.getXtalTransA()+","+edge.getXtalTransB()+","+edge.getXtalTransC()+")");
@@ -128,8 +128,8 @@ public class ViewsAdaptor {
      *                         used to extract nodes information
      * @return the lattice graph view object
      */
-    public static LatticeGraph getLatticeGraphView(Assembly assembly, Assembly unitcellAssembly) {
-        List<GraphEdge> graphEdges = assembly.getGraphEdges();
+    public static LatticeGraph getLatticeGraphView(AssemblyDB assembly, AssemblyDB unitcellAssembly) {
+        List<GraphEdgeDB> graphEdges = assembly.getGraphEdges();
         return getLatticeGraphView(graphEdges, unitcellAssembly);
     }
 
@@ -139,7 +139,7 @@ public class ViewsAdaptor {
      * @param assembly the assembly dto object
      * @return
      */
-    public static AssemblyDiagram getAssemblyDiagram(Assembly assembly) {
+    public static AssemblyDiagram getAssemblyDiagram(AssemblyDB assembly) {
 
         AssemblyDiagram assemblyDiagram = new AssemblyDiagram();
         List<AssemblyDiagramNode> nodes = new ArrayList<>();
@@ -147,7 +147,7 @@ public class ViewsAdaptor {
         assemblyDiagram.setNodes(nodes);
         assemblyDiagram.setEdges(edges);
 
-        for (GraphNode graphNode : assembly.getGraphNodes()) {
+        for (GraphNodeDB graphNode : assembly.getGraphNodes()) {
             if (graphNode.isInGraph2d()) {
                 AssemblyDiagramNode node = new AssemblyDiagramNode();
                 node.setId(graphNode.getLabel());
@@ -160,7 +160,7 @@ public class ViewsAdaptor {
             }
         }
 
-        for (GraphEdge graphEdge : assembly.getGraphEdges()) {
+        for (GraphEdgeDB graphEdge : assembly.getGraphEdges()) {
             if (graphEdge.isInGraph2d()) {
                 AssemblyDiagramEdge edge = new AssemblyDiagramEdge();
                 edge.setColor("#" + graphEdge.getColor());

@@ -3,7 +3,7 @@ package eppic.db.dao;
 import java.util.List;
 import java.util.Set;
 
-import eppic.model.dto.Interface;
+import eppic.model.db.InterfaceDB;
 
 /**
  * DAO for Interface item.
@@ -21,7 +21,7 @@ public interface InterfaceDAO
 	 * @return list of interface items
 	 * @throws DaoException when problems retrieving data from backend db
 	 */
-	List<Interface> getInterfacesForCluster(int interfaceClusterUid, boolean withScores, boolean withResidues) throws DaoException;
+	List<InterfaceDB> getInterfacesForCluster(int interfaceClusterUid, boolean withScores, boolean withResidues) throws DaoException;
 
 	/**
 	 * Retrieves list of interface items for a particular interface cluster,
@@ -33,7 +33,7 @@ public interface InterfaceDAO
 	 * @return list of interface items
 	 * @throws DaoException when problems retrieving data from backend db
 	 */
-	List<Interface> getInterfacesForCluster(int interfaceClusterUid, Set<Integer> interfaceIds, boolean withScores, boolean withResidues) throws DaoException;
+	List<InterfaceDB> getInterfacesForCluster(int interfaceClusterUid, Set<Integer> interfaceIds, boolean withScores, boolean withResidues) throws DaoException;
 
 	/**
 	 * Retrieves a single interface for given pdbInfo uid and interface id
@@ -44,7 +44,7 @@ public interface InterfaceDAO
 	 * @return the interface data
 	 * @throws DaoException when problems retrieving data from backend db
 	 */
-	Interface getInterface(int pdbInfoUid, int interfaceId, boolean withScores, boolean withResidues)throws DaoException;
+	InterfaceDB getInterface(int pdbInfoUid, int interfaceId, boolean withScores, boolean withResidues)throws DaoException;
 
 	/**
 	 * Retrieves a list of all interfaces for given pdbInfo uid
@@ -54,5 +54,5 @@ public interface InterfaceDAO
 	 * @return list of interface items
 	 * @throws DaoException when problems retrieving data from backend db
 	 */
-	List<Interface> getInterfacesByPdbUid(int pdbInfoUid, boolean withScores, boolean withResidues) throws DaoException;
+	List<InterfaceDB> getInterfacesByPdbUid(int pdbInfoUid, boolean withScores, boolean withResidues) throws DaoException;
 }

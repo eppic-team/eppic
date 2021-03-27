@@ -2,9 +2,13 @@ package eppic.rest.dao.jpa;
 
 import eppic.db.dao.DaoException;
 import eppic.db.dao.PDBInfoDAO;
-import eppic.db.dao.jpa.PDBInfoDAOJpa;
 
-import eppic.model.dto.*;
+import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -12,7 +16,7 @@ import static org.junit.Assert.*;
 public class PDBInfoDaoJpaTest {
 
     /**
-     * Test jpa dao, must pass config with -DeppicDbProperties
+     * Test Mongo dao, must pass config with -DeppicDbProperties
      */
     @Ignore
     @Test
@@ -20,8 +24,8 @@ public class PDBInfoDaoJpaTest {
 
         String pdbId ="1smt";
 
-        PDBInfoDAO dao = new PDBInfoDAOJpa();
-        PdbInfo pdbInfoDB = dao.getPDBInfo(pdbId);
+        PDBInfoDAO dao = new PDBInfoDAOMongo();
+        PdbInfoDB pdbInfoDB = dao.getPDBInfo(pdbId);
         assertNotNull(pdbInfoDB);
 
         assertNotNull(pdbInfoDB.getAssemblies());
@@ -35,21 +39,21 @@ public class PDBInfoDaoJpaTest {
         //RunParametersDB params = pdbInfoDB.getRunParameters();
         //assertEquals("GLOBAL", params.getSearchMode());
 
-        for (InterfaceCluster icdb : pdbInfoDB.getInterfaceClusters()) {
+        for (InterfaceClusterDB icdb : pdbInfoDB.getInterfaceClusters()) {
             assertTrue(icdb.getClusterId()>0);
             assertEquals(pdbId, icdb.getPdbCode());
-            for (Interface idb : icdb.getInterfaces()) {
+            for (InterfaceDB idb : icdb.getInterfaces()) {
                 assertTrue(idb.getChain1().length()>0);
                 assertTrue(idb.getChain2().length()>0);
             }
         }
 
-        for (Assembly adb : pdbInfoDB.getAssemblies()) {
+        for (AssemblyDB adb : pdbInfoDB.getAssemblies()) {
             assertTrue(adb.getId()>0);
             assertTrue(adb.getAssemblyScores().size()>0);
         }
 
-        for (ChainCluster ccdb : pdbInfoDB.getChainClusters()) {
+        for (ChainClusterDB ccdb : pdbInfoDB.getChainClusters()) {
             assertTrue(ccdb.getMemberChains().length()>0);
             assertTrue(ccdb.getHomologs().size()>0);
         }

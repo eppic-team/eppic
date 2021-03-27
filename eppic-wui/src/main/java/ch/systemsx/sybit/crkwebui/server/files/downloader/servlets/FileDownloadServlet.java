@@ -25,14 +25,14 @@ import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import eppic.CoordFilesAdaptor;
 import eppic.db.dao.*;
-import eppic.db.dao.jpa.AssemblyDAOJpa;
-import eppic.db.dao.jpa.InterfaceDAOJpa;
-import eppic.db.dao.jpa.JobDAOJpa;
-import eppic.db.dao.jpa.PDBInfoDAOJpa;
-import eppic.model.dto.Assembly;
+import eppic.db.dao.mongo.AssemblyDAOMongo;
+import eppic.db.dao.mongo.InterfaceDAOMongo;
+import eppic.db.dao.mongo.JobDAOMongo;
+import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
 import eppic.model.dto.InputWithType;
-import eppic.model.dto.Interface;
-import eppic.model.dto.PdbInfo;
 
 /**
  * Servlet used to download files stored in the server.
@@ -217,10 +217,10 @@ public class FileDownloadServlet extends BaseServlet
 
 
 		// get data and produce file
-		PDBInfoDAO dao = new PDBInfoDAOJpa();
-		PdbInfo pdbInfo = dao.getPDBInfo(jobId, true);
+		PDBInfoDAO dao = new PDBInfoDAOMongo();
+		PdbInfoDB pdbInfo = dao.getPDBInfo(jobId, true);
 
-		JobDAO jobDAO = new JobDAOJpa();
+		JobDAO jobDAO = new JobDAOMongo();
 		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
 
 		File auFile = LatticeGraphServlet.getAuFileName(jobDir, input.getInputName());
@@ -228,12 +228,12 @@ public class FileDownloadServlet extends BaseServlet
 		CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
 
 		if (type.equals(TYPE_VALUE_ASSEMBLY)) {
-			AssemblyDAO assemblyDAO = new AssemblyDAOJpa();
-			Assembly assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), Integer.parseInt(assemblyId), true);
+			AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
+			AssemblyDB assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), Integer.parseInt(assemblyId), true);
 			adaptor.getAssemblyCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, assembly, true);
 		} else if (type.equals(TYPE_VALUE_INTERFACE)) {
-			InterfaceDAO interfaceDAO = new InterfaceDAOJpa();
-			Interface interf = interfaceDAO.getInterface(pdbInfo.getUid(), Integer.parseInt(interfaceId), false, false);
+			InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
+			InterfaceDB interf = interfaceDAO.getInterface(pdbInfo.getUid(), Integer.parseInt(interfaceId), false, false);
 			adaptor.getInterfaceCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, interf, true);
 		} else {
 			// should not happen, the validation took care of this

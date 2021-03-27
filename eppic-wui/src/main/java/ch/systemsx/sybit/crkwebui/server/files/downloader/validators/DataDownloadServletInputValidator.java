@@ -1,10 +1,10 @@
 package ch.systemsx.sybit.crkwebui.server.files.downloader.validators;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
+import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.model.shared.StatusOfJob;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
-import eppic.db.dao.jpa.JobDAOJpa;
 
 public class DataDownloadServletInputValidator {
 	
@@ -57,7 +57,7 @@ public class DataDownloadServletInputValidator {
 	{
 		StatusOfJob status = null;
 
-		JobDAO jobDAO = new JobDAOJpa();
+		JobDAO jobDAO = new JobDAOMongo();
 		status = jobDAO.getStatusForJob(jobId);
 
 		if(status == null || !status.equals(StatusOfJob.FINISHED))

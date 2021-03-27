@@ -166,4 +166,20 @@ public class AssemblyDB implements Serializable {
 	public void setGraphEdges(List<GraphEdgeDB> graphEdges) {
 		this.graphEdges = graphEdges;
 	}
+
+	/**
+	 * Return a comma separated list of all chain ids present in the assembly.
+	 * A single list is returned, whether assembly is disjoint or not.
+	 * @return
+	 */
+	public String getChainIdsString() {
+
+		if (assemblyContents.size()==0) return null;
+		StringBuilder sb = new StringBuilder();
+		for (int i=0; i<assemblyContents.size();i++) {
+			if (i!=0) sb.append(",");
+			sb.append(assemblyContents.get(i).getChainIds());
+		}
+		return sb.toString();
+	}
 }
