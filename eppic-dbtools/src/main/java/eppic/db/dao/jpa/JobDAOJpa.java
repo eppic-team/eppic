@@ -27,12 +27,10 @@ import eppic.model.shared.StatusOfJob;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.JobDAO;
-import eppic.db.dao.UserSessionDAO;
+//import eppic.db.dao.UserSessionDAO;
 import eppic.model.db.JobDB;
 import eppic.model.db.JobDB_;
 import eppic.model.db.PdbInfoDB;
-import eppic.model.db.UserSessionDB;
-import eppic.model.db.UserSessionDB_;
 
 /**
  * Implementation of JobDAO.
@@ -61,8 +59,8 @@ public class JobDAOJpa implements JobDAO
 			entityManager = EntityManagerHandler.getEntityManager();
 			entityManager.getTransaction().begin();
 
-			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
-			UserSessionDB session = sessionDAO.getSession(entityManager, sessionId, ip);
+//			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
+//			UserSessionDB session = sessionDAO.getSession(entityManager, sessionId, ip);
 
 			JobDB job = new JobDB();
 			job.setJobId(jobId);
@@ -74,7 +72,7 @@ public class JobDAOJpa implements JobDAO
 			job.setInputType(inputType);
 			job.setSubmissionId(submissionId);
 
-			job.getUserSessions().add(session);
+//			job.getUserSessions().add(session);
 
 			entityManager.persist(job);
 //			entityManager.flush();
@@ -131,139 +129,6 @@ public class JobDAOJpa implements JobDAO
 			}
 
 			throw new DaoException(e);
-		}
-		finally
-		{
-			if (entityManager!=null)
-				entityManager.close();
-		}
-	}
-
-	@Override
-	public void untieJobsFromSession(String sessionId) throws DaoException
-	{
-		EntityManager entityManager = null;
-
-		try
-		{
-			entityManager = EntityManagerHandler.getEntityManager();
-
-			entityManager.getTransaction().begin();
-			
-			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<UserSessionDB> criteriaQuery = criteriaBuilder.createQuery(UserSessionDB.class);
-			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
-			Predicate condition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
-			criteriaQuery.where(condition);
-			criteriaQuery.select(sessionRoot);
-
-			Query query = entityManager.createQuery(criteriaQuery);
-			@SuppressWarnings("unchecked")
-			List<UserSessionDB> sessions = query.getResultList();
-
-			if(sessions != null)
-			{
-				for(UserSessionDB session : sessions)
-				{
-					entityManager.remove(session);
-				}
-			}
-
-			entityManager.getTransaction().commit();
-		}
-		catch(Throwable e)
-		{
-			try
-			{
-				if (entityManager!=null)
-					entityManager.getTransaction().rollback();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error rolling back EntityManager",t);
-			}
-
-			throw new DaoException(e);
-		}
-		finally
-		{
-			if (entityManager!=null)
-				entityManager.close();
-		}
-	}
-
-//	@Override
-//	public List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException
-//	{
-//		EntityManager entityManager = null;
-//
-//		try
-//		{
-//			entityManager = EntityManagerHandler.getEntityManager();
-//
-//			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-//			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
-//
-//			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-//			SetJoin<JobDB, UserSessionDB> join = jobRoot.join(JobDB_.userSessions);
-//			Path<String> sessionIdPath = join.get(UserSessionDB_.sessionId);
-//			Predicate condition = criteriaBuilder.equal(sessionIdPath, sessionId);
-//			criteriaQuery.where(condition);
-//			criteriaQuery.select(jobRoot);
-//
-//			Query query = entityManager.createQuery(criteriaQuery);
-//			@SuppressWarnings("unchecked")
-//			List<JobDB> jobs = query.getResultList();
-//
-//			List<ProcessingInProgressData> processingInProgressDataList = null;
-//			if(jobs != null)
-//			{
-//				processingInProgressDataList = new ArrayList<ProcessingInProgressData>();
-//
-//				for(JobDB job : jobs)
-//				{
-//					//processingInProgressDataList.add(createProcessingInProgressData(job));
-//				}
-//			}
-//
-//			return processingInProgressDataList;
-//		}
-//		catch(Throwable t)
-//		{
-//			throw new DaoException(t);
-//		}
-//		finally
-//		{
-//			if (entityManager!=null)
-//				entityManager.close();
-//		}
-//	}
-
-	@Override
-	public Long getNrOfJobsForSessionId(String sessionId) throws DaoException
-	{
-		EntityManager entityManager = null;
-
-		try
-		{
-			entityManager = EntityManagerHandler.getEntityManager();
-
-			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<Long> criteriaQuery  = criteriaBuilder.createQuery(Long.class);
-
-			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
-			SetJoin<UserSessionDB, JobDB> join = sessionRoot.join(UserSessionDB_.jobs);
-			criteriaQuery.select(criteriaBuilder.count(join));
-			Predicate condition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
-			criteriaQuery.where(condition);
-
-			Query query = entityManager.createQuery(criteriaQuery);
-			Long nrOfJobs = (Long)query.getSingleResult();
-			return nrOfJobs;
-		}
-		catch(Throwable t)
-		{
-			throw new DaoException(t);
 		}
 		finally
 		{
@@ -387,82 +252,6 @@ public class JobDAOJpa implements JobDAO
 		}
 
 		return nrOfJobs;
-	}
-
-	@Override
-	public void untieSelectedJobFromSession(String sessionId, String jobToUntie) throws DaoException
-	{
-		EntityManager entityManager = null;
-
-		try
-		{
-			entityManager = EntityManagerHandler.getEntityManager();
-			entityManager.getTransaction().begin();
-
-			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<UserSessionDB> criteriaQuery = criteriaBuilder.createQuery(UserSessionDB.class);
-
-			Root<UserSessionDB> sessionRoot = criteriaQuery.from(UserSessionDB.class);
-			SetJoin<UserSessionDB, JobDB> join = sessionRoot.join(UserSessionDB_.jobs);
-			Path<String> jobPath = join.get(JobDB_.jobId);
-			Predicate sessionCondition = criteriaBuilder.equal(sessionRoot.get(UserSessionDB_.sessionId), sessionId);
-			Predicate jobCondition = criteriaBuilder.equal(jobPath, jobToUntie);
-			Predicate condition = criteriaBuilder.and(sessionCondition, jobCondition);
-			criteriaQuery.select(sessionRoot);
-			criteriaQuery.where(condition);
-
-			Query query = entityManager.createQuery(criteriaQuery);
-			@SuppressWarnings("unchecked")
-			List<UserSessionDB> sessionResult = query.getResultList();
-
-			if((sessionResult != null) && (sessionResult.size() > 0))
-			{
-				UserSessionDB session = sessionResult.get(0);
-
-				JobDB jobToRemove = null;
-
-				Set<JobDB> jobs = session.getJobs();
-				Iterator<JobDB> iterator = jobs.iterator();
-
-				while((iterator.hasNext()) && (jobToRemove == null))
-				{
-					JobDB job = iterator.next();
-					if(job.getJobId().equals(jobToUntie))
-					{
-						jobToRemove = job;
-					}
-				}
-
-				if(jobToRemove != null)
-				{
-					session.getJobs().remove(jobToRemove);
-				}
-
-//				entityManager.merge(session);
-			}
-
-			entityManager.getTransaction().commit();
-		}
-		catch(Throwable e)
-		{
-
-			try
-			{
-				if (entityManager!=null)
-					entityManager.getTransaction().rollback();
-			}
-			catch(Throwable t)
-			{
-				logger.error("Error rolling back EntityManager",t);
-			}
-
-			throw new DaoException(e);
-		}
-		finally
-		{
-			if (entityManager!=null)
-				entityManager.close();
-		}
 	}
 
 	@Override

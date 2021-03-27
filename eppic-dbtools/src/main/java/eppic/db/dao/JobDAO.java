@@ -47,12 +47,12 @@ public interface JobDAO
 	 */
 	void updateStatusOfJob(String jobId, StatusOfJob stopped) throws DaoException;
 
-	/**
-	 * Removes links between jobs and selected session.
-	 * @param sessionId identifier of the session
-	 * @throws DaoException when can not update information in data storage
-	 */
-	void untieJobsFromSession(String sessionId) throws DaoException;
+//	/**
+//	 * Removes links between jobs and selected session.
+//	 * @param sessionId identifier of the session
+//	 * @throws DaoException when can not update information in data storage
+//	 */
+//	void untieJobsFromSession(String sessionId) throws DaoException;
 
 //	/**
 //	 * Retrieves list of jobs for selected session.
@@ -62,13 +62,13 @@ public interface JobDAO
 //	 */
 //	List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException;
 
-	/**
-	 * Retrieves number of jobs for selected session.
-	 * @param sessionId identifier of the session
-	 * @return number of jobs for selected session
-	 * @throws DaoException when can not retrieve information from data storage
-	 */
-	Long getNrOfJobsForSessionId(String sessionId) throws DaoException;
+//	/**
+//	 * Retrieves number of jobs for selected session.
+//	 * @param sessionId identifier of the session
+//	 * @return number of jobs for selected session
+//	 * @throws DaoException when can not retrieve information from data storage
+//	 */
+//	Long getNrOfJobsForSessionId(String sessionId) throws DaoException;
 
 	/**
 	 * Retrieves status of the selected job.
@@ -100,14 +100,6 @@ public interface JobDAO
 	 * @throws DaoException when can not retrieve information from data storage
 	 */
 	Long getNrOfJobsForIPDuringLastDay(String ip) throws DaoException;
-
-	/**
-	 * Removes session - job link for specified job and session.
-	 * @param sessionId identifier of the session
-	 * @param jobToUntie identifier of the job to untie
-	 * @throws DaoException when can not retrieve information from data storage
-	 */
-	void untieSelectedJobFromSession(String sessionId, String jobToUntie) throws DaoException;
 
 	/**
 	 * Retrieves input with type(pdb code/name) for specified job.

@@ -48,11 +48,11 @@ public class JobDB implements Serializable {
 	@OneToOne(mappedBy = "job", cascade = CascadeType.ALL)
 	private PdbInfoDB pdbInfo;
 
-	@ManyToMany(mappedBy = "jobs", cascade = CascadeType.ALL)
-	private Set<UserSessionDB> userSessions;
+//	@ManyToMany(mappedBy = "jobs", cascade = CascadeType.ALL)
+//	private Set<UserSessionDB> userSessions;
 	
 	public JobDB() {
-		this.userSessions = new HashSet<UserSessionDB>();
+//		this.userSessions = new HashSet<UserSessionDB>();
 	}
 	
 	public JobDB(String inputName, int inputType) {
@@ -130,13 +130,13 @@ public class JobDB implements Serializable {
 		return pdbInfo;
 	}
 
-	public void setUserSessions(Set<UserSessionDB> userSessions) {
-		this.userSessions = userSessions;
-	}
-
-	public Set<UserSessionDB> getUserSessions() {
-		return userSessions;
-	}
+//	public void setUserSessions(Set<UserSessionDB> userSessions) {
+//		this.userSessions = userSessions;
+//	}
+//
+//	public Set<UserSessionDB> getUserSessions() {
+//		return userSessions;
+//	}
 
 	public void setInputType(int inputType) {
 		this.inputType = inputType;

@@ -413,7 +413,7 @@ public class CrkWebServiceImpl implements CrkWebService
 
 		JobDAO jobDAO = new JobDAOJpa();
 		//int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
-		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(null).intValue();
+		int nrOfJobsForSession = 0;//jobDAO.getNrOfJobsForSessionId(null).intValue();
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
 
 		//SessionValidator.validateSession(getThreadLocalRequest().getSession());
@@ -819,7 +819,7 @@ public class CrkWebServiceImpl implements CrkWebService
 			stopJob(jobId);
 		}
 
-		jobDAO.untieSelectedJobFromSession(sessionId, jobId);
+		//jobDAO.untieSelectedJobFromSession(sessionId, jobId);
 
 		String result = "Job: " + jobId + " was removed";
 		return result;
@@ -830,7 +830,7 @@ public class CrkWebServiceImpl implements CrkWebService
 	{
 		String sessionId = null;//getThreadLocalRequest().getSession().getId();
 		JobDAO jobDAO = new JobDAOJpa();
-		jobDAO.untieJobsFromSession(sessionId);
+		//jobDAO.untieJobsFromSession(sessionId);
 	}
 
 	//@Override
