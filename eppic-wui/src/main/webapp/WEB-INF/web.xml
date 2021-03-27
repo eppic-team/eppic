@@ -10,11 +10,6 @@
        	<param-value>ewui</param-value> 
     </context-param>
     
-    <context-param>
-  		<param-name>gwt.xsrf.session_cookie_name</param-name>
-  		<param-value>JSESSIONID</param-value>
-	</context-param>
-
 	<filter>
 		<filter-name>GzipFilter</filter-name>
 		<!-- The gzip filter for older versions of jetty-->
@@ -78,11 +73,6 @@
 	<servlet>
 		<servlet-name>CrkService</servlet-name>
 		<servlet-class>ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl</servlet-class>
-	</servlet>
-	
-	<servlet>
-  		<servlet-name>xsrf</servlet-name>
-  		<servlet-class>com.google.gwt.user.server.rpc.XsrfTokenServiceServlet</servlet-class>
 	</servlet>
 	
 	<servlet>

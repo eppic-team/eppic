@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.persistence.PersistenceContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
@@ -22,7 +21,7 @@ import eppic.model.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebService;
+//import ch.systemsx.sybit.crkwebui.client.commons.services.eppic.CrkWebService;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirLocatorUtil;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.DirectoryContentReader;
 import ch.systemsx.sybit.crkwebui.server.commons.util.io.FileContentReader;
@@ -46,8 +45,6 @@ import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import eppic.model.shared.InputType;
 import eppic.model.shared.StatusOfJob;
 
-import com.google.gwt.user.server.rpc.XsrfProtectedServiceServlet;
-
 import eppic.EppicParams;
 import eppic.db.EntityManagerHandler;
 import eppic.db.jpautils.DbConfigGenerator;
@@ -57,10 +54,8 @@ import eppic.db.jpautils.DbConfigGenerator;
  *
  * @author srebniak_a
  */
-@PersistenceContext(name="eppicjpa", unitName="eppicjpa")
-public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements CrkWebService
+public class CrkWebServiceImpl implements CrkWebService
 {
-	private static final long serialVersionUID = 1L;
 
 	private static final Logger logger = LoggerFactory.getLogger(CrkWebServiceImpl.class);
 
@@ -163,10 +158,11 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	private EmailMessageData emailMessageData;
 
-	@Override
+
+	//@Override
 	public void init(ServletConfig config) throws ServletException
 	{
-		super.init(config);
+		//super.init(config);
 		
 		logger.info("EPPIC wui server property files will be read from directory {}", CONFIG_FILES_LOCATION);
 		
@@ -282,7 +278,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		}
 
 		// this comes from the web.xml file
-		String servletContPath = getServletContext().getInitParameter("servletContPath");
+		String servletContPath = null;//getServletContext().getInitParameter("servletContPath");
 		resultsPathUrl += "/" + servletContPath + "/";
 		
 		logger.info("Initialised URL suffix for email messages to {}",resultsPathUrl);
@@ -387,7 +383,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		}
 	}
 
-	@Override
+	//@Override
 	public ApplicationSettings loadSettings() throws Exception
 	{
 		ApplicationSettingsGenerator applicationSettingsGenerator = new ApplicationSettingsGenerator(properties);
@@ -395,8 +391,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		InputStream inputParametersStream = new FileInputStream(new File(INPUT_PARAMS_FILE));
 
 		// grid properties: we read them first from the war-packed resource. Then from the file system (which will override them)
-		InputStream gridPropertiesInputStream = getServletContext()
-				.getResourceAsStream(GRID_PROPERTIES_FILE_RESOURCE);
+		InputStream gridPropertiesInputStream = null;//getServletContext().getResourceAsStream(GRID_PROPERTIES_FILE_RESOURCE);
 		
 		File gridPropertiesFile = new File(GRID_PROPERTIES_FILE);
 		if (gridPropertiesFile.exists()) {
@@ -417,15 +412,17 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		}
 
 		JobDAO jobDAO = new JobDAOJpa();
-		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
+		//int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(getThreadLocalRequest().getSession().getId()).intValue();
+		int nrOfJobsForSession = jobDAO.getNrOfJobsForSessionId(null).intValue();
 		settings.setNrOfJobsForSession(nrOfJobsForSession);
 
-		SessionValidator.validateSession(getThreadLocalRequest().getSession());
+		//SessionValidator.validateSession(getThreadLocalRequest().getSession());
+		SessionValidator.validateSession(null);
 
 		return settings;
 	}
 
-	@Override
+	//@Override
 	public String runJob(RunJobData runJobData) throws Exception
 	{
 		if (runJobData != null)
@@ -498,10 +495,12 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 			}
 
 			jobDAO.insertNewJob(runJobData.getJobId(),
-					getThreadLocalRequest().getSession().getId(),
+					null,
+					//getThreadLocalRequest().getSession().getId(),
 					runJobData.getEmailAddress(),
 					runJobData.getInput(),
-					getThreadLocalRequest().getRemoteAddr(),
+					null,
+					//getThreadLocalRequest().getRemoteAddr(),
 					currentDate,
 					inputType,
 					submissionStatus,
@@ -518,7 +517,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		return null;
 	}
 
-	@Override
+	//@Override
 	public ProcessingData getResultsOfProcessing(String jobId) throws Exception //whaveter calls this fails
 	{
 		StatusOfJob status = null;
@@ -529,7 +528,8 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		if(status != null)
 		{
 			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
-			sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
+			//sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
+			sessionDAO.insertSessionForJob(null, jobId, null);
 			if(status.equals(StatusOfJob.FINISHED))
 			{
 				return getResultData(jobId);
@@ -705,7 +705,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		return pdbInfo;
 	}
 
-	@Override
+	//@Override
 	public ResiduesList getAllResidues(String jobId) throws Exception
 	{
 		ResidueDAO residueDAO = new ResidueDAOJpa();
@@ -713,7 +713,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		return residuesList;
 	}
 
-	@Override
+	//@Override
 	public HashMap<Integer, List<Residue>> getInterfaceResidues(int interfaceUid) throws Exception
 	{
 		ResidueDAO residueDAO = new ResidueDAOJpa();
@@ -742,14 +742,14 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		return structures;
 	}
 
-	@Override
+	//@Override
 	public JobsForSession getJobsForCurrentSession() throws Exception
 	{
-		String sessionId = getThreadLocalRequest().getSession().getId();
+		String sessionId = null;//getThreadLocalRequest().getSession().getId();
 		JobDAO jobDAO = new JobDAOJpa();
 		List<ProcessingInProgressData> jobs = jobDAO.getJobsForSession(sessionId);
 
-		HttpSession session = getThreadLocalRequest().getSession();
+		HttpSession session = null;//getThreadLocalRequest().getSession();
 		boolean isSessionNew = false;
 
 		if(!SessionValidator.isSessionValid(session))
@@ -762,7 +762,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		return jobsForSession;
 	}
 
-	@Override
+	//@Override
 	public String stopJob(String jobId) throws Exception
 	{
 		String result = null;
@@ -804,10 +804,10 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		return result;
 	}
 
-	@Override
+	//@Override
 	public String deleteJob(String jobId) throws Exception
 	{
-		String sessionId = getThreadLocalRequest().getSession().getId();
+		String sessionId = null;//getThreadLocalRequest().getSession().getId();
 
 		JobDAO jobDAO = new JobDAOJpa();
 		StatusOfJob status = jobDAO.getStatusForJob(jobId);
@@ -825,18 +825,18 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		return result;
 	}
 
-	@Override
+	//@Override
 	public void untieJobsFromSession() throws Exception
 	{
-		String sessionId = getThreadLocalRequest().getSession().getId();
+		String sessionId = null;//getThreadLocalRequest().getSession().getId();
 		JobDAO jobDAO = new JobDAOJpa();
 		jobDAO.untieJobsFromSession(sessionId);
 	}
 
-	@Override
+	//@Override
 	public void destroy()
 	{
-		super.destroy();
+		//super.destroy();
 
 		// TODO it seems that destroy() doesn't get called upon jetty killing. So the app is not shutting down correctly
 
@@ -859,7 +859,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		}
 	}
 
-	@Override
+	//@Override
 	public List<PDBSearchResult> getListOfPDBsHavingAUniProt(String uniProtId) throws Exception {
 
 		ChainClusterDAO homologsDAO = new ChainClusterDAOJpa();
@@ -878,7 +878,7 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		return data;
 	}
 
-	@Override
+	//@Override
 	public List<PDBSearchResult> getListOfPDBs(String pdbCode, String chain) throws Exception {
 		long start = System.currentTimeMillis();
 		ChainClusterDAO homologsDAO = new ChainClusterDAOJpa();

@@ -26,7 +26,6 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<gwt.version>2.7.0</gwt.version>
 		<slf4j.version>1.7.22</slf4j.version>
 		<log4j.version>2.7</log4j.version>		
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

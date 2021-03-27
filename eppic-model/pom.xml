@@ -87,22 +87,6 @@
 				</executions>
 			</plugin>
 
-			<!-- the gwt plugin so that sources are understood by eppic-wui -->
-			<!-- see http://mojo.codehaus.org/gwt-maven-plugin/user-guide/multiproject.html -->
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>gwt-maven-plugin</artifactId>
-				<version>${gwt.version}</version>
-                
-				<executions>
-					<execution>
-						<goals>
-							<goal>resources</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 </project>

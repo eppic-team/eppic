@@ -41,56 +41,7 @@
 			</exclusions>
 		</dependency>
 
-		<!-- GWT and GXT -->
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-user</artifactId>
-			<version>${gwt.version}</version>
-			<scope>provided</scope>
-			
-			<!-- because hibernate-validator has a subdependency on javax.validation-api 1.1, it causes a clash with
-			     gwt-user and gxt (both depending on validation-api 1.0). It needs to be excluded here. 
-			-->
-			<exclusions>
-				<exclusion>
-					<groupId>javax.validation</groupId>
-					<artifactId>validation-api</artifactId>					
-				</exclusion>
-			</exclusions>
-			
-		</dependency>
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-servlet</artifactId>
-			<version>${gwt.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.sencha.gxt</groupId>
-			<artifactId>gxt</artifactId>
-			<version>3.1.1</version>
-			<!-- because hibernate-validator has a subdependency on javax.validation-api 1.1, it causes a clash with
-			     gwt-user and gxt (both depending on validation-api 1.0). It needs to be excluded here. 
-			-->
-			<exclusions>
-				<exclusion>
-					<groupId>javax.validation</groupId>
-					<artifactId>validation-api</artifactId>					
-				</exclusion>
-			</exclusions>
-		</dependency>		
-		<!-- needed for neptune theme (available since GXT 3.1 <dependency> <groupId>com.sencha.gxt</groupId> 
-			<artifactId>gxt-theme-neptune</artifactId> <version>3.1.1</version> </dependency> -->
-
-		<dependency>
-			<groupId>com.gwtplatform</groupId>
-			<artifactId>gwtp-processors</artifactId>
-			<version>1.6</version>
-		</dependency>
-
 		<!--  others -->
-
 
 		<dependency>
 			<groupId>javax.mail</groupId>
@@ -139,13 +90,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>com.google.gwt</groupId>
-			<artifactId>gwt-codeserver</artifactId>
-			<version>${gwt.version}</version>
-			<scope>test</scope>
-		</dependency>
-		
 	</dependencies>
 
 	<build>
@@ -158,23 +102,6 @@
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>gwt-maven-plugin</artifactId>
-				<version>${gwt.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<runTarget>index.html</runTarget>
-					<!-- Minification setting: OBF/PRETTY/DETAILED -->
-					<style>OBF</style>
 				</configuration>
 			</plugin>
 			<plugin>
