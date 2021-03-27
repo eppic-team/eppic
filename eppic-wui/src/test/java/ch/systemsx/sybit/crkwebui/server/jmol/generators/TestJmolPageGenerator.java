@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import eppic.model.db.AssemblyContentDB;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.ResidueInfoDB;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.model.dto.Assembly;
-import eppic.model.dto.AssemblyContent;
-import eppic.model.dto.Interface;
-import eppic.model.dto.Residue;
 import eppic.model.db.ResidueBurialDB;
 
 public class TestJmolPageGenerator {
@@ -25,23 +25,24 @@ public class TestJmolPageGenerator {
 	@Test
 	public void testJmolPageGenerator() {
 		
-		List<Residue> residues = new ArrayList<>();
+		List<ResidueBurialDB> residues = new ArrayList<>();
 		
-		Residue res1 = new Residue();
-		Residue res2 = new Residue();
-		Residue res3 = new Residue();
-		Residue res4 = new Residue();
-		Residue res7 = new Residue();
+		ResidueBurialDB res1 = new ResidueBurialDB();
+		ResidueBurialDB res2 = new ResidueBurialDB();
+		ResidueBurialDB res3 = new ResidueBurialDB();
+		ResidueBurialDB res4 = new ResidueBurialDB();
+		ResidueBurialDB res7 = new ResidueBurialDB();
 
-		res1.setPdbResidueNumber("1");
+		// FIXME after rewrite
+		//res1.setPdbResidueNumber("1");
 		res1.setSide(false);
-		res2.setPdbResidueNumber("2A"); // an insertion code (should be represented as 2^A)
+		//res2.setPdbResidueNumber("2A"); // an insertion code (should be represented as 2^A)
 		res2.setSide(false);
-		res3.setPdbResidueNumber("3");
+		//res3.setPdbResidueNumber("3");
 		res3.setSide(false);
-		res4.setPdbResidueNumber("4");
+		//res4.setPdbResidueNumber("4");
 		res4.setSide(false);
-		res7.setPdbResidueNumber(null);
+		//res7.setPdbResidueNumber(null);
 		res7.setSide(false);
 		res1.setRegion(ResidueBurialDB.CORE_GEOMETRY);
 		res2.setRegion(ResidueBurialDB.CORE_GEOMETRY); 
@@ -49,17 +50,16 @@ public class TestJmolPageGenerator {
 		res4.setRegion(ResidueBurialDB.RIM_EVOLUTIONARY);
 		res4.setRegion(ResidueBurialDB.RIM_EVOLUTIONARY);
 		res7.setRegion(ResidueBurialDB.RIM_EVOLUTIONARY);
-		
-		Residue res5 = new Residue();
-		Residue res6 = new Residue();
-		res5.setPdbResidueNumber("5");
+
+		// FIXME after rewrite
+		ResidueBurialDB res5 = new ResidueBurialDB();
+		ResidueBurialDB res6 = new ResidueBurialDB();
+		//res5.setPdbResidueNumber("5");
 		res5.setSide(true);
-		res6.setPdbResidueNumber("6");
+		//res6.setPdbResidueNumber("6");
 		res6.setSide(true);
 		res5.setRegion(ResidueBurialDB.CORE_GEOMETRY);
 		res6.setRegion(ResidueBurialDB.CORE_GEOMETRY);
-		
-		
 		
 		residues.add(res1);
 		residues.add(res2);
@@ -69,16 +69,16 @@ public class TestJmolPageGenerator {
 		residues.add(res6);
 		residues.add(res7);
 		
-		Interface interfData = new Interface();
+		InterfaceDB interfData = new InterfaceDB();
 		interfData.setChain1("A"); 
 		interfData.setChain2("B");		
-		interfData.setResidues(residues);
+		interfData.setResidueBurials(residues);
 		
 		
-		AssemblyContent ac = new AssemblyContent();
+		AssemblyContentDB ac = new AssemblyContentDB();
 		ac.setChainIds("A_0,B_0,A_1,B_1");
-		Assembly assemblyData = new Assembly();
-		List<AssemblyContent> acs = new ArrayList<>();
+		AssemblyDB assemblyData = new AssemblyDB();
+		List<AssemblyContentDB> acs = new ArrayList<>();
 		acs.add(ac);
 		assemblyData.setAssemblyContents(acs); 
 		

@@ -140,113 +140,115 @@ public class JmolPageGenerator
 	}
 	
 	private static String generateSelectionVarsNgl(InterfaceDB interfData, AssemblyDB assemblyData, boolean isCif) {
-		
-		List<String> chains = new ArrayList<>();
-		String coreRimSelectionVarsStr = "";
-		
-		if (interfData != null) {
-			String chain1 = interfData.getChain1();		
-			String chain2 = interfData.getChain2(); 
-			///boolean isSymRelated = false;
+		// TODO FIXME after rewrite
+		return null;
 
-			if (chain1.equals(chain2)) {
-				if (isCif) {
-					//isSymRelated = true;
-					// exactly as in CoordsFileAdaptor.getInterfaceCoordsMmcif() and biojava StructureInterface.toMmCif
-					chain2 = chain2 +"_"+ interfData.getOperatorId();
-				}
-				else {
-					// exactly as done in StructureInterface.toPDB()
-					// NOTE this won't work with chain ids of more than 1 char
-					chain2 = Character.toString(MolViewersHelper.getNextLetter(chain1.charAt(0)));
-				}
-			}
-			
-			chains.add(chain1);
-			chains.add(chain2);
-
-			String color1 = MolViewersHelper.getHexChainColor(chain1, true);
-			String color2 = MolViewersHelper.getHexChainColor(chain2, true);
-
-			String colorCore1 = MolViewersHelper.getHexInterf1Color(true);
-			String colorCore2 = MolViewersHelper.getHexInterf2Color(true);
-
-			List<ResidueBurialDB> coreResidues1 = new ArrayList<>();
-			List<ResidueBurialDB> rimResidues1 = new ArrayList<>();
-			List<ResidueBurialDB> coreResidues2 = new ArrayList<>();
-			List<ResidueBurialDB> rimResidues2 = new ArrayList<>();
-
-			for (ResidueBurialDB residue:interfData.getResidueBurials() ) {
-
-				if (residue.getRegion()==ResidueBurialDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) {
-					if (residue.getSide()==false) {
-						coreResidues1.add(residue);
-					} else if (residue.getSide()==true) {
-						coreResidues2.add(residue);
-					}
-				} else if (residue.getRegion()==ResidueBurialDB.RIM_EVOLUTIONARY) {
-					if (residue.getSide()==false) {
-						rimResidues1.add(residue);
-					} else if (residue.getSide()==true) {
-						rimResidues2.add(residue);
-					}
-				}
-			}
-			
-			String seleCore1VarStr = getSeleVarStr("seleCore1", coreResidues1, chain1);
-			String seleCore2VarStr = getSeleVarStr("seleCore2", coreResidues2, chain2);
-			String seleRim1VarStr = getSeleVarStr("seleRim1", rimResidues1, chain1);
-			String seleRim2VarStr = getSeleVarStr("seleRim2", rimResidues2, chain2);
-
-			// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
-			coreRimSelectionVarsStr = 				
-					"var colorCore1 = \""+colorCore1+"\";\n" + 
-					"var colorCore2 = \""+colorCore2+"\";\n" + 
-					seleCore1VarStr + 
-					seleCore2VarStr + 
-					"var colorRim1  = \""+color1+"\";\n" + 
-					"var colorRim2  = \""+color2+"\";\n" + 
-					seleRim1VarStr + 
-					seleRim2VarStr ; 
-
-		}
-		
-		
-		if (assemblyData!=null) {
-			
-			String chainIdsString = assemblyData.getChainIdsString();
-			
-			if (chainIdsString!=null) {				
-				String[] chainIds = chainIdsString.split(",");
-				chains = Arrays.asList(chainIds);
-			}
-		} 
-		// else it stays empty and then the array var is empty
-
-        // Due to a limitation in NGL (all versions up to at least v2.0.0-dev.33), NGL will only read the
-        // first 4 chars of the chain id. Here we have truncate to 4 chars so that the selection commands work.
-        // Things will still be broken, but less.
-        // The chain ids > 4 chars happen a lot in virus capsid entries with NCS ops, e.g. A8n_4, without this
-        // patch they would not show well in the ngl applet
-        List<String> chainsForNgl = new ArrayList<>();
-        int countTruncated = 0;
-        for (String chainId : chains) {
-            if (chainId.length() > 4) {
-                chainsForNgl.add(chainId.substring(0, 4));
-                countTruncated ++;
-            } else {
-                chainsForNgl.add(chainId);
-            }
-        }
-        if (countTruncated>0)
-            logger.warn("Needed to truncate {} chain ids with length over 4 chars for NGL selections compatibility.", countTruncated);
-		
-		// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
-		return 
-				"var chains     = " + toJsArray(chainsForNgl) + ";\n" +
-				"var colors     = " + toJsArray(getColorsForChains(chains)) + ";\n" +
-				coreRimSelectionVarsStr;
-
+//		List<String> chains = new ArrayList<>();
+//		String coreRimSelectionVarsStr = "";
+//
+//		if (interfData != null) {
+//			String chain1 = interfData.getChain1();
+//			String chain2 = interfData.getChain2();
+//			///boolean isSymRelated = false;
+//
+//			if (chain1.equals(chain2)) {
+//				if (isCif) {
+//					//isSymRelated = true;
+//					// exactly as in CoordsFileAdaptor.getInterfaceCoordsMmcif() and biojava StructureInterface.toMmCif
+//					chain2 = chain2 +"_"+ interfData.getOperatorId();
+//				}
+//				else {
+//					// exactly as done in StructureInterface.toPDB()
+//					// NOTE this won't work with chain ids of more than 1 char
+//					chain2 = Character.toString(MolViewersHelper.getNextLetter(chain1.charAt(0)));
+//				}
+//			}
+//
+//			chains.add(chain1);
+//			chains.add(chain2);
+//
+//			String color1 = MolViewersHelper.getHexChainColor(chain1, true);
+//			String color2 = MolViewersHelper.getHexChainColor(chain2, true);
+//
+//			String colorCore1 = MolViewersHelper.getHexInterf1Color(true);
+//			String colorCore2 = MolViewersHelper.getHexInterf2Color(true);
+//
+//			List<ResidueBurialDB> coreResidues1 = new ArrayList<>();
+//			List<ResidueBurialDB> rimResidues1 = new ArrayList<>();
+//			List<ResidueBurialDB> coreResidues2 = new ArrayList<>();
+//			List<ResidueBurialDB> rimResidues2 = new ArrayList<>();
+//
+//			for (ResidueBurialDB residue:interfData.getResidueBurials() ) {
+//
+//				if (residue.getRegion()==ResidueBurialDB.CORE_EVOLUTIONARY || residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) {
+//					if (residue.getSide()==false) {
+//						coreResidues1.add(residue);
+//					} else if (residue.getSide()==true) {
+//						coreResidues2.add(residue);
+//					}
+//				} else if (residue.getRegion()==ResidueBurialDB.RIM_EVOLUTIONARY) {
+//					if (residue.getSide()==false) {
+//						rimResidues1.add(residue);
+//					} else if (residue.getSide()==true) {
+//						rimResidues2.add(residue);
+//					}
+//				}
+//			}
+//
+//			String seleCore1VarStr = getSeleVarStr("seleCore1", coreResidues1, chain1);
+//			String seleCore2VarStr = getSeleVarStr("seleCore2", coreResidues2, chain2);
+//			String seleRim1VarStr = getSeleVarStr("seleRim1", rimResidues1, chain1);
+//			String seleRim2VarStr = getSeleVarStr("seleRim2", rimResidues2, chain2);
+//
+//			// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
+//			coreRimSelectionVarsStr =
+//					"var colorCore1 = \""+colorCore1+"\";\n" +
+//					"var colorCore2 = \""+colorCore2+"\";\n" +
+//					seleCore1VarStr +
+//					seleCore2VarStr +
+//					"var colorRim1  = \""+color1+"\";\n" +
+//					"var colorRim2  = \""+color2+"\";\n" +
+//					seleRim1VarStr +
+//					seleRim2VarStr ;
+//
+//		}
+//
+//
+//		if (assemblyData!=null) {
+//
+//			String chainIdsString = assemblyData.getChainIdsString();
+//
+//			if (chainIdsString!=null) {
+//				String[] chainIds = chainIdsString.split(",");
+//				chains = Arrays.asList(chainIds);
+//			}
+//		}
+//		// else it stays empty and then the array var is empty
+//
+//        // Due to a limitation in NGL (all versions up to at least v2.0.0-dev.33), NGL will only read the
+//        // first 4 chars of the chain id. Here we have truncate to 4 chars so that the selection commands work.
+//        // Things will still be broken, but less.
+//        // The chain ids > 4 chars happen a lot in virus capsid entries with NCS ops, e.g. A8n_4, without this
+//        // patch they would not show well in the ngl applet
+//        List<String> chainsForNgl = new ArrayList<>();
+//        int countTruncated = 0;
+//        for (String chainId : chains) {
+//            if (chainId.length() > 4) {
+//                chainsForNgl.add(chainId.substring(0, 4));
+//                countTruncated ++;
+//            } else {
+//                chainsForNgl.add(chainId);
+//            }
+//        }
+//        if (countTruncated>0)
+//            logger.warn("Needed to truncate {} chain ids with length over 4 chars for NGL selections compatibility.", countTruncated);
+//
+//		// note that variable names must match those in file EPPIC_NGL_JS_FUNCTIONS
+//		return
+//				"var chains     = " + toJsArray(chainsForNgl) + ";\n" +
+//				"var colors     = " + toJsArray(getColorsForChains(chains)) + ";\n" +
+//				coreRimSelectionVarsStr;
+//
 
 	}
 	
