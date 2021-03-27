@@ -102,11 +102,6 @@ public class ApplicationSettings implements Serializable {
 	private String examplePdb;
 
 	/**
-	 * Settings of main screen.
-	 */
-	private ScreenSettings screenSettings;
-	
-	/**
 	 * Session identifier.
 	 */
 	private String sessionId;
@@ -469,22 +464,6 @@ public class ApplicationSettings implements Serializable {
 		return examplePdb;
 	}
 
-	/**
-	 * Sets settings of main application screen.
-	 * @param screenSettings settings of main application screen
-	 */
-	public void setScreenSettings(ScreenSettings screenSettings) {
-		this.screenSettings = screenSettings;
-	}
-	
-	/**
-	 * Retrieves settings of main application screen.
-	 * @return settings of main application screen
-	 */
-	public ScreenSettings getScreenSettings() {
-		return screenSettings;
-	}
-	
 	public String getSessionId() {
 		return sessionId;
 	}

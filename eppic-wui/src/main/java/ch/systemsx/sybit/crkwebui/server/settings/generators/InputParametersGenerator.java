@@ -14,7 +14,6 @@ import org.w3c.dom.NodeList;
 
 import eppic.model.dto.ApplicationSettings;
 import eppic.model.dto.InputParameters;
-import eppic.model.dto.ScreenSettings;
 
 /**
  * This class is used to parse input parameters file.
@@ -73,41 +72,10 @@ public class InputParametersGenerator
 		applicationSettings.setNewsMessage(newsMessage);
 		
 		Node screenSettingsNode = documentRootNode.getElementsByTagName("screen_settings").item(0);
-		ScreenSettings screenSettings = prepareScreenSettings(screenSettingsNode);
-		applicationSettings.setScreenSettings(screenSettings);
+		//ScreenSettings screenSettings = prepareScreenSettings(screenSettingsNode);
+		//applicationSettings.setScreenSettings(screenSettings);
 		
 		return applicationSettings;
-	}
-	
-	/**
-	 * Retrieves screen settings.
-	 * @param screenSettingsNode screen settings node
-	 * @return screen settings
-	 */
-	private static ScreenSettings prepareScreenSettings(Node screenSettingsNode)
-	{
-		ScreenSettings screenSettings = new ScreenSettings();
-		
-		NodeList screenSettingsNodeList = screenSettingsNode.getChildNodes();
-		
-		for(int i=0; i<screenSettingsNodeList.getLength(); i++)
-		{
-			Node settingNode = (Node)screenSettingsNodeList.item(i);
-			
-			if(settingNode.getNodeType() == Node.ELEMENT_NODE)
-			{
-				if(settingNode.getNodeName().equals("min_screen_width"))
-				{
-					screenSettings.getMinWindowData().setWindowWidth(Integer.parseInt(settingNode.getFirstChild().getNodeValue()));
-				}
-				else if(settingNode.getNodeName().equals("min_screen_height"))
-				{
-					screenSettings.getMinWindowData().setWindowHeight(Integer.parseInt(settingNode.getFirstChild().getNodeValue()));
-				}
-			}
-		}
-		
-		return screenSettings;
 	}
 
 	private static void setDefaultParameters(Node defaultInputParametersNodeRoot, 

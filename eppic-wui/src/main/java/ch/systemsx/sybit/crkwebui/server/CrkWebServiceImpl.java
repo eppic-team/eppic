@@ -517,155 +517,155 @@ public class CrkWebServiceImpl implements CrkWebService
 		return null;
 	}
 
-	//@Override
-	public ProcessingData getResultsOfProcessing(String jobId) throws Exception //whaveter calls this fails
-	{
-		StatusOfJob status = null;
+//	//@Override
+//	public ProcessingData getResultsOfProcessing(String jobId) throws Exception //whaveter calls this fails
+//	{
+//		StatusOfJob status = null;
+//
+//		JobDAO jobDAO = new JobDAOJpa();
+//		status = jobDAO.getStatusForJob(jobId);
+//
+//		if(status != null)
+//		{
+//			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
+//			//sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
+//			sessionDAO.insertSessionForJob(null, jobId, null);
+//			if(status.equals(StatusOfJob.FINISHED))
+//			{
+//				return getResultData(jobId);
+//			}
+//			else
+//			{
+//				return getStatusData(jobId, status);
+//			}
+//		}
+//		else
+//		{
+//			return null;
+//		}
+//	}
 
-		JobDAO jobDAO = new JobDAOJpa();
-		status = jobDAO.getStatusForJob(jobId);
+//	private ProcessingInProgressData getStatusData(final String jobId, StatusOfJob status) throws Exception
+//	{
+//
+//		JobDAO jobDAO = new JobDAOJpa();
+//
+//		ProcessingInProgressData statusData = null;
+//
+//		if((jobId != null) && (!jobId.equals("")))
+//		{
+//			File dataDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobId);
+//
+//			if (IOUtil.checkIfDirectoryExist(dataDirectory))
+//			{
+//				statusData = new ProcessingInProgressData();
+//
+//				statusData.setJobId(jobId);
+//				statusData.setStatus(status.getName());
+//
+//				InputWithType inputWithType = jobDAO.getInputWithTypeForJob(jobId);
+//				statusData.setInputType(inputWithType.getInputType());
+//				statusData.setInputName(inputWithType.getInputName());
+//
+//				statusData.setStep(new StepStatus());
+//
+//				try
+//				{
+//					List<File> filesToRead = new ArrayList<File>();
+//
+//					File logFile = new File(dataDirectory, PROGRESS_LOG_FILE_NAME);
+//
+//					if (IOUtil.checkIfFileExist(logFile))
+//					{
+//						filesToRead.add(logFile);
+//					}
+//
+//					File[] directoryContent = DirectoryContentReader.getFilesNamesWithPrefix(dataDirectory, jobId + ".e");
+//
+//					if(directoryContent != null)
+//					{
+//						for(File fileToInclude : directoryContent)
+//						{
+//							filesToRead.add(fileToInclude);
+//						}
+//					}
+//
+//
+//					StringBuffer log = new StringBuffer();
+//
+//					for(File fileToRead : filesToRead)
+//					{
+//						log.append(FileContentReader.readContentOfFile(fileToRead, true));
+//					}
+//
+//					statusData.setLog(log.toString());
+//
+//					if((status.equals(StatusOfJob.RUNNING)) ||
+//							(status.equals(StatusOfJob.WAITING)) ||
+//							(status.equals(StatusOfJob.QUEUING)))
+//					{
+//						statusData.setStep(retrieveCurrentStep(jobId, statusData.getInputName()));
+//					}
+//				}
+//				catch (Throwable e)
+//				{
+//					e.printStackTrace();
+//					throw new CrkWebException(e);
+//				}
+//			}
+//		}
+//
+//		return statusData;
+//	}
 
-		if(status != null)
-		{
-			UserSessionDAO sessionDAO = new UserSessionDAOJpa();
-			//sessionDAO.insertSessionForJob(getThreadLocalRequest().getSession().getId(), jobId, getThreadLocalRequest().getRemoteAddr());
-			sessionDAO.insertSessionForJob(null, jobId, null);
-			if(status.equals(StatusOfJob.FINISHED))
-			{
-				return getResultData(jobId);
-			}
-			else
-			{
-				return getStatusData(jobId, status);
-			}
-		}
-		else
-		{
-			return null;
-		}
-	}
-
-	private ProcessingInProgressData getStatusData(final String jobId, StatusOfJob status) throws Exception
-	{
-		
-		JobDAO jobDAO = new JobDAOJpa();
-
-		ProcessingInProgressData statusData = null;
-
-		if((jobId != null) && (!jobId.equals("")))
-		{
-			File dataDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobId);
-
-			if (IOUtil.checkIfDirectoryExist(dataDirectory))
-			{
-				statusData = new ProcessingInProgressData();
-
-				statusData.setJobId(jobId);
-				statusData.setStatus(status.getName());
-
-				InputWithType inputWithType = jobDAO.getInputWithTypeForJob(jobId);
-				statusData.setInputType(inputWithType.getInputType());
-				statusData.setInputName(inputWithType.getInputName());
-
-				statusData.setStep(new StepStatus());
-
-				try
-				{
-					List<File> filesToRead = new ArrayList<File>();
-
-					File logFile = new File(dataDirectory, PROGRESS_LOG_FILE_NAME);
-
-					if (IOUtil.checkIfFileExist(logFile))
-					{
-						filesToRead.add(logFile);
-					}
-
-					File[] directoryContent = DirectoryContentReader.getFilesNamesWithPrefix(dataDirectory, jobId + ".e");
-
-					if(directoryContent != null)
-					{
-						for(File fileToInclude : directoryContent)
-						{
-							filesToRead.add(fileToInclude);
-						}
-					}
-
-
-					StringBuffer log = new StringBuffer();
-
-					for(File fileToRead : filesToRead)
-					{
-						log.append(FileContentReader.readContentOfFile(fileToRead, true));
-					}
-
-					statusData.setLog(log.toString());
-
-					if((status.equals(StatusOfJob.RUNNING)) ||
-							(status.equals(StatusOfJob.WAITING)) ||
-							(status.equals(StatusOfJob.QUEUING)))
-					{
-						statusData.setStep(retrieveCurrentStep(jobId, statusData.getInputName()));
-					}
-				}
-				catch (Throwable e)
-				{
-					e.printStackTrace();
-					throw new CrkWebException(e);
-				}
-			}
-		}
-
-		return statusData;
-	}
-
-	/**
-	 * Retrieves current step of job processing.
-	 * @param jobId identifier of the job
-	 * @param input job input
-	 * @return current step
-	 * @throws Exception when can not retrieve current step
-	 */
-	private StepStatus retrieveCurrentStep(String jobId, String input) throws Exception
-	{
-		StepStatus stepStatus = new StepStatus();
-		stepStatus.setTotalNumberOfSteps(0);
-		stepStatus.setCurrentStepNumber(0);
-		stepStatus.setCurrentStep("Waiting");
-
-		File dataDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobId);
-
-		if (IOUtil.checkIfDirectoryExist(dataDirectory))
-		{
-			try
-			{
-				String stepFileName = input;
-
-				if(stepFileName.contains("."))
-				{
-					stepFileName = stepFileName.substring(0, stepFileName.lastIndexOf("."));
-				}
-
-				File stepFile = new File(dataDirectory, stepFileName + STEPS_FILE_NAME_SUFFIX);
-
-				if(stepFile.exists())
-				{
-					Properties stepProperties = new Properties();
-					FileInputStream inputStream = new FileInputStream(stepFile);
-					stepProperties.load(inputStream);
-
-					stepStatus.setCurrentStep(stepProperties.getProperty("step"));
-					stepStatus.setCurrentStepNumber(Integer.parseInt(stepProperties.getProperty("step_num")));
-					stepStatus.setTotalNumberOfSteps(Integer.parseInt(stepProperties.getProperty("step_total")));
-				}
-			}
-			catch(Throwable t)
-			{
-				throw new CrkWebException(t);
-			}
-		}
-
-		return stepStatus;
-	}
+//	/**
+//	 * Retrieves current step of job processing.
+//	 * @param jobId identifier of the job
+//	 * @param input job input
+//	 * @return current step
+//	 * @throws Exception when can not retrieve current step
+//	 */
+//	private StepStatus retrieveCurrentStep(String jobId, String input) throws Exception
+//	{
+//		StepStatus stepStatus = new StepStatus();
+//		stepStatus.setTotalNumberOfSteps(0);
+//		stepStatus.setCurrentStepNumber(0);
+//		stepStatus.setCurrentStep("Waiting");
+//
+//		File dataDirectory = DirLocatorUtil.getJobDir(new File(generalDestinationDirectoryName), jobId);
+//
+//		if (IOUtil.checkIfDirectoryExist(dataDirectory))
+//		{
+//			try
+//			{
+//				String stepFileName = input;
+//
+//				if(stepFileName.contains("."))
+//				{
+//					stepFileName = stepFileName.substring(0, stepFileName.lastIndexOf("."));
+//				}
+//
+//				File stepFile = new File(dataDirectory, stepFileName + STEPS_FILE_NAME_SUFFIX);
+//
+//				if(stepFile.exists())
+//				{
+//					Properties stepProperties = new Properties();
+//					FileInputStream inputStream = new FileInputStream(stepFile);
+//					stepProperties.load(inputStream);
+//
+//					stepStatus.setCurrentStep(stepProperties.getProperty("step"));
+//					stepStatus.setCurrentStepNumber(Integer.parseInt(stepProperties.getProperty("step_num")));
+//					stepStatus.setTotalNumberOfSteps(Integer.parseInt(stepProperties.getProperty("step_total")));
+//				}
+//			}
+//			catch(Throwable t)
+//			{
+//				throw new CrkWebException(t);
+//			}
+//		}
+//
+//		return stepStatus;
+//	}
 
 	/**
 	 * Retrieves pdbInfo item for a given job id.
@@ -743,24 +743,24 @@ public class CrkWebServiceImpl implements CrkWebService
 	}
 
 	//@Override
-	public JobsForSession getJobsForCurrentSession() throws Exception
-	{
-		String sessionId = null;//getThreadLocalRequest().getSession().getId();
-		JobDAO jobDAO = new JobDAOJpa();
-		List<ProcessingInProgressData> jobs = jobDAO.getJobsForSession(sessionId);
-
-		HttpSession session = null;//getThreadLocalRequest().getSession();
-		boolean isSessionNew = false;
-
-		if(!SessionValidator.isSessionValid(session))
-		{
-			SessionValidator.validateSession(session);
-			isSessionNew = true;
-		}
-
-		JobsForSession jobsForSession = new JobsForSession(isSessionNew, jobs);
-		return jobsForSession;
-	}
+//	public JobsForSession getJobsForCurrentSession() throws Exception
+//	{
+//		String sessionId = null;//getThreadLocalRequest().getSession().getId();
+//		JobDAO jobDAO = new JobDAOJpa();
+//		List<ProcessingInProgressData> jobs = jobDAO.getJobsForSession(sessionId);
+//
+//		HttpSession session = null;//getThreadLocalRequest().getSession();
+//		boolean isSessionNew = false;
+//
+//		if(!SessionValidator.isSessionValid(session))
+//		{
+//			SessionValidator.validateSession(session);
+//			isSessionNew = true;
+//		}
+//
+//		JobsForSession jobsForSession = new JobsForSession(isSessionNew, jobs);
+//		return jobsForSession;
+//	}
 
 	//@Override
 	public String stopJob(String jobId) throws Exception

@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import eppic.model.dto.InputWithType;
 import eppic.model.dto.JobStatusDetails;
-import eppic.model.dto.ProcessingInProgressData;
+//import eppic.model.dto.ProcessingInProgressData;
 import eppic.model.shared.StatusOfJob;
 import eppic.db.EntityManagerHandler;
 import eppic.db.dao.DaoException;
@@ -192,52 +192,52 @@ public class JobDAOJpa implements JobDAO
 		}
 	}
 
-	@Override
-	public List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException
-	{
-		EntityManager entityManager = null;
-
-		try
-		{
-			entityManager = EntityManagerHandler.getEntityManager();
-
-			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
-
-			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-			SetJoin<JobDB, UserSessionDB> join = jobRoot.join(JobDB_.userSessions);
-			Path<String> sessionIdPath = join.get(UserSessionDB_.sessionId);
-			Predicate condition = criteriaBuilder.equal(sessionIdPath, sessionId);
-			criteriaQuery.where(condition);
-			criteriaQuery.select(jobRoot);
-
-			Query query = entityManager.createQuery(criteriaQuery);
-			@SuppressWarnings("unchecked")
-			List<JobDB> jobs = query.getResultList();
-
-			List<ProcessingInProgressData> processingInProgressDataList = null;
-			if(jobs != null)
-			{
-				processingInProgressDataList = new ArrayList<ProcessingInProgressData>();
-
-				for(JobDB job : jobs)
-				{
-					processingInProgressDataList.add(createProcessingInProgressData(job));
-				}
-			}
-
-			return processingInProgressDataList;
-		}
-		catch(Throwable t)
-		{
-			throw new DaoException(t);
-		}
-		finally
-		{
-			if (entityManager!=null)
-				entityManager.close();
-		}
-	}
+//	@Override
+//	public List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException
+//	{
+//		EntityManager entityManager = null;
+//
+//		try
+//		{
+//			entityManager = EntityManagerHandler.getEntityManager();
+//
+//			CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+//			CriteriaQuery<JobDB> criteriaQuery = criteriaBuilder.createQuery(JobDB.class);
+//
+//			Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
+//			SetJoin<JobDB, UserSessionDB> join = jobRoot.join(JobDB_.userSessions);
+//			Path<String> sessionIdPath = join.get(UserSessionDB_.sessionId);
+//			Predicate condition = criteriaBuilder.equal(sessionIdPath, sessionId);
+//			criteriaQuery.where(condition);
+//			criteriaQuery.select(jobRoot);
+//
+//			Query query = entityManager.createQuery(criteriaQuery);
+//			@SuppressWarnings("unchecked")
+//			List<JobDB> jobs = query.getResultList();
+//
+//			List<ProcessingInProgressData> processingInProgressDataList = null;
+//			if(jobs != null)
+//			{
+//				processingInProgressDataList = new ArrayList<ProcessingInProgressData>();
+//
+//				for(JobDB job : jobs)
+//				{
+//					//processingInProgressDataList.add(createProcessingInProgressData(job));
+//				}
+//			}
+//
+//			return processingInProgressDataList;
+//		}
+//		catch(Throwable t)
+//		{
+//			throw new DaoException(t);
+//		}
+//		finally
+//		{
+//			if (entityManager!=null)
+//				entityManager.close();
+//		}
+//	}
 
 	@Override
 	public Long getNrOfJobsForSessionId(String sessionId) throws DaoException
@@ -344,23 +344,6 @@ public class JobDAOJpa implements JobDAO
 			if (entityManager!=null)
 				entityManager.close();
 		}
-	}
-
-	@Override
-	public ProcessingInProgressData createProcessingInProgressData(JobDB job)
-	{
-		ProcessingInProgressData processingInProgressData = null;
-
-		if(job != null)
-		{
-			processingInProgressData = new ProcessingInProgressData();
-			processingInProgressData.setJobId(job.getJobId());
-			processingInProgressData.setInputName(job.getInputName());
-			processingInProgressData.setStatus(job.getStatus());
-			processingInProgressData.setInputType(job.getInputType());
-		}
-
-		return processingInProgressData;
 	}
 
 	@Override

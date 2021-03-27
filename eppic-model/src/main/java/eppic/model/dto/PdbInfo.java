@@ -35,7 +35,7 @@ import eppic.model.db.PdbInfoDB;
 		"chainClusters", "interfaceClusters",  "assemblies",
 "runParameters"})
 @XmlAccessorType(XmlAccessType.FIELD)
-public class PdbInfo implements Serializable, ProcessingData
+public class PdbInfo implements Serializable//, ProcessingData
 {
 	/**
 	 * 

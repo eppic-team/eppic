@@ -6,9 +6,7 @@ import java.util.List;
 import eppic.model.dto.ApplicationSettings;
 import eppic.model.dto.Residue;
 import eppic.model.dto.ResiduesList;
-import eppic.model.dto.JobsForSession;
 import eppic.model.dto.PDBSearchResult;
-import eppic.model.dto.ProcessingData;
 import eppic.model.dto.RunJobData;
 
 /**
@@ -33,20 +31,20 @@ public interface CrkWebService //extends RemoteService
      */
     public String runJob(RunJobData runJobData) throws Exception;
 
-    /**
-     * Retrieves results of processing for selected job id - the results type depends on the status of the job on the server.
-     * @param jobId identifier of the job
-     * @return status data for the selected job
-     * @throws Exception when an asynchronous call fails to complete normally
-     */
-    public ProcessingData getResultsOfProcessing(String jobId) throws Exception;
+//    /**
+//     * Retrieves results of processing for selected job id - the results type depends on the status of the job on the server.
+//     * @param jobId identifier of the job
+//     * @return status data for the selected job
+//     * @throws Exception when an asynchronous call fails to complete normally
+//     */
+//    public ProcessingData getResultsOfProcessing(String jobId) throws Exception;
 
-    /**
-     * Retrieves list of all jobs for current session id.
-     * @return list of jobs attached to the current session
-     * @throws Exception when an asynchronous call fails to complete normally
-     */
-    public JobsForSession getJobsForCurrentSession() throws Exception;
+//    /**
+//     * Retrieves list of all jobs for current session id.
+//     * @return list of jobs attached to the current session
+//     * @throws Exception when an asynchronous call fails to complete normally
+//     */
+//    public JobsForSession getJobsForCurrentSession() throws Exception;
 
     /**
      * Retrieves residues information for selected interface.

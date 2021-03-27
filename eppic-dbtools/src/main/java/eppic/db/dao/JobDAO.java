@@ -5,7 +5,7 @@ import java.util.List;
 
 import eppic.model.dto.InputWithType;
 import eppic.model.dto.JobStatusDetails;
-import eppic.model.dto.ProcessingInProgressData;
+//import eppic.model.dto.ProcessingInProgressData;
 import eppic.model.shared.StatusOfJob;
 import eppic.model.db.JobDB;
 import eppic.model.db.PdbInfoDB;
@@ -54,13 +54,13 @@ public interface JobDAO
 	 */
 	void untieJobsFromSession(String sessionId) throws DaoException;
 
-	/**
-	 * Retrieves list of jobs for selected session.
-	 * @param sessionId identifier of the session
-	 * @return list of jobs for selected session
-	 * @throws DaoException when can not retrieve information from data storage
-	 */
-	List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException;
+//	/**
+//	 * Retrieves list of jobs for selected session.
+//	 * @param sessionId identifier of the session
+//	 * @return list of jobs for selected session
+//	 * @throws DaoException when can not retrieve information from data storage
+//	 */
+//	List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException;
 
 	/**
 	 * Retrieves number of jobs for selected session.
@@ -86,12 +86,12 @@ public interface JobDAO
 	 */
 	int getInputTypeForJob(String jobId) throws DaoException;
 
-	/**
-	 * Creates processing in progress instance.
-	 * @param job job data
-	 * @return processing in progress instance
-	 */
-	ProcessingInProgressData createProcessingInProgressData(JobDB job);
+//	/**
+//	 * Creates processing in progress instance.
+//	 * @param job job data
+//	 * @return processing in progress instance
+//	 */
+//	ProcessingInProgressData createProcessingInProgressData(JobDB job);
 
 	/**
 	 * Retrieves number of jobs for specified ip address during last day.
