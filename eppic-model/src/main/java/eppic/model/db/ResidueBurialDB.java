@@ -1,5 +1,6 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import eppic.model.adapters.ResidueBurialListener;
 
 import javax.persistence.Entity;
@@ -38,6 +39,7 @@ public class ResidueBurialDB implements Serializable {
 	private short region; // one of the constants above
 
 	@ManyToOne
+	@JsonBackReference
 	private InterfaceDB interfaceItem;
 
 	@ManyToOne

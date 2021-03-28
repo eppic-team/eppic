@@ -1,5 +1,7 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import eppic.model.adapters.InterfaceListener;
 
 import javax.persistence.CascadeType;
@@ -79,13 +81,17 @@ public class InterfaceDB implements Serializable {
 	private List<InterfaceWarningDB> interfaceWarnings;
 
 	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<InterfaceScoreDB> interfaceScores;
 	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<ResidueBurialDB> residueBurials;
 	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<ContactDB> contacts;
 
 	@ManyToOne
+	@JsonBackReference
 	private InterfaceClusterDB interfaceCluster;
 
 	public InterfaceDB() {

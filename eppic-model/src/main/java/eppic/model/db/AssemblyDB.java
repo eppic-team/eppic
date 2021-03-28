@@ -1,5 +1,9 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,24 +46,30 @@ public class AssemblyDB implements Serializable {
 	private String interfaceClusterIds;
 
 	@ManyToOne
+	@JsonBackReference
 	private PdbInfoDB pdbInfo;
 
 	@ManyToMany()
 	@JoinTable(name = "InterfaceClusterAssembly",
 			joinColumns = @JoinColumn(name = "assembly_uid", referencedColumnName = "uid"),
 			inverseJoinColumns = @JoinColumn(name = "interfaceCluster_uid", referencedColumnName = "uid"))
+	@JsonManagedReference
 	private Set<InterfaceClusterDB> interfaceClusters;
 
 	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<AssemblyScoreDB> assemblyScores;
 
 	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<AssemblyContentDB> assemblyContents;
 
 	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private List<GraphNodeDB> graphNodes;
 
 	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private List<GraphEdgeDB> graphEdges;
 
 	public AssemblyDB() {
@@ -172,6 +182,7 @@ public class AssemblyDB implements Serializable {
 	 * A single list is returned, whether assembly is disjoint or not.
 	 * @return
 	 */
+	@JsonIgnore
 	public String getChainIdsString() {
 
 		if (assemblyContents.size()==0) return null;

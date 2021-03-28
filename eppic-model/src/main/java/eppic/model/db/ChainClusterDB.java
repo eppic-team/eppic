@@ -1,5 +1,7 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import eppic.model.adapters.ChainClusterListener;
 
 import javax.persistence.CascadeType;
@@ -65,18 +67,21 @@ public class ChainClusterDB implements Serializable {
 	private String lastTaxon;
 
 	@OneToMany(mappedBy = "chainCluster", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<HomologDB> homologs;
 
 	@Column(length = 4)
 	private String pdbCode;
 
 	@ManyToOne
+	@JsonBackReference
 	private PdbInfoDB pdbInfo;
 
 	@OneToOne(mappedBy = "chainCluster", cascade = CascadeType.ALL)
 	private SeqClusterDB seqCluster;
 
 	@OneToMany(mappedBy = "chainCluster", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<ResidueInfoDB> residueInfos;
 	
 	public ChainClusterDB() {

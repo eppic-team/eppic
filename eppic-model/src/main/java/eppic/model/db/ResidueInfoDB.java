@@ -1,5 +1,6 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import eppic.model.adapters.ResidueInfoListener;
 
 import javax.persistence.Column;
@@ -41,6 +42,7 @@ public class ResidueInfoDB implements Serializable {
 	private double entropyScore;
 
 	@ManyToOne
+	@JsonBackReference
 	private ChainClusterDB chainCluster;
 
 	// Not adding the one to many to ResidueBurials because it's not so useful.

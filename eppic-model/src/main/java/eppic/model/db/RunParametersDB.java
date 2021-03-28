@@ -1,5 +1,7 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -49,6 +51,7 @@ public class RunParametersDB implements Serializable {
 	private String eppicBuild;
 
 	@OneToOne(mappedBy = "runParameters")
+	@JsonBackReference
 	private PdbInfoDB pdbInfo;
 	
 	public RunParametersDB() {

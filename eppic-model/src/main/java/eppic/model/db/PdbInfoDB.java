@@ -1,5 +1,7 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -85,15 +87,19 @@ public class PdbInfoDB implements Serializable {
 	private int maxNumClashesAnyInterface;
 
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private RunParametersDB runParameters;
 
 	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private List<ChainClusterDB> chainClusters;
 
 	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private List<InterfaceClusterDB> interfaceClusters;
 
 	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private List<AssemblyDB> assemblies;
 
 	@OneToOne(fetch = FetchType.LAZY)

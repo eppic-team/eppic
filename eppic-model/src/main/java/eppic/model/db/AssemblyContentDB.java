@@ -1,5 +1,7 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -44,6 +46,7 @@ public class AssemblyContentDB implements Serializable {
 	private String chainIds; // comma separated list of chainId+_+opId belonging to assembly
 
 	@ManyToOne
+	@JsonBackReference
 	private AssemblyDB assembly;
 
 	public int getUid() {

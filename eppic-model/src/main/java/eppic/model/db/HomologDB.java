@@ -1,5 +1,6 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import eppic.model.adapters.HomologListener;
 
 import javax.persistence.Column;
@@ -39,6 +40,7 @@ public class HomologDB implements Serializable {
 	private String alignedSeq;
 
 	@ManyToOne
+	@JsonBackReference
 	private ChainClusterDB chainCluster;
 	
 	public HomologDB() {

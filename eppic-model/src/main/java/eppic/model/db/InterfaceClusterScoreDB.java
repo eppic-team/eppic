@@ -1,5 +1,6 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import eppic.model.adapters.ClusterScoreListener;
 
 import javax.persistence.Column;
@@ -44,6 +45,7 @@ public class InterfaceClusterScoreDB implements Serializable {
 	private String method;
 
 	@ManyToOne
+	@JsonBackReference
 	private InterfaceClusterDB interfaceCluster;
 	
 	public int getUid() {

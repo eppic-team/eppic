@@ -22,6 +22,14 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- Jackson dep, so that we can annotate the model classes -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.12.2</version>
+		</dependency>
+
+
 		<!-- These 2 are needed for compiling under JRE 11 (these libs are not included anymore) -->
 		<dependency>
 			<groupId>javax.xml.bind</groupId>

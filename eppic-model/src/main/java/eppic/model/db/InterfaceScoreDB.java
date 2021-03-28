@@ -1,5 +1,6 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import eppic.model.adapters.InterfaceScoreListener;
 
 import javax.persistence.Column;
@@ -45,6 +46,7 @@ public class InterfaceScoreDB implements Serializable {
 	private String callReason;
 
 	@ManyToOne
+	@JsonBackReference
 	private InterfaceDB interfaceItem;
 	
 	public InterfaceScoreDB() {

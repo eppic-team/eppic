@@ -1,5 +1,7 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -31,6 +33,7 @@ public class AssemblyScoreDB implements Serializable {
 	private String pdbCode;
 
 	@ManyToOne
+	@JsonBackReference
 	private AssemblyDB assembly;
 
 	public int getUid() {

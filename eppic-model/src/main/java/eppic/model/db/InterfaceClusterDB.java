@@ -1,5 +1,8 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,15 +44,19 @@ public class InterfaceClusterDB implements Serializable {
 	private int globalInterfClusterId;
 
 	@ManyToMany(mappedBy = "interfaceClusters", cascade = CascadeType.ALL)
+	@JsonBackReference
 	private Set<AssemblyDB> assemblies;
 
 	@OneToMany(mappedBy = "interfaceCluster", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<InterfaceDB> interfaces;
 
 	@OneToMany(mappedBy = "interfaceCluster", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<InterfaceClusterScoreDB> interfaceClusterScores;
 
 	@ManyToOne
+	@JsonBackReference
 	private PdbInfoDB pdbInfo;
 	
 	public InterfaceClusterDB() {

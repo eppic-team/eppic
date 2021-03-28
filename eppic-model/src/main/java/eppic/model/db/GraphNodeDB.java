@@ -1,5 +1,7 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,6 +22,7 @@ public class GraphNodeDB implements Serializable {
     private int uid;
 
     @ManyToOne
+    @JsonBackReference
     private AssemblyDB assembly;
 
     // label is: chainId_operatorId

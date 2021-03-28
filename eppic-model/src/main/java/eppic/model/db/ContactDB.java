@@ -1,5 +1,6 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import eppic.model.adapters.ContactListener;
 
 import javax.persistence.Column;
@@ -47,6 +48,7 @@ public class ContactDB implements Serializable {
 	private String pdbCode;
 
 	@ManyToOne
+	@JsonBackReference
 	private InterfaceDB interfaceItem;
 
 	public int getUid() {
