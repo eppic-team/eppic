@@ -1,5 +1,11 @@
 package eppic.db.tools;
 
+import com.mongodb.client.MongoDatabase;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.PDBInfoDAO;
+import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.mongoutils.DbPropertiesReader;
+import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
@@ -11,8 +17,6 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +37,7 @@ public class UploadToDb {
 	private static final int TIME_STATS_EVERY1 = 100;
 	private static final int TIME_STATS_EVERY2 = 1000;
 
-	private static DBHandler dbh;
+
 	private static boolean modeNew = true;
 	private static boolean modeEverything = false;
 	private static boolean modeRemove = false;
@@ -42,7 +46,9 @@ public class UploadToDb {
 	private static File choosefromFile = null;
 	private static int numWorkers = 1;
 
-	public static void main(String[] args) throws ExecutionException, InterruptedException {
+	private static PDBInfoDAO dao;
+
+	public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 		
 		String help = 
 				"Usage: UploadToDB\n" +
@@ -157,7 +163,12 @@ public class UploadToDb {
 
 		System.out.println("Will use " + numWorkers + " workers");
 
-		dbh = new DBHandler(dbName, configFile);
+		DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
+		String connUri = propsReader.getMongoUri();
+
+		MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
+
+		dao = new PDBInfoDAOMongo(mongoDb);
 
 		ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
 		List<Future<Stats>> allResults = new ArrayList<>();
@@ -358,7 +369,6 @@ public class UploadToDb {
 
 		Stats stats = new Stats();
 
-		EntityManager em = dbh.getEntityManager();
 		for (JobDir jobDirectory : jobsDirectories) {
 			i++;
 
@@ -371,30 +381,32 @@ public class UploadToDb {
 			    String msg = "";
 
 				//MODE FORCE
-				if (modeEverything) {
-					boolean ifRemoved = dbh.removeJob(jobId);
-					if (ifRemoved) msg = "Found.. Removing and Updating.. ";
-					else msg = "Not Found.. Adding.. ";
-					if (!persistOne(stats, em, jobDirectory, jobId)) continue;
-				}
+//				if (modeEverything) {
+//					boolean ifRemoved = dbh.removeJob(jobId);
+//					if (ifRemoved) msg = "Found.. Removing and Updating.. ";
+//					else msg = "Not Found.. Adding.. ";
+//					if (!persistOne(stats, jobDirectory, jobId)) continue;
+//				}
 
 				//MODE NEW INSERT
 				if (modeNew){
-					int isPresent = dbh.checkJobExist(jobId);
+					// TODO
+					int isPresent = 0;// dbh.checkJobExist(jobId);
 					if(isPresent == 0){ // not present
 						msg = "Not Present.. Adding.. ";
-						if (!persistOne(stats, em, jobDirectory, jobId)) continue;
+						if (!persistOne(stats, jobDirectory, jobId)) continue;
 
 					} else if (isPresent ==2) {
 						// already present but as an error, we have to remove and reinsert
-						boolean ifRemoved = dbh.removeJob(jobId);
+						// TODO
+						boolean ifRemoved = false;//dbh.removeJob(jobId);
 						if (ifRemoved) msg = "Found as error.. Removing and Updating.. ";
 						else {
 							logger.warn("{} Not Found, but there should be an error job. Skipping..", jobId);
 							continue;
 						}
 
-						if (!persistOne(stats, em, jobDirectory, jobId)) continue;
+						if (!persistOne(stats, jobDirectory, jobId)) continue;
 
 					} else {
 						// already present and is not an error
@@ -404,16 +416,16 @@ public class UploadToDb {
 				}
 
 				//MODE REMOVE
-				if (modeRemove) {
-					boolean ifRemoved = dbh.removeJob(jobId);
-					if (ifRemoved) {
-						msg = "Removed.. ";
-						stats.countRemoved++;
-					}
-					else {
-						msg = "Not Found.. ";
-					}
-				}
+//				if (modeRemove) {
+//					boolean ifRemoved = dbh.removeJob(jobId);
+//					if (ifRemoved) {
+//						msg = "Removed.. ";
+//						stats.countRemoved++;
+//					}
+//					else {
+//						msg = "Not Found.. ";
+//					}
+//				}
 
 				long end = System.currentTimeMillis();
                 logger.info("{} {} : {} s", jobId, msg, ((end-start)/1000));
@@ -438,9 +450,6 @@ public class UploadToDb {
 
 
 			} catch (Exception e) {
-				if (em.getTransaction().isActive()) {
-					em.getTransaction().rollback();
-				}
 				logger.warn("Problems while inserting "+jobId+". Error: "+e.getMessage());
 				stats.pdbsWithWarnings.add(jobId);
 			}
@@ -452,21 +461,25 @@ public class UploadToDb {
 	 * Persist one job, either normally or with error job. Returns false if the serialized file
 	 * exists but can't be deserialized.
 	 * @param stats
-	 * @param em
 	 * @param jobDirectory
 	 * @param jobId
 	 * @return
 	 */
-	private static boolean persistOne(Stats stats, EntityManager em, JobDir jobDirectory, String jobId) {
+	private static boolean persistOne(Stats stats, JobDir jobDirectory, String jobId) {
 		if(jobDirectory.serializedFile!=null) {
 			PdbInfoDB pdbScoreItem = readFromSerializedFile(jobDirectory.serializedFile);
 			// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
 			if (pdbScoreItem == null) return false;
-
-			dbh.persistFinishedJob(em, pdbScoreItem, jobId, jobDirectory.inputName);
+			try {
+				dao.insertPDBInfo(pdbScoreItem);
+			} catch (DaoException e) {
+				System.err.println("Error persisting: " + jobId + ": " + e.getMessage());
+			}
+			//dbh.persistFinishedJob(em, pdbScoreItem, jobId, jobDirectory.inputName);
 		}
 		else {
-			dbh.persistErrorJob(em, jobId);
+			// TODO error jobs
+			//dbh.persistErrorJob(em, jobId);
 			stats.countErrorJob++;
 		}
 		stats.countUploaded++;
