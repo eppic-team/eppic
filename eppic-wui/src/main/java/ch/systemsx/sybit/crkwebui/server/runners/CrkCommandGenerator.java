@@ -6,7 +6,6 @@ import java.util.List;
 
 import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import eppic.model.dto.InputParameters;
-import eppic.model.dto.PdbInfo;
 import eppic.model.shared.InputType;
 
 /**
@@ -46,7 +45,7 @@ public class CrkCommandGenerator
 		String baseName = input;
 		if(inputType == InputType.FILE.getIndex())
 		{
-			baseName = PdbInfo.truncateFileName(input);
+			baseName = truncateFileName(input);
 			inputLocation = destinationDirectoryName + File.separator + input;
 		}
 
@@ -77,5 +76,24 @@ public class CrkCommandGenerator
 		command.add("-w"); // for webui.dat file
 
 		return command;
+	}
+
+	/**
+	 * Truncates the given fileName by removing anything after the last dot.
+	 * If no dot present in fileName then nothing is truncated.
+	 * @param fileName
+	 * @return
+	 */
+	private static String truncateFileName(String fileName) {
+		if( fileName == null) return null;
+
+		String newName = fileName;
+		int lastPeriodPos = fileName.lastIndexOf('.');
+		if (lastPeriodPos >= 0)
+		{
+			newName = fileName.substring(0, lastPeriodPos);
+		}
+		return newName;
+
 	}
 }
