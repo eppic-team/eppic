@@ -2,53 +2,30 @@ package eppic.model.db;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import eppic.model.adapters.InterfaceListener;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "Interface")
-@EntityListeners(InterfaceListener.class)
 public class InterfaceDB implements Serializable {
 	
 	
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-
-	@Column(length = 4)
 	private String pdbCode;
-	
+
 	private int interfaceId;
 	private int clusterId;
 	
 	private double area;
-	@Column(length = 4)
 	private String chain1;
-	@Column(length = 4)
 	private String chain2;
 
-	@Column(length = 25)
 	private String operator;
 	
 	/**
 	 * The types are the short names of org.biojava.bio.structure.xtal.TransformType enum
 	 */
-	@Column(length = 5)
 	private String operatorType;
 	
 	private boolean infinite;
@@ -77,20 +54,16 @@ public class InterfaceDB implements Serializable {
 	
 	private int globalInterfClusterId;
 
-	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<InterfaceWarningDB> interfaceWarnings;
 
-	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<InterfaceScoreDB> interfaceScores;
-	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<ResidueBurialDB> residueBurials;
-	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<ContactDB> contacts;
 
-	@ManyToOne
 	@JsonBackReference
 	private InterfaceClusterDB interfaceCluster;
 
@@ -294,14 +267,6 @@ public class InterfaceDB implements Serializable {
 
 	public void setContacts(List<ContactDB> contacts) {
 		this.contacts = contacts;
-	}
-
-	public void setUid(int uid) {
-		this.uid = uid;
-	}
-
-	public int getUid() {
-		return uid;
 	}
 
 	/**

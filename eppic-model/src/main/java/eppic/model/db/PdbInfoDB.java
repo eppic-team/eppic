@@ -1,44 +1,29 @@
 package eppic.model.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Entity
 @Table(name = "PdbInfo")
 public class PdbInfoDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	// FIXME remove, needs review, still used in one place
 	private int uid;
 
-	@Column(length = 10000)
 	private String title;
 	private Date releaseDate;
-	@Column(length = 10)
 	private String spaceGroup;
 	private double resolution;
 	private double rfreeValue;
-	@Column(length = 255)
 	private String expMethod;
 
-	@Column(length = 4)
 	private String pdbCode;
 	
 	// the stoichiometry of the pdb structure
@@ -86,23 +71,18 @@ public class PdbInfoDB implements Serializable {
 	 */
 	private int maxNumClashesAnyInterface;
 
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private RunParametersDB runParameters;
 
-	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<ChainClusterDB> chainClusters;
 
-	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<InterfaceClusterDB> interfaceClusters;
 
-	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<AssemblyDB> assemblies;
 
-	@OneToOne(fetch = FetchType.LAZY)
 	private JobDB job;
 	
 	public PdbInfoDB() {
@@ -111,8 +91,7 @@ public class PdbInfoDB implements Serializable {
 		assemblies = new ArrayList<AssemblyDB>();
 	}
 	
-	public PdbInfoDB(int uid,
-						JobDB job,
+	public PdbInfoDB(JobDB job,
 						String pdbCode,
 						String title,
 						String spaceGroup,
@@ -133,7 +112,6 @@ public class PdbInfoDB implements Serializable {
 		
 		chainClusters = new ArrayList<ChainClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
-		this.uid = uid;
 		this.pdbCode = pdbCode;
 		this.title = title;
 		this.spaceGroup = spaceGroup;
@@ -159,6 +137,7 @@ public class PdbInfoDB implements Serializable {
 	 * @param interfaceId
 	 * @return
 	 */
+	@JsonIgnore
 	public InterfaceDB getInterface (int interfaceId) {
 		for (InterfaceClusterDB ic:interfaceClusters) {
 			for (InterfaceDB ii:ic.getInterfaces()) {
@@ -175,6 +154,7 @@ public class PdbInfoDB implements Serializable {
 	 * @param clusterId
 	 * @return
 	 */
+	@JsonIgnore
 	public InterfaceClusterDB getInterfaceCluster(int clusterId) {
 		for (InterfaceClusterDB ic:interfaceClusters) {
 			if (ic.getClusterId()==clusterId) return ic;
@@ -187,6 +167,7 @@ public class PdbInfoDB implements Serializable {
 	 * @param repChainId
 	 * @return
 	 */
+	@JsonIgnore
 	public ChainClusterDB getChainCluster(String repChainId) {
 		for (ChainClusterDB cc:chainClusters) {
 			if (cc.getRepChain().equals(repChainId)) {
@@ -207,7 +188,7 @@ public class PdbInfoDB implements Serializable {
 	 * @return a list of topologically valid assemblies
 	 * @since 3.1.0
 	 */
-	@Transient
+	@JsonIgnore
 	public List<AssemblyDB> getValidAssemblies() {
 		List<AssemblyDB> validAssemblies = new ArrayList<AssemblyDB>();
 		for (AssemblyDB assemblyDB : assemblies) {
@@ -433,6 +414,7 @@ public class PdbInfoDB implements Serializable {
 		this.crystalFormId = crystalFormId;
 	}
 
+	@JsonIgnore
 	public AssemblyDB getAssemblyById(int assemblyID){
 		for(AssemblyDB a :assemblies){
 			if(assemblyID == a.getId())

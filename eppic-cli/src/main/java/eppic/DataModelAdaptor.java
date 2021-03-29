@@ -239,10 +239,7 @@ public class DataModelAdaptor {
 			residueInfoDBs.add(residueInfoDB);
 			
 			residueInfoDB.setChainCluster(chainClusterDB);			
-			
-			residueInfoDB.setPdbCode(pdbInfo.getPdbCode());
-			residueInfoDB.setRepChain(compound.getRepresentative().getName());
-			
+
 			// NOTE, here there can be 2 behaviours:
 			// 1) there is a SEQRES and getAlignedResIndex gives the actual SEQRES indices
 			// 2) there is no SEQRES and getAlignedResIndex gives the PDB residue number without the insertion codes:
@@ -401,8 +398,7 @@ public class DataModelAdaptor {
 					//contact.setNumHBonds(edge.getnHBonds()); 
 					
 					contact.setInterfaceId(interf.getId()); 
-					contact.setPdbCode(pdbInfo.getPdbCode());
-					
+
 					contacts.add(contact);
 					
 					// parent/child
@@ -552,15 +548,12 @@ public class DataModelAdaptor {
 		assembly.setInterfaceClusters(interfaceClusters);
 
 		// other data
-		assembly.setPdbCode(pdbInfo.getPdbCode());
-
 		assembly.setInterfaceClusterIds(validAssembly.toString());
 
 		List<AssemblyDescription> description = validAssembly.getDescription();
 		List<AssemblyContentDB> acDBs = new ArrayList<AssemblyContentDB>();
 		for (AssemblyDescription d:description) {
 			AssemblyContentDB acDB = new AssemblyContentDB();
-			acDB.setPdbCode(pdbInfo.getPdbCode());
 			acDB.setAssembly(assembly);
 			acDB.setMmSize(d.getSize());
 			acDB.setSymmetry(d.getSymmetry());
@@ -581,7 +574,6 @@ public class DataModelAdaptor {
 		as.setCallReason(validAssembly.getCallReason());
 		as.setScore(validAssembly.getScore());
 		as.setConfidence(validAssembly.getConfidence());
-		as.setPdbCode(pdbInfo.getPdbCode());
 		as.setAssembly(assembly);
 		assembly.addAssemblyScore(as);
 
@@ -621,8 +613,6 @@ public class DataModelAdaptor {
 			icDB.addAssembly(unitcellAssembly);
 		}
 		unitcellAssembly.setInterfaceClusters(interfaceClusters);
-
-		unitcellAssembly.setPdbCode(pdbInfo.getPdbCode());
 
 		// no description, content or scores for this case
 
@@ -946,8 +936,7 @@ public class DataModelAdaptor {
 		as.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 		as.setScore(SCORE_NOT_AVAILABLE);
 		as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-		as.setPdbCode(pdbInfo.getPdbCode());
-		
+
 		if (matchingAssemblyDB!=null) {
 
 			as.setAssembly(matchingAssemblyDB);
@@ -998,8 +987,6 @@ public class DataModelAdaptor {
 			assembly.setInterfaceClusters(interfaceClustersDB);
 			
 			// other data
-			assembly.setPdbCode(pdbInfo.getPdbCode());			
-
 			assembly.setInterfaceClusterIds(pdbAssembly.toString());
 						
 			// TODO fill the AssemblyContents
@@ -1035,7 +1022,6 @@ public class DataModelAdaptor {
 			asxtal.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 			asxtal.setScore(SCORE_NOT_AVAILABLE);
 			asxtal.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-			asxtal.setPdbCode(pdbInfo.getPdbCode());
 			asxtal.setAssembly(assembly);
 			
 			assembly.addAssemblyScore(asxtal);
@@ -1171,7 +1157,6 @@ public class DataModelAdaptor {
 			is.setCallName(call.getName());
 			is.setCallReason(gps.get(i).getCallReason());
 			is.setMethod(ScoringMethod.EPPIC_GEOMETRY);
-			is.setPdbCode(ii.getPdbCode());
 			is.setConfidence(gps.get(i).getConfidence());
 			is.setScore(gps.get(i).getScore());
 			is.setScore1(gps.get(i).getScore1());
@@ -1370,8 +1355,7 @@ public class DataModelAdaptor {
 			isCS.setScore(ecsp.getScore());	
 			
 			isCS.setConfidence(ecsp.getConfidence());
-			isCS.setPdbCode(ii.getPdbCode());
-			
+
 			// 3) core-rim scores
 			EvolCoreRimPredictor ecrp = iec.getEvolCoreRimPredictor();
 
@@ -1399,9 +1383,6 @@ public class DataModelAdaptor {
 			isCR.setScore(ecrp.getScore());				
 
 			isCR.setConfidence(ecrp.getConfidence());
-			isCR.setPdbCode(ii.getPdbCode());
-
-			
 			
 		}
 
@@ -1463,7 +1444,6 @@ public class DataModelAdaptor {
 			is.setConfidence(cps.get(i).getConfidence());
 			is.setInterfaceItem(ii);
 			is.setInterfaceId(ii.getInterfaceId());
-			is.setPdbCode(ii.getPdbCode());
 			is.setScore(cps.get(i).getScore());
 			is.setScore1(cps.get(i).getScore1());
 			is.setScore2(cps.get(i).getScore2());

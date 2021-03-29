@@ -13,39 +13,22 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
 
-@Entity
-@Table(name = "InterfaceScore")
-@EntityListeners({InterfaceScoreListener.class})
 public class InterfaceScoreDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-
-	@Column(length = 4)
-	private String pdbCode;
-
-	@Column(length = 15)
 	private String method;
 	private int interfaceId;
 
-	@Column(nullable = true)
 	private double score1;
-	@Column(nullable = true)
 	private double score2;
-	@Column(nullable = true)
-	private double score; 
+	private double score;
 	
 	private double confidence;
 
-	@Column(length = 6)
 	private String callName;
-	@Column(length = 10000)
 	private String callReason;
 
-	@ManyToOne
 	@JsonBackReference
 	private InterfaceDB interfaceItem;
 	
@@ -55,14 +38,6 @@ public class InterfaceScoreDB implements Serializable {
 	public InterfaceScoreDB(PdbInfoDB pdbScoreItem) {
 	}
 	
-	public String getPdbCode() {
-		return pdbCode;
-	}
-
-	public void setPdbCode(String pdbCode) {
-		this.pdbCode = pdbCode;
-	}
-
 	public double getScore1() {
 		return score1;
 	}
@@ -137,12 +112,4 @@ public class InterfaceScoreDB implements Serializable {
 		return interfaceItem;
 	}
 	
-	public void setUid(int uid) {
-		this.uid = uid;
-	}
-
-	public int getUid() {
-		return uid;
-	}
-
 }

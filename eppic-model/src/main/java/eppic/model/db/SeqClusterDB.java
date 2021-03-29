@@ -1,24 +1,13 @@
 package eppic.model.db;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.io.Serializable;
 
-@Entity
-@Table(name = "SeqCluster")
 public class SeqClusterDB implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-	@Column(length = 4)
+	// FIXME get rid of this, it's still used somewhere
 	private String pdbCode;
 
 	// 			The chain code is actually case sensitive but MySQL by default uses a case insensitive
@@ -33,7 +22,6 @@ public class SeqClusterDB implements Serializable {
 	//			See issues
 	//			https://github.com/eppic-team/eppic-wui/issues/4
 	//			https://github.com/eppic-team/eppic/issues/36
-	@Column(length = 4)
 	private String repChain;
 
 	private int c100;
@@ -46,7 +34,7 @@ public class SeqClusterDB implements Serializable {
 	private int c40;
 	private int c30;
 
-	@OneToOne
+	@JsonBackReference
 	private ChainClusterDB chainCluster;
 
 	public SeqClusterDB() {
@@ -65,14 +53,6 @@ public class SeqClusterDB implements Serializable {
 		this.c30 = c30;
 	}
 	
-	public int getUid() {
-		return uid;
-	}
-
-	public void setUid(int uid) {
-		this.uid = uid;
-	}
-
 	public String getPdbCode() {
 		return pdbCode;
 	}

@@ -4,71 +4,39 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Entity
-@Table(name = "Assembly")
 public class AssemblyDB implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-
 	private int id;
-
-	@Column(length = 4)
-	private String pdbCode;
 
 	private boolean unitCellAssembly;
 
 	private boolean topologicallyValid;
 
-	@Column(length = 20000) // Entries like ribosomes can have very long list of interfaces here
 	private String interfaceClusterIds;
 
-	@ManyToOne
 	@JsonBackReference
 	private PdbInfoDB pdbInfo;
 
-	@ManyToMany()
-	@JoinTable(name = "InterfaceClusterAssembly",
-			joinColumns = @JoinColumn(name = "assembly_uid", referencedColumnName = "uid"),
-			inverseJoinColumns = @JoinColumn(name = "interfaceCluster_uid", referencedColumnName = "uid"))
 	@JsonManagedReference
 	private Set<InterfaceClusterDB> interfaceClusters;
 
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<AssemblyScoreDB> assemblyScores;
 
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<AssemblyContentDB> assemblyContents;
 
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<GraphNodeDB> graphNodes;
 
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<GraphEdgeDB> graphEdges;
 
@@ -81,22 +49,6 @@ public class AssemblyDB implements Serializable {
 		assemblyScores.add(assemblyScore);
 	}
 	
-	public String getPdbCode() {
-		return pdbCode;
-	}
-
-	public void setPdbCode(String pdbCode) {
-		this.pdbCode = pdbCode;
-	}
-
-	public int getUid() {
-		return uid;
-	}
-
-	public void setUid(int uid) {
-		this.uid = uid;
-	}
-
 	public int getId() {
 		return id;
 	}

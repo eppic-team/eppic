@@ -191,7 +191,9 @@ public class JobService {
         InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
         InterfaceDB interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfId, false, false);
         ResidueDAO rdao = new ResidueDAOMongo();
-        return rdao.getResiduesForInterface(interf.getUid());
+        // FIXME
+        return null;
+        //return rdao.getResiduesForInterface(interf.getUid());
     }
 
     /**
