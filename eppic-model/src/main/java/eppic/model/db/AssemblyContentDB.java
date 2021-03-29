@@ -26,7 +26,7 @@ public class AssemblyContentDB implements Serializable {
 
 	private String chainIds; // comma separated list of chainId+_+opId belonging to assembly
 
-	@JsonBackReference
+	@JsonBackReference(value = "assemblyContents-ref")
 	private AssemblyDB assembly;
 
 	public int getMmSize() {

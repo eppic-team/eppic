@@ -30,16 +30,18 @@ public class InterfaceClusterDB implements Serializable {
 	
 	private int globalInterfClusterId;
 
-	@JsonBackReference
+	// note that many-to-many do not work in jackson (JsonManagedReference and JsonBackReference are for one-to-many)
+	//@JsonBackReference(value = "interfaceClusters-assembly-ref")
+	@JsonIgnore
 	private Set<AssemblyDB> assemblies;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "interfaces-ref")
 	private List<InterfaceDB> interfaces;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "interfaceClusterScores-ref")
 	private List<InterfaceClusterScoreDB> interfaceClusterScores;
 
-	@JsonBackReference
+	@JsonBackReference(value = "interfaceClusters-ref")
 	private PdbInfoDB pdbInfo;
 	
 	public InterfaceClusterDB() {

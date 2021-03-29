@@ -18,7 +18,7 @@ public class ResidueInfoDB implements Serializable {
 	
 	private double entropyScore;
 
-	@JsonBackReference
+	@JsonBackReference(value = "residueInfos-ref")
 	private ChainClusterDB chainCluster;
 
 	// Not adding the one to many to ResidueBurials because it's not so useful.

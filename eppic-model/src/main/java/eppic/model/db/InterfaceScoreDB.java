@@ -29,7 +29,7 @@ public class InterfaceScoreDB implements Serializable {
 	private String callName;
 	private String callReason;
 
-	@JsonBackReference
+	@JsonBackReference(value = "interfaceScores-ref")
 	private InterfaceDB interfaceItem;
 	
 	public InterfaceScoreDB() {

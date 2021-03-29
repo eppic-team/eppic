@@ -15,7 +15,7 @@ public class AssemblyScoreDB implements Serializable {
 	private String callName;
 	private String callReason;
 
-	@JsonBackReference
+	@JsonBackReference(value = "assemblyScores-ref")
 	private AssemblyDB assembly;
 
 	public String getMethod() {

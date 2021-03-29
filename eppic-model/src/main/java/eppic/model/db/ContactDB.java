@@ -27,7 +27,7 @@ public class ContactDB implements Serializable {
 	
 	private int interfaceId;
 
-	@JsonBackReference
+	@JsonBackReference(value = "contacts-ref")
 	private InterfaceDB interfaceItem;
 
 	public int getFirstResNumber() {

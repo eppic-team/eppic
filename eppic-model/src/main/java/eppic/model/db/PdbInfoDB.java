@@ -71,16 +71,16 @@ public class PdbInfoDB implements Serializable {
 	 */
 	private int maxNumClashesAnyInterface;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "runParameters-ref")
 	private RunParametersDB runParameters;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "chainClusters-ref")
 	private List<ChainClusterDB> chainClusters;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "interfaceClusters-ref")
 	private List<InterfaceClusterDB> interfaceClusters;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "assemblies-ref")
 	private List<AssemblyDB> assemblies;
 
 	private JobDB job;

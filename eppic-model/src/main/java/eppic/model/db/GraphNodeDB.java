@@ -8,7 +8,7 @@ public class GraphNodeDB implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @JsonBackReference
+    @JsonBackReference(value = "graphNodes-ref")
     private AssemblyDB assembly;
 
     // label is: chainId_operatorId

@@ -22,22 +22,23 @@ public class AssemblyDB implements Serializable {
 
 	private String interfaceClusterIds;
 
-	@JsonBackReference
+	@JsonBackReference(value = "assemblies-ref")
 	private PdbInfoDB pdbInfo;
 
-	@JsonManagedReference
+	// note that many-to-many do not work in jackson (JsonManagedReference and JsonBackReference are for one-to-many)
+	//@JsonManagedReference(value = "interfaceClusters-assembly-ref")
 	private Set<InterfaceClusterDB> interfaceClusters;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "assemblyScores-ref")
 	private List<AssemblyScoreDB> assemblyScores;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "assemblyContents-ref")
 	private List<AssemblyContentDB> assemblyContents;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "graphNodes-ref")
 	private List<GraphNodeDB> graphNodes;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "graphEdges-ref")
 	private List<GraphEdgeDB> graphEdges;
 
 	public AssemblyDB() {

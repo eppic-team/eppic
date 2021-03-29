@@ -7,6 +7,7 @@ import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.PdbInfoDB;
 
 import javax.persistence.Table;
+import java.util.Collections;
 
 public class PDBInfoDAOMongo implements PDBInfoDAO {
 
@@ -27,7 +28,17 @@ public class PDBInfoDAOMongo implements PDBInfoDAO {
 
     @Override
     public PdbInfoDB getPDBInfo(String jobId) throws DaoException {
-        return null;
+        PdbInfoDB pdbInfoDB;
+        try {
+            pdbInfoDB = MongoUtils.findOne(mongoDb, collectionName,
+                    // TODO we need a jobId field in PdbInfo or some linkage to a jobs collection
+                    Collections.singletonList("pdbCode"),
+                    Collections.singletonList(jobId),
+                    PdbInfoDB.class);
+        } catch (Exception e) {
+            throw new DaoException(e);
+        }
+        return pdbInfoDB;
     }
 
     @Override

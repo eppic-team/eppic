@@ -34,7 +34,7 @@ public class SeqClusterDB implements Serializable {
 	private int c40;
 	private int c30;
 
-	@JsonBackReference
+	@JsonBackReference(value = "seqCluster-ref")
 	private ChainClusterDB chainCluster;
 
 	public SeqClusterDB() {

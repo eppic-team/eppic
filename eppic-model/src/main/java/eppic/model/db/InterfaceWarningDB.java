@@ -10,7 +10,7 @@ public class InterfaceWarningDB implements Serializable {
 
 	private String text;
 
-	@JsonBackReference
+	@JsonBackReference(value = "interfaceWarnings-ref")
 	private InterfaceDB interfaceItem;
 	
 	public InterfaceWarningDB() {

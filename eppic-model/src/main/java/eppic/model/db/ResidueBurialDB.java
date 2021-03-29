@@ -21,7 +21,7 @@ public class ResidueBurialDB implements Serializable {
 	// this translates to a smallint in mysql
 	private short region; // one of the constants above
 
-	@JsonBackReference
+	@JsonBackReference(value = "residueBurials-ref")
 	private InterfaceDB interfaceItem;
 
 	private ResidueInfoDB residueInfo;

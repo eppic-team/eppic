@@ -19,7 +19,7 @@ public class HomologDB implements Serializable {
 
 	private String alignedSeq;
 
-	@JsonBackReference
+	@JsonBackReference(value = "homologs-ref")
 	private ChainClusterDB chainCluster;
 	
 	public HomologDB() {

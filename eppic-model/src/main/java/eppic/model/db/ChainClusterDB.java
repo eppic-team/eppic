@@ -3,19 +3,7 @@ package eppic.model.db;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import eppic.model.adapters.ChainClusterListener;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
 
@@ -60,19 +48,18 @@ public class ChainClusterDB implements Serializable {
 	private String firstTaxon;
 	private String lastTaxon;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "homologs-ref")
 	private List<HomologDB> homologs;
 
 	private String pdbCode;
 
-	@JsonBackReference
+	@JsonBackReference(value = "chainClusters-ref")
 	private PdbInfoDB pdbInfo;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "seqCluster-ref")
 	private SeqClusterDB seqCluster;
 
-	@OneToMany(mappedBy = "chainCluster", cascade = CascadeType.ALL)
-	@JsonManagedReference
+	@JsonManagedReference(value = "residueInfos-ref")
 	private List<ResidueInfoDB> residueInfos;
 	
 	public ChainClusterDB() {

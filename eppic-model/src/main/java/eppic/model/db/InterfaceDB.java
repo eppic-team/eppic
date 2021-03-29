@@ -54,17 +54,17 @@ public class InterfaceDB implements Serializable {
 	
 	private int globalInterfClusterId;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "interfaceWarnings-ref")
 	private List<InterfaceWarningDB> interfaceWarnings;
 
-	@JsonManagedReference
+	@JsonManagedReference(value = "interfaceScores-ref")
 	private List<InterfaceScoreDB> interfaceScores;
-	@JsonManagedReference
+	@JsonManagedReference(value = "residueBurials-ref")
 	private List<ResidueBurialDB> residueBurials;
-	@JsonManagedReference
+	@JsonManagedReference(value = "contacts-ref")
 	private List<ContactDB> contacts;
 
-	@JsonBackReference
+	@JsonBackReference(value = "interfaces-ref")
 	private InterfaceClusterDB interfaceCluster;
 
 	public InterfaceDB() {

@@ -19,7 +19,7 @@ public class InterfaceClusterScoreDB implements Serializable {
 	private double score2;
 	private String method;
 
-	@JsonBackReference
+	@JsonBackReference(value = "interfaceClusterScores-ref")
 	private InterfaceClusterDB interfaceCluster;
 
 	public int getClusterId() {

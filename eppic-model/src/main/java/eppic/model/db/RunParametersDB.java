@@ -32,7 +32,7 @@ public class RunParametersDB implements Serializable {
 	private String eppicVersion;
 	private String eppicBuild;
 
-	@JsonBackReference
+	@JsonBackReference(value = "runParameters-ref")
 	private PdbInfoDB pdbInfo;
 	
 	public RunParametersDB() {

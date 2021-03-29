@@ -8,7 +8,7 @@ public class GraphEdgeDB implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @JsonBackReference
+    @JsonBackReference(value = "graphEdges-ref")
     private AssemblyDB assembly;
 
     // by convention the interface id
