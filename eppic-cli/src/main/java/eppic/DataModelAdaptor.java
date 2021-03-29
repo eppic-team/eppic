@@ -1190,7 +1190,6 @@ public class DataModelAdaptor {
 			ics.setScore1(gcp.getScore1());
 			ics.setScore2(gcp.getScore2());
 			ics.setConfidence(gcp.getConfidence());
-			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
@@ -1399,7 +1398,6 @@ public class DataModelAdaptor {
 			ics.setScore1(ecrcp.getScore1());
 			ics.setScore2(ecrcp.getScore2());
 			ics.setConfidence(ecrcp.getConfidence());
-			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
@@ -1416,7 +1414,6 @@ public class DataModelAdaptor {
 			ics.setScore1(ecscp.getScore1());
 			ics.setScore2(ecscp.getScore2());
 			ics.setConfidence(ecscp.getConfidence());
-			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
@@ -1474,7 +1471,6 @@ public class DataModelAdaptor {
 			ics.setScore1(ccps.get(i).getScore1());
 			ics.setScore2(ccps.get(i).getScore2());
 			ics.setConfidence(ccps.get(i).getConfidence());
-			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
