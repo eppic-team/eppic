@@ -38,7 +38,6 @@ import org.biojava.nbio.structure.io.StructureFiletype;
 import org.biojava.nbio.structure.io.cif.CifStructureConverter;
 import org.biojava.nbio.structure.xtal.CrystalBuilder;
 import org.biojava.nbio.structure.xtal.SpaceGroup;
-import org.rcsb.cif.model.CifFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -247,12 +246,12 @@ public class Main {
 
 	private Structure readStructureFromPdbCode(FileParsingParameters fileParsingParams) throws StructureException, IOException {
 
-		if (params.getCifRepositoryBaseUrl()!=null) {
+		if (params.getCifRepositoryTemplateUrl()!=null) {
 
 			// 1. Use a different http repository than the official PDB one
 
 			String pdbCode = params.getPdbCode().toLowerCase();
-			String url = params.getCifRepositoryBaseUrl() + "/" + pdbCode.substring(1, 3) + "/" + pdbCode + "/" + pdbCode + ".cif.gz";
+			String url = getPathUrl(params.getCifRepositoryTemplateUrl(), pdbCode);
 			URL cifGzUrl = new URL(url);
 			pdb = CifStructureConverter.fromInputStream(new GZIPInputStream(cifGzUrl.openStream()), fileParsingParams);
 
@@ -302,6 +301,16 @@ public class Main {
 		}
 
 		return pdb;
+	}
+
+	/**
+	 * Returns the full path to the cif file given a base URL and PDB id
+	 * @param filesFolderPath a URL string with placeholders {middle} (for middle 2 letters of PDB id) and {id} (for PDB id)
+	 * @param pdbCode the PDB id
+	 * @return the full URL to the cif file
+	 */
+	private static String getPathUrl(String filesFolderPath, String pdbCode) {
+		return filesFolderPath.replaceAll("\\{id}", pdbCode.toLowerCase()).replaceAll("\\{middle}", pdbCode.substring(1, 3).toLowerCase());
 	}
 
 	public long doFindInterfaces() throws EppicException {
