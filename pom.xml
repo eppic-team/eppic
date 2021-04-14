@@ -3,7 +3,7 @@
 
 	<groupId>org.eppic-web</groupId>
 	<artifactId>eppic</artifactId>
-	<version>3.3.2-SNAPSHOT</version>
+	<version>3.3.2</version>
 	<packaging>pom</packaging>
 
 	<modules>
