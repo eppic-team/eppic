@@ -71,7 +71,8 @@
 		<dependency>
 			<groupId>uk.ac.ebi.uniprot</groupId>
 			<artifactId>japi</artifactId>
-			<version>1.1.0</version>
+			<!-- Note 1.1.0 is available since June 2021. But it requires the javac 11 compiler... But eppic-wui can't compile with it, so for now we can't upgrade -->
+			<version>1.0.38</version>
 			<exclusions>
 				<!-- This should fix the problem of multiple bindings (warning at startup). But it doesn't because something
                 in the UniProt japi calls a logback function at runtime and then the JVM crashes with a NoClassDefFoundError.
