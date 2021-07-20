@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import ch.systemsx.sybit.crkwebui.server.commons.servlets.BaseServlet;
 import ch.systemsx.sybit.crkwebui.server.files.downloader.validators.DataDownloadServletInputValidator;
-import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import eppic.model.dto.Assembly;
 import eppic.model.dto.ChainCluster;
@@ -66,14 +65,12 @@ public class DataDownloadServlet extends BaseServlet{
 		
 	//Parameters
 	//private int maxNumJobIds;
-	private int defaultNrOfAllowedSubmissionsForIP;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
 		//maxNumJobIds = Integer.parseInt(properties.getProperty("max_jobs_in_one_call","1"));
-		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 
 	}
 
@@ -100,10 +97,6 @@ public class DataDownloadServlet extends BaseServlet{
 			addIPToDB(requestIP);
 
 			DataDownloadServletInputValidator.validateFileDownloadInput(type, jobId, getSeqInfo, getResInfo);
-
-			IPVerifier.verifyIfCanBeSubmitted(requestIP,
-										      defaultNrOfAllowedSubmissionsForIP,
-										      true);
 
 			List<PdbInfo> pdbList = new ArrayList<>();
 

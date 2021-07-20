@@ -35,7 +35,6 @@ import ch.systemsx.sybit.crkwebui.server.commons.validators.SessionValidator;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
 import ch.systemsx.sybit.crkwebui.server.email.data.EmailMessageData;
 import ch.systemsx.sybit.crkwebui.server.email.managers.EmailSender;
-import ch.systemsx.sybit.crkwebui.server.ip.validators.IPVerifier;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.JobManagerFactory;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
 import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobStatusUpdater;
@@ -151,9 +150,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 
 	private String protocol = "http";
 
-	private boolean doIPBasedVerification;
-	private int defaultNrOfAllowedSubmissionsForIP;
-
 	private String localCifDir;
 
 	private JobManager jobManager;
@@ -226,9 +222,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		{
 			protocol = properties.getProperty("protocol");
 		}
-
-		doIPBasedVerification = Boolean.parseBoolean(properties.getProperty("limit_access_by_ip","false"));
-		defaultNrOfAllowedSubmissionsForIP = Integer.parseInt(properties.getProperty("nr_of_allowed_submissions_for_ip","100"));
 
 		int numWorkersJobManager;
 		String numWorkers = properties.getProperty("num_workers");
@@ -438,12 +431,6 @@ public class CrkWebServiceImpl extends XsrfProtectedServiceServlet implements Cr
 		if (runJobData != null)
 		{
 			int inputType = InputType.FILE.getIndex();
-
-			if(doIPBasedVerification)
-			{
-				IPVerifier.verifyIfCanBeSubmitted(getThreadLocalRequest().getRemoteAddr(),
-						defaultNrOfAllowedSubmissionsForIP);
-			}
 
 			if(runJobData.getJobId() == null)
 			{
