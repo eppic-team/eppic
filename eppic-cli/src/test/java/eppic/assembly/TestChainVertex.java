@@ -21,8 +21,8 @@ public class TestChainVertex {
     public void testChainVertexAsKey() {
         Map<ChainVertex, Integer> map = new HashMap<>();
         Chain dummyChain = new ChainImpl();
-        dummyChain.setInternalChainID("A");
-        dummyChain.setChainID("A");
+        dummyChain.setId("A");
+        dummyChain.setName("A");
         ChainVertex v = new ChainVertex(dummyChain, 0);
 
         map.put(v, 1);
