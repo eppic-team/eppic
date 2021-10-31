@@ -435,4 +435,22 @@ public class PdbInfoDB implements Serializable {
 		}
 		return null;
 	}
+
+	/**
+	 * Return an assembly given a PDB assembly id.
+	 * @param pdbAssemblyId the PDB assembly id
+	 * @return the assembly, or null if not found
+	 */
+	@JsonIgnore
+	public AssemblyDB getAssemblyByPdbAssemblyId(int pdbAssemblyId) {
+		String strPdbId = "pdb" + pdbAssemblyId;
+		for (AssemblyDB assemblyDB : assemblies) {
+			for (AssemblyScoreDB asdb : assemblyDB.getAssemblyScores()) {
+				if (asdb.getMethod().equals(strPdbId) && asdb.getCallName().equals("bio")) {
+					return assemblyDB;
+				}
+			}
+		}
+		return null;
+	}
 }

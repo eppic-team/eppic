@@ -3,7 +3,6 @@ package eppic.rest.service;
 import java.util.*;
 
 import eppic.db.adaptors.ViewsAdaptor;
-import eppic.db.dao.mongo.AssemblyDAOMongo;
 import eppic.db.dao.mongo.ContactDAOMongo;
 import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
@@ -182,9 +181,7 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        // assemblies info
-        AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
-        AssemblyDB assembly = assemblyDAO.getAssemblyByPdbAssemblyId(pdbInfo.getUid(), pdbAssemblyId, true);
+        AssemblyDB assembly = pdbInfo.getAssemblyByPdbAssemblyId(pdbAssemblyId);
 
         if (assembly==null) {
             throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+pdbAssemblyId);
@@ -222,10 +219,8 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        // assemblies info
-        AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
-        AssemblyDB assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
-        AssemblyDB unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
+        AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
+        AssemblyDB unitcellAssembly = pdbInfo.getAssemblyById(0);
 
         if (assembly==null || unitcellAssembly == null) {
             throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
@@ -246,12 +241,9 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        // assemblies info
-        AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
-
         List<GraphEdgeDB> graphEdges = new ArrayList<>();
 
-        AssemblyDB unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
+        AssemblyDB unitcellAssembly = pdbInfo.getAssemblyById(0);
 
         if (unitcellAssembly == null) {
             throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
@@ -283,12 +275,9 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        // assemblies info
-        AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
-
         List<GraphEdgeDB> graphEdges = new ArrayList<>();
 
-        AssemblyDB unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
+        AssemblyDB unitcellAssembly = pdbInfo.getAssemblyById(0);
 
         if (unitcellAssembly == null) {
             throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
@@ -318,9 +307,7 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        // assemblies info
-        AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
-        AssemblyDB assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
+        AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
 
         if (assembly==null) {
             throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
