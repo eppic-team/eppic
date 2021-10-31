@@ -2,9 +2,6 @@ package eppic.rest.service;
 
 import java.util.*;
 
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-
 import eppic.db.adaptors.ViewsAdaptor;
 import eppic.db.dao.mongo.AssemblyDAOMongo;
 import eppic.db.dao.mongo.ChainClusterDAOMongo;
@@ -30,17 +27,13 @@ import org.slf4j.LoggerFactory;
 import eppic.db.dao.*;
 
 /**
- * Servlet used to download results in xml/json format.
- * Adapted to both json or xml by using eclipselink JAXB implementation.
+ * The service implementation to retrieve data as needed by the REST endpoints.
  * @author Nikhil Biyani
  * @author Jose Duarte
- *
  */
-@PersistenceContext(name="eppicjpa", unitName="eppicjpa")
 public class JobService {
     
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
-
 
 
     /**
@@ -59,12 +52,12 @@ public class JobService {
                                           boolean getSeqInfo,
                                           boolean getResInfo) throws DaoException
     {
-        JobDAO jobDAO = new JobDAOMongo();
-        InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
 
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
         // TODO what to do with this after rewrite??
+        JobDAO jobDAO = new JobDAOMongo();
+        InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
         //pdbInfo.setInputType(input.getInputType());
         //pdbInfo.setInputName(input.getInputName());
 
@@ -211,7 +204,7 @@ public class JobService {
         List<ContactDB> list = contactDAO.getContactsForInterface(pdbInfo.getUid(), interfId);
 
         if (list==null) {
-            throw new NoResultException("Could not find contact data for job "+jobId+" and interface id "+interfId);
+            throw new DaoException("Could not find contact data for job "+jobId+" and interface id "+interfId);
         }
 
         return list;
@@ -233,7 +226,7 @@ public class JobService {
         AssemblyDB assembly = assemblyDAO.getAssemblyByPdbAssemblyId(pdbInfo.getUid(), pdbAssemblyId, true);
 
         if (assembly==null) {
-            throw new NoResultException("Could not find assembly data for job "+jobId+" and PDB assembly id "+pdbAssemblyId);
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+pdbAssemblyId);
         }
         return assembly;
     }
@@ -254,7 +247,7 @@ public class JobService {
         AssemblyDB assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
 
         if (assembly==null) {
-            throw new NoResultException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
         return assembly;
     }
@@ -276,7 +269,7 @@ public class JobService {
         AssemblyDB unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
 
         if (assembly==null || unitcellAssembly == null) {
-            throw new NoResultException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
 
         return ViewsAdaptor.getLatticeGraphView(assembly, unitcellAssembly);
@@ -302,7 +295,7 @@ public class JobService {
         AssemblyDB unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
 
         if (unitcellAssembly == null) {
-            throw new NoResultException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
         }
 
         if (interfaceIds == null) {
@@ -339,7 +332,7 @@ public class JobService {
         AssemblyDB unitcellAssembly = assemblyDAO.getAssembly(pdbInfo.getUid(), 0, true);
 
         if (unitcellAssembly == null) {
-            throw new NoResultException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
         }
 
         if (interfaceClusterIds == null) {
@@ -371,7 +364,7 @@ public class JobService {
         AssemblyDB assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
 
         if (assembly==null) {
-            throw new NoResultException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
         }
 
         return ViewsAdaptor.getAssemblyDiagram(assembly);
