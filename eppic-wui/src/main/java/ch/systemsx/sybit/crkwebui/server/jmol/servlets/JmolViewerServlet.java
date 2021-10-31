@@ -9,7 +9,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import eppic.db.dao.mongo.AssemblyDAOMongo;
 import eppic.db.dao.mongo.InterfaceDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.model.db.AssemblyDB;
@@ -25,7 +24,6 @@ import ch.systemsx.sybit.crkwebui.server.jmol.generators.JmolPageGenerator;
 import ch.systemsx.sybit.crkwebui.server.jmol.validators.JmolViewerServletInputValidator;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import eppic.EppicParams;
-import eppic.db.dao.AssemblyDAO;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.InterfaceDAO;
 import eppic.db.dao.PDBInfoDAO;
@@ -186,17 +184,7 @@ public class JmolViewerServlet extends BaseServlet
 
 		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
 		PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
-
-		AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
 		
-		List<AssemblyDB> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true, false);
-		
-		AssemblyDB assembly = null;
-		for (AssemblyDB a:assemblies) {
-			if (a.getId() == assemblyId) assembly = a;
-		}
-		
-		return assembly;
-		
+		return pdbInfo.getAssemblyById(assemblyId);
 	}
 }

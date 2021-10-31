@@ -56,13 +56,13 @@ public class CoordFilesAdaptor {
      * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
-     * @param assemblyDB the db model data with assembly and residue info data
+     * @param assemblyId the eppic assembly id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB, boolean withEvolScores) throws IOException {
+    public void getAssemblyCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getAssemblyCoordsMmcif(jobId, s, os, pdbInfoDB, assemblyDB, withEvolScores);
+        getAssemblyCoordsMmcif(jobId, s, os, pdbInfoDB, assemblyId, withEvolScores);
     }
 
     /**
@@ -74,15 +74,15 @@ public class CoordFilesAdaptor {
      * @param s          the input structure with a PDB structure (AU)
      * @param os         the output stream with the assembly in mmCIF format
      * @param pdbInfoDB  the pdb data with chain clusters
-     * @param assemblyDB the db model data with assembly and residue info data
+     * @param assemblyId the eppic assembly id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfoDB pdbInfoDB, AssemblyDB assemblyDB, boolean withEvolScores) throws IOException {
+    public void getAssemblyCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
 
         List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
-        for (GraphNodeDB node : assemblyDB.getGraphNodes()) {
+        for (GraphNodeDB node : pdbInfoDB.getAssemblyById(assemblyId).getGraphNodes()) {
 
             if (!node.isIn3dStructure())
                 continue;
@@ -134,7 +134,7 @@ public class CoordFilesAdaptor {
         // TODO check what's the right charset to use
 
         MmCifBlockBuilder mmCifBlockBuilder = CifBuilder.enterFile(StandardSchemata.MMCIF)
-                .enterBlock("eppic_jobId_" + jobId + "_assemblyId_" + assemblyDB.getId());
+                .enterBlock("eppic_jobId_" + jobId + "_assemblyId_" + assemblyId);
 
         Category atomSite = wrappedAtoms.stream().collect(AbstractCifFileSupplier.toAtomSite());
         mmCifBlockBuilder.addCategory(atomSite);

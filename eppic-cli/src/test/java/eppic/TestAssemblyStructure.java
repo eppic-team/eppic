@@ -250,7 +250,7 @@ public class TestAssemblyStructure {
     }
 
     /**
-     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(String, File, OutputStream, PdbInfoDB, AssemblyDB, boolean)} produces
+     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(String, File, OutputStream, PdbInfoDB, int, boolean)} produces
      * the same structures as output of {@link Assembly#writeToMmCifFile(File)}
      * @throws IOException
      */
@@ -290,7 +290,7 @@ public class TestAssemblyStructure {
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-            coordFilesAdaptor.getAssemblyCoordsMmcif(null, auStruct, os, pdbInfoDB, assemblyDB, false);
+            coordFilesAdaptor.getAssemblyCoordsMmcif(null, auStruct, os, pdbInfoDB, assemblyDB.getId(), false);
 
             if (logger.isDebugEnabled()) {
                 // for debugging: we write file out
@@ -348,7 +348,7 @@ public class TestAssemblyStructure {
     }
 
     /**
-     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(String, File, OutputStream, PdbInfoDB, AssemblyDB, boolean)} produces
+     * Tests that {@link CoordFilesAdaptor#getAssemblyCoordsMmcif(String, File, OutputStream, PdbInfoDB, int, boolean)} produces
      * the same structures as output of {@link Assembly#writeToMmCifFile(File)}
      * @throws IOException
      */
