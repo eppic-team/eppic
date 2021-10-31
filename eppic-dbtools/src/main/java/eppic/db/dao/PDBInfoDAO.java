@@ -3,7 +3,7 @@ package eppic.db.dao;
 import eppic.model.db.PdbInfoDB;
 
 /**
- * DAO for PDBScore item.
+ * DAO for PDBInfoDB.
  * @author AS
  *
  */
@@ -16,15 +16,6 @@ public interface PDBInfoDAO
 	 * @throws DaoException when can not retrieve pdb info item for job
 	 */
 	PdbInfoDB getPDBInfo(String jobId) throws DaoException;
-
-	/**
-	 * Retrieves pdb info item by job identifier with all data. Optionally retrieving clusters and residue data too (lots of data, heavy).
-	 * @param jobId identifier of the job
-	 * @param withChainClustersAndResidues whether to retrieve chain clusters and residues (lots of data, heavy query) or not
-	 * @return pdb info item
-	 * @throws DaoException when can not retrieve pdb info item for job
-	 */
-	PdbInfoDB getPDBInfo(String jobId, boolean withChainClustersAndResidues) throws DaoException;
 
 	/**
 	 * Persists pdb info item.

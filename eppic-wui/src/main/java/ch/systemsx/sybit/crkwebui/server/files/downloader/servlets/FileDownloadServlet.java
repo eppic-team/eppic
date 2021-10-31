@@ -218,7 +218,7 @@ public class FileDownloadServlet extends BaseServlet
 
 		// get data and produce file
 		PDBInfoDAO dao = new PDBInfoDAOMongo();
-		PdbInfoDB pdbInfo = dao.getPDBInfo(jobId, true);
+		PdbInfoDB pdbInfo = dao.getPDBInfo(jobId);
 
 		JobDAO jobDAO = new JobDAOMongo();
 		InputWithType input = jobDAO.getInputWithTypeForJob(jobId);

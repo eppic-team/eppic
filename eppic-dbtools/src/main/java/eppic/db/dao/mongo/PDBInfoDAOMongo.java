@@ -42,11 +42,6 @@ public class PDBInfoDAOMongo implements PDBInfoDAO {
     }
 
     @Override
-    public PdbInfoDB getPDBInfo(String jobId, boolean withChainClustersAndResidues) throws DaoException {
-        return null;
-    }
-
-    @Override
     public void insertPDBInfo(PdbInfoDB pdbInfo) throws DaoException {
         try {
             MongoUtils.writeObject(mongoDb, collectionName, pdbInfo);
