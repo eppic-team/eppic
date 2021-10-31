@@ -149,13 +149,13 @@ public class CoordFilesAdaptor {
      * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
-     * @param interfaceDB the interface data
+     * @param interfaceId the interface id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB, boolean withEvolScores) throws IOException {
+    public void getInterfaceCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getInterfaceCoordsMmcif(jobId, s, os, pdbInfoDB, interfaceDB, withEvolScores);
+        getInterfaceCoordsMmcif(jobId, s, os, pdbInfoDB, interfaceId, withEvolScores);
     }
 
     /**
@@ -164,13 +164,15 @@ public class CoordFilesAdaptor {
      * @param s the input structure with a PDB structure (AU)
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
-     * @param interfaceDB the interface data
+     * @param interfaceId the interface id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfoDB pdbInfoDB, InterfaceDB interfaceDB, boolean withEvolScores) throws IOException {
+    public void getInterfaceCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
 
         List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
+
+        InterfaceDB interfaceDB = pdbInfoDB.getInterface(interfaceId);
 
         String chainName1 = interfaceDB.getChain1();
         String chainName2 = interfaceDB.getChain2();

@@ -25,10 +25,8 @@ import ch.systemsx.sybit.crkwebui.server.jmol.servlets.LatticeGraphServlet;
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
 import eppic.CoordFilesAdaptor;
 import eppic.db.dao.*;
-import eppic.db.dao.mongo.InterfaceDAOMongo;
 import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
-import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
 import eppic.model.dto.InputWithType;
 
@@ -228,9 +226,7 @@ public class FileDownloadServlet extends BaseServlet
 		if (type.equals(TYPE_VALUE_ASSEMBLY)) {
 			adaptor.getAssemblyCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, Integer.parseInt(assemblyId), true);
 		} else if (type.equals(TYPE_VALUE_INTERFACE)) {
-			InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
-			InterfaceDB interf = interfaceDAO.getInterface(pdbInfo.getUid(), Integer.parseInt(interfaceId), false, false);
-			adaptor.getInterfaceCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, interf, true);
+			adaptor.getInterfaceCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, Integer.parseInt(interfaceId), true);
 		} else {
 			// should not happen, the validation took care of this
 			throw new ValidationException("Unsupported file type " + type);

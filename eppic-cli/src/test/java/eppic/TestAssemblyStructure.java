@@ -388,7 +388,7 @@ public class TestAssemblyStructure {
             for (InterfaceDB interf : interfaceClusterDB.getInterfaces()) {
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-                coordFilesAdaptor.getInterfaceCoordsMmcif(null, auStruct, os, pdbInfoDB, interf, false);
+                coordFilesAdaptor.getInterfaceCoordsMmcif(null, auStruct, os, pdbInfoDB, interf.getInterfaceId(), false);
 
                 if (logger.isDebugEnabled()) {
                     // for debugging: we write file out
