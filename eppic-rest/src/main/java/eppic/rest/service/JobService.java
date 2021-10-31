@@ -4,10 +4,7 @@ import java.util.*;
 
 import eppic.db.adaptors.ViewsAdaptor;
 import eppic.db.dao.mongo.AssemblyDAOMongo;
-import eppic.db.dao.mongo.ChainClusterDAOMongo;
 import eppic.db.dao.mongo.ContactDAOMongo;
-import eppic.db.dao.mongo.InterfaceClusterDAOMongo;
-import eppic.db.dao.mongo.InterfaceDAOMongo;
 import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.dao.mongo.ResidueDAOMongo;
@@ -61,46 +58,15 @@ public class JobService {
         //pdbInfo.setInputType(input.getInputType());
         //pdbInfo.setInputName(input.getInputName());
 
-
-        // retrieving interface clusters data only if requested
-        if (getInterfaceInfo) {
-            InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOMongo();
-            List<InterfaceClusterDB> clusters = clusterDAO.getInterfaceClusters(pdbInfo.getUid(), true, false);
-
-            InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
-
-            for (InterfaceClusterDB cluster : clusters) {
-
-                logger.debug("Getting data for interface cluster uid {}", cluster.getUid());
-                List<InterfaceDB> interfaceItems;
-                if (getResInfo)
-                    interfaceItems = interfaceDAO.getInterfacesForCluster(cluster.getUid(), true, true);
-                else
-                    interfaceItems = interfaceDAO.getInterfacesForCluster(cluster.getUid(), true, false);
-                cluster.setInterfaces(interfaceItems);
-            }
-
-            pdbInfo.setInterfaceClusters(clusters);
-        } else {
+        if (!getInterfaceInfo) {
             pdbInfo.setInterfaceClusters(null);
         }
 
-        if(getSeqInfo){
-            ChainClusterDAO chainClusterDAO = new ChainClusterDAOMongo();
-            List<ChainClusterDB> chainClusters = chainClusterDAO.getChainClusters(pdbInfo.getUid());
-            pdbInfo.setChainClusters(chainClusters);
-        } else {
+        if(!getSeqInfo){
             pdbInfo.setChainClusters(null);
         }
 
-        if (getAssemblyInfo) {
-            // assemblies info
-            AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
-
-            List<AssemblyDB> assemblies = assemblyDAO.getAssemblies(pdbInfo.getUid(), true, false);
-
-            pdbInfo.setAssemblies(assemblies);
-        } else {
+        if (!getAssemblyInfo) {
             pdbInfo.setAssemblies(null);
         }
 
@@ -118,10 +84,7 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        // assemblies info
-        AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
-
-        return assemblyDAO.getAssemblies(pdbInfo.getUid(), true, true);
+        return pdbInfo.getAssemblies();
     }
 
     /**
@@ -135,8 +98,7 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        InterfaceClusterDAO clusterDAO = new InterfaceClusterDAOMongo();
-        return clusterDAO.getInterfaceClusters(pdbInfo.getUid(), true, false);
+        return pdbInfo.getInterfaceClusters();
     }
 
     /**
@@ -150,8 +112,7 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
-        return interfaceDAO.getInterfacesByPdbUid(pdbInfo.getUid(), true, false);
+        return pdbInfo.getInterfaces();
     }
 
     /**
@@ -165,8 +126,7 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        ChainClusterDAO chainClusterDAO = new ChainClusterDAOMongo();
-        return chainClusterDAO.getChainClusters(pdbInfo.getUid());
+        return pdbInfo.getChainClusters();
     }
 
     /**
@@ -181,10 +141,11 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
-        InterfaceDB interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfId, false, false);
+        // FIXME needs implementing
+//        InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
+//        InterfaceDB interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfId, false, false);
         ResidueDAO rdao = new ResidueDAOMongo();
-        // FIXME
+
         return null;
         //return rdao.getResiduesForInterface(interf.getUid());
     }
@@ -242,9 +203,7 @@ public class JobService {
         PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
-        // assemblies info
-        AssemblyDAO assemblyDAO = new AssemblyDAOMongo();
-        AssemblyDB assembly = assemblyDAO.getAssembly(pdbInfo.getUid(), assemblyId, true);
+        AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
 
         if (assembly==null) {
             throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);

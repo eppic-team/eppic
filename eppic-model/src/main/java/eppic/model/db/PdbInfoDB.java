@@ -148,6 +148,19 @@ public class PdbInfoDB implements Serializable {
 		}
 		return null;
 	}
+
+	/**
+	 * Returns the full list of interfaces
+	 * @return
+	 */
+	@JsonIgnore
+	public List<InterfaceDB> getInterfaces () {
+		List<InterfaceDB> ifaces = new ArrayList<>();
+		for (InterfaceClusterDB ic:interfaceClusters) {
+			ifaces.addAll(ic.getInterfaces());
+		}
+		return ifaces;
+	}
 	
 	/**
 	 * Returns the InterfaceClusterDB corresponding to the given clusterId or null if no such clusterId exists
