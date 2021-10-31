@@ -10,7 +10,7 @@ import eppic.model.db.PdbInfoDB;
 public interface PDBInfoDAO 
 {
 	/**
-	 * Retrieves pdb info item by job identifier, with only a restricted list of selected fields (light weight data).
+	 * Retrieves pdb info full object by job identifier.
 	 * @param jobId identifier of the job
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve pdb info item for job
