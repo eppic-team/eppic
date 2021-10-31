@@ -1,4 +1,4 @@
-package eppic.db.tools;
+package eppic.db.loaders;
 
 import com.mongodb.client.MongoDatabase;
 import eppic.db.mongoutils.MongoUtils;
@@ -45,7 +45,7 @@ public class UploadSearchSeqCacheToDb {
                         "  -D <string>  : the database name to use\n"+
                         "  -f <file>    : the blast tabular format file containing all hits\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
-                        "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
+                        "                 the config will be read from file "+ DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
                         " [-r <string>] : uniref type to be written to db, e.g. UniRef90. If not provided null is written\n" +
                         " [-v <string>] : version of UniProt to be written to db, e.g. 2018_08. If not provided, null is written\n" +
                         " [-F]          : whether FULL mode should be used. Otherwise INCREMENTAL mode. In FULL the collection \n" +
@@ -53,7 +53,7 @@ public class UploadSearchSeqCacheToDb {
 
         File blastTabFile = null;
         String dbName = null;
-        File configFile = DBHandler.DEFAULT_CONFIG_FILE;
+        File configFile = DbPropertiesReader.DEFAULT_CONFIG_FILE;
         String uniProtVersion = null;
         String uniRefType = null;
         full = false;

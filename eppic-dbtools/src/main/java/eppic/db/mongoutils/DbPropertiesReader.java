@@ -7,6 +7,9 @@ import java.util.Properties;
 
 public class DbPropertiesReader {
 
+    public static final String DEFAULT_CONFIG_FILE_NAME = "eppic-db.properties";
+    public static final File DEFAULT_CONFIG_FILE = new File(System.getProperty("user.home"), DEFAULT_CONFIG_FILE_NAME);
+
     private final Properties properties;
 
     public DbPropertiesReader(File configurationFile) throws IOException {

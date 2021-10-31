@@ -1,4 +1,4 @@
-package eppic.db.tools;
+package eppic.db.loaders;
 
 import com.mongodb.client.MongoDatabase;
 import eppic.db.dao.DaoException;
@@ -22,8 +22,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import javax.persistence.EntityManager;
 
 
 public class UploadToDb {
@@ -60,7 +58,7 @@ public class UploadToDb {
 				" [-f <file>]   : file specifying a list of PDB ids indicating subdirs of root \n"+
 				"                 directory to take (default: uses all subdirs in the root directory) \n" +
 				" [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
-				"                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
+				"                 the config will be read from file "+ DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
 				" [-n <int>]    : number of workers. Default 1. \n"+
 				" OPERATION MODE\n" +
 				" Default operation: only entries not already present in database will be inserted \n"+

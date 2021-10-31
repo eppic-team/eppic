@@ -1,4 +1,4 @@
-package eppic.db.tools;
+package eppic.db.loaders;
 
 import com.mongodb.client.MongoDatabase;
 import eppic.commons.sequence.NoMatchFoundException;
@@ -58,7 +58,7 @@ public class UploadUniprotInfoToDb {
                         "  -f <file>    : the blast tabular format file containing all hits\n" +
                         "  -a <file>    : UniRef FASTA file (plain text or gzipped, if gzipped must have .gz suffix)\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
-                        "                 the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
+                        "                 the config will be read from file "+ DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
                         " [-F]          : whether FULL mode should be used. Otherwise INCREMENTAL mode. In FULL the collection \n" +
                         "                 is dropped and indexes reset. FULL is much faster because it uses Mongo batch insert\n" +
                         "Reads all unique UniRef ids present in the .m8 file (output of blast/mmseqs), \n" +
@@ -69,7 +69,7 @@ public class UploadUniprotInfoToDb {
         File blastTabFile = null;
         File unirefFastaFile = null;
         String dbName = null;
-        File configFile = DBHandler.DEFAULT_CONFIG_FILE;
+        File configFile = DbPropertiesReader.DEFAULT_CONFIG_FILE;
         full = false;
 
         Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:a:g:Fh?");
