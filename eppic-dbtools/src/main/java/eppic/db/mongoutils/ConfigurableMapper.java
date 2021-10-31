@@ -1,4 +1,4 @@
-package eppic.db.tools;
+package eppic.db.mongoutils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;

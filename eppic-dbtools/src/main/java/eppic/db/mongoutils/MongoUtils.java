@@ -5,7 +5,6 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
-import eppic.db.tools.ConfigurableMapper;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
