@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-
+// TODO this now needs to write both PdbInfoDB and InterfaceResidueFeatures (stored in separate files and separate collections in mongo)
 public class UploadToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadToDb.class);

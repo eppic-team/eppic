@@ -71,6 +71,8 @@ public class DataModelAdaptor {
 	
 	private PdbInfoDB pdbInfo;
 
+	private List<InterfaceResidueFeaturesDB> interfFeatures;
+
 	private EppicParams params;
 	
 	private RunParametersDB runParameters;
@@ -92,6 +94,10 @@ public class DataModelAdaptor {
 	
 	public PdbInfoDB getPdbInfo() {
 		return pdbInfo;
+	}
+
+	public List<InterfaceResidueFeaturesDB> getInterfFeatures() {
+		return interfFeatures;
 	}
 
 	public void setChainOrigNames(Map<String, String> chainOrigNames) {
@@ -1479,9 +1485,10 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void writeSerializedModelFile(File file) throws EppicException {
+	public void writeSerializedModelFiles(File pdbInfoFile, File interfFeaturesFile) throws EppicException {
 		try {
-			Goodies.serialize(file,pdbInfo);
+			Goodies.serialize(pdbInfoFile, pdbInfo);
+			Goodies.serialize(interfFeaturesFile, interfFeatures);
 		} catch (IOException e) {
 			throw new EppicException(e, e.getMessage(), true);
 		}
@@ -1511,41 +1518,51 @@ public class DataModelAdaptor {
 				LOGGER.info("Not storing residue burials info for redundant NCS interface {}", interf.getId());
 				continue;
 			}
-			// we add the residue details
-			
-			List<ResidueBurialDB> iril = new ArrayList<ResidueBurialDB>();
-			ii.setResidueBurials(iril);
 
-			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.FIRST, noseqres);
-			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.SECOND, noseqres);
+			interfFeatures.add(createInterfaceResidueFeatures(interf));
 
-			for(ResidueBurialDB iri : iril) {
-				iri.setInterfaceItem(ii);
-			}
-
+			// TODO now we need to do something with the features. They need to be written to a serialized file so that they can be loaded to db
 		}
 	}
 	
-	private void addResidueBurialDetailsOfPartner(List<ResidueBurialDB> iril, StructureInterface interf, int molecId, boolean noseqres) {
+	private InterfaceResidueFeaturesDB createInterfaceResidueFeatures(StructureInterface interf) {
 
-		Chain chain = null;
-		if (molecId == InterfaceEvolContext.FIRST) 
-			chain =	interf.getParentChains().getFirst();
-		else if (molecId == InterfaceEvolContext.SECOND) 
-			chain =	interf.getParentChains().getSecond();
-		
+		InterfaceResidueFeaturesDB features = new InterfaceResidueFeaturesDB();
+
+		features.setInterfaceId(interf.getId());
+		// TODO is this the right job id??? Note here we can't use pdbCode because that's not set for user files
+		features.setJobId(pdbInfo.getJob().getJobId());
+
+		List<ResidueBurialDB> resBurials1 = new ArrayList<>();
+		List<ResidueBurialDB> resBurials2 = new ArrayList<>();
+		features.setResBurials1(resBurials1);
+		features.setResBurials2(resBurials2);
+
+		addResBurials(InterfaceEvolContext.FIRST, resBurials1, interf);
+		addResBurials(InterfaceEvolContext.SECOND, resBurials2, interf);
+		return features;
+	}
+
+	private void addResBurials(int molecId, List<ResidueBurialDB> resBurials, StructureInterface interf) {
+		Chain chain;
+		if (molecId == InterfaceEvolContext.FIRST)
+			chain = interf.getParentChains().getFirst();
+		else if (molecId == InterfaceEvolContext.SECOND)
+			chain = interf.getParentChains().getSecond();
+		else
+			throw new IllegalArgumentException("Molecule id " +molecId+" is invalid");
+
 		String repChainId = chain.getEntityInfo().getRepresentative().getName();
 		ChainClusterDB chainCluster = pdbInfo.getChainCluster(repChainId);
-		
-		
+
 		for (Group group:chain.getAtomGroups()) {
 
 			if (group.isWater()) continue;
 
-			GroupAsa groupAsa = null;
-			if (molecId==InterfaceEvolContext.FIRST) 
+			GroupAsa groupAsa;
+			if (molecId == InterfaceEvolContext.FIRST)
 				groupAsa = interf.getFirstGroupAsa(group.getResidueNumber());
-			else if (molecId==InterfaceEvolContext.SECOND) 
+			else
 				groupAsa = interf.getSecondGroupAsa(group.getResidueNumber());
 
 			// if we have no groupAsa that means that this is a Residue for which we don't calculate ASA (most likely HETATM)
@@ -1558,7 +1575,7 @@ public class DataModelAdaptor {
 
 			// NOTE the regions are mutually exclusive (one and only one assignment per region)
 
-			// For the case of CORE_EVOL/CORE_GEOM we are assuming that CORE_EVOL is a superset of CORE_GEOM 
+			// For the case of CORE_EVOL/CORE_GEOM we are assuming that CORE_EVOL is a superset of CORE_GEOM
 			// (i.e. that caCutoffForRimCore<caCutoffForGeom)
 			// thus, as groups are exclusive, to get the actual full subset of CORE_EVOL one needs to get
 			// the union of CORE_EVOL and CORE_GEOM
@@ -1570,66 +1587,25 @@ public class DataModelAdaptor {
 				if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
 					assignment = ResidueBurialDB.RIM_EVOLUTIONARY;
 				} else if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
-					assignment = ResidueBurialDB.CORE_EVOLUTIONARY; 
+					assignment = ResidueBurialDB.CORE_EVOLUTIONARY;
 				} else {
 					assignment = ResidueBurialDB.CORE_GEOMETRY;
-				} 
+				}
 
 				// residues not in interface but still with more ASA than minimum required are called surface
 			} else if (groupAsa.getAsaU()>params.getMinAsaForSurface()) {
 				assignment = ResidueBurialDB.SURFACE;
 			}
 
-
 			ResidueBurialDB iri = new ResidueBurialDB();
+			resBurials.add(iri);
 
-			iril.add(iri);
-			
 			iri.setAsa(asa);
 			iri.setBsa(bsa);
 			iri.setRegion(assignment);
 
-			// side: false(0) for FIRST, true(1) for SECOND (used to be 1,2)
-			boolean side = false;
-			if (molecId==InterfaceEvolContext.SECOND) 
-				side = true;
-			
-			iri.setSide(side);
-
-			// relations
-			iri.setInterfaceItem(pdbInfo.getInterface(interf.getId()));
-			
-			// this is a difficult operation: we are in a single chain and we connect to the equivalent
-			// residue in the representative chain (the one we store in the residueInfos in chainCluster).
-			// Thus the issues with residue serials in SEQRES/no SEQRES case will hit here!
-			// See the comment in createChainCluster
 			int resser = chain.getEntityInfo().getAlignedResIndex(group, chain);
-			if (resser==-1) {
-				if (noseqres) 
-					LOGGER.warn("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
-				else 
-					LOGGER.info("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
-			} else {
-				
-				// Here getResidue(resser) matches the residue serials via the residue serials we added earlier 
-				// to ResidueInfo. Those were coming from getAlignedResIndex, thus they should match correctly
-
-				ResidueInfoDB residueInfo = chainCluster.getResidue(resser);
-
-				// TODO in no-SEQRES case if the residues are not consistently named across different chains of 
-				//      same entity, this will fail and return a null! e.g. 3ddo without seqres
-				//      The ideal solution to this would be to go through our UniProt alignments and get a proper 
-				//      mapping from there, but at this point we don't have an alignment yet... so it is complicated
-				
-				if (residueInfo==null && !noseqres) {
-					// we only warn if we have seqres and find a null, case noseqres==true emits only 1 warning above
-					LOGGER.warn("Could not find the ResidueInfo corresponding to ResidueBurial of group '{}', the mapped residue serial is {}.",
-							group.toString(), resser);
-				}
-						
-				
-				iri.setResidueInfo(residueInfo);
-			}
+			iri.setResSerial(resser);
 		}
 	}
 

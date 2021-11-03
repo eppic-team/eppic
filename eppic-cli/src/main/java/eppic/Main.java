@@ -525,7 +525,7 @@ public class Main {
 
 		long start = System.currentTimeMillis();
 		
-		TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), params);
+		TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), modelAdaptor.getInterfFeatures(), params);
 		
 		// 0 write .A.aln file : always write it, with our without -w 
 		try {
@@ -789,7 +789,10 @@ public class Main {
 		if (params.isGenerateModelSerializedFile()) {
 			
 			modelAdaptor.setInterfaceWarnings(); // first we call this method to add all the cached warnings
-			modelAdaptor.writeSerializedModelFile(params.getOutputFile(EppicParams.SERIALIZED_MODEL_FILE_SUFFIX));
+			modelAdaptor.writeSerializedModelFiles(
+					params.getOutputFile(EppicParams.SERIALIZED_PDBINFO_FILE_SUFFIX),
+					params.getOutputFile(EppicParams.SERIALIZED_INTERF_FEATURES_FILE_SUFFIX)
+					);
 
 			// finally we write a signal file for the wui to know that job is finished
 			try {

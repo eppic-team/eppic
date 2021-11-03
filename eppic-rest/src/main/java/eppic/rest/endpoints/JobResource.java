@@ -10,6 +10,7 @@ import eppic.model.db.PdbInfoDB;
 import eppic.model.db.ResidueInfoDB;
 import eppic.model.dto.views.AssemblyDiagram;
 import eppic.model.dto.views.LatticeGraph;
+import eppic.model.dto.views.Residue;
 import eppic.rest.commons.Utils;
 import eppic.rest.service.JobService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -142,9 +143,9 @@ public class JobResource {
 
         // TODO validate interfId is int
 
-        List<ResidueInfoDB> ics = JobService.getResidueData(jobId, Integer.parseInt(interfId));
+        List<Residue> ics = JobService.getResidueData(jobId, Integer.parseInt(interfId));
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<ResidueInfoDB>> entity = new GenericEntity<List<ResidueInfoDB>>(ics){};
+        GenericEntity<List<Residue>> entity = new GenericEntity<List<Residue>>(ics){};
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)

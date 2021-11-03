@@ -2,18 +2,21 @@ package eppic.rest.service;
 
 import java.util.*;
 
+import com.mongodb.client.MongoDatabase;
 import eppic.db.adaptors.ViewsAdaptor;
 import eppic.db.dao.mongo.ContactDAOMongo;
+import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
 import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
-import eppic.db.dao.mongo.ResidueDAOMongo;
 import eppic.model.db.AssemblyDB;
 import eppic.model.db.ChainClusterDB;
 import eppic.model.db.ContactDB;
 import eppic.model.db.GraphEdgeDB;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
+import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
+import eppic.model.db.ResidueBurialDB;
 import eppic.model.db.ResidueInfoDB;
 import eppic.model.dto.InputWithType;
 import eppic.model.dto.views.*;
@@ -31,6 +34,9 @@ public class JobService {
     
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
 
+    // TODO init!!!
+    // TODO check if we can make it non-static
+    private static MongoDatabase mongoDb;
 
     /**
      * Retrieves pdbInfo item for job.
@@ -49,7 +55,7 @@ public class JobService {
                                           boolean getResInfo) throws DaoException
     {
 
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
         // TODO what to do with this after rewrite??
         JobDAO jobDAO = new JobDAOMongo();
@@ -80,7 +86,7 @@ public class JobService {
      */
     public static List<AssemblyDB> getAssemblyDataByPdbAssemblyId(String jobId) throws DaoException {
 
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         return pdbInfo.getAssemblies();
@@ -94,7 +100,7 @@ public class JobService {
      */
     public static List<InterfaceClusterDB> getInterfaceClusterData(String jobId) throws DaoException {
 
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         return pdbInfo.getInterfaceClusters();
@@ -108,7 +114,7 @@ public class JobService {
      */
     public static List<InterfaceDB> getInterfaceData(String jobId) throws DaoException {
 
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         return pdbInfo.getInterfaces();
@@ -122,7 +128,7 @@ public class JobService {
      */
     public static List<ChainClusterDB> getSequenceData(String jobId) throws DaoException {
 
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         return pdbInfo.getChainClusters();
@@ -135,18 +141,75 @@ public class JobService {
      * @return residue data corresponding to job id and interface id
      * @throws DaoException when can not retrieve result of the job
      */
-    public static List<ResidueInfoDB> getResidueData(String jobId, int interfId) throws DaoException {
+    public static List<Residue> getResidueData(String jobId, int interfId) throws DaoException {
 
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        // 1st get burial info
+        InterfaceResidueFeaturesDAO featuresDAO = new InterfaceResidueFeaturesDAOMongo(mongoDb);
+        InterfaceResidueFeaturesDB features = featuresDAO.getInterfResFeatures(jobId, interfId);
+        List<ResidueBurialDB> burials1 = features.getResBurials1();
+        List<ResidueBurialDB> burials2 = features.getResBurials2();
+
+        // 2nd get entropy scores
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+        InterfaceDB interf = pdbInfo.getInterface(interfId);
+        ChainClusterDB chain1 = pdbInfo.getChainCluster(interf.getChain1());
+        ChainClusterDB chain2 = pdbInfo.getChainCluster(interf.getChain2());
 
-        // FIXME needs implementing
-//        InterfaceDAO interfaceDAO = new InterfaceDAOMongo();
-//        InterfaceDB interf = interfaceDAO.getInterface(pdbInfo.getUid(), interfId, false, false);
-        ResidueDAO rdao = new ResidueDAOMongo();
+        // 3rd create Residue objects for output
+        List<Residue> residues = new ArrayList<>();
 
-        return null;
-        //return rdao.getResiduesForInterface(interf.getUid());
+        fillResiduesData(residues, burials1, chain1, 1);
+        fillResiduesData(residues, burials2, chain2, 2);
+
+        return residues;
+    }
+
+    private static void fillResiduesData(List<Residue> residues, List<ResidueBurialDB> burials, ChainClusterDB chainCluster, int molecId) {
+
+        for (ResidueBurialDB burial : burials) {
+
+            int resser = burial.getResSerial();
+
+            Residue res = new Residue();
+            residues.add(res);
+
+            res.setResidueNumber(resser);
+            res.setAsa(burial.getAsa());
+            res.setBsa(burial.getBsa());
+            res.setRegion(burial.getRegion());
+            // TODO consider if we should define burialRatio:=0 when asa==0
+            res.setBurialFraction(burial.getBsa()/burial.getAsa());
+            res.setSide(molecId == 2);
+
+            if (resser == -1) {
+                logger.warn("Residue burial object has resser==-1, will skip");
+                continue;
+            }
+
+            // THIS NOTES CAME FROM DataModelAdaptor . Keeping here for reference. Possibly the issue is still there
+            // this is a difficult operation: we are in a single chain and we connect to the equivalent
+            // residue in the representative chain (the one we store in the residueInfos in chainCluster).
+            // Thus the issues with residue serials in SEQRES/no SEQRES case will hit here!
+            //
+            // See the comment in createChainCluster
+            // Here getResidue(resser) matches the residue serials via the residue serials we added earlier
+            // to ResidueInfo. Those were coming from getAlignedResIndex, thus they should match correctly
+            // TODO in no-SEQRES case if the residues are not consistently named across different chains of
+            //      same entity, this will fail and return a null! e.g. 3ddo without seqres
+            //      The ideal solution to this would be to go through our UniProt alignments and get a proper
+            //      mapping from there, but at this point we don't have an alignment yet... so it is complicated
+
+            ResidueInfoDB residueInfo = chainCluster.getResidue(resser);
+            if (residueInfo == null) { // && !noseqres) {
+                // we only warn if we have seqres and find a null, case noseqres==true emits only 1 warning above
+                logger.warn("Could not find the ResidueInfo corresponding to ResidueBurial object with serial {}", resser);
+                continue;
+            }
+
+            res.setResidueType(residueInfo.getResidueType());
+            res.setEntropyScore(residueInfo.getEntropyScore());
+        }
     }
 
     /**
@@ -157,7 +220,7 @@ public class JobService {
      * @throws DaoException when can not retrieve result of the job
      */
     public static List<ContactDB> getContactData(String jobId, int interfId) throws DaoException {
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         ContactDAO contactDAO = new ContactDAOMongo();
@@ -178,7 +241,7 @@ public class JobService {
      * @throws DaoException
      */
     public static AssemblyDB getAssemblyDataByPdbAssemblyId(String jobId, int pdbAssemblyId) throws DaoException {
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         AssemblyDB assembly = pdbInfo.getAssemblyByPdbAssemblyId(pdbAssemblyId);
@@ -197,7 +260,7 @@ public class JobService {
      * @throws DaoException
      */
     public static AssemblyDB getAssemblyData(String jobId, int assemblyId) throws DaoException {
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
@@ -216,7 +279,7 @@ public class JobService {
      * @throws DaoException
      */
     public static LatticeGraph getLatticeGraphData(String jobId, int assemblyId) throws DaoException {
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
@@ -238,7 +301,7 @@ public class JobService {
      * @throws DaoException
      */
     public static LatticeGraph getLatticeGraphDataByInterfaceIds(String jobId, Set<Integer> interfaceIds) throws DaoException {
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         List<GraphEdgeDB> graphEdges = new ArrayList<>();
@@ -272,7 +335,7 @@ public class JobService {
      * @throws DaoException
      */
     public static LatticeGraph getLatticeGraphDataByInterfaceClusterIds(String jobId, Set<Integer> interfaceClusterIds) throws DaoException {
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         List<GraphEdgeDB> graphEdges = new ArrayList<>();
@@ -304,7 +367,7 @@ public class JobService {
      * @throws DaoException
      */
     public static AssemblyDiagram getAssemblyDiagram(String jobId, int assemblyId) throws DaoException {
-        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+        PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);

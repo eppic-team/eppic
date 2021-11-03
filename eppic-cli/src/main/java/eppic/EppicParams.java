@@ -59,7 +59,8 @@ public class EppicParams {
 	public static final String     ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  INTERFACES_FILE_SUFFIX = ".interfaces";
 	protected static final String  CONTACTS_FILE_SUFFIX = ".contacts";
-	protected static final String  SERIALIZED_MODEL_FILE_SUFFIX = ".webui.dat";
+	protected static final String  SERIALIZED_PDBINFO_FILE_SUFFIX = ".webui.dat";
+	protected static final String  SERIALIZED_INTERF_FEATURES_FILE_SUFFIX = ".webui.dat";
 	protected static final String  SCORES_FILE_SUFFIX = ".scores";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
 	protected static final String  ASSEMBLIES_FILE_SUFFIX = ".assemblies";

@@ -59,8 +59,7 @@ public class InterfaceDB implements Serializable {
 
 	@JsonManagedReference(value = "interfaceScores-ref")
 	private List<InterfaceScoreDB> interfaceScores;
-	@JsonManagedReference(value = "residueBurials-ref")
-	private List<ResidueBurialDB> residueBurials;
+
 	@JsonManagedReference(value = "contacts-ref")
 	private List<ContactDB> contacts;
 
@@ -68,10 +67,8 @@ public class InterfaceDB implements Serializable {
 	private InterfaceClusterDB interfaceCluster;
 
 	public InterfaceDB() {
-		interfaceScores = new ArrayList<InterfaceScoreDB>();
-		interfaceWarnings = new ArrayList<InterfaceWarningDB>();
-		residueBurials = new ArrayList<ResidueBurialDB>();
-
+		interfaceScores = new ArrayList<>();
+		interfaceWarnings = new ArrayList<>();
 	}
 	
 	/**
@@ -251,14 +248,6 @@ public class InterfaceDB implements Serializable {
 
 	public InterfaceClusterDB getInterfaceCluster() {
 		return interfaceCluster;
-	}
-
-	public List<ResidueBurialDB> getResidueBurials() {
-		return residueBurials;
-	}
-
-	public void setResidueBurials(List<ResidueBurialDB> interfaceResidues) {
-		this.residueBurials = interfaceResidues;
 	}
 
 	public List<ContactDB> getContacts() {
