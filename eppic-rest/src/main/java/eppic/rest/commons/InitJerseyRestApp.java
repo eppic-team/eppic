@@ -1,7 +1,8 @@
 package eppic.rest.commons;
 
 
-import eppic.db.EntityManagerHandler;
+import eppic.db.mongoutils.DbPropertiesReader;
+import eppic.db.mongoutils.MongoDbStore;
 import eppic.rest.filter.CORSResponseFilter;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.message.filtering.SelectableEntityFilteringFeature;
@@ -13,6 +14,8 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
+import java.io.File;
+import java.io.IOException;
 
 
 @ApplicationPath("/")
@@ -45,8 +48,15 @@ public class InitJerseyRestApp extends ResourceConfig {
         // registering logging feature https://stackoverflow.com/questions/2332515/how-to-get-jersey-logs-at-server
         register(LoggingFeature.class);
 
-        logger.info("Initialising JPA/hibernate");
-        EntityManagerHandler.initFactory(AppConstants.DB_SETTINGS);
+        logger.info("Initialising Mongo connections");
+        // TODO consider passing an arbitrary file name (with system prop?)
+        File confFile = DbPropertiesReader.DEFAULT_CONFIG_FILE;
+        try {
+            MongoDbStore.init(confFile);
+        } catch (IOException e) {
+            logger.error("Failed to read db properties from config file {}", confFile);
+            throw new RuntimeException(e);
+        }
 
         logger.info("Completed Jersey REST application init");
     }

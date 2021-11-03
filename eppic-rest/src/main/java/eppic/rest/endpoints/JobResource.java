@@ -7,7 +7,6 @@ import eppic.model.db.ContactDB;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
-import eppic.model.db.ResidueInfoDB;
 import eppic.model.dto.views.AssemblyDiagram;
 import eppic.model.dto.views.LatticeGraph;
 import eppic.model.dto.views.Residue;
@@ -29,6 +28,12 @@ import java.util.SortedSet;
 
 @Path("/job")
 public class JobResource {
+    
+    private final JobService jobService;
+    
+    public JobResource() {
+        jobService = new JobService();
+    }
 
     @GET
     @Path("/pdb/{jobId}")
@@ -47,7 +52,7 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        PdbInfoDB pdbInfo = JobService.getResultData(jobId, false, false, false, false);
+        PdbInfoDB pdbInfo = jobService.getResultData(jobId, false, false, false, false);
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -69,7 +74,7 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<InterfaceClusterDB> ics = JobService.getInterfaceClusterData(jobId);
+        List<InterfaceClusterDB> ics = jobService.getInterfaceClusterData(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
         GenericEntity<List<InterfaceClusterDB>> entity = new GenericEntity<List<InterfaceClusterDB>>(ics){};
 
@@ -93,7 +98,7 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<InterfaceDB> ics = JobService.getInterfaceData(jobId);
+        List<InterfaceDB> ics = jobService.getInterfaceData(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
         GenericEntity<List<InterfaceDB>> entity = new GenericEntity<List<InterfaceDB>>(ics){};
 
@@ -117,7 +122,7 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<ChainClusterDB> ics = JobService.getSequenceData(jobId);
+        List<ChainClusterDB> ics = jobService.getSequenceData(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
         GenericEntity<List<ChainClusterDB>> entity = new GenericEntity<List<ChainClusterDB>>(ics){};
 
@@ -143,7 +148,7 @@ public class JobResource {
 
         // TODO validate interfId is int
 
-        List<Residue> ics = JobService.getResidueData(jobId, Integer.parseInt(interfId));
+        List<Residue> ics = jobService.getResidueData(jobId, Integer.parseInt(interfId));
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
         GenericEntity<List<Residue>> entity = new GenericEntity<List<Residue>>(ics){};
 
@@ -167,7 +172,7 @@ public class JobResource {
             @PathParam("jobId") String jobId) throws DaoException {
 
 
-        List<AssemblyDB> assemblies = JobService.getAssemblyDataByPdbAssemblyId(jobId);
+        List<AssemblyDB> assemblies = jobService.getAssemblyDataByPdbAssemblyId(jobId);
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
         GenericEntity<List<AssemblyDB>> entity = new GenericEntity<List<AssemblyDB>>(assemblies){};
 
@@ -193,7 +198,7 @@ public class JobResource {
 
         // TODO validate interfId is int
 
-        List<ContactDB> cs = JobService.getContactData(jobId, Integer.parseInt(interfId));
+        List<ContactDB> cs = jobService.getContactData(jobId, Integer.parseInt(interfId));
         // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
         GenericEntity<List<ContactDB>> entity = new GenericEntity<List<ContactDB>>(cs){};
 
@@ -224,7 +229,7 @@ public class JobResource {
 
         // TODO validate pdbAssemblyId is int
 
-        AssemblyDB assembly = JobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
+        AssemblyDB assembly = jobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -253,7 +258,7 @@ public class JobResource {
 
         // TODO validate assemblyId is int
 
-        AssemblyDB assembly = JobService.getAssemblyData(jobId, Integer.parseInt(assemblyId));
+        AssemblyDB assembly = jobService.getAssemblyData(jobId, Integer.parseInt(assemblyId));
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -282,7 +287,7 @@ public class JobResource {
 
         // TODO validate assemblyId is int
 
-        LatticeGraph latticeGraph = JobService.getLatticeGraphData(jobId, Integer.parseInt(assemblyId));
+        LatticeGraph latticeGraph = jobService.getLatticeGraphData(jobId, Integer.parseInt(assemblyId));
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -311,7 +316,7 @@ public class JobResource {
 
         // TODO convert interfaceIdsString to list
         SortedSet<Integer> interfaceIds = Utils.parseIdsString(interfaceIdString);
-        LatticeGraph latticeGraph = JobService.getLatticeGraphDataByInterfaceIds(jobId, interfaceIds);
+        LatticeGraph latticeGraph = jobService.getLatticeGraphDataByInterfaceIds(jobId, interfaceIds);
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -340,7 +345,7 @@ public class JobResource {
 
         // TODO convert interfaceIdsString to list
         SortedSet<Integer> interfaceClusterIds = Utils.parseIdsString(interfaceClusterIdString);
-        LatticeGraph latticeGraph = JobService.getLatticeGraphDataByInterfaceClusterIds(jobId, interfaceClusterIds);
+        LatticeGraph latticeGraph = jobService.getLatticeGraphDataByInterfaceClusterIds(jobId, interfaceClusterIds);
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)
@@ -369,7 +374,7 @@ public class JobResource {
 
         // TODO validate assemblyId is int
 
-        AssemblyDiagram assemblyDiagram = JobService.getAssemblyDiagram(jobId, Integer.parseInt(assemblyId));
+        AssemblyDiagram assemblyDiagram = jobService.getAssemblyDiagram(jobId, Integer.parseInt(assemblyId));
 
         Response.ResponseBuilder responseBuilder =  Response
                 .status(Response.Status.OK)

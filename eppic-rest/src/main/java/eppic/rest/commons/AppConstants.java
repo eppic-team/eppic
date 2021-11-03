@@ -1,13 +1,9 @@
 package eppic.rest.commons;
 
-import eppic.db.jpautils.DbConfigGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Properties;
 
 public class AppConstants {
@@ -47,11 +43,6 @@ public class AppConstants {
      */
     public static final String RESOURCES_PREFIX_FULL = "/" + AppConstants.RESOURCES_PREFIX + "/v" + AppConstants.MAJOR_VERSION;
 
-    /**
-     * The settings to be passed to EntityManagerHandler to initialise the JPA connection
-     */
-    public static final Map<String,String> DB_SETTINGS = readDbProperties();
-
     public static final String REST_API_DOCS_DIR = "api-docs";
     public static final String REST_API_DOCS_FILE = "eppic-restful-api-docs.json";
 
@@ -67,30 +58,5 @@ public class AppConstants {
         }
 
         return props;
-    }
-
-    private static Map<String, String> readDbProperties() {
-        // initialising db settings
-        String value = System.getProperty(DB_PROPERTIES_PARAM);
-        if (value==null || value.trim().isEmpty()) {
-            logger.error("A location of a properties file with JPA and db setting must be passed to JVM with -D{}. Forcing JVM exit.",
-                    DB_PROPERTIES_PARAM);
-            System.exit(1);
-        }
-        File dbPropertiesFile =  new File(value);
-        try {
-            if (!dbPropertiesFile.exists()) {
-                logger.error("The db properties file {} does not exist! Forcing JVM exit.",dbPropertiesFile);
-                System.exit(1);
-            } else {
-                logger.info("Reading db properties file {}", dbPropertiesFile);
-                return DbConfigGenerator.createDatabaseProperties(dbPropertiesFile);
-            }
-        } catch (IOException e) {
-            logger.error("Could not read all needed properties from db config file {} specified with system property {}. Error: {}. Forcing JVM exit.",
-                    dbPropertiesFile, DB_PROPERTIES_PARAM, e.getMessage());
-            System.exit(1);
-        }
-        return null;
     }
 }
