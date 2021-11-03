@@ -17,9 +17,6 @@ import java.util.TreeSet;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.PersistenceException;
-import javax.persistence.PersistenceUnit;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
@@ -29,26 +26,19 @@ import javax.persistence.metamodel.SingularAttribute;
 
 import eppic.model.shared.InputType;
 import eppic.model.shared.StatusOfJob;
-import eppic.db.jpautils.DbConfigGenerator;
 import eppic.model.db.ChainClusterDB;
-import eppic.model.db.ChainClusterDB_;
 import eppic.model.db.InterfaceClusterDB;
-import eppic.model.db.InterfaceClusterDB_;
 import eppic.model.db.InterfaceDB;
-import eppic.model.db.InterfaceDB_;
 import eppic.model.db.JobDB;
-import eppic.model.db.JobDB_;
 import eppic.model.db.PdbInfoDB;
-import eppic.model.db.PdbInfoDB_;
 import eppic.model.db.SeqClusterDB;
-import eppic.model.db.SeqClusterDB_;
 
 /**
  * Class to perform operations on the EPPIC database, such as adding by job,
  * removing a job or checking if a job is present in the database
  *
  * This is essentially a DAO layer. It duplicates what the {@link eppic.db.dao} package does.
- * TODO unify at some point
+ * TODO replace by new mongo DAO classes
  *
  * @author biyani_n
  *
@@ -60,7 +50,6 @@ public class DBHandler {
 	public static final File DEFAULT_CONFIG_FILE = new File(System.getProperty("user.home"), DEFAULT_CONFIG_FILE_NAME);
 	
 	
-	@PersistenceUnit
 	private EntityManagerFactory emf;
 	
 	/**
@@ -70,40 +59,7 @@ public class DBHandler {
 	 * @param userConfigFile a user supplied config file, if null the default location {@link #DEFAULT_CONFIG_FILE} will be used.
 	 */
 	public DBHandler(String dbName, File userConfigFile) {
-		
-		File configurationFile = null;
-		
-		if (userConfigFile!=null) {			
-			configurationFile = userConfigFile;
-		} else {
-			// default location: config file read from user's home directory
-			configurationFile = DEFAULT_CONFIG_FILE;
-		}
-		
-		System.out.println("Configuration will be loaded from file " + configurationFile.toString());
-		
-		
-		Map<String, String> properties = null;
-		try {
-			properties = DbConfigGenerator.createDatabaseProperties(configurationFile, dbName);
-			
-			System.out.println("Using database "+dbName+", jdbc url is: "+properties.get("javax.persistence.jdbc.url")); 
-			
-		} catch (IOException e) {
-			System.err.println("Problems while reading the configuration file "+configurationFile+". Error: "+e.getMessage());
-			System.exit(1);
-		}
-		
-		try {
-			this.emf = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME, properties);
 
-		} catch (PersistenceException e){	
-			e.printStackTrace();
-			System.err.println(e.getMessage());
-			System.err.println("Error initializing Entity Manager Factory");
-			System.err.println("Please check that the database '"+dbName+"' is really present and that the login parameters are correct in file "+configurationFile);
-			System.exit(1);
-		}
 	}
 
 	public EntityManager getEntityManager(){
@@ -111,302 +67,6 @@ public class DBHandler {
 		//	em = this.emf.createEntityManager();
 		
 		return this.emf.createEntityManager();
-	}
-
-	
-	/**
-	 * Persists the given PdbInfoDB, using an empty place-holder job
-	 * @param em
-	 * @param pdbInfo
-	 * @param jobId
-	 * @param inputName the input name in case of user jobs, if null then the pdbCode will be taken from pdbInfo
-	 */
-	public void persistFinishedJob(EntityManager em, PdbInfoDB pdbInfo, String jobId, String inputName){
-		
-		em.getTransaction().begin(); 
-
-		JobDB job = new JobDB();
-		job.setJobId(jobId);
-		job.setEmail(null);
-		if (inputName!=null)
-			job.setInputName(inputName);
-		else
-			job.setInputName(pdbInfo.getPdbCode());
-		job.setIp("localhost");
-		job.setStatus(StatusOfJob.FINISHED.getName());
-		job.setSubmissionDate(new Date());
-		if (inputName!=null)
-			job.setInputType(InputType.FILE.getIndex());
-		else
-			job.setInputType(InputType.PDBCODE.getIndex());
-		job.setSubmissionId("-1");
-
-		pdbInfo.setJob(job);
-		job.setPdbInfo(pdbInfo);
-				
-		em.persist(job);
-		
-		em.getTransaction().commit();
-		em.clear(); 
-	}
-	
-	/**
-	 * Persists a JobDB with given jobId, assigning error status to it
-	 * @param jobId
-	 */
-	public void persistErrorJob(EntityManager em, String jobId){
-
-		em.getTransaction().begin(); 
-		
-		JobDB job = new JobDB();
-		job.setJobId(jobId);
-		job.setEmail(null);
-		if (jobId.length()==4)
-			job.setInputName(jobId);
-		job.setIp("localhost");
-		job.setStatus(StatusOfJob.ERROR.getName());
-		job.setSubmissionDate(new Date());
-		if (jobId.length()==4)
-			job.setInputType(InputType.PDBCODE.getIndex());
-		else
-			job.setInputType(InputType.FILE.getIndex());
-		job.setSubmissionId("-1");
-		em.persist(job);
-		
-		em.getTransaction().commit();
-		em.clear();   
-		
-	}
-	
-	/**
-	 * Removes entry from the DataBase for the given jobID
-	 * @param jobID
-	 * @return true if removed; false if not
-	 */
-	public boolean removeJob(String jobID){
-		EntityManager entityManager = this.getEntityManager();
-
-		CriteriaBuilder cbJob = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<JobDB> cqJob = cbJob.createQuery(JobDB.class);
-		Root<JobDB> rootJob = cqJob.from(JobDB.class);
-		cqJob.where(cbJob.equal(rootJob.get(JobDB_.jobId), jobID));
-		cqJob.select(rootJob);
-		List<JobDB> queryJobList = entityManager.createQuery(cqJob).getResultList();
-		int querySize = queryJobList.size();
-		
-		if(querySize>0){
-			entityManager.getTransaction().begin();
-			for(JobDB job:queryJobList){
-				try{
-					// Remove the PdbScore entries related to the job
-					CriteriaBuilder cbPDB = entityManager.getCriteriaBuilder();
-
-					CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
-					Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
-					cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.job), job));
-					cqPDB.select(rootPDB);
-					List<PdbInfoDB> queryPDBList = entityManager.createQuery(cqPDB).getResultList();
-					
-					if( queryPDBList != null) for(PdbInfoDB itemPDB : queryPDBList) entityManager.remove(itemPDB);
-				
-					// Remove Job
-					entityManager.remove(job);
-					
-				}
-				catch (Throwable e){
-					System.err.println("Error in Removing Job from DB: "+e.getMessage());
-					//e.printStackTrace();
-				}
-			}
-			entityManager.getTransaction().commit();
-			entityManager.close();
-			return true;
-		}
-		else {
-			entityManager.close();
-			return false;
-		}	
-		
-	}
-	
-	/**
-	 * Checks if a non-error entry with the given jobID exists in the DataBase
-	 * Note this returns true whenever the query returns at least 1 record, i.e. it doesn't guarantee
-	 * that the entry is complete with data present in all cascading tables
-	 * @param jobID
-	 * @return 0 if not present, 1 if present and not Error; 2 if present and Error
-	 */
-	public int checkJobExist(String jobID){
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder cbJob = em.getCriteriaBuilder();
-
-		CriteriaQuery<JobDB> cqJob = cbJob.createQuery(JobDB.class);
-		Root<JobDB> rootJob = cqJob.from(JobDB.class);
-		cqJob.where(cbJob.equal(rootJob.get(JobDB_.jobId), jobID));
-		//cqJob.select(rootJob);
-		
-		// in order to make the query light-weight we only take these 3 fields for which there is 
-		// a corresponding constructor in JobDB, if there's no corresponding constructor the query fails
-		// with the simple 'select' above the query is a monster with many joins (following the full hierarchy of Job, PdbInfo etc) 
-		cqJob.multiselect(rootJob.get(JobDB_.inputName), rootJob.get(JobDB_.inputType), rootJob.get(JobDB_.status));
-		List<JobDB> queryJobList = em.createQuery(cqJob).getResultList();
-		int querySize = queryJobList.size();
-		
-		if(querySize>0) {
-			if (!queryJobList.get(0).getStatus().equals(StatusOfJob.ERROR.getName())) {
-				// present and not error
-				return 1;
-			} else {
-				// present and error
-				return 2;
-			}			
-		}
-		// not present
-		return 0;		
-	}
-
-	/**
-	 * Copies a job from this database to another database
-	 * @param dbhCopier DBHandler object to copy to
-	 * @param jobDir the directory where the webui.dat files for the job resides
-	 * @throws ClassNotFoundException 
-	 * @throws IOException 
-	 * 
-	 */
-	public void copytoDB(DBHandler dbhCopier, File jobDir) throws IOException, ClassNotFoundException{
-		EntityManager orig = this.getEntityManager();
-		EntityManager copier = dbhCopier.getEntityManager();
-		
-		//Get the job from the database
-		CriteriaBuilder cbJob = orig.getCriteriaBuilder();
-
-		CriteriaQuery<JobDB> cqJob = cbJob.createQuery(JobDB.class);
-		Root<JobDB> rootJob = cqJob.from(JobDB.class);
-		cqJob.where(cbJob.equal(rootJob.get(JobDB_.jobId), jobDir.getName()));
-		cqJob.select(rootJob);
-		JobDB queryJobOrig = orig.createQuery(cqJob).getSingleResult();
-				
-		//Create a new Job which is to be copied
-		JobDB queryJob = new JobDB(queryJobOrig.getInputName(), queryJobOrig.getInputType());
-		queryJob.setEmail(queryJobOrig.getEmail());
-		queryJob.setIp(queryJobOrig.getIp());
-		queryJob.setJobId(queryJobOrig.getJobId());
-		queryJob.setStatus(queryJobOrig.getStatus());
-		queryJob.setSubmissionDate(queryJobOrig.getSubmissionDate());
-		queryJob.setSubmissionId(queryJobOrig.getSubmissionId());
-		
-		
-		//Check if there is any PdbInfo entry 
-		CriteriaBuilder cbPDB = orig.getCriteriaBuilder();
-		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
-		Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
-		cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.job), queryJobOrig));
-		cqPDB.select(rootPDB);
-		int pdbScoreNum = orig.createQuery(cqPDB).getResultList().size();
-		
-		orig.close();		
-		
-		// Add Job to Copier database
-		copier.getTransaction().begin();
-		
-		if( pdbScoreNum >= 1) {
-			PdbInfoDB queryPDB = this.readFromSerializedFile(jobDir);
-			copier.persist(queryPDB);
-						
-			queryPDB.setJob(queryJob);
-			queryJob.setPdbInfo(queryPDB);
-			copier.persist(queryJob);
-		}
-		else copier.persist(queryJob);
-		
-		copier.getTransaction().commit();	
-		copier.close();
-		
-	}
-	
-	/**
-	 * Returns a list of user-jobs from the database
-	 * @param 
-	 * @return 
-	 */
-	public List<String> getUserJobList(){
-		EntityManager entityManager = this.getEntityManager();
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		
-		CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
-		Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-		criteriaQuery.select(jobRoot.get(JobDB_.jobId));
-		Predicate condition = criteriaBuilder.notEqual(jobRoot.get(JobDB_.submissionId), -1);
-		criteriaQuery.where(condition);
-
-		List<String> queryJobList = entityManager.createQuery(criteriaQuery).getResultList();
-		
-		entityManager.close();
-		
-		return queryJobList;
-		
-	}
-	
-	/**
-	 * Returns a list of user-jobs from the database newer than the specified date
-	 * @param afterDate
-	 * @return 
-	 */
-	public List<String> getUserJobList(Date afterDate){
-		EntityManager entityManager = this.getEntityManager();
-		
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-		
-		CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
-		Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-		criteriaQuery.select(jobRoot.get(JobDB_.jobId));
-		Predicate idCondition = criteriaBuilder.notEqual(jobRoot.get(JobDB_.submissionId), -1);
-		Predicate dateCondition = criteriaBuilder.greaterThanOrEqualTo(jobRoot.get(JobDB_.submissionDate), afterDate);
-		Predicate condition = criteriaBuilder.and(idCondition, dateCondition);
-		criteriaQuery.where(condition);
-
-		List<String> queryJobList = entityManager.createQuery(criteriaQuery).getResultList();
-		
-		entityManager.close();
-		
-		return queryJobList;
-		
-	}
-	
-	/**
-	 * Returns a PdbInfoDB object after reading it from the serialized .webui.dat file
-	 * @param jobDir directory containing the webui.dat file
-	 * @return 
-	 */
-	private PdbInfoDB readFromSerializedFile(File jobDir) throws IOException, ClassNotFoundException{		
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-		
-		CriteriaQuery<String> criteriaQuery = criteriaBuilder.createQuery(String.class);
-		Root<JobDB> jobRoot = criteriaQuery.from(JobDB.class);
-		criteriaQuery.select(jobRoot.get(JobDB_.inputName));
-		Predicate condition = criteriaBuilder.equal(jobRoot.get(JobDB_.jobId), jobDir.getName());
-		criteriaQuery.where(condition);
-
-		String pdbID = em.createQuery(criteriaQuery).getSingleResult();
-		int lastPeriodPos = pdbID.lastIndexOf('.');
-		if (lastPeriodPos >= 0)
-	    {
-			pdbID = pdbID.substring(0, lastPeriodPos);
-	    }
-		
-		File webuiFile = new File(jobDir, pdbID + ".webui.dat");
-		
-		ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
-		PdbInfoDB pdbScoreItem = (PdbInfoDB)in.readObject();
-		in.close();
-		
-		em.close();
-		
-		return pdbScoreItem;
 	}
 
 	/**
@@ -427,23 +87,24 @@ public class DBHandler {
 	 * @return
 	 */
 	private PdbInfoDB deserializePdb(EntityManager em, String pdbCode) {
-		CriteriaBuilder cbPDB = em.getCriteriaBuilder();
-
-		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
-		Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
-		cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.pdbCode), pdbCode));
-		cqPDB.select(rootPDB);
-		List<PdbInfoDB> queryPDBList = em.createQuery(cqPDB).getResultList();
-		if (queryPDBList.size()==0) return null;
-		else if (queryPDBList.size()>1) {
-			System.err.println("More than 1 PdbInfoDB returned for given PDB code: "+pdbCode);
-			return null;
-		}
-
-		// the em can't be closed here: because of LAZY fetching there can be later requests to db, should it be closed elsewhere? 
-		// em.close();
-		
-		return queryPDBList.get(0);
+//		CriteriaBuilder cbPDB = em.getCriteriaBuilder();
+//
+//		CriteriaQuery<PdbInfoDB> cqPDB = cbPDB.createQuery(PdbInfoDB.class);
+//		Root<PdbInfoDB> rootPDB = cqPDB.from(PdbInfoDB.class);
+//		cqPDB.where(cbPDB.equal(rootPDB.get(PdbInfoDB_.pdbCode), pdbCode));
+//		cqPDB.select(rootPDB);
+//		List<PdbInfoDB> queryPDBList = em.createQuery(cqPDB).getResultList();
+//		if (queryPDBList.size()==0) return null;
+//		else if (queryPDBList.size()>1) {
+//			System.err.println("More than 1 PdbInfoDB returned for given PDB code: "+pdbCode);
+//			return null;
+//		}
+//
+//		// the em can't be closed here: because of LAZY fetching there can be later requests to db, should it be closed elsewhere?
+//		// em.close();
+//
+//		return queryPDBList.get(0);
+		return null;
 	}
 
 	/**
@@ -512,40 +173,41 @@ public class DBHandler {
 	 * @return
 	 */
 	public int getClusterIdForPdbCodeAndChain(String pdbCode, String chain, int clusterLevel) {
-		SingularAttribute<SeqClusterDB, Integer> attribute = getSeqClusterDBAttribute(clusterLevel);
-		if(attribute == null) {
-			System.err.println("Invalid cluster level "+clusterLevel);
-			return -1;
-		}
-		
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-
-		CriteriaQuery<Integer> cq = cb.createQuery(Integer.class);
-		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
-		Join<SeqClusterDB, ChainClusterDB> join = root.join(SeqClusterDB_.chainCluster);
-		
-		cq.where(cb.equal(root.get(SeqClusterDB_.pdbCode), pdbCode), cb.or(
-				cb.equal(join.get(ChainClusterDB_.memberChains),chain),
-				cb.like(join.get(ChainClusterDB_.memberChains),chain+",%"),
-				cb.like(join.get(ChainClusterDB_.memberChains),"%,"+chain),
-				cb.like(join.get(ChainClusterDB_.memberChains),"%,"+chain+",%")
-				));
-
-		cq.select(root.get(attribute));
-		
-		List<Integer> results = em.createQuery(cq).getResultList();
-		
-		//em.close();
-		
-		if (results.size()==0) return -1;
-		else if (results.size()>1) {
-			System.err.println("More than 1 SeqClusterDB returned for given PDB code and chain: "+pdbCode+chain);
-			return -1;
-		}
-
-		return results.get(0);
+//		SingularAttribute<SeqClusterDB, Integer> attribute = getSeqClusterDBAttribute(clusterLevel);
+//		if(attribute == null) {
+//			System.err.println("Invalid cluster level "+clusterLevel);
+//			return -1;
+//		}
+//
+//		EntityManager em = this.getEntityManager();
+//
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//
+//		CriteriaQuery<Integer> cq = cb.createQuery(Integer.class);
+//		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+//		Join<SeqClusterDB, ChainClusterDB> join = root.join(SeqClusterDB_.chainCluster);
+//
+//		cq.where(cb.equal(root.get(SeqClusterDB_.pdbCode), pdbCode), cb.or(
+//				cb.equal(join.get(ChainClusterDB_.memberChains),chain),
+//				cb.like(join.get(ChainClusterDB_.memberChains),chain+",%"),
+//				cb.like(join.get(ChainClusterDB_.memberChains),"%,"+chain),
+//				cb.like(join.get(ChainClusterDB_.memberChains),"%,"+chain+",%")
+//				));
+//
+//		cq.select(root.get(attribute));
+//
+//		List<Integer> results = em.createQuery(cq).getResultList();
+//
+//		//em.close();
+//
+//		if (results.size()==0) return -1;
+//		else if (results.size()>1) {
+//			System.err.println("More than 1 SeqClusterDB returned for given PDB code and chain: "+pdbCode+chain);
+//			return -1;
+//		}
+//
+//		return results.get(0);
+		return 0;
 	}
 	
 	/**
@@ -555,19 +217,20 @@ public class DBHandler {
 	 * @return
 	 */
 	public List<ChainClusterDB> getClusterMembers(int clusterLevel, int seqClusterUid) {
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-
-		CriteriaQuery<ChainClusterDB> cq = cb.createQuery(ChainClusterDB.class);
-		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
-
-		cq.where(cb.equal(root.get(getSeqClusterDBAttribute(clusterLevel)), seqClusterUid));
-
-		cq.select(root.get(SeqClusterDB_.chainCluster));
-		
-		List<ChainClusterDB> results = em.createQuery(cq).getResultList();
-		return results;
+//		EntityManager em = this.getEntityManager();
+//
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//
+//		CriteriaQuery<ChainClusterDB> cq = cb.createQuery(ChainClusterDB.class);
+//		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+//
+//		cq.where(cb.equal(root.get(getSeqClusterDBAttribute(clusterLevel)), seqClusterUid));
+//
+//		cq.select(root.get(SeqClusterDB_.chainCluster));
+//
+//		List<ChainClusterDB> results = em.createQuery(cq).getResultList();
+//		return results;
+		return null;
 	}
 	
 	/**
@@ -579,69 +242,70 @@ public class DBHandler {
 	 * @return
 	 */
 	public Map<InterfaceDB,Integer> getInterfacesForChainCluster(ChainClusterDB cluster) {
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		
-		String[] chains = cluster.getMemberChains().split(",");
-		PdbInfoDB pdbInfo = cluster.getPdbInfo();
+//		EntityManager em = this.getEntityManager();
+//
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//
+//		String[] chains = cluster.getMemberChains().split(",");
+//		PdbInfoDB pdbInfo = cluster.getPdbInfo();
+//
+//		// Start with list of interfaces which match chain1
+//		CriteriaQuery<InterfaceDB> cq = cb.createQuery(InterfaceDB.class);
+//		Root<InterfaceDB> root = cq.from(InterfaceDB.class);
+//		Join<InterfaceDB,InterfaceClusterDB> clust = root.join(InterfaceDB_.interfaceCluster);
+//
+//		Predicate[] chainPredicates = new Predicate[chains.length];
+//		for(int i=0;i<chains.length;i++) {
+//			chainPredicates[i] = cb.equal(root.get(InterfaceDB_.chain1), chains[i]);
+//		}
+//
+//		// Same PDB and any of the chains as chain1
+//		cq.where(cb.and(
+//				cb.equal(clust.get(InterfaceClusterDB_.pdbInfo), pdbInfo),
+//				cb.or(chainPredicates) ));
+//
+//		cq.select(clust.getParent());
+//
+//		List<InterfaceDB> results = em.createQuery(cq).getResultList();
+//
+//		// add to the map with "1"
+//		Map<InterfaceDB, Integer> interfaces = new HashMap<>();
+//		for(InterfaceDB r : results) {
+//			interfaces.put(r,1);
+//		}
+//
+//		// Now search for chain2
+//
+//		cq = cb.createQuery(InterfaceDB.class);
+//		root = cq.from(InterfaceDB.class);
+//		clust = root.join(InterfaceDB_.interfaceCluster);
+//
+//		chainPredicates = new Predicate[chains.length];
+//		for(int i=0;i<chains.length;i++) {
+//			chainPredicates[i] = cb.equal(root.get(InterfaceDB_.chain2), chains[i]);
+//		}
+//
+//		// Same PDB and any of the chains as chain1
+//		cq.where(cb.and(
+//				cb.equal(clust.get(InterfaceClusterDB_.pdbInfo), pdbInfo),
+//				cb.or(chainPredicates) ));
+//
+//		cq.select(clust.getParent());
+//
+//		results = em.createQuery(cq).getResultList();
+//
+//		// add to the map with "2"
+//		for(InterfaceDB r : results) {
+//			if( interfaces.containsKey(r)) {
+//				interfaces.put(r,3);
+//			} else {
+//				interfaces.put(r,2);
+//			}
+//		}
+//
+//		return interfaces;
 
-		// Start with list of interfaces which match chain1
-		CriteriaQuery<InterfaceDB> cq = cb.createQuery(InterfaceDB.class);
-		Root<InterfaceDB> root = cq.from(InterfaceDB.class);
-		Join<InterfaceDB,InterfaceClusterDB> clust = root.join(InterfaceDB_.interfaceCluster);
-
-		Predicate[] chainPredicates = new Predicate[chains.length];
-		for(int i=0;i<chains.length;i++) {
-			chainPredicates[i] = cb.equal(root.get(InterfaceDB_.chain1), chains[i]);
-		}
-		
-		// Same PDB and any of the chains as chain1
-		cq.where(cb.and(
-				cb.equal(clust.get(InterfaceClusterDB_.pdbInfo), pdbInfo),
-				cb.or(chainPredicates) ));
-		
-		cq.select(clust.getParent());
-		
-		List<InterfaceDB> results = em.createQuery(cq).getResultList();
-		
-		// add to the map with "1"
-		Map<InterfaceDB, Integer> interfaces = new HashMap<>();
-		for(InterfaceDB r : results) {
-			interfaces.put(r,1);
-		}
-		
-		// Now search for chain2
-
-		cq = cb.createQuery(InterfaceDB.class);
-		root = cq.from(InterfaceDB.class);
-		clust = root.join(InterfaceDB_.interfaceCluster);
-
-		chainPredicates = new Predicate[chains.length];
-		for(int i=0;i<chains.length;i++) {
-			chainPredicates[i] = cb.equal(root.get(InterfaceDB_.chain2), chains[i]);
-		}
-		
-		// Same PDB and any of the chains as chain1
-		cq.where(cb.and(
-				cb.equal(clust.get(InterfaceClusterDB_.pdbInfo), pdbInfo),
-				cb.or(chainPredicates) ));
-		
-		cq.select(clust.getParent());
-		
-		results = em.createQuery(cq).getResultList();
-
-		// add to the map with "2"
-		for(InterfaceDB r : results) {
-			if( interfaces.containsKey(r)) {
-				interfaces.put(r,3);
-			} else {
-				interfaces.put(r,2);
-			}
-		}
-		
-		return interfaces;
-
+		return null;
 	}
 	
 	/**
@@ -651,96 +315,98 @@ public class DBHandler {
 	 */
 	public Set<Integer> getAllClusterIds(int clusterLevel) {
 		
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-
-		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
-		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
-
-		cq.where(cb.greaterThan(root.get(SeqClusterDB_.c100), 0)); 
-
-		cq.multiselect(root.get(SeqClusterDB_.c100),root.get(SeqClusterDB_.c95),root.get(SeqClusterDB_.c90),
-				root.get(SeqClusterDB_.c80),root.get(SeqClusterDB_.c70),root.get(SeqClusterDB_.c60),
-				root.get(SeqClusterDB_.c50),root.get(SeqClusterDB_.c40),root.get(SeqClusterDB_.c30));
-
-		Set<Integer> list = new TreeSet<Integer>();
-
-		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
-
-		//em.close();
-		
-		int clusterId = -1;
-		for (SeqClusterDB result:results) {
-			switch (clusterLevel) {
-			case 100:
-				clusterId = result.getC100();
-				break;
-			case 95:
-				clusterId = result.getC95();
-				break;
-			case 90:
-				clusterId = result.getC90();
-				break;
-			case 80:
-				clusterId = result.getC80();
-				break;
-			case 70:
-				clusterId = result.getC70();
-				break;
-			case 60:
-				clusterId = result.getC60();
-				break;
-			case 50:				
-				clusterId = result.getC50();
-				break;
-			case 40:
-				clusterId = result.getC40();
-				break;
-			case 30:
-				clusterId = result.getC30();
-				break;
-
-			}
-			if (clusterId>0) list.add(clusterId);
-		}
-		return list;
+//		EntityManager em = this.getEntityManager();
+//
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//
+//		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
+//		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+//
+//		cq.where(cb.greaterThan(root.get(SeqClusterDB_.c100), 0));
+//
+//		cq.multiselect(root.get(SeqClusterDB_.c100),root.get(SeqClusterDB_.c95),root.get(SeqClusterDB_.c90),
+//				root.get(SeqClusterDB_.c80),root.get(SeqClusterDB_.c70),root.get(SeqClusterDB_.c60),
+//				root.get(SeqClusterDB_.c50),root.get(SeqClusterDB_.c40),root.get(SeqClusterDB_.c30));
+//
+//		Set<Integer> list = new TreeSet<Integer>();
+//
+//		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
+//
+//		//em.close();
+//
+//		int clusterId = -1;
+//		for (SeqClusterDB result:results) {
+//			switch (clusterLevel) {
+//			case 100:
+//				clusterId = result.getC100();
+//				break;
+//			case 95:
+//				clusterId = result.getC95();
+//				break;
+//			case 90:
+//				clusterId = result.getC90();
+//				break;
+//			case 80:
+//				clusterId = result.getC80();
+//				break;
+//			case 70:
+//				clusterId = result.getC70();
+//				break;
+//			case 60:
+//				clusterId = result.getC60();
+//				break;
+//			case 50:
+//				clusterId = result.getC50();
+//				break;
+//			case 40:
+//				clusterId = result.getC40();
+//				break;
+//			case 30:
+//				clusterId = result.getC30();
+//				break;
+//
+//			}
+//			if (clusterId>0) list.add(clusterId);
+//		}
+//		return list;
+		return null;
 	}
 	
 	private SingularAttribute<SeqClusterDB, Integer> getSeqClusterDBAttribute(int clusterLevel) {
-		SingularAttribute<SeqClusterDB, Integer> attribute = null;
-		
-		switch (clusterLevel) {
-		case 100:
-			attribute = SeqClusterDB_.c100;
-			break;
-		case 95:
-			attribute = SeqClusterDB_.c95;
-			break;
-		case 90:
-			attribute = SeqClusterDB_.c90;
-			break;
-		case 80:
-			attribute = SeqClusterDB_.c80;
-			break;
-		case 70:
-			attribute = SeqClusterDB_.c70;
-			break;
-		case 60:
-			attribute = SeqClusterDB_.c60;
-			break;
-		case 50:
-			attribute = SeqClusterDB_.c50;
-			break;
-		case 40:
-			attribute = SeqClusterDB_.c40;
-			break;
-		case 30:
-			attribute = SeqClusterDB_.c30;
-			break;
-			
-		}
-		return attribute;
+//		SingularAttribute<SeqClusterDB, Integer> attribute = null;
+//
+//		switch (clusterLevel) {
+//		case 100:
+//			attribute = SeqClusterDB_.c100;
+//			break;
+//		case 95:
+//			attribute = SeqClusterDB_.c95;
+//			break;
+//		case 90:
+//			attribute = SeqClusterDB_.c90;
+//			break;
+//		case 80:
+//			attribute = SeqClusterDB_.c80;
+//			break;
+//		case 70:
+//			attribute = SeqClusterDB_.c70;
+//			break;
+//		case 60:
+//			attribute = SeqClusterDB_.c60;
+//			break;
+//		case 50:
+//			attribute = SeqClusterDB_.c50;
+//			break;
+//		case 40:
+//			attribute = SeqClusterDB_.c40;
+//			break;
+//		case 30:
+//			attribute = SeqClusterDB_.c30;
+//			break;
+//
+//		}
+//		return attribute;
+		return null;
 	}
 	
 	/**
@@ -751,35 +417,36 @@ public class DBHandler {
 	 */
 	public Map<Integer, ChainClusterDB> getAllChainsWithRef() {
 		
-		EntityManager em = this.getEntityManager();
-		
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-
-		CriteriaQuery<ChainClusterDB> cq = cb.createQuery(ChainClusterDB.class);
-		Root<ChainClusterDB> root = cq.from(ChainClusterDB.class);
-
-		cq.where(cb.isNotNull(root.get(ChainClusterDB_.pdbCode)));
-		cq.where(cb.isTrue(root.get(ChainClusterDB_.hasUniProtRef)));
-
-		cq.multiselect(
-				root.get(ChainClusterDB_.uid),
-				root.get(ChainClusterDB_.pdbCode),
-				root.get(ChainClusterDB_.repChain),
-				root.get(ChainClusterDB_.pdbAlignedSeq),
-				root.get(ChainClusterDB_.msaAlignedSeq),
-				root.get(ChainClusterDB_.refAlignedSeq));
-
-		List<ChainClusterDB> results = em.createQuery(cq).getResultList();
-		
-		//em.close();
-		
-		Map<Integer, ChainClusterDB> map = new TreeMap<Integer, ChainClusterDB>();
-		
-		for (ChainClusterDB result:results) {
-			int uid = result.getUid();
-			map.put(uid, result);
-		}
-		return map;
+//		EntityManager em = this.getEntityManager();
+//
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//
+//		CriteriaQuery<ChainClusterDB> cq = cb.createQuery(ChainClusterDB.class);
+//		Root<ChainClusterDB> root = cq.from(ChainClusterDB.class);
+//
+//		cq.where(cb.isNotNull(root.get(ChainClusterDB_.pdbCode)));
+//		cq.where(cb.isTrue(root.get(ChainClusterDB_.hasUniProtRef)));
+//
+//		cq.multiselect(
+//				root.get(ChainClusterDB_.uid),
+//				root.get(ChainClusterDB_.pdbCode),
+//				root.get(ChainClusterDB_.repChain),
+//				root.get(ChainClusterDB_.pdbAlignedSeq),
+//				root.get(ChainClusterDB_.msaAlignedSeq),
+//				root.get(ChainClusterDB_.refAlignedSeq));
+//
+//		List<ChainClusterDB> results = em.createQuery(cq).getResultList();
+//
+//		//em.close();
+//
+//		Map<Integer, ChainClusterDB> map = new TreeMap<Integer, ChainClusterDB>();
+//
+//		for (ChainClusterDB result:results) {
+//			int uid = result.getUid();
+//			map.put(uid, result);
+//		}
+//		return map;
+		return null;
 	}
 	
 	/**
@@ -787,26 +454,27 @@ public class DBHandler {
 	 * @return
 	 */
 	public boolean checkSeqClusterEmpty() {
-		EntityManager em = this.getEntityManager();
-
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-
-		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
-		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
-		
-		cq.multiselect(root.get(SeqClusterDB_.c100),root.get(SeqClusterDB_.c95),root.get(SeqClusterDB_.c90),
-				root.get(SeqClusterDB_.c80),root.get(SeqClusterDB_.c70),root.get(SeqClusterDB_.c60),
-				root.get(SeqClusterDB_.c50),root.get(SeqClusterDB_.c40),root.get(SeqClusterDB_.c30));
-
-		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
-		
-		//em.close();
-		
-		int size = results.size();
-		
-		if(size==0) 
-			return true;
-	
+//		EntityManager em = this.getEntityManager();
+//
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//
+//		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
+//		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
+//
+//		cq.multiselect(root.get(SeqClusterDB_.c100),root.get(SeqClusterDB_.c95),root.get(SeqClusterDB_.c90),
+//				root.get(SeqClusterDB_.c80),root.get(SeqClusterDB_.c70),root.get(SeqClusterDB_.c60),
+//				root.get(SeqClusterDB_.c50),root.get(SeqClusterDB_.c40),root.get(SeqClusterDB_.c30));
+//
+//		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
+//
+//		//em.close();
+//
+//		int size = results.size();
+//
+//		if(size==0)
+//			return true;
+//
+//		return false;
 		return false;
 
 	}

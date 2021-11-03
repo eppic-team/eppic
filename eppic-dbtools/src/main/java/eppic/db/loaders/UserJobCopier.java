@@ -1,5 +1,6 @@
-package eppic.db.tools;
+package eppic.db.loaders;
 
+import eppic.db.mongoutils.DbPropertiesReader;
 import gnu.getopt.Getopt;
 
 import java.io.BufferedReader;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+// TODO implement with mongo
 public class UserJobCopier {
 
 	private static boolean isUserJob(String str){
@@ -34,7 +36,7 @@ public class UserJobCopier {
 						"  [-f <file>] : select only the job identifiers listed in given file\n" +
 						"  [-F]        : force removal of entries in target database if already present\n"+
 						"  [-c <file>] : a configuration file containing the database access parameters, if not provided\n" +
-						"                the config will be read from file "+DBHandler.DEFAULT_CONFIG_FILE_NAME+" in home dir\n";
+						"                the config will be read from file "+ DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME +" in home dir\n";
 
 		File jobDirectoriesRoot = null;
 		
@@ -129,101 +131,101 @@ public class UserJobCopier {
 		}
 		
 		// initialising the db connections
-		DBHandler sourceDbh = new DBHandler(sourceDbName, configFile);
-		DBHandler targetDbh = new DBHandler(targetDbName, configFile);
-
-
-		//Print Mode of Usage
-		
-		if(remove) {
-			System.out.println("\n\nRemoving data from source DB '"+sourceDbName+"'\n");
-		} else {
-			System.out.println("\n\nCopying data from source DB '"+sourceDbName+"' to target DB '"+targetDbName+"'\n");	
-		}
-		if(force) System.out.println("Forcing to delete and copy data");
-
-		// Get list of jobid's from database to be processed
-		List<String> jobs = new ArrayList<String>();
-
-		if (selTime) {			
-			jobs = sourceDbh.getUserJobList(afterDate);
-			System.out.println("Selected user jobs from source DB after date " + afterDate +
-					": "+jobs.size()+" jobs in total.");
-		} else {
-			jobs = sourceDbh.getUserJobList();
-			System.out.println("Selected all user jobs from source DB: "+jobs.size()+" jobs in total.");
-		}
-
-		if (selFromFile!=null) {
-			System.out.println("Selecting user jobs from file " + selFromFile +" ...");
-			BufferedReader selFromFileRead = new BufferedReader(new FileReader(selFromFile));
-			String line;
-			while ((line=selFromFileRead.readLine())!=null) {
-				if(isUserJob(line)) jobs.add(line);
-				else System.err.println("Line in File < " + line + " > is not a user job. Skipping...");
-			}
-			selFromFileRead.close();
-			System.out.println("Read "+jobs.size()+" valid user job identifiers from file ");
-		}
-
-		//Start Processing
-
-		for (String job:jobs) {
-			long start = System.currentTimeMillis();
-
-			System.out.print(job + " : ");
-
-			File jobDir = new File(jobDirectoriesRoot, job);
-			if(!jobDir.isDirectory()){
-				System.out.println(" Directory "+jobDir+" not present. Skipping... ");
-				continue;
-			}
-
-			//Check if jobs are really present in the source DB (can only happen when selecting jobs from file)
-			if (selFromFile!=null && sourceDbh.checkJobExist(job)==0) {
-				System.out.println(" Job "+job+" not present in source DB '"+sourceDbName+"'. Skipping... ");
-				continue;
-			}
-
-			try {
-
-				if (!remove) {
-					// MODE COPY
-					if(targetDbh.checkJobExist(job)!=0) {
-						System.out.print(" Already present in target DB. ");
-						if (force) {
-							System.out.print(" Removing and copying... ");
-							targetDbh.removeJob(job);
-							sourceDbh.copytoDB(targetDbh, jobDir);
-						} else System.out.print(" Skipping... ");
-						
-					} else {
-						System.out.print(" Copying... ");
-						sourceDbh.copytoDB(targetDbh, jobDir);
-					}
-					
-				} else {
-					//MODE REMOVE
-					if(sourceDbh.checkJobExist(job)!=0) {
-						System.out.print(" Present in source DB. Removing... ");
-						sourceDbh.removeJob(job);
-					} else {
-						System.out.print(" Not present in source DB. Skipping... ");
-					}
-				}
-
-
-			} catch (Exception e) {
-				System.err.print("Unexpected error occured while processing job "+job);
-				System.err.println(e.getMessage());
-				//System.err.println(e.getStackTrace());
-			}
-			
-			long end = System.currentTimeMillis();
-			System.out.print(((end-start)/1000)+"s\n");
-
-		}
-
+//		DBHandler sourceDbh = new DBHandler(sourceDbName, configFile);
+//		DBHandler targetDbh = new DBHandler(targetDbName, configFile);
+//
+//
+//		//Print Mode of Usage
+//
+//		if(remove) {
+//			System.out.println("\n\nRemoving data from source DB '"+sourceDbName+"'\n");
+//		} else {
+//			System.out.println("\n\nCopying data from source DB '"+sourceDbName+"' to target DB '"+targetDbName+"'\n");
+//		}
+//		if(force) System.out.println("Forcing to delete and copy data");
+//
+//		// Get list of jobid's from database to be processed
+//		List<String> jobs = new ArrayList<String>();
+//
+//		if (selTime) {
+//			jobs = sourceDbh.getUserJobList(afterDate);
+//			System.out.println("Selected user jobs from source DB after date " + afterDate +
+//					": "+jobs.size()+" jobs in total.");
+//		} else {
+//			jobs = sourceDbh.getUserJobList();
+//			System.out.println("Selected all user jobs from source DB: "+jobs.size()+" jobs in total.");
+//		}
+//
+//		if (selFromFile!=null) {
+//			System.out.println("Selecting user jobs from file " + selFromFile +" ...");
+//			BufferedReader selFromFileRead = new BufferedReader(new FileReader(selFromFile));
+//			String line;
+//			while ((line=selFromFileRead.readLine())!=null) {
+//				if(isUserJob(line)) jobs.add(line);
+//				else System.err.println("Line in File < " + line + " > is not a user job. Skipping...");
+//			}
+//			selFromFileRead.close();
+//			System.out.println("Read "+jobs.size()+" valid user job identifiers from file ");
+//		}
+//
+//		//Start Processing
+//
+//		for (String job:jobs) {
+//			long start = System.currentTimeMillis();
+//
+//			System.out.print(job + " : ");
+//
+//			File jobDir = new File(jobDirectoriesRoot, job);
+//			if(!jobDir.isDirectory()){
+//				System.out.println(" Directory "+jobDir+" not present. Skipping... ");
+//				continue;
+//			}
+//
+//			//Check if jobs are really present in the source DB (can only happen when selecting jobs from file)
+//			if (selFromFile!=null && sourceDbh.checkJobExist(job)==0) {
+//				System.out.println(" Job "+job+" not present in source DB '"+sourceDbName+"'. Skipping... ");
+//				continue;
+//			}
+//
+//			try {
+//
+//				if (!remove) {
+//					// MODE COPY
+//					if(targetDbh.checkJobExist(job)!=0) {
+//						System.out.print(" Already present in target DB. ");
+//						if (force) {
+//							System.out.print(" Removing and copying... ");
+//							targetDbh.removeJob(job);
+//							sourceDbh.copytoDB(targetDbh, jobDir);
+//						} else System.out.print(" Skipping... ");
+//
+//					} else {
+//						System.out.print(" Copying... ");
+//						sourceDbh.copytoDB(targetDbh, jobDir);
+//					}
+//
+//				} else {
+//					//MODE REMOVE
+//					if(sourceDbh.checkJobExist(job)!=0) {
+//						System.out.print(" Present in source DB. Removing... ");
+//						sourceDbh.removeJob(job);
+//					} else {
+//						System.out.print(" Not present in source DB. Skipping... ");
+//					}
+//				}
+//
+//
+//			} catch (Exception e) {
+//				System.err.print("Unexpected error occured while processing job "+job);
+//				System.err.println(e.getMessage());
+//				//System.err.println(e.getStackTrace());
+//			}
+//
+//			long end = System.currentTimeMillis();
+//			System.out.print(((end-start)/1000)+"s\n");
+//
+//		}
+//
 	}//end Main
 
 }
