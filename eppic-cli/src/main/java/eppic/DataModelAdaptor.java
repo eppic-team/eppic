@@ -89,6 +89,7 @@ public class DataModelAdaptor {
 	
 	public DataModelAdaptor() {
 		pdbInfo = new PdbInfoDB();
+		interfFeatures = new ArrayList<>();
 		interfId2Warnings = new HashMap<Integer, HashSet<String>>();
 	}
 	
@@ -1530,8 +1531,8 @@ public class DataModelAdaptor {
 		InterfaceResidueFeaturesDB features = new InterfaceResidueFeaturesDB();
 
 		features.setInterfaceId(interf.getId());
-		// TODO is this the right job id??? Note here we can't use pdbCode because that's not set for user files
-		features.setJobId(pdbInfo.getJob().getJobId());
+		// TODO set the job id. This doesn't work because job is null. Is this the right way??? Note here we can't use pdbCode because that's not set for user files
+		//features.setJobId(pdbInfo.getJob().getJobId());
 
 		List<ResidueBurialDB> resBurials1 = new ArrayList<>();
 		List<ResidueBurialDB> resBurials2 = new ArrayList<>();
