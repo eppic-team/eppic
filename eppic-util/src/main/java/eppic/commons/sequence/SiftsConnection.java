@@ -26,8 +26,6 @@ import eppic.commons.util.Interval;
  * @author duarte, stehr
  */
 public class SiftsConnection {
-	
-	public static final String PDB2UNIPROT_URL = "ftp://ftp.ebi.ac.uk/pub/databases/msd/sifts/text/pdb_chain_uniprot.lst";
 
 	private static final Pattern URL_PATTERN = Pattern.compile("^\\w+://.*"); 
 	
@@ -53,8 +51,8 @@ public class SiftsConnection {
 	}
 
 	/**
-	 * Parses the SIFTS table and stores pdb2uniprot and uniprot2pdb maps.
-	 * @param fileURL a URL pointing to the SIFTS pdb to UniProt mapping file or
+	 * Parses the SIFTS file and stores pdb2uniprot and uniprot2pdb maps.
+	 * @param fileURL a URL pointing to the csv SIFTS pdb to UniProt mapping file or
 	 * a path to a local file
 	 * @throws IOException
 	 */
@@ -76,9 +74,8 @@ public class SiftsConnection {
 	}
 
 	/**
-	 * Parses the SIFTS table and stores pdb2uniprot and uniprot2pdb maps.
-	 * @param reader a URL pointing to the SIFTS pdb to UniProt mapping file or
-	 * a path to a local file
+	 * Parses the SIFTS csv and stores pdb2uniprot and uniprot2pdb maps.
+	 * @param reader a reader pointing to a stream with the SIFTS pdb to UniProt mapping in csv format
 	 * @throws IOException
 	 */
 	protected void parsePdb2Uniprot(Reader reader) throws IOException {
@@ -89,7 +86,7 @@ public class SiftsConnection {
 		while ((line=br.readLine())!=null) {
 			lineCount++;
 			if (line.startsWith("#") || line.startsWith("PDB") || line.trim().isEmpty()) continue;
-			String[] fields = line.split("\\s+");
+			String[] fields = line.split(",");
 			
 			if (fields.length!=9) {
 				throw new IOException("The SIFTS file does not seem to be in the right format. Line "+lineCount+" does not have exactly 9 fields");
