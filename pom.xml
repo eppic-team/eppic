@@ -34,7 +34,7 @@
 		<hibernate.validator.version>5.4.2.Final</hibernate.validator.version>
 		<mysql.connector.version>5.1.45</mysql.connector.version>
 		<jgrapht.version>1.0.1</jgrapht.version>
-		<biojava.version>6.0.3</biojava.version>
+		<biojava.version>6.0.5</biojava.version>
 	</properties>
 
 	<build>
