@@ -5,21 +5,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.ebi.kraken.interfaces.uniparc.UniParcEntry;
-import uk.ac.ebi.kraken.interfaces.uniprot.NcbiTaxon;
-import uk.ac.ebi.kraken.interfaces.uniprot.NcbiTaxonomyId;
-import uk.ac.ebi.kraken.interfaces.uniprot.UniProtEntry;
-import uk.ac.ebi.uniprot.dataservice.client.Client;
-import uk.ac.ebi.uniprot.dataservice.client.QueryResult;
-import uk.ac.ebi.uniprot.dataservice.client.ServiceFactory;
-import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
-import uk.ac.ebi.uniprot.dataservice.client.uniparc.UniParcService;
-import uk.ac.ebi.uniprot.dataservice.client.uniprot.UniProtQueryBuilder;
-import uk.ac.ebi.uniprot.dataservice.client.uniprot.UniProtService;
-import uk.ac.ebi.uniprot.dataservice.query.Query;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Our interface to the Uniprot Java API.
@@ -45,25 +40,26 @@ public class UniProtConnection {
 	 * Maximum number of retries
 	 */
 	private static final int MAX_NUM_RETRIES = 5;
+
+	private static final String UNIPROT_ENDPOINT = "https://www.ebi.ac.uk/proteins/api/proteins/";
+	private static final String UNIPARC_ENDPOINT = "https://www.ebi.ac.uk/proteins/api/uniparc/upi/";
 	
 	/*--------------------------- member variables --------------------------*/
-	private UniProtService uniProtService;
-	private UniParcService uniparcService;
-	
+	private final Client client;
+	private final ObjectMapper objectMapper;
 	private HashSet<String> nonReturnedIdsLastMultipleRequest;
 	
 	/*----------------------------- constructors ----------------------------*/
 	
 	public UniProtConnection() {
-		ServiceFactory serviceFactoryInstance = Client.getServiceFactoryInstance();
-		
 
-	    // Create UniProt query service
-	    uniProtService = serviceFactoryInstance.getUniProtQueryService();
-	    uniProtService.start();
-	    uniparcService = serviceFactoryInstance.getUniParcQueryService();
-	    uniparcService.start();
-	    	    
+			ClientConfig clientConfig = new ClientConfig();
+			//clientConfig.register(MultiPartFeature.class);
+
+			client = ClientBuilder.newClient(clientConfig);
+
+			objectMapper = new ObjectMapper();
+
 	}
 	
 	/*---------------------------- public methods ---------------------------*/
@@ -75,10 +71,35 @@ public class UniProtConnection {
 	 * @param uniProtId
 	 * @return 
 	 * @throws NoMatchFoundException if no match returned by UniProt JAPI
-	 * @throws ServiceException if problems getting the entry
+	 * @throws IOException if problems getting the entry
 	 */
-	public UniProtEntry getEntry(String uniProtId) throws NoMatchFoundException, ServiceException {
-		UniProtEntry entry = uniProtService.getEntry(uniProtId);
+	public UniprotEntry getEntry(String uniProtId) throws NoMatchFoundException, IOException {
+
+		// Proteins API: https://www.ebi.ac.uk/proteins/api/proteins/A0A0G2ZPK8
+
+		String request = UNIPROT_ENDPOINT + uniProtId;
+		Response response = getServiceResponse(request);
+
+		JsonNode node = objectMapper.readValue(response.readEntity(String.class), JsonNode.class);
+		JsonNode accession = node.get("accession");
+		String uniId = accession.asText();
+		if (!uniId.equals(uniProtId)) {
+			throw new IOException("Returned id ("+uniId+") is different from request id ("+uniProtId+") for request " + request);
+		}
+		JsonNode organism = node.get("organism");
+		JsonNode taxonomy = organism.get("taxonomy");
+		JsonNode seqOuterNode = node.get("sequence");
+		JsonNode seqInnerNode = seqOuterNode.get("sequence");
+		String seq = seqInnerNode.asText();
+		Sequence seqObj = new Sequence();
+		seqObj.setSeq(seq);
+		seqObj.setName(uniId);
+		seqObj.setType(true);
+		UniprotEntry entry = new UniprotEntry(uniId);
+		entry.setUniprotSeq(seqObj);
+		entry.setTaxId(taxonomy.asInt());
+		// TODO set taxons
+
 		if (entry==null) throw new NoMatchFoundException("No UniProt entry found for UniProt id "+uniProtId);
 		return entry;
 	}
@@ -88,9 +109,12 @@ public class UniProtConnection {
 	 * @param uniparcId
 	 * @return
 	 * @throws NoMatchFoundException
-	 * @throws ServiceException
+	 * @throws IOException
 	 */
-	public UniParcEntry getUniparcEntry(String uniparcId) throws NoMatchFoundException, ServiceException {
+	public UniParcEntry getUniparcEntry(String uniparcId) throws NoMatchFoundException, IOException {
+
+		// Proteins API: https://www.ebi.ac.uk/proteins/api/uniparc/upi/UPI00000217E5
+
 		UniParcEntry entry = uniparcService.getEntry(uniparcId);
 		if (entry==null) throw new NoMatchFoundException("No Uniparc entry found for Uniparc id "+uniparcId);
 		return entry;
@@ -105,9 +129,9 @@ public class UniProtConnection {
 	 * @param uniProtId
 	 * @return
 	 * @throws NoMatchFoundException if no match returned by UniProt JAPI
-	 * @throws ServiceException if problems getting the entry
+	 * @throws IOException if problems getting the entry
 	 */
-	public UnirefEntry getUnirefEntry(String uniProtId) throws NoMatchFoundException, ServiceException {
+	public UnirefEntry getUnirefEntry(String uniProtId) throws NoMatchFoundException, IOException {
 		List<String> taxons = new ArrayList<>();
 		
 		UniProtEntry entry = getEntry(uniProtId);
@@ -135,9 +159,9 @@ public class UniProtConnection {
 	 * @param uniProtId the uniprot identifier
 	 * @return
 	 * @throws NoMatchFoundException if no match returned by UniProt JAPI
-	 * @throws ServiceException if all {@value #MAX_NUM_RETRIES} retries result in ServiceExceptions
+	 * @throws IOException if all {@value #MAX_NUM_RETRIES} retries result in ServiceExceptions
 	 */
-	public UnirefEntry getUnirefEntryWithRetry(String uniProtId) throws NoMatchFoundException, ServiceException {
+	public UnirefEntry getUnirefEntryWithRetry(String uniProtId) throws NoMatchFoundException, IOException {
 		for (int i=1; i<=MAX_NUM_RETRIES; i++) {
 			if (i!=1) {
 				try {
@@ -169,9 +193,9 @@ public class UniProtConnection {
 	 * in the input list or things can go wrong.
 	 * @param idsList a list of uniprot ids
 	 * @return
-	 * @throws ServiceException if problems getting the entries
+	 * @throws IOException if problems getting the entries
 	 */
-	public QueryResult<UniProtEntry> getMultipleEntries(List<String> idsList) throws ServiceException {
+	public QueryResult<UniProtEntry> getMultipleEntries(List<String> idsList) throws IOException {
 	    Query query = UniProtQueryBuilder.accessions(new HashSet<>(idsList));
 	    return uniProtService.getEntries(query); 
 	}
@@ -184,9 +208,9 @@ public class UniProtConnection {
 	 * @param uniprotIds
 	 * @return
 	 * @throws IOException
-	 * @throws ServiceException if problems getting the entries 
+	 * @throws IOException if problems getting the entries
 	 */
-	public List<UnirefEntry> getMultipleUnirefEntries(List<String> uniprotIds) throws IOException, ServiceException {
+	public List<UnirefEntry> getMultipleUnirefEntries(List<String> uniprotIds) throws IOException, IOException {
 		
 		List<UnirefEntry> unirefEntries = new ArrayList<>();
 		
@@ -253,9 +277,9 @@ public class UniProtConnection {
 	/**
 	 * Return the UniProt version this connection is connected to
 	 * @return a Uniprot version string
-	 * @throws ServiceException
+	 * @throws IOException
 	 */
-	public String getVersion() throws ServiceException {
+	public String getVersion() throws IOException {
 		return uniProtService.getServiceInfo().getReleaseNumber();
 	}
 	
@@ -263,12 +287,17 @@ public class UniProtConnection {
 	 * Stops the connection
 	 */
 	public void close() {
-		if (uniProtService!=null) {
-			uniProtService.stop();
+		client.close();
+	}
+
+	private Response getServiceResponse(String uri) throws IOException {
+		Response response = client.target(uri)
+				.request(MediaType.APPLICATION_JSON)
+				.get();
+		if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+			throw new IOException("Response status for " + uri + " was " + response.getStatus());
 		}
-		if (uniparcService!=null) {
-			uniparcService.stop();
-		}
+		return response;
 	}
 
 }

@@ -7,11 +7,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.ebi.kraken.interfaces.uniprot.NcbiTaxon;
-import uk.ac.ebi.kraken.interfaces.uniprot.NcbiTaxonomyId;
-import uk.ac.ebi.kraken.interfaces.uniprot.Organelle;
-import uk.ac.ebi.kraken.interfaces.uniprot.UniProtEntry;
-import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 /**
  * A uniprot entry.
