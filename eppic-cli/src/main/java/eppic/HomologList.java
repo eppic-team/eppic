@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import eppic.commons.blast.*;
+import eppic.commons.sequence.UniprotEntry;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.db.dao.jpa.UniProtInfoDAOJpa;
@@ -36,8 +37,6 @@ import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.UniProtConnection;
 import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
-import uk.ac.ebi.kraken.interfaces.uniparc.UniParcEntry;
-import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 /**
  * Class to store a set of homologs of a given sequence.
@@ -272,13 +271,12 @@ public class HomologList implements  Serializable {
 	 * by using the remote UniProt API, for both UniProt entries and UniParc entries.
 	 * @param uniprotConn
 	 * @throws IOException
-	 * @throws ServiceException 
 	 */
-	public void retrieveUniprotKBData(UniProtConnection uniprotConn) throws IOException, ServiceException {
+	public void retrieveUniprotKBData(UniProtConnection uniprotConn) throws IOException, IOException {
 		String japiVer = null;
 		try {
 			japiVer = uniprotConn.getVersion();
-		} catch (ServiceException e) {
+		} catch (IOException e) {
 			LOGGER.warn("Could not get UniProt release version from UniProt JAPI. Will not check if version used for blast coincides with version queried through JAPI. Error: "+e.getMessage());
 		}
 
@@ -329,8 +327,8 @@ public class HomologList implements  Serializable {
 			// ok this is a uniparc, let's get it from japi
 			
 			try {
-				UniParcEntry uniparcEntry = uniprotConn.getUniparcEntry(hom.getUniId());
-				String seq = uniparcEntry.getSequence().getValue();
+				UniprotEntry uniparcEntry = uniprotConn.getUniparcEntry(hom.getUniId());
+				String seq = uniparcEntry.getUniprotSeq().getSeq();
 				hom.getUnirefEntry().setSequence(seq);
 				
 			} catch (NoMatchFoundException e) {
@@ -338,7 +336,7 @@ public class HomologList implements  Serializable {
 				it.remove();
 				removeFromMainList(hom);
 
-			} catch (ServiceException e) {
+			} catch (IOException e) {
 				LOGGER.warn("Problems retrieving UniParc id {} through UniProt JAPI. Will not use this homolog. Error: {}", hom.getUniId(), e.getMessage());
 				it.remove();
 				removeFromMainList(hom);
