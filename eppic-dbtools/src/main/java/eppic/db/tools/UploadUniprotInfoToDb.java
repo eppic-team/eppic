@@ -13,7 +13,6 @@ import eppic.model.dto.UniProtInfo;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 import java.io.*;
 import java.util.*;
@@ -284,7 +283,7 @@ public class UploadUniprotInfoToDb {
             } catch (NoMatchFoundException e) {
                 logger.warn("Could not find UniProt id {} via JAPI", uniId);
                 couldntFindInJapi.incrementAndGet();
-            } catch (ServiceException e) {
+            } catch (IOException e) {
                 logger.warn("Problem retrieving UniProt info from JAPI for UniProt id {}. Error: {}", uniId, e.getMessage());
                 couldntFindInJapi.incrementAndGet();
             }

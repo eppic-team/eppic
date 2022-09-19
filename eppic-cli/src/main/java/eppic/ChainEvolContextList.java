@@ -2,7 +2,6 @@ package eppic;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,6 @@ import eppic.commons.blast.BlastException;
 import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.UniProtConnection;
-import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 
 public class ChainEvolContextList implements Serializable {
@@ -109,7 +107,7 @@ public class ChainEvolContextList implements Serializable {
 			// japi connection
 			try {
 				this.uniprotVer = uniprotJapiConn.getVersion();
-			} catch (ServiceException e) {
+			} catch (IOException e) {
 				LOGGER.warn("Could not retrieve UniProt version from UniProt JAPI");
 			}
 		}
@@ -304,9 +302,7 @@ public class ChainEvolContextList implements Serializable {
 				chainEvCont.retrieveHomologsData();
 			} catch (IOException e) {
 				throw new EppicException(e, "Problems while retrieving homologs data: "+e.getMessage(),true);
-			} catch (ServiceException e) {
-				throw new EppicException(e, "Problems while retrieving homologs data from UniProt JAPI: "+e.getMessage(), true);
-			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
+			} catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot REST API
 				String msg = null;
 				if (useLocalUniprot) {
 					msg = "Problems while retrieving homologs data from UniProt local database. Error "+e.getMessage();
