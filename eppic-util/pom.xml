@@ -11,15 +11,6 @@
 
     <artifactId>eppic-util</artifactId>
 
-	<repositories>
-		<!-- for uniprot japi -->
-		<repository>
-			<id>ebi-repo</id>
-			<name>ebi-repo</name>
-			<url>http://www.ebi.ac.uk/~maven/m2repo</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 	
 		<dependency>

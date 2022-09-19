@@ -43,8 +43,7 @@
 		</dependency>
 
 		<!--
-		Internal modules dependencies. Note that eppic-util has to come after logging due to
-		 problems in logging (due to bad packaging of uniprot japi, a dep of eppic-util) -->
+		Internal modules dependencies. -->
 		<dependency>
 			<groupId>org.eppic-web</groupId>
 			<artifactId>eppic-model</artifactId>
@@ -58,17 +57,6 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 			<exclusions>
-				<!--
-				This is to exclude the runtime dependency of uniprot japi (via eppic-util)
-				 that produces a "multiple slf4j binding" error. Excluding in pom in eppic-util
-				 does not work because it is required at compile time.
-				 Unfortunately if we exclude, uniprot japi fails at runtime.-->
-				<!--
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-classic</artifactId>
-				</exclusion>
-				-->
 				<!-- This one clashes with a newer jboss from hibernate. Must exclude - JD 2018-09-17 -->
 				<exclusion>
 					<groupId>org.jboss.logging</groupId>

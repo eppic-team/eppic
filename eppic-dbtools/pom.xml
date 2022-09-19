@@ -69,11 +69,6 @@
 			<scope>compile</scope>
 		</dependency>
 
-		<!--
-		Because of different implementations of slf4j inside uniprot japi, the order is important.
-		The util dependency appears here after the log4j2 dependency so that one takes precedence and
-		becomes the chosen implementation.
-		-->
 		<!-- util package for some utilities and biojava -->
 		<dependency>
 			<groupId>org.eppic-web</groupId>

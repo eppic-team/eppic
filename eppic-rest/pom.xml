@@ -47,17 +47,6 @@
             <groupId>org.eppic-web</groupId>
             <artifactId>eppic-dbtools</artifactId>
             <version>${project.version}</version>
-
-            <!-- TODO We need eppic-cli only for IntervalSet (see utils package). Consider moving somewhere
-            common or using a more standard library to remove eppic-cli dependency by excluding it here. -->
-
-            <!-- The subdependency uniprot-JAPI of eppic-clie has a jersey subdependency that clashes with jersey below-->
-            <exclusions>
-                <exclusion>
-                    <groupId>uk.ac.ebi.uniprot</groupId>
-                    <artifactId>japi</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- JAX-RS -->
