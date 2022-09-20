@@ -105,8 +105,6 @@ public class UniProtConnection {
 			taxons.add(oneLineage.asText());
 		}
 
-		// TODO handle errors
-		if (entry==null) throw new NoMatchFoundException("No UniProt entry found for UniProt id "+uniProtId);
 		return entry;
 	}
 	
@@ -136,8 +134,6 @@ public class UniProtConnection {
 		UniprotEntry entry = new UniprotEntry(uniparcId);
 		entry.setUniprotSeq(new Sequence(uniparcId, seqNode.asText()));
 
-		// TODO handle errors
-		if (entry==null) throw new NoMatchFoundException("No Uniparc entry found for Uniparc id "+uniparcId);
 		return entry;
 	}
 
@@ -259,10 +255,13 @@ public class UniProtConnection {
 		client.close();
 	}
 
-	private Response getServiceResponse(String uri) throws IOException {
+	private Response getServiceResponse(String uri) throws IOException, NoMatchFoundException {
 		Response response = client.target(uri)
 				.request(MediaType.APPLICATION_JSON)
 				.get();
+		if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+			throw new NoMatchFoundException("Response status for " + uri + " was " + response.getStatus());
+		}
 		if (response.getStatus() != Response.Status.OK.getStatusCode()) {
 			throw new IOException("Response status for " + uri + " was " + response.getStatus());
 		}

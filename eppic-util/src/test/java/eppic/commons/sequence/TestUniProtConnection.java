@@ -38,4 +38,11 @@ public class TestUniProtConnection {
 		assertEquals(443, entry.getSeq().getLength());
 		assertEquals(upid, entry.getUniId());
 	}
+
+	@Test(expected = NoMatchFoundException.class)
+	public void testGetObsoleteUniProt() throws NoMatchFoundException, IOException {
+		String upid = "L8NZJ8";
+		UniProtConnection upc = new UniProtConnection();
+		upc.getEntry(upid);
+	}
 }
