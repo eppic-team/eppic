@@ -136,7 +136,7 @@ public class WriteUniqueUniprots {
 
 			if ( (countNotFound + countCantRetrieve) > 0.10 * uniqueMap.size()) {
 				// let's abort as soon as we see many errors, so that we get alerted as early as possible
-				logger.error("More than 10% of ids could not be found or retrieved. Aborting after processing {} UniProt ids. Is there a new UniProt JAPI version?", counter);
+				logger.error("More than 10% of ids could not be found or retrieved. Aborting after processing {} UniProt ids.", counter);
 				System.exit(1);
 			}
 			counter++;
@@ -187,10 +187,10 @@ public class WriteUniqueUniprots {
 
 				}
 			} catch (NoMatchFoundException er) {
-				logger.warn("Could not find {} from JAPI. Skipping", uniprotid);
+				logger.warn("Could not find {} from UniProt REST API. Skipping", uniprotid);
 				countNotFound++;
 			} catch (IOException e) {
-				logger.warn("IOException while retrieving UniProt {} from JAPI. Error: {}", uniprotid, e.getMessage());
+				logger.warn("IOException while retrieving UniProt {} from UniProt REST API. Error: {}", uniprotid, e.getMessage());
 				countCantRetrieve++;
 			}
 		}
@@ -206,11 +206,11 @@ public class WriteUniqueUniprots {
 			logger.warn("Total encountered problems in the length: {}", countErrLength);
 
 		if (countNotFound > 0) {
-			logger.warn("Could not find {} ids via JAPI", countNotFound);
+			logger.warn("Could not find {} ids via UniProt REST API", countNotFound);
 		}
 
 		if (countCantRetrieve > 0) {
-			logger.warn("Could not retrieve {} ids via JAPI", countCantRetrieve);
+			logger.warn("Could not retrieve {} ids via UniProt REST API", countCantRetrieve);
 		}
 
 		if (countPeptide > 0) {
@@ -218,7 +218,7 @@ public class WriteUniqueUniprots {
 		}
 
 		if ( (countNotFound + countCantRetrieve) > 0.10 * uniqueMap.size()) {
-			logger.error("More than 10% of ids could not be found or retrieved. Dumping sequences was unsuccessful. Is there a new UniProt JAPI version?");
+			logger.error("More than 10% of ids could not be found or retrieved. Dumping sequences was unsuccessful.");
 			System.exit(1);
 		}
 

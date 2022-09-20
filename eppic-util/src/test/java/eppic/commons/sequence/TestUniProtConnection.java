@@ -27,8 +27,15 @@ public class TestUniProtConnection {
 		UniprotEntry entry = upc.getUniparcEntry(upid);
 		assertEquals(184, entry.getUniprotSeq().getLength());
 		assertEquals(upid, entry.getUniId());
-//		assertEquals(1140, entry.getTaxId());
-//		assertEquals("Synechococcus", entry.getLastTaxon());
-//		assertEquals("Bacteria", entry.getFirstTaxon());
+		// TODO when tax id and taxons lineage implemented, then implement a test here
+	}
+
+	@Test
+	public void testGetUniref() throws NoMatchFoundException, IOException {
+		String upid = "A0A8C0T962";
+		UniProtConnection upc = new UniProtConnection();
+		UnirefEntry entry = upc.getUnirefEntry(upid);
+		assertEquals(443, entry.getSeq().getLength());
+		assertEquals(upid, entry.getUniId());
 	}
 }

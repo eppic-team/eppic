@@ -112,7 +112,7 @@ public class UniProtConnection {
 	
 	/**
 	 * Retrieve a single Uniparc entry from UniProt JAPI. 
-	 * @param uniparcId
+	 * @param uniparcId the uniparc id (starts with "UPI")
 	 * @return
 	 * @throws NoMatchFoundException
 	 * @throws IOException
