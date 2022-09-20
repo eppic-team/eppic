@@ -27,14 +27,9 @@ public class UniProtConnection {
 	private static final Logger LOGGER = LoggerFactory.getLogger(UniProtConnection.class);
 	
 	/**
-	 * The maximum number of UniProt entries to fetch in one request, see {@link #getMultipleUnirefEntries(List)}
-	 */
-	private static final int MAX_ENTRIES_PER_REQUEST = 100;
-
-	/**
 	 * Waiting time (in seconds) between retries
 	 */
-	private static final int RETRY_INTERVAL = 30;
+	private static final int RETRY_INTERVAL = 10;
 
 	/**
 	 * Maximum number of retries
@@ -70,7 +65,7 @@ public class UniProtConnection {
 	 * Uniprot API for which we do not have our own implementation.
 	 * @param uniProtId
 	 * @return 
-	 * @throws NoMatchFoundException if no match returned by UniProt JAPI
+	 * @throws NoMatchFoundException if no match returned by UniProt REST API
 	 * @throws IOException if problems getting the entry
 	 */
 	public UniprotEntry getEntry(String uniProtId) throws NoMatchFoundException, IOException {
@@ -109,7 +104,7 @@ public class UniProtConnection {
 	}
 	
 	/**
-	 * Retrieve a single Uniparc entry from UniProt JAPI. 
+	 * Retrieve a single Uniparc entry from UniProt REST API.
 	 * @param uniparcId the uniparc id (starts with "UPI")
 	 * @return
 	 * @throws NoMatchFoundException
@@ -138,14 +133,13 @@ public class UniProtConnection {
 	}
 
 	/**
-	 * Convenience method to get a {@link UnirefEntry} object from UniProt JAPI 
-	 * given a uniprot id.
-	 * The UnirefEntry object returned contains the uniprot id, tax id, taxons and sequence.
-	 * The information returned with this object can be obtained by calling {@link #getEntry(String)} and
-	 * then extracting the different parts of the info from the returned JAPI's UniProtEntry
-	 * @param uniProtId
+	 * Convenience method to get a {@link UnirefEntry} object from UniProt REST API
+	 * given a UniProt id.
+	 * Essentially this is the same as {@link #getEntry(String)}, just differing in the type of
+	 * the returned object (keeping it like that for backwards compatibility only. In theory we only need getEntry)
+	 * @param uniProtId the UniProt id, it must not be prefixed by a Uniref prefix, e.g. "UniRef100_"
 	 * @return
-	 * @throws NoMatchFoundException if no match returned by UniProt JAPI
+	 * @throws NoMatchFoundException if no match returned by UniProt REST API
 	 * @throws IOException if problems getting the entry
 	 */
 	public UnirefEntry getUnirefEntry(String uniProtId) throws NoMatchFoundException, IOException {
@@ -168,7 +162,7 @@ public class UniProtConnection {
 	 * maximum of {@value #MAX_NUM_RETRIES}
 	 * @param uniProtId the uniprot identifier
 	 * @return
-	 * @throws NoMatchFoundException if no match returned by UniProt JAPI
+	 * @throws NoMatchFoundException if no match returned by UniProt REST API
 	 * @throws IOException if all {@value #MAX_NUM_RETRIES} retries result in ServiceExceptions
 	 */
 	public UnirefEntry getUnirefEntryWithRetry(String uniProtId) throws NoMatchFoundException, IOException {
@@ -197,7 +191,7 @@ public class UniProtConnection {
 	/**
 	 * Convenience method to get a List of {@link UnirefEntry}s given a List of uniprot ids.
 	 * Analogous to {@link #getUnirefEntry(String)} but for multiple entries.
-	 * If the JAPI does not return all requested ids a warning is logged and the list of non-returned
+	 * If the REST API does not return all requested ids a warning is logged and the list of non-returned
 	 * ids can be retrieved through {@link #getNonReturnedIdsLastMultipleRequest()}
 	 * @param uniprotIds
 	 * @return
@@ -217,7 +211,7 @@ public class UniProtConnection {
 			}
 		}
 		
-		// now we check if the query to uniprot JAPI did really return all requested uniprot ids
+		// now we check if the query to uniprot API did really return all requested uniprot ids
 	    HashSet<String> returnedUniIds = new HashSet<>();
 	    for (UnirefEntry uniref:unirefEntries) {
 			returnedUniIds.add(uniref.getUniprotId());
@@ -226,7 +220,7 @@ public class UniProtConnection {
 	    for (String uniprotId:uniprotIds){
 	    	if (!returnedUniIds.contains(uniprotId)) {
 	    		nonReturnedIdsLastMultipleRequest.add(uniprotId);
-	    		LOGGER.warn("Information for uniprot ID "+uniprotId+" could not be retrieved with the Uniprot JAPI.");
+	    		LOGGER.warn("Information for uniprot ID "+uniprotId+" could not be retrieved with the Uniprot REST API.");
 	    	}
 	    }
 		
