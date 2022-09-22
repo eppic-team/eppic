@@ -240,12 +240,15 @@ public class UniProtConnection {
 	 */
 	public String getVersion() throws IOException {
 		String url = UNIPROT_WEB_API_ENDPOINT + "P12345.fasta";
-		try {
-			Response response = getServiceResponse(url);
-			return response.getHeaderString("X-UniProt-Release");
-		} catch (NoMatchFoundException e) {
-			throw new IOException("Could not find entry P12345 at URL '" + url + "' in order to find UniProt version");
+
+		Response response = client.target(url)
+				.request(MediaType.APPLICATION_JSON)
+				.head();
+		if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+			throw new IOException("Could not get UniProt version from headers of url request: " + url);
 		}
+		return response.getHeaderString("X-UniProt-Release");
+
 	}
 	
 	/**
