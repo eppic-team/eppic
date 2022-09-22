@@ -25,7 +25,9 @@ import java.util.zip.GZIPInputStream;
 /**
  * Parses all unique UniRef ids out of a .m8 file (blast/mmseqs2 output) and
  * reads info for each entry from a UniRef FASTA file (sequence and last taxon),
- * persisting the info to db via JPA. Avoids using the UniProt JAPI altogether.
+ * persisting the info to db via JPA.
+ * Avoids using the UniProt REST API and instead uses the info in FASTA file (for speed). It will
+ * only use the REST API  for those ids that could not be found in FASTA file.
  *
  * @author Jose Duarte
  * @since 3.2.0
@@ -43,7 +45,7 @@ public class UploadUniprotInfoToDb {
 
     private static AtomicInteger alreadyPresent = new AtomicInteger(0);
     private static AtomicInteger couldntInsert = new AtomicInteger(0);
-    private static AtomicInteger couldntFindInJapi = new AtomicInteger(0);
+    private static AtomicInteger couldntFindInRestApi = new AtomicInteger(0);
     private static AtomicInteger didInsert = new AtomicInteger(0);
 
     private static Set<String> notInFastaUniIds = new HashSet<>();
@@ -120,13 +122,13 @@ public class UploadUniprotInfoToDb {
 
         retrieveInfoAndPersist(unirefFastaFile, uniqueIds, numWorkers);
 
-        logger.info("A total of {} ids were not present in FASTA file. Proceeding to grab them from JAPI and persist them", notInFastaUniIds.size());
+        logger.info("A total of {} ids were not present in FASTA file. Proceeding to grab them from UniProt REST API and persist them", notInFastaUniIds.size());
 
-        retrieveFromJapiAndPersist(notInFastaUniIds, numWorkers);
+        retrieveFromRestApiAndPersist(notInFastaUniIds, numWorkers);
 
-        if (countDone.get() + couldntFindInJapi.get() < uniqueIds.size()) {
-            logger.warn("Count of processed entries ({}) after retrieving info from FASTA file and JAPI is less than the number of entries needed ({}). " +
-                    "There's something wrong!", countDone.get() + couldntFindInJapi.get(), uniqueIds.size());
+        if (countDone.get() + couldntFindInRestApi.get() < uniqueIds.size()) {
+            logger.warn("Count of processed entries ({}) after retrieving info from FASTA file and UniProt REST API is less than the number of entries needed ({}). " +
+                    "There's something wrong!", countDone.get() + couldntFindInRestApi.get(), uniqueIds.size());
         }
         logger.info("Done processing {} UniProt/Parc entries to database. Actually inserted {} in db", uniqueIds.size(), didInsert.get());
         if (couldntInsert.get()>0) {
@@ -135,8 +137,8 @@ public class UploadUniprotInfoToDb {
         if (alreadyPresent.get()>0) {
             logger.info("{} entries were already present in db and were not reloaded", alreadyPresent.get());
         }
-        if (couldntFindInJapi.get()>0) {
-            logger.info("{} entries (out of {}) could not be retrieved via JAPI", couldntFindInJapi.get(), notInFastaUniIds.size());
+        if (couldntFindInRestApi.get()>0) {
+            logger.info("{} entries (out of {}) could not be retrieved via UniProt REST API", couldntFindInRestApi.get(), notInFastaUniIds.size());
         }
 
     }
@@ -256,12 +258,12 @@ public class UploadUniprotInfoToDb {
     }
 
     /**
-     * Retrieve UniProt info from UniProt JAPI for given notInFastaUniIds and
+     * Retrieve UniProt info from UniProt REST API for given notInFastaUniIds and
      * subsequently persist the info to db via JPA.
      * @param notInFastaUniIds a list of UniRef ids that were not found in FASTA file
      * @param numWorkers the number of workers for concurrent persistence
      */
-    private static void retrieveFromJapiAndPersist(Set<String> notInFastaUniIds, int numWorkers) {
+    private static void retrieveFromRestApiAndPersist(Set<String> notInFastaUniIds, int numWorkers) {
 
         ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
 
@@ -281,11 +283,11 @@ public class UploadUniprotInfoToDb {
                 executorService.submit(() -> persist(dao, uniEntry));
 
             } catch (NoMatchFoundException e) {
-                logger.warn("Could not find UniProt id {} via JAPI", uniId);
-                couldntFindInJapi.incrementAndGet();
+                logger.warn("Could not find UniProt id {} via UniProt REST API", uniId);
+                couldntFindInRestApi.incrementAndGet();
             } catch (IOException e) {
-                logger.warn("Problem retrieving UniProt info from JAPI for UniProt id {}. Error: {}", uniId, e.getMessage());
-                couldntFindInJapi.incrementAndGet();
+                logger.warn("Problem retrieving UniProt info from UniProt REST API for UniProt id {}. Error: {}", uniId, e.getMessage());
+                couldntFindInRestApi.incrementAndGet();
             }
         }
 
