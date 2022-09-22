@@ -272,18 +272,7 @@ public class HomologList implements  Serializable {
 	 * @param uniprotConn
 	 * @throws IOException
 	 */
-	public void retrieveUniprotKBData(UniProtConnection uniprotConn) throws IOException, IOException {
-		String japiVer = null;
-		try {
-			japiVer = uniprotConn.getVersion();
-		} catch (IOException e) {
-			LOGGER.warn("Could not get UniProt release version from UniProt JAPI. Will not check if version used for blast coincides with version queried through JAPI. Error: "+e.getMessage());
-		}
-
-		if (japiVer!=null && !japiVer.equals(this.uniprotVer)){
-			LOGGER.warn("UniProt version used for blast ("+uniprotVer+") and UniProt version being queried with JAPI ("+japiVer+") don't match!");
-		}
-		
+	public void retrieveUniprotKBData(UniProtConnection uniprotConn) throws IOException {
 		List<String> uniprotIds = new ArrayList<>();
 		
 		for (Homolog hom:subList) {
@@ -332,12 +321,12 @@ public class HomologList implements  Serializable {
 				hom.getUnirefEntry().setSequence(seq);
 				
 			} catch (NoMatchFoundException e) {
-				LOGGER.warn("Could not find UniParc id {} through UniProt JAPI. Will not use this homolog.", hom.getUniId());
+				LOGGER.warn("Could not find UniParc id {} through UniProt REST API. Will not use this homolog.", hom.getUniId());
 				it.remove();
 				removeFromMainList(hom);
 
 			} catch (IOException e) {
-				LOGGER.warn("Problems retrieving UniParc id {} through UniProt JAPI. Will not use this homolog. Error: {}", hom.getUniId(), e.getMessage());
+				LOGGER.warn("Problems retrieving UniParc id {} through UniProt REST API. Will not use this homolog. Error: {}", hom.getUniId(), e.getMessage());
 				it.remove();
 				removeFromMainList(hom);
 

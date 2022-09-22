@@ -263,7 +263,7 @@ public class ChainEvolContext implements Serializable {
 						query.setTaxons(taxons);
 					}
 				} else {
-					query = parent.getUniProtJapiConnection().getUnirefEntryWithRetry(queryUniprotId);
+					query = parent.getUniProtConnection().getUnirefEntryWithRetry(queryUniprotId);
 				}
 				
 				if (query!=null && query.replaceNonStandardByX()) {
@@ -303,13 +303,13 @@ public class ChainEvolContext implements Serializable {
 				if (parent.isUseLocalUniprot()) {
 					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") in local database. Obsolete?");
 				} else {
-					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") through UniProt JAPI. Obsolete?");	
+					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") through UniProt REST API. Obsolete?");
 				}				
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
 			} catch (IOException e) {
-				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from UniProt JAPI, error: "+e.getMessage());
+				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from UniProt REST API, error: "+e.getMessage());
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;								
@@ -526,7 +526,7 @@ public class ChainEvolContext implements Serializable {
 		if (parent.isUseLocalUniprot()) {
 			homologs.retrieveUniprotKBData();
 		} else {
-			homologs.retrieveUniprotKBData(parent.getUniProtJapiConnection());
+			homologs.retrieveUniprotKBData(parent.getUniProtConnection());
 		}
 	}
 	
@@ -835,10 +835,6 @@ public class ChainEvolContext implements Serializable {
 				return false;
 			}
 		}
-	}
-	
-	public String getUniprotVer() {
-		return parent.getUniprotVer();
 	}
 	
 	/**

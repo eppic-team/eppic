@@ -46,7 +46,7 @@ public class ChainEvolContextList implements Serializable {
 	private double homHardIdCutoff;
 	
 	private boolean useLocalUniprot;
-	private transient UniProtConnection uniprotJapiConn;
+	private transient UniProtConnection uniProtConnection;
 
 	private transient SiftsConnection siftsConn;
 
@@ -104,11 +104,11 @@ public class ChainEvolContextList implements Serializable {
 				LOGGER.warn("Could not retrieve UniProt version from database");
 			}
 		} else {
-			// japi connection
+			// uniprot connection
 			try {
-				this.uniprotVer = uniprotJapiConn.getVersion();
+				this.uniprotVer = uniProtConnection.getVersion();
 			} catch (IOException e) {
-				LOGGER.warn("Could not retrieve UniProt version from UniProt JAPI");
+				LOGGER.warn("Could not retrieve UniProt version from UniProt REST API");
 			}
 		}
 		// in other cases it stays null
@@ -183,8 +183,8 @@ public class ChainEvolContextList implements Serializable {
 		return useLocalUniprot;
 	}
 
-	public UniProtConnection getUniProtJapiConnection() {
-		return uniprotJapiConn;
+	public UniProtConnection getUniProtConnection() {
+		return uniProtConnection;
 	}
 	
 	public SiftsConnection getSiftsConn(String siftsLocation) throws IOException {
@@ -213,13 +213,13 @@ public class ChainEvolContextList implements Serializable {
 			} catch (InterruptedException e) {
 				throw new EppicException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
 			} 
-			catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot JAPI
+			catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot REST API
 				String msg = null;
 				if (useLocalUniprot) {
-					// we don't want to catch unexpected exceptions in this case, only the JAPI case is problematic
+					// we don't want to catch unexpected exceptions in this case, only the REST API case is problematic
 					throw e;
 				} else {
-					msg = "Problems while retrieving query data through UniProt JAPI. Make sure you have the latest UniProtJAPI jar, or otherwise that the UniProt server is up\n"+e.getMessage();
+					msg = "Problems while retrieving query data through UniProt REST API. Is UniProt server up?\n"+e.getMessage();
 				}
 				throw new EppicException(e, msg, true);
 			}
@@ -307,7 +307,7 @@ public class ChainEvolContextList implements Serializable {
 				if (useLocalUniprot) {
 					msg = "Problems while retrieving homologs data from UniProt local database. Error "+e.getMessage();
 				} else {
-					msg = "Problems while retrieving homologs data through UniProt JAPI. Are UniProt servers down?. Error: "+e.getMessage();
+					msg = "Problems while retrieving homologs data through UniProt REST API. Are UniProt servers down?. Error: "+e.getMessage();
 				}
 				throw new EppicException(e, msg, true);
 			}
@@ -452,15 +452,15 @@ public class ChainEvolContextList implements Serializable {
 				throw new EppicException(e, "Could not init db JPA config from file " + params.getDbConfigFile() + ": " +e.getMessage(), true);
 			}
 		} else {
-			this.uniprotJapiConn = new UniProtConnection();
-			LOGGER.info("Opening remote UniProt JAPI connection to retrieve UniProtKB data");
+			this.uniProtConnection = new UniProtConnection();
+			LOGGER.info("Opening remote UniProt REST API connection to retrieve UniProtKB data");
 		}
 	}
 	
 	public void closeConnections() {
 		if (!useLocalUniprot) {
-			this.uniprotJapiConn.close();
-			LOGGER.info("Connection to UniProt JAPI closed");
+			this.uniProtConnection.close();
+			LOGGER.info("Connection to UniProt REST API closed");
 		}
 		// else { // the JPA connection can't really be closed, nothing to do
 	}
