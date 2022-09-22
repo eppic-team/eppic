@@ -45,4 +45,18 @@ public class TestUniProtConnection {
 		UniProtConnection upc = new UniProtConnection();
 		upc.getEntry(upid);
 	}
+
+	@Test
+	public void testGetUniProtVersion() throws IOException, NumberFormatException {
+		UniProtConnection upc = new UniProtConnection();
+		String ver = upc.getVersion();
+		assertEquals(7, ver.length());
+		assertTrue(ver.contains("_"));
+		String[] tokens = ver.split("_");
+		assertEquals(4, tokens[0].length());
+		assertEquals(2, tokens[1].length());
+		Integer.parseInt(tokens[0]);
+		Integer.parseInt(tokens[1]);
+		//assertEquals("2022_03", ver);
+	}
 }

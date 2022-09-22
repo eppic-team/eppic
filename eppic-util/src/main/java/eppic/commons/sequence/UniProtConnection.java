@@ -38,6 +38,8 @@ public class UniProtConnection {
 
 	private static final String UNIPROT_ENDPOINT = "https://www.ebi.ac.uk/proteins/api/proteins/";
 	private static final String UNIPARC_ENDPOINT = "https://www.ebi.ac.uk/proteins/api/uniparc/upi/";
+
+	private static final String UNIPROT_WEB_API_ENDPOINT = "https://www.uniprot.org/uniprot/";
 	
 	/*--------------------------- member variables --------------------------*/
 	private final Client client;
@@ -237,9 +239,13 @@ public class UniProtConnection {
 	 * @throws IOException
 	 */
 	public String getVersion() throws IOException {
-		// TODO is there a way to get the version from API? does it make sense anyway?
-		return null;
-		//return uniProtService.getServiceInfo().getReleaseNumber();
+		String url = UNIPROT_WEB_API_ENDPOINT + "P12345.fasta";
+		try {
+			Response response = getServiceResponse(url);
+			return response.getHeaderString("X-UniProt-Release");
+		} catch (NoMatchFoundException e) {
+			throw new IOException("Could not find entry P12345 at URL '" + url + "' in order to find UniProt version");
+		}
 	}
 	
 	/**
