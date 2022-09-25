@@ -157,7 +157,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.3.2</version>
                 <!-- The following configuration is to be able to expand maven variables
                     in web.xml so that we can pass the major version. See https://stackoverflow.com/questions/15355708/how-to-replace-a-value-in-web-xml-with-a-maven-property
                     - JD 2017-11-03 -->
