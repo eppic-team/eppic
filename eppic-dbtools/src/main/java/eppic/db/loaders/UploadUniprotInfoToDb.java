@@ -13,7 +13,6 @@ import eppic.model.db.UniProtInfoDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 import java.io.*;
 import java.util.*;
@@ -24,8 +23,9 @@ import java.util.zip.GZIPInputStream;
 /**
  * Parses all unique UniRef ids out of a .m8 file (blast/mmseqs2 output) and
  * reads info for each entry from a UniRef FASTA file (sequence and last taxon),
- * persisting the info to db. It will only use UniProt JAPI for those that
- * can't be found in UniRef FASTA file.
+ * persisting the info to db via JPA.
+ * Avoids using the UniProt REST API and instead uses the info in FASTA file (for speed). It will
+ * only use the REST API  for those ids that could not be found in FASTA file.
  *
  * @author Jose Duarte
  * @since 3.2.0
@@ -42,7 +42,7 @@ public class UploadUniprotInfoToDb {
     private static int countDone = 0;
     private static int alreadyPresent = 0;
     private static int couldntInsert = 0;
-    private static int couldntFindInJapi = 0;
+    private static int couldntFindInRestApi = 0;
     private static int didInsert = 0;
 
     private static Set<String> notInFastaUniIds = new HashSet<>();
@@ -133,13 +133,13 @@ public class UploadUniprotInfoToDb {
 
         retrieveInfoAndPersist(mongoDb, unirefFastaFile, uniqueIds);
 
-        logger.info("A total of {} ids were not present in FASTA file. Proceeding to grab them from JAPI and persist them", notInFastaUniIds.size());
+        logger.info("A total of {} ids were not present in FASTA file. Proceeding to grab them from UniProt REST API and persist them", notInFastaUniIds.size());
 
-        retrieveFromJapiAndPersist(mongoDb, notInFastaUniIds);
+        retrieveFromRestApiAndPersist(mongoDb, notInFastaUniIds);
 
-        if (countDone + couldntFindInJapi < uniqueIds.size()) {
+        if (countDone + couldntFindInRestApi < uniqueIds.size()) {
             logger.warn("Count of processed entries ({}) after retrieving info from FASTA file and JAPI is less than the number of entries needed ({}). " +
-                    "There's something wrong!", countDone + couldntFindInJapi, uniqueIds.size());
+                    "There's something wrong!", countDone + couldntFindInRestApi, uniqueIds.size());
         }
         logger.info("Done processing {} UniProt/Parc entries to database. Actually inserted {} in db", uniqueIds.size(), didInsert);
         if (couldntInsert>0) {
@@ -148,8 +148,8 @@ public class UploadUniprotInfoToDb {
         if (alreadyPresent>0) {
             logger.info("{} entries were already present in db and were not reloaded", alreadyPresent);
         }
-        if (couldntFindInJapi>0) {
-            logger.info("{} entries (out of {}) could not be retrieved via JAPI", couldntFindInJapi, notInFastaUniIds.size());
+        if (couldntFindInRestApi>0) {
+            logger.info("{} entries (out of {}) could not be retrieved via JAPI", couldntFindInRestApi, notInFastaUniIds.size());
         }
 
     }
@@ -255,11 +255,11 @@ public class UploadUniprotInfoToDb {
     }
 
     /**
-     * Retrieve UniProt info from UniProt JAPI for given notInFastaUniIds and
+     * Retrieve UniProt info from UniProt REST API for given notInFastaUniIds and
      * subsequently persist the info to db via JPA.
      * @param notInFastaUniIds a list of UniRef ids that were not found in FASTA file
      */
-    private static void retrieveFromJapiAndPersist(MongoDatabase mongoDb, Set<String> notInFastaUniIds) {
+    private static void retrieveFromRestApiAndPersist(MongoDatabase mongoDb, Set<String> notInFastaUniIds) {
 
         UniProtConnection uc = new UniProtConnection();
         UniProtInfoDAO dao = new UniProtInfoDAOMongo(mongoDb);
@@ -282,10 +282,10 @@ public class UploadUniprotInfoToDb {
 
             } catch (NoMatchFoundException e) {
                 logger.warn("Could not find UniProt id {} via JAPI", uniId);
-                couldntFindInJapi++;
-            } catch (ServiceException e) {
+                couldntFindInRestApi++;
+            } catch (IOException e) {
                 logger.warn("Problem retrieving UniProt info from JAPI for UniProt id {}. Error: {}", uniId, e.getMessage());
-                couldntFindInJapi++;
+                couldntFindInRestApi++;
             }
         }
 

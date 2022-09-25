@@ -10,7 +10,7 @@
 	</appenders>
 	<loggers>
 		<root level="info">
-			<appender-ref ref="ConsoleStdErr" level="warn"/>
+			<appender-ref ref="ConsoleStdErr" level="info"/>
 			<appender-ref ref="EppicLogFile" level="info"/>
 		</root>
 

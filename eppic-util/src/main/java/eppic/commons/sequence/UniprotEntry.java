@@ -1,17 +1,11 @@
 package eppic.commons.sequence;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.ebi.kraken.interfaces.uniprot.NcbiTaxon;
-import uk.ac.ebi.kraken.interfaces.uniprot.NcbiTaxonomyId;
-import uk.ac.ebi.kraken.interfaces.uniprot.Organelle;
-import uk.ac.ebi.kraken.interfaces.uniprot.UniProtEntry;
-import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 /**
  * A uniprot entry.
@@ -130,41 +124,7 @@ public class UniprotEntry implements Serializable {
 	public int getLength() {
 		return this.getUniprotSeq().getLength();
 	}
-	
-	/**
-	 * Retrieves from UniprotKB the sequence, taxonomy and gene encoding organelle 
-	 * by using the remote Uniprot API
-	 */
-	public void retrieveUniprotKBData() throws NoMatchFoundException, ServiceException {
-		this.taxons = new ArrayList<String>();
-		
-		UniProtConnection uniprotConn = new UniProtConnection();
-		UniProtEntry entry = uniprotConn.getEntry(uniId);
-		
-		this.setUniprotSeq(new Sequence(this.getUniId(),entry.getSequence().getValue()));
-		
-		List<NcbiTaxonomyId> ncbiTaxIds = entry.getNcbiTaxonomyIds();
-		if (ncbiTaxIds.size()>1) {
-			LOGGER.warn("More than one taxonomy id for uniprot entry "+this.uniId);
-		}
-		this.taxId = Integer.parseInt(ncbiTaxIds.get(0).getValue());
-		for (NcbiTaxon ncbiTax:entry.getTaxonomy()) {
-			taxons.add(ncbiTax.getValue());
-		}
 
-		List<Organelle> orglls = entry.getOrganelles();
-		if (orglls.size()>0) {
-			this.geneEncodingOrganelle = orglls.get(0).getType().getValue();
-			if (orglls.size()>1) {
-				for (Organelle orgll:orglls){ 
-					if (!orgll.getType().equals(this.geneEncodingOrganelle)) {
-						LOGGER.warn("Different gene encoding organelles for Uniprot "+this.uniId);
-					}
-				}
-			}
-		}
-	}
-	
 	/**
 	 * Returns true if this UniprotEntry belongs to same domain of life (Bacteria, Archaea, Eukaryota) 
 	 * as the one given

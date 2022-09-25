@@ -41,7 +41,6 @@ import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.SiftsFeature;
 import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
-import uk.ac.ebi.uniprot.dataservice.client.exception.ServiceException;
 
 
 public class ChainEvolContext implements Serializable {
@@ -264,7 +263,7 @@ public class ChainEvolContext implements Serializable {
 						query.setTaxons(taxons);
 					}
 				} else {
-					query = parent.getUniProtJapiConnection().getUnirefEntryWithRetry(queryUniprotId);
+					query = parent.getUniProtConnection().getUnirefEntryWithRetry(queryUniprotId);
 				}
 				
 				if (query!=null && query.replaceNonStandardByX()) {
@@ -304,13 +303,13 @@ public class ChainEvolContext implements Serializable {
 				if (parent.isUseLocalUniprot()) {
 					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") in local database. Obsolete?");
 				} else {
-					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") through UniProt JAPI. Obsolete?");	
+					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") through UniProt REST API. Obsolete?");
 				}				
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
-			} catch (ServiceException e) {
-				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from UniProt JAPI, error: "+e.getMessage());
+			} catch (IOException e) {
+				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from UniProt REST API, error: "+e.getMessage());
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;								
@@ -522,13 +521,12 @@ public class ChainEvolContext implements Serializable {
 	/**
 	 * Retrieves the Uniprot data and metadata
 	 * @throws IOException
-	 * @throws ServiceException
 	 */
-	public void retrieveHomologsData() throws DaoException, IOException, ServiceException {
+	public void retrieveHomologsData() throws DaoException, IOException, IOException {
 		if (parent.isUseLocalUniprot()) {
 			homologs.retrieveUniprotKBData();
 		} else {
-			homologs.retrieveUniprotKBData(parent.getUniProtJapiConnection());
+			homologs.retrieveUniprotKBData(parent.getUniProtConnection());
 		}
 	}
 	
@@ -837,10 +835,6 @@ public class ChainEvolContext implements Serializable {
 				return false;
 			}
 		}
-	}
-	
-	public String getUniprotVer() {
-		return parent.getUniprotVer();
 	}
 	
 	/**

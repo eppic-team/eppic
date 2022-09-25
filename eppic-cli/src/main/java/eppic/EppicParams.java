@@ -561,7 +561,7 @@ public class EppicParams {
 		"  [-G <file>]  :  config file for JPA db connection, needed to query the sequence search cache\n"+
 		"                  and to get UniProt info (sequences, taxonomy) from local db\n"+
 		"  [-U]         :  use local UniProt info via JPA db connection. Requires a config file (-G).\n"+
-		"                  If not provided, default is to use UniProt JAPI to retrieve UniProt info\n"+
+		"                  If not provided, default is to use UniProt REST API to retrieve UniProt info\n"+
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
 		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +

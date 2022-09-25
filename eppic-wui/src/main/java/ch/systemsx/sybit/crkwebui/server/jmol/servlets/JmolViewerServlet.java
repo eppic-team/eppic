@@ -87,9 +87,12 @@ public class JmolViewerServlet extends BaseServlet
 
 
 		String serverName = request.getServerName();
-		int serverPort = request.getServerPort();
 
-		String serverUrl = protocol + "://" + serverName + ":" + serverPort;
+		// it looks like this gives 80 even when in https... so I've commented out
+		// Anyway it would only be useful if serving on a non-standard port
+		//int serverPort = request.getServerPort();
+
+		String serverUrl = protocol + "://" + serverName;// + ":" + serverPort;
 
 		String nglJsUrl = properties.getProperty("urlNglJs");
 		if (nglJsUrl == null || nglJsUrl.equals("")) {

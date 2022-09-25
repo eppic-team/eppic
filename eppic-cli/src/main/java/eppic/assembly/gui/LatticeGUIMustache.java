@@ -211,7 +211,7 @@ public class LatticeGUIMustache {
 
 		if (struc.getStructureIdentifier()!=null ) {
 			try {
-				pdbId = struc.getStructureIdentifier().toCanonical().getPdbId();
+				pdbId = struc.getStructureIdentifier().toCanonical().getPdbId().getId();
 			} catch (StructureException e) {
 				logger.warn("Couldn't get PDB id. Error: {}", e.getMessage());
 				pdbId = null;

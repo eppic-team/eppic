@@ -18,13 +18,15 @@ public class TestSiftsConnection {
         SiftsConnection siftsConnection = new SiftsConnection();
 
         Reader reader = new StringReader(
-                "3sn6    A       P04896  1       380     None    394     1       394\n" +
-                "3sn6    B       P54311  13      351     2       340     2       340\n" +
-                "3sn6    G       P63212  1       68      None    None    1       68\n" +
-                "3sn6    R       P00720  16      175     1002    None    2       161\n" +
-                "3sn6    R       P07550  178     511     None    None    29      362\n" +
-                "3sn6    R       P07550  512     514     None    None    363     365\n" +
-                "3snk    A       Q989D4  2       135     None    None    1       134\n");
+                "# 2022/02/20 - 14:48 | PDB: 07.22 | UniProt: 2022.01\n" +
+                "PDB,CHAIN,SP_PRIMARY,RES_BEG,RES_END,PDB_BEG,PDB_END,SP_BEG,SP_END\n" +
+                "3sn6,A,P04896,1,380,None,394,1,394\n" +
+                "3sn6,B,P54311,13,351,2,340,2,340\n" +
+                "3sn6,G,P63212,1,68,None,None,1,68\n" +
+                "3sn6,R,P00720,16,175,1002,None,2,161\n" +
+                "3sn6,R,P07550,178,511,None,None,29,362\n" +
+                "3sn6,R,P07550,512,514,None,None,363,365\n" +
+                "3snk,A,Q989D4,2,135,None,None,1,134\n");
 
         siftsConnection.parsePdb2Uniprot(reader);
 

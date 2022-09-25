@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.eppic-web</groupId>
 		<artifactId>eppic</artifactId>
-		<version>3.3.4-SNAPSHOT</version>
+		<version>3.3.10-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>eppic-wui</artifactId>
@@ -30,15 +30,6 @@
 			<artifactId>eppic-cli</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
-			<exclusions>
-				<!-- Important: a subdependency of this clashes with a subdependency of jersey (hk2)
-				  Without this exclusion jersey doesn't work. Jersey is not used anymore but still we don't
-				  need this dependency here. -->
-				<exclusion>
-					<groupId>uk.ac.ebi.uniprot</groupId>
-					<artifactId>japi</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!--  others -->
