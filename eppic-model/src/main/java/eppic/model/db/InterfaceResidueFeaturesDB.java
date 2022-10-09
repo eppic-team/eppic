@@ -11,18 +11,22 @@ public class InterfaceResidueFeaturesDB implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String jobId;
+    /**
+     * A unique across db identifier for the entry: for precomputed PDB entries it will be the PDB id, for
+     * user jobs from files it will be a randomly generated alphanumerical string.
+     */
+    private String entryId;
     private int interfaceId;
 
     private List<ResidueBurialDB> resBurials1;
     private List<ResidueBurialDB> resBurials2;
 
-    public String getJobId() {
-        return jobId;
+    public String getEntryId() {
+        return entryId;
     }
 
-    public void setJobId(String jobId) {
-        this.jobId = jobId;
+    public void setEntryId(String entryId) {
+        this.entryId = entryId;
     }
 
     public int getInterfaceId() {

@@ -120,6 +120,7 @@ public class DataModelAdaptor {
 	public void setParams(EppicParams params) {
 		this.params = params;
 		pdbInfo.setPdbCode(params.getPdbCode());
+		pdbInfo.setEntryId(params.getBaseName());
 		runParameters = new RunParametersDB();
 		runParameters.setMinNumSeqsCutoff(params.getMinNumSeqs());
 		runParameters.setHomSoftIdCutoff(params.getHomSoftIdCutoff());
@@ -1530,8 +1531,7 @@ public class DataModelAdaptor {
 		InterfaceResidueFeaturesDB features = new InterfaceResidueFeaturesDB();
 
 		features.setInterfaceId(interf.getId());
-		// TODO set the job id. This doesn't work because job is null. Is this the right way??? Note here we can't use pdbCode because that's not set for user files
-		//features.setJobId(pdbInfo.getJob().getJobId());
+		features.setEntryId(pdbInfo.getEntryId());
 
 		List<ResidueBurialDB> resBurials1 = new ArrayList<>();
 		List<ResidueBurialDB> resBurials2 = new ArrayList<>();

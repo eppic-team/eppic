@@ -42,6 +42,7 @@ public class CrkCommandGenerator
 
 		String inputLocation = input;
 
+		// TODO we use basename as the identifier for the job: make sure it is set correctly to the random alphanumeric string when the job is run
 		String baseName = input;
 		if(inputType == InputType.FILE.getIndex())
 		{

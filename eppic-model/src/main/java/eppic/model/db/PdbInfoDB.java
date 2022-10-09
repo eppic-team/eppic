@@ -19,6 +19,12 @@ public class PdbInfoDB implements Serializable {
 	// FIXME remove, needs review, still used in one place
 	private int uid;
 
+	/**
+	 * A unique across db identifier for the entry: for precomputed PDB entries it will be the PDB id, for
+	 * user jobs from files it will be a randomly generated alphanumerical string.
+	 */
+	private String entryId;
+
 	private String title;
 	private Date releaseDate;
 	private String spaceGroup;
@@ -85,15 +91,13 @@ public class PdbInfoDB implements Serializable {
 	@JsonManagedReference(value = "assemblies-ref")
 	private List<AssemblyDB> assemblies;
 
-	private JobDB job;
-	
 	public PdbInfoDB() {
 		chainClusters = new ArrayList<ChainClusterDB>();
 		interfaceClusters = new ArrayList<InterfaceClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
 	}
 	
-	public PdbInfoDB(JobDB job,
+	public PdbInfoDB(
 						String pdbCode,
 						String title,
 						String spaceGroup,
@@ -112,15 +116,14 @@ public class PdbInfoDB implements Serializable {
 						boolean nonStandardCoordFrameConvention,
 						boolean exhaustiveAssemblyEnumeration) {
 		
-		chainClusters = new ArrayList<ChainClusterDB>();
-		assemblies = new ArrayList<AssemblyDB>();
+		chainClusters = new ArrayList<>();
+		assemblies = new ArrayList<>();
 		this.pdbCode = pdbCode;
 		this.title = title;
 		this.spaceGroup = spaceGroup;
 		this.expMethod = expMethod;
 		this.resolution = resolution;
 		this.runParameters = runParameters;
-		this.job = job;
 		this.rfreeValue = rfreeValue;
 		this.cellA = cellA;
 		this.cellB = cellB;
@@ -292,12 +295,12 @@ public class PdbInfoDB implements Serializable {
 		return uid;
 	}
 
-	public void setJob(JobDB job) {
-		this.job = job;
+	public String getEntryId() {
+		return entryId;
 	}
 
-	public JobDB getJob() {
-		return job;
+	public void setEntryId(String entryId) {
+		this.entryId = entryId;
 	}
 
 	public double getResolution() {
