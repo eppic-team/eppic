@@ -1,7 +1,9 @@
 package eppic.model.db;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -60,7 +62,8 @@ public class InterfaceDB implements Serializable {
 	@JsonManagedReference(value = "interfaceScores-ref")
 	private List<InterfaceScoreDB> interfaceScores;
 
-	@JsonManagedReference(value = "contacts-ref")
+	// note we don't serialize contacts (see getter and setter below) to avoid gigantic needs for db space
+	@JsonIgnore
 	private List<ContactDB> contacts;
 
 	@JsonBackReference(value = "interfaces-ref")
@@ -250,10 +253,14 @@ public class InterfaceDB implements Serializable {
 		return interfaceCluster;
 	}
 
+	// note we don't serialize because it takes gigantic amounts of space
+	@JsonIgnore
 	public List<ContactDB> getContacts() {
 		return contacts;
 	}
 
+	// with this setting, if the db happens to have the field it can be deserialized
+	@JsonProperty
 	public void setContacts(List<ContactDB> contacts) {
 		this.contacts = contacts;
 	}
