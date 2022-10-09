@@ -1522,7 +1522,6 @@ public class DataModelAdaptor {
 
 			interfFeatures.add(createInterfaceResidueFeatures(interf));
 
-			// TODO now we need to do something with the features. They need to be written to a serialized file so that they can be loaded to db
 		}
 	}
 	
