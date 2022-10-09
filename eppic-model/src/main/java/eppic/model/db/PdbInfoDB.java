@@ -7,7 +7,9 @@ import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Table(name = "PdbInfo")
 public class PdbInfoDB implements Serializable {
@@ -176,18 +178,23 @@ public class PdbInfoDB implements Serializable {
 	}
 	
 	/**
-	 * Returns the corresponding ChainClusterDB given the representative chain id
-	 * @param repChainId
-	 * @return
+	 * Returns the corresponding ChainClusterDB given the chain id
+	 * Note that before v 3.4.0 this would work only for the representative chain id, but since 3.4.0
+	 * it works for any chain id.
+	 * @param chainId
+	 * @return the cluster object or null if chain id can't be found
 	 */
 	@JsonIgnore
-	public ChainClusterDB getChainCluster(String repChainId) {
+	public ChainClusterDB getChainCluster(String chainId) {
+		Map<String,ChainClusterDB> lookup = new HashMap<>();
 		for (ChainClusterDB cc:chainClusters) {
-			if (cc.getRepChain().equals(repChainId)) {
-				return cc;
+			lookup.put(cc.getRepChain(), cc);
+			// TODO review why we have a comma separated instead of a list
+			for (String memberChainId : cc.getMemberChains().split(",\\s*")) {
+				lookup.put(memberChainId, cc);
 			}
 		}
-		return null;
+		return lookup.get(chainId);
 	}
 	
 	public List<AssemblyDB> getAssemblies() {
