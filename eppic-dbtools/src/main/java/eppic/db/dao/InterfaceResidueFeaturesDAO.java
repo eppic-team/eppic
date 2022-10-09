@@ -8,5 +8,5 @@ public interface InterfaceResidueFeaturesDAO {
 
     void insertInterfResFeatures(List<InterfaceResidueFeaturesDB> list) throws DaoException;
 
-    InterfaceResidueFeaturesDB getInterfResFeatures(String jobId, int interfId) throws DaoException;
+    InterfaceResidueFeaturesDB getInterfResFeatures(String entryId, int interfId) throws DaoException;
 }

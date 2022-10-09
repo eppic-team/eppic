@@ -42,26 +42,26 @@ public class JobService {
     }
 
     /**
-     * Retrieves pdbInfo item for job.
-     * @param jobId identifier of the job
+     * Retrieves pdbInfo item for entry.
+     * @param entryId identifier of the entry
      * @param getInterfaceInfo whether to retrieve interface info or not
      * @param getAssemblyInfo whether to retrieve assembly info or not
      * @param getSeqInfo whether to retrieve sequence info or not
      * @param getResInfo whether to retrieve residue info or not
      * @return pdb info item
-     * @throws DaoException when can not retrieve result of the job
+     * @throws DaoException when can not retrieve result of the entry
      */
-    public PdbInfoDB getResultData(String jobId,
+    public PdbInfoDB getResultData(String entryId,
                                           boolean getInterfaceInfo,
                                           boolean getAssemblyInfo,
                                           boolean getSeqInfo,
                                           boolean getResInfo) throws DaoException
     {
 
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
         // TODO what to do with this after rewrite??
-        JobDAO jobDAO = new JobDAOMongo();
-        InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
+        //JobDAO jobDAO = new JobDAOMongo();
+        //InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
         //pdbInfo.setInputType(input.getInputType());
         //pdbInfo.setInputName(input.getInputName());
 
@@ -81,73 +81,73 @@ public class JobService {
     }
 
     /**
-     * Retrieves assembly data for job.
-     * @param jobId identifier of the job
-     * @return assembly data corresponding to job id
-     * @throws DaoException when can not retrieve result of the job
+     * Retrieves assembly data for entry.
+     * @param entryId identifier of the entry
+     * @return assembly data corresponding to entry id
+     * @throws DaoException when can not retrieve result of the entry
      */
-    public List<AssemblyDB> getAssemblyDataByPdbAssemblyId(String jobId) throws DaoException {
+    public List<AssemblyDB> getAssemblyDataByPdbAssemblyId(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         return pdbInfo.getAssemblies();
     }
 
     /**
-     * Retrieves interface cluster data for job.
-     * @param jobId identifier of the job
-     * @return interface cluster data corresponding to job id
-     * @throws DaoException when can not retrieve result of the job
+     * Retrieves interface cluster data for entry.
+     * @param entryId identifier of the entry
+     * @return interface cluster data corresponding to entry id
+     * @throws DaoException when can not retrieve result of the entry
      */
-    public List<InterfaceClusterDB> getInterfaceClusterData(String jobId) throws DaoException {
+    public List<InterfaceClusterDB> getInterfaceClusterData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         return pdbInfo.getInterfaceClusters();
     }
 
     /**
-     * Retrieves interface data for job.
-     * @param jobId identifier of the job
-     * @return interface data corresponding to job id
-     * @throws DaoException when can not retrieve result of the job
+     * Retrieves interface data for entry.
+     * @param entryId identifier of the entry
+     * @return interface data corresponding to entry id
+     * @throws DaoException when can not retrieve result of the entry
      */
-    public List<InterfaceDB> getInterfaceData(String jobId) throws DaoException {
+    public List<InterfaceDB> getInterfaceData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         return pdbInfo.getInterfaces();
     }
 
     /**
-     * Retrieves sequence data for job.
-     * @param jobId identifier of the job
-     * @return sequence data corresponding to job id
-     * @throws DaoException when can not retrieve result of the job
+     * Retrieves sequence data for entry.
+     * @param entryId identifier of the entry
+     * @return sequence data corresponding to entry id
+     * @throws DaoException when can not retrieve result of the entry
      */
-    public List<ChainClusterDB> getSequenceData(String jobId) throws DaoException {
+    public List<ChainClusterDB> getSequenceData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         return pdbInfo.getChainClusters();
     }
 
     /**
-     * Retrieves residue data for job and interface id.
-     * @param jobId identifier of the job
+     * Retrieves residue data for entry and interface id.
+     * @param entryId identifier of the entry
      * @param interfId the interface id
-     * @return residue data corresponding to job id and interface id
-     * @throws DaoException when can not retrieve result of the job
+     * @return residue data corresponding to entry id and interface id
+     * @throws DaoException when can not retrieve result of the entry
      */
-    public List<Residue> getResidueData(String jobId, int interfId) throws DaoException {
+    public List<Residue> getResidueData(String entryId, int interfId) throws DaoException {
 
         // 1st get burial info
-        InterfaceResidueFeaturesDB features = featuresDAO.getInterfResFeatures(jobId, interfId);
+        InterfaceResidueFeaturesDB features = featuresDAO.getInterfResFeatures(entryId, interfId);
         List<ResidueBurialDB> burials1 = features.getResBurials1();
         List<ResidueBurialDB> burials2 = features.getResBurials2();
 
         // 2nd get entropy scores
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
         InterfaceDB interf = pdbInfo.getInterface(interfId);
         ChainClusterDB chain1 = pdbInfo.getChainCluster(interf.getChain1());
         ChainClusterDB chain2 = pdbInfo.getChainCluster(interf.getChain2());
@@ -209,98 +209,98 @@ public class JobService {
     }
 
     /**
-     * Retrieves contact data for job and interface id
-     * @param jobId identifier of the job
+     * Retrieves contact data for entry and interface id
+     * @param entryId identifier of the entry
      * @param interfId the interface id
      * @return contact data
-     * @throws DaoException when can not retrieve result of the job
+     * @throws DaoException when can not retrieve result of the entry
      */
-    public List<ContactDB> getContactData(String jobId, int interfId) throws DaoException {
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+    public List<ContactDB> getContactData(String entryId, int interfId) throws DaoException {
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         ContactDAO contactDAO = new ContactDAOMongo();
         List<ContactDB> list = contactDAO.getContactsForInterface(pdbInfo.getUid(), interfId);
 
         if (list==null) {
-            throw new DaoException("Could not find contact data for job "+jobId+" and interface id "+interfId);
+            throw new DaoException("Could not find contact data for entry "+entryId+" and interface id "+interfId);
         }
 
         return list;
     }
 
     /**
-     * Retrieves assembly data for job and Pdb assembly id
-     * @param jobId job identifier
+     * Retrieves assembly data for entry and Pdb assembly id
+     * @param entryId entry identifier
      * @param pdbAssemblyId the PDB assembly id
      * @return assembly data
      * @throws DaoException
      */
-    public AssemblyDB getAssemblyDataByPdbAssemblyId(String jobId, int pdbAssemblyId) throws DaoException {
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+    public AssemblyDB getAssemblyDataByPdbAssemblyId(String entryId, int pdbAssemblyId) throws DaoException {
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         AssemblyDB assembly = pdbInfo.getAssemblyByPdbAssemblyId(pdbAssemblyId);
 
         if (assembly==null) {
-            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+pdbAssemblyId);
+            throw new DaoException("Could not find assembly data for entry "+entryId+" and PDB assembly id "+pdbAssemblyId);
         }
         return assembly;
     }
 
     /**
-     * Retrieves assembly data for job and eppic assembly id
-     * @param jobId job identifier
+     * Retrieves assembly data for entry and eppic assembly id
+     * @param entryId entry identifier
      * @param assemblyId the eppic assembly id
      * @return assembly data
      * @throws DaoException
      */
-    public AssemblyDB getAssemblyData(String jobId, int assemblyId) throws DaoException {
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+    public AssemblyDB getAssemblyData(String entryId, int assemblyId) throws DaoException {
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
 
         if (assembly==null) {
-            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new DaoException("Could not find assembly data for entry "+entryId+" and PDB assembly id "+assemblyId);
         }
         return assembly;
     }
 
     /**
-     * Retrieves lattice graph data for job and eppic assembly id
-     * @param jobId job identifier
+     * Retrieves lattice graph data for entry and eppic assembly id
+     * @param entryId entry identifier
      * @param assemblyId the eppic assembly id
      * @return lattice graph data
      * @throws DaoException
      */
-    public LatticeGraph getLatticeGraphData(String jobId, int assemblyId) throws DaoException {
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+    public LatticeGraph getLatticeGraphData(String entryId, int assemblyId) throws DaoException {
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
         AssemblyDB unitcellAssembly = pdbInfo.getAssemblyById(0);
 
         if (assembly==null || unitcellAssembly == null) {
-            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new DaoException("Could not find assembly data for entry "+entryId+" and PDB assembly id "+assemblyId);
         }
 
         return ViewsAdaptor.getLatticeGraphView(assembly, unitcellAssembly);
     }
 
     /**
-     * Retrieves lattice graph data for job and eppic interface ids
+     * Retrieves lattice graph data for entry and eppic interface ids
      * string (comma separated and possibly with hyphens).
-     * @param jobId job identifier
+     * @param entryId entry identifier
      * @param interfaceIds the eppic interface ids, if null all interfaces are assumed
      * @return lattice graph data
      * @throws DaoException
      */
-    public LatticeGraph getLatticeGraphDataByInterfaceIds(String jobId, Set<Integer> interfaceIds) throws DaoException {
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+    public LatticeGraph getLatticeGraphDataByInterfaceIds(String entryId, Set<Integer> interfaceIds) throws DaoException {
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         List<GraphEdgeDB> graphEdges = new ArrayList<>();
 
         AssemblyDB unitcellAssembly = pdbInfo.getAssemblyById(0);
 
         if (unitcellAssembly == null) {
-            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+            throw new DaoException("Could not find unitcell assembly data for entry "+entryId+" and PDB assembly id 0");
         }
 
         if (interfaceIds == null) {
@@ -318,22 +318,22 @@ public class JobService {
     }
 
     /**
-     * Retrieves lattice graph data for job and eppic interface cluster ids
+     * Retrieves lattice graph data for entry and eppic interface cluster ids
      * string (comma separated and possibly with hyphens).
-     * @param jobId job identifier
+     * @param entryId entry identifier
      * @param interfaceClusterIds the eppic interface cluster ids, if null all interface clusters are assumed
      * @return lattice graph data
      * @throws DaoException
      */
-    public LatticeGraph getLatticeGraphDataByInterfaceClusterIds(String jobId, Set<Integer> interfaceClusterIds) throws DaoException {
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+    public LatticeGraph getLatticeGraphDataByInterfaceClusterIds(String entryId, Set<Integer> interfaceClusterIds) throws DaoException {
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         List<GraphEdgeDB> graphEdges = new ArrayList<>();
 
         AssemblyDB unitcellAssembly = pdbInfo.getAssemblyById(0);
 
         if (unitcellAssembly == null) {
-            throw new DaoException("Could not find unitcell assembly data for job "+jobId+" and PDB assembly id 0");
+            throw new DaoException("Could not find unitcell assembly data for entry "+entryId+" and PDB assembly id 0");
         }
 
         if (interfaceClusterIds == null) {
@@ -350,19 +350,19 @@ public class JobService {
     }
 
     /**
-     * Retrieces assembly diagram data for job id and eppic assembly id.
-     * @param jobId job identifier
+     * Retrieces assembly diagram data for entry id and eppic assembly id.
+     * @param entryId entry identifier
      * @param assemblyId the eppic assembly id
      * @return
      * @throws DaoException
      */
-    public AssemblyDiagram getAssemblyDiagram(String jobId, int assemblyId) throws DaoException {
-        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
+    public AssemblyDiagram getAssemblyDiagram(String entryId, int assemblyId) throws DaoException {
+        PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(entryId);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
 
         if (assembly==null) {
-            throw new DaoException("Could not find assembly data for job "+jobId+" and PDB assembly id "+assemblyId);
+            throw new DaoException("Could not find assembly data for entry "+entryId+" and PDB assembly id "+assemblyId);
         }
 
         return ViewsAdaptor.getAssemblyDiagram(assembly);

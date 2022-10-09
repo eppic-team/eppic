@@ -28,13 +28,12 @@ public class PDBInfoDAOMongo implements PDBInfoDAO {
     }
 
     @Override
-    public PdbInfoDB getPDBInfo(String jobId) throws DaoException {
+    public PdbInfoDB getPDBInfo(String entryId) throws DaoException {
         PdbInfoDB pdbInfoDB;
         try {
             pdbInfoDB = MongoUtils.findOne(mongoDb, collectionName,
-                    // TODO we need a jobId field in PdbInfo or some linkage to a jobs collection
-                    Collections.singletonList("pdbCode"),
-                    Collections.singletonList(jobId),
+                    Collections.singletonList("entryId"),
+                    Collections.singletonList(entryId),
                     PdbInfoDB.class);
         } catch (Exception e) {
             throw new DaoException(e);

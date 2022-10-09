@@ -11,11 +11,11 @@ public interface PDBInfoDAO
 {
 	/**
 	 * Retrieves pdb info full object by job identifier.
-	 * @param jobId identifier of the job
+	 * @param entryId identifier of the job
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve pdb info item for job
 	 */
-	PdbInfoDB getPDBInfo(String jobId) throws DaoException;
+	PdbInfoDB getPDBInfo(String entryId) throws DaoException;
 
 	/**
 	 * Persists pdb info item.

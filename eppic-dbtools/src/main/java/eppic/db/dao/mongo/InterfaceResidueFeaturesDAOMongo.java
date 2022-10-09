@@ -38,13 +38,13 @@ public class InterfaceResidueFeaturesDAOMongo implements InterfaceResidueFeature
     }
 
     @Override
-    public InterfaceResidueFeaturesDB getInterfResFeatures(String jobId, int interfId) throws DaoException {
+    public InterfaceResidueFeaturesDB getInterfResFeatures(String entryId, int interfId) throws DaoException {
         // TODO how to keep the field names in a more prominent place. Or how to connect to class field names?
         InterfaceResidueFeaturesDB feat;
         try {
             feat = MongoUtils.findOne(mongoDb, collectionName,
-                    Arrays.asList("jobId", "interfaceId"),
-                    Arrays.asList(jobId, interfId),
+                    Arrays.asList("entryId", "interfaceId"),
+                    Arrays.asList(entryId, interfId),
                     InterfaceResidueFeaturesDB.class);
         } catch (Exception e) {
             throw new DaoException(e);

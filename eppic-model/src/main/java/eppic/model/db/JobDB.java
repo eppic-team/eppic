@@ -19,6 +19,10 @@ public class JobDB implements Serializable {
 
 
 	private Long uid;
+
+	// TODO finish implementing this field when we implement job submission endpoint in REST: this is the new linkage of jobs to pdbinfo.
+	//  Must fill it when a job is submitted
+	private String entryId;
 	
 	private String jobId;
 	private String status;
