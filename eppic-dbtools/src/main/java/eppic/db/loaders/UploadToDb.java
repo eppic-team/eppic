@@ -1,11 +1,16 @@
 package eppic.db.loaders;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.dao.DaoException;
+import eppic.db.dao.InterfaceResidueFeaturesDAO;
 import eppic.db.dao.PDBInfoDAO;
+import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.mongoutils.ConfigurableMapper;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
+import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
@@ -13,17 +18,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
-// TODO this now needs to write both PdbInfoDB and InterfaceResidueFeatures (stored in separate files and separate collections in mongo)
 public class UploadToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadToDb.class);
@@ -35,6 +39,10 @@ public class UploadToDb {
 	private static final int TIME_STATS_EVERY1 = 100;
 	private static final int TIME_STATS_EVERY2 = 1000;
 
+	private static final String SERIALIZED_FILE_SUFFIX = ".json.zip";
+	private static final String PDBINFO_SER_FILE_SUFFIX = ".pdbinfo.json";
+	private static final String INTERFRESFEAT_SER_FILE_SUFFIX = ".interf_features.json";
+
 
 	private static boolean modeNew = true;
 	private static boolean modeEverything = false;
@@ -45,6 +53,8 @@ public class UploadToDb {
 	private static int numWorkers = 1;
 
 	private static PDBInfoDAO dao;
+
+	private static InterfaceResidueFeaturesDAO interfResDao;
 
 	public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 		
@@ -167,6 +177,7 @@ public class UploadToDb {
 		MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
 
 		dao = new PDBInfoDAOMongo(mongoDb);
+		interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
 
 		ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
 		List<Future<Stats>> allResults = new ArrayList<>();
@@ -233,17 +244,31 @@ public class UploadToDb {
 
 	}
 	
-	private static PdbInfoDB readFromSerializedFile(File webuiFile) {
+	private static EntryData readSerializedFile(File serializedFile) {
 		PdbInfoDB pdbScoreItem = null;
-		try {
-			ObjectInputStream in = new ObjectInputStream(new FileInputStream(webuiFile));
-			pdbScoreItem = (PdbInfoDB)in.readObject();
-			in.close();
-		} catch (IOException|ClassNotFoundException e) {
-			System.err.println("Problem reading serialized file, skipping entry"+webuiFile+". Error: "+e.getMessage());
+		List<InterfaceResidueFeaturesDB> interfResFeatures = null;
+		try (ZipFile zipFile = new ZipFile(serializedFile)) {
+			Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+			while(zipFile.entries().hasMoreElements()){
+				ZipEntry entry = entries.nextElement();
+				if (entry.getName().endsWith(PDBINFO_SER_FILE_SUFFIX)) {
+					pdbScoreItem = ConfigurableMapper.getMapper().readValue(zipFile.getInputStream(entry), PdbInfoDB.class);
+				}
+				if (entry.getName().endsWith(INTERFRESFEAT_SER_FILE_SUFFIX)) {
+					interfResFeatures = ConfigurableMapper.getMapper().readValue(zipFile.getInputStream(entry), new TypeReference<List<InterfaceResidueFeaturesDB>>(){} );
+				}
+			}
+
+			if (pdbScoreItem == null || interfResFeatures == null) {
+				System.err.println("Serialized zip file " +serializedFile+ " did not contain both needed json files: " + PDBINFO_SER_FILE_SUFFIX + ", " + INTERFRESFEAT_SER_FILE_SUFFIX);
+			}
+
+		} catch (IOException e) {
+			System.err.println("Problem reading serialized file, skipping entry "+serializedFile+". Error: "+e.getMessage());
+			return null;
 		}
-		// will be null if an exception occurs
-		return pdbScoreItem;
+		return new EntryData(pdbScoreItem, interfResFeatures);
 	}
 	
 	private static List<File> listAllDirs(boolean isDividedLayout, File rootDir) {
@@ -316,16 +341,16 @@ public class UploadToDb {
 			}
 
 			String inputName = null;
-			File serializedFile = null;
+			File pdbInfoSerializedFile = null;
 			if (isDividedLayout) {
-				serializedFile = new File(dir, dir.getName() + ".webui.dat");
-				if (!serializedFile.exists())
-					serializedFile = null;
+				pdbInfoSerializedFile = new File(dir, dir.getName() + SERIALIZED_FILE_SUFFIX);
+				if (!pdbInfoSerializedFile.exists())
+					pdbInfoSerializedFile = null;
 
 			} else {
 				for (File f : dir.listFiles()) {
-					if (f.getName().endsWith(".webui.dat")) {
-						serializedFile = f;
+					if (f.getName().endsWith(SERIALIZED_FILE_SUFFIX)) {
+						pdbInfoSerializedFile = f;
 					}
 				}
 
@@ -351,7 +376,7 @@ public class UploadToDb {
 			}
 
 			// we keep the null serializedFiles to persist error jobs
-			serializedFiles.add(new JobDir(dir, serializedFile, inputName));
+			serializedFiles.add(new JobDir(dir, pdbInfoSerializedFile, inputName));
 		}
 		return serializedFiles;
 	}
@@ -464,16 +489,17 @@ public class UploadToDb {
 	 * @return
 	 */
 	private static boolean persistOne(Stats stats, JobDir jobDirectory, String jobId) {
-		if(jobDirectory.serializedFile!=null) {
-			PdbInfoDB pdbScoreItem = readFromSerializedFile(jobDirectory.serializedFile);
+		if(jobDirectory.serializedFile !=null) {
+
+			EntryData entryData = readSerializedFile(jobDirectory.serializedFile);
 			// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-			if (pdbScoreItem == null) return false;
+			if (entryData == null) return false;
 			try {
-				dao.insertPDBInfo(pdbScoreItem);
+				dao.insertPDBInfo(entryData.pdbInfoDB);
+				interfResDao.insertInterfResFeatures(entryData.interfResFeaturesDB);
 			} catch (DaoException e) {
 				System.err.println("Error persisting: " + jobId + ": " + e.getMessage());
 			}
-			//dbh.persistFinishedJob(em, pdbScoreItem, jobId, jobDirectory.inputName);
 		}
 		else {
 			// TODO error jobs
@@ -508,6 +534,15 @@ public class UploadToDb {
 			this.dir = dir;
 			this.serializedFile = serializedFile;
 			this.inputName = inputName;
+		}
+	}
+
+	private static class EntryData {
+		PdbInfoDB pdbInfoDB;
+		List<InterfaceResidueFeaturesDB> interfResFeaturesDB;
+		public EntryData(PdbInfoDB pdbInfoDB, List<InterfaceResidueFeaturesDB> interfResFeaturesDB) {
+			this.pdbInfoDB = pdbInfoDB;
+			this.interfResFeaturesDB = interfResFeaturesDB;
 		}
 	}
 }

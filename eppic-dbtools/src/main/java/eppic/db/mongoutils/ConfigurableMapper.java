@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -31,6 +32,9 @@ public class ConfigurableMapper {
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         mapper.setDateFormat(df);
+
+        // for text json files to have pretty json printed
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
     }
 
     public static ObjectMapper getMapper() {

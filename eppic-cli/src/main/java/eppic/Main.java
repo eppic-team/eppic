@@ -791,7 +791,8 @@ public class Main {
 			modelAdaptor.setInterfaceWarnings(); // first we call this method to add all the cached warnings
 			modelAdaptor.writeSerializedModelFiles(
 					params.getOutputFile(EppicParams.SERIALIZED_PDBINFO_FILE_SUFFIX),
-					params.getOutputFile(EppicParams.SERIALIZED_INTERF_FEATURES_FILE_SUFFIX)
+					params.getOutputFile(EppicParams.SERIALIZED_INTERF_FEATURES_FILE_SUFFIX),
+					params.getOutputFile(EppicParams.SERIALIZED_FILES_ZIP_SUFFIX)
 					);
 
 			// finally we write a signal file for the wui to know that job is finished

@@ -1,13 +1,19 @@
 package eppic;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eppic.assembly.*;
 import eppic.assembly.gui.InterfaceEdge3DSourced;
 import eppic.assembly.layout.LayoutUtils;
+import eppic.db.mongoutils.ConfigurableMapper;
 import eppic.model.db.*;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.asa.GroupAsa;
@@ -1487,10 +1493,30 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void writeSerializedModelFiles(File pdbInfoFile, File interfFeaturesFile) throws EppicException {
+	public void writeSerializedModelFiles(File pdbInfoFile, File interfFeaturesFile, File zipFile) throws EppicException {
 		try {
-			Goodies.serialize(pdbInfoFile, pdbInfo);
-			Goodies.serialize(interfFeaturesFile, interfFeatures);
+			ConfigurableMapper.getMapper().writeValue(pdbInfoFile, pdbInfo);
+			ConfigurableMapper.getMapper().writeValue(interfFeaturesFile, interfFeatures);
+
+			List<File> srcFiles = Arrays.asList(pdbInfoFile, interfFeaturesFile);
+			FileOutputStream fos = new FileOutputStream(zipFile);
+			ZipOutputStream zipOut = new ZipOutputStream(fos);
+			for (File fileToZip : srcFiles) {
+				FileInputStream fis = new FileInputStream(fileToZip);
+				ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+				zipOut.putNextEntry(zipEntry);
+
+				byte[] bytes = new byte[1024];
+				int length;
+				while((length = fis.read(bytes)) >= 0) {
+					zipOut.write(bytes, 0, length);
+				}
+				fis.close();
+			}
+			zipOut.close();
+			fos.close();
+			srcFiles.forEach(File::delete);
+
 		} catch (IOException e) {
 			throw new EppicException(e, e.getMessage(), true);
 		}
