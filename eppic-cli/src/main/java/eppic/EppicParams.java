@@ -560,9 +560,9 @@ public class EppicParams {
 		"                  from SIFTS only, b) only sequence search cache is used.\n"+
 		"                  Useful for precomputation from scratch to avoid the dependency on\n"+
 		"                  blast index files.\n"+
-		"  [-G <file>]  :  config file for JPA db connection, needed to query the sequence search cache\n"+
+		"  [-G <file>]  :  config file for Mongo db connection, needed to query the sequence search cache\n"+
 		"                  and to get UniProt info (sequences, taxonomy) from local db\n"+
-		"  [-U]         :  use local UniProt info via JPA db connection. Requires a config file (-G).\n"+
+		"  [-U]         :  use local UniProt info via Mongo db connection. Requires a config file (-G).\n"+
 		"                  If not provided, default is to use UniProt REST API to retrieve UniProt info\n"+
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
