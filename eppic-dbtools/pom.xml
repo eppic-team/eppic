@@ -65,8 +65,7 @@
 			<artifactId>eppic-util</artifactId>
 			<version>${project.version}</version>
 			<exclusions>
-				<!-- Without this there are complains at runtime about NoClassDefFound for TypeReference class.
-				     I think the conflicting one comes from mmtf via biojava-->
+				<!-- Biojava brings in an older jackson-core (via mmtf). With this we take the one declared above -->
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-core</artifactId>

@@ -6,12 +6,16 @@ import eppic.db.dao.InterfaceResidueFeaturesDAO;
 import eppic.db.mongoutils.MongoDbStore;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.InterfaceResidueFeaturesDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.Table;
 import java.util.Arrays;
 import java.util.List;
 
 public class InterfaceResidueFeaturesDAOMongo implements InterfaceResidueFeaturesDAO {
+
+    private static final Logger logger = LoggerFactory.getLogger(InterfaceResidueFeaturesDAOMongo.class);
 
     private final MongoDatabase mongoDb;
     private final String collectionName;
@@ -30,6 +34,10 @@ public class InterfaceResidueFeaturesDAOMongo implements InterfaceResidueFeature
 
     @Override
     public void insertInterfResFeatures(List<InterfaceResidueFeaturesDB> list) throws DaoException {
+        if (list.isEmpty()) {
+            logger.debug("List of InterfaceResidueFeaturesDB is empty. Will not persist anything.");
+            return;
+        }
         try {
             MongoUtils.writeObjects(mongoDb, collectionName, list);
         } catch (Exception e) {

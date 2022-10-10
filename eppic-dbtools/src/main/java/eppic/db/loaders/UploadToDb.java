@@ -250,7 +250,7 @@ public class UploadToDb {
 		try (ZipFile zipFile = new ZipFile(serializedFile)) {
 			Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-			while(zipFile.entries().hasMoreElements()){
+			while(entries.hasMoreElements()){
 				ZipEntry entry = entries.nextElement();
 				if (entry.getName().endsWith(PDBINFO_SER_FILE_SUFFIX)) {
 					pdbScoreItem = ConfigurableMapper.getMapper().readValue(zipFile.getInputStream(entry), PdbInfoDB.class);
