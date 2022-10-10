@@ -451,7 +451,7 @@ public class UploadToDb {
 //				}
 
 				long end = System.currentTimeMillis();
-                logger.info("{} {} : {} s", jobId, msg, ((end-start)/1000));
+                logger.info("{} {} : {} ms", jobId, msg, (end-start));
 
 				if (i%TIME_STATS_EVERY1==0) {
 					avgTimeEnd1 = System.currentTimeMillis();
