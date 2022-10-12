@@ -4,6 +4,9 @@ package eppic.rest.commons;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoDbStore;
 import eppic.rest.filter.CORSResponseFilter;
+import eppic.rest.filter.CustomMapperProvider;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.message.filtering.SelectableEntityFilteringFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -44,6 +47,12 @@ public class InitJerseyRestApp extends ResourceConfig {
 
         register(SelectableEntityFilteringFeature.class);
         property(SelectableEntityFilteringFeature.QUERY_PARAM_NAME, "select");
+
+        // our custom json serializer provider, to make sure serialization (for REST API output) does use @json annotations
+        register(CustomMapperProvider.class);
+        // these 2 are needed for serialization to work and be configurable via CustomMapperProvider
+        register(JacksonFeature.class);
+        register(JacksonJsonProvider.class);
 
         // registering logging feature https://stackoverflow.com/questions/2332515/how-to-get-jersey-logs-at-server
         register(LoggingFeature.class);
