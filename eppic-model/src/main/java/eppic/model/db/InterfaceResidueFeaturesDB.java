@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.List;
 
 @Table(name="InterfaceResidueFeatures",
-        indexes = @Index(name = "interfId_idx", columnList = "jobId,interfaceId", unique = false))
+        indexes = @Index(name = "entryId-interfId_idx", columnList = "entryId,interfaceId", unique = true))
 public class InterfaceResidueFeaturesDB implements Serializable {
 
     private static final long serialVersionUID = 1L;

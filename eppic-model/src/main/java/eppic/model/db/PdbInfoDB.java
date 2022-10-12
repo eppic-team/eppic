@@ -3,6 +3,7 @@ package eppic.model.db;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import javax.persistence.Index;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Table(name = "PdbInfo")
+@Table(name = "PdbInfo", indexes = @Index(name = "entryId_idx", columnList = "entryId", unique = true))
 public class PdbInfoDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
