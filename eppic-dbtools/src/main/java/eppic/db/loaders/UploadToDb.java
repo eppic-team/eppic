@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -32,9 +33,9 @@ public class UploadToDb {
 
     private static final Logger logger = LoggerFactory.getLogger(UploadToDb.class);
 
-	// the name of the dir that is the root of the divided dirs (indexed by the pdbCode middle 2-letters) 
+	// the name of the dir that is the root of the divided dirs (indexed by the pdbCode middle 2-letters)
 	private static final String DIVIDED_ROOT = "divided";
-	
+
 	// after this number of entry uploads time statistics will be produced
 	private static final int TIME_STATS_EVERY1 = 100;
 	private static final int TIME_STATS_EVERY2 = 1000;
@@ -43,10 +44,10 @@ public class UploadToDb {
 	private static final String PDBINFO_SER_FILE_SUFFIX = ".pdbinfo.json";
 	private static final String INTERFRESFEAT_SER_FILE_SUFFIX = ".interf_features.json";
 
+	private static boolean full = false;
 
-	private static boolean modeNew = true;
-	private static boolean modeEverything = false;
-	private static boolean modeRemove = false;
+	private static final int BATCH_SIZE = 1000;
+
 	private static String dbName = null;
 	private static File configFile = null;
 	private static File choosefromFile = null;
@@ -57,8 +58,8 @@ public class UploadToDb {
 	private static InterfaceResidueFeaturesDAO interfResDao;
 
 	public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
-		
-		String help = 
+
+		String help =
 				"Usage: UploadToDB\n" +
 				"  -D <string>  : the database name to use\n"+
 				"  -d <dir>     : root dir of eppic output files with subdirs as job dirs (user jobs only, no PDB ids jobs) \n" +
@@ -70,17 +71,15 @@ public class UploadToDb {
 				" [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
 				"                 the config will be read from file "+ DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
 				" [-n <int>]    : number of workers. Default 1. \n"+
-				" OPERATION MODE\n" +
-				" Default operation: only entries not already present in database will be inserted \n"+
-				" [-F]          : forces everything chosen to be inserted, deletes previous entries if present\n" +
-				" [-r]          : removes the specified entries from database\n";
-				
+				" [-F]          : whether FULL mode should be used. Otherwise INCREMENTAL mode. In FULL the collection \n" +
+				"                 is dropped and indexes reset. FULL is much faster because it uses Mongo batch insert\n";
+
 
 		boolean isDividedLayout = false;
-		
+
 		File jobDirectoriesRoot = null;
 
-		Getopt g = new Getopt("UploadToDB", args, "D:d:lf:g:n:Frh?");
+		Getopt g = new Getopt("UploadToDB", args, "D:d:lf:g:n:Fh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -103,14 +102,7 @@ public class UploadToDb {
 				numWorkers = Integer.parseInt(g.getOptarg());
 				break;
 			case 'F':
-				modeEverything = true;
-				modeNew = false;
-				modeRemove = false;
-				break;
-			case 'r':
-				modeRemove = true;
-				modeNew = false;
-				modeEverything = false;
+				full = true;
 				break;
 			case 'h':
 				System.out.println(help);
@@ -127,23 +119,14 @@ public class UploadToDb {
 			System.err.println("A database name must be provided with -D");
 			System.exit(1);
 		}
-		
+
 		if (jobDirectoriesRoot == null || ! jobDirectoriesRoot.isDirectory() ){
 			System.err.println("\n\nHey Jim, Output Directory not specified correctly! \n");
 			System.err.println(help);
 			System.exit(1);
 		}
-		
-		
-		//only one of the three should be true
-		if(!( ( modeNew && !modeEverything && !modeRemove ) || 
-			  (!modeNew &&  modeEverything && !modeRemove ) ||
-			  (!modeNew && !modeEverything &&  modeRemove ) ) ){
-			System.err.println("\n\nHey Jim, Combinations of MODE -F / -r not acceptable! \n");
-			System.err.println(help);
-			System.exit(1);
-		}
-		
+
+
 		// Get the Directories to be processed
 		List<File> jobsDirectories = new ArrayList<>();
 		if(choosefromFile!=null){
@@ -158,18 +141,13 @@ public class UploadToDb {
 
 		List<JobDir> jobDirs = listSerializedFiles(jobsDirectories, isDividedLayout);
 
-		//Print the MODE of usage
-		if(modeNew) System.out.println("\n\nMODE SELECTED: Insert New Entries\n");
-		if(modeEverything) System.out.println("\n\nMODE SELECTED: Force Insert, which will insert everything in DB\n");
-		if(modeRemove) System.out.println("\n\nMODE SELECTED: Remove entries from DB\n");
-		
 		if (isDividedLayout) {
-			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to have PDB divided layout, i.e. "+jobDirectoriesRoot+File.separatorChar+DIVIDED_ROOT+File.separatorChar+"<PDB-code-middle-2-letters>");
+			logger.info("Directories under "+jobDirectoriesRoot+" will be considered to have PDB divided layout, i.e. "+jobDirectoriesRoot+File.separatorChar+DIVIDED_ROOT+File.separatorChar+"<PDB-code-middle-2-letters>");
 		} else {
-			System.out.println("Directories under "+jobDirectoriesRoot+" will be considered to be user jobs, no PDB divided layout will be used. ");
+			logger.info("Directories under "+jobDirectoriesRoot+" will be considered to be user jobs, no PDB divided layout will be used. ");
 		}
 
-		System.out.println("Will use " + numWorkers + " workers");
+		logger.info("Will use " + numWorkers + " workers");
 
 		DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
 		String connUri = propsReader.getMongoUri();
@@ -178,6 +156,15 @@ public class UploadToDb {
 
 		dao = new PDBInfoDAOMongo(mongoDb);
 		interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
+
+		if (full) {
+			// remove content and create collections and index
+			logger.info("FULL mode was selected. Will drop all data and recreate collections and indexes");
+			MongoUtils.dropCollection(mongoDb, PdbInfoDB.class);
+			MongoUtils.dropCollection(mongoDb, InterfaceResidueFeaturesDB.class);
+			MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
+			MongoUtils.createIndices(mongoDb, InterfaceResidueFeaturesDB.class);
+		}
 
 		ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
 		List<Future<Stats>> allResults = new ArrayList<>();
@@ -200,7 +187,7 @@ public class UploadToDb {
 			}
 			offset = j;
 
-			System.out.printf("Proceeding to submit to worker %d, set of size %d\n", i, singleSet.length);
+			logger.info("Proceeding to submit to worker {}, set of size {}", i, singleSet.length);
 
 			Future<Stats> future = executorService.submit(() -> loadSet(singleSet));
 			allResults.add(future);
@@ -211,7 +198,7 @@ public class UploadToDb {
 			Stats singleStats = future.get();
 			allStats.add(singleStats);
 		}
-		
+
 		long totalEnd = System.currentTimeMillis();
 
 		executorService.shutdown();
@@ -219,31 +206,25 @@ public class UploadToDb {
 		while (!executorService.isTerminated()) {
 
 		}
-		
-		System.out.println("Completed all "+jobDirs.size()+" entries in "+((totalEnd-totalStart)/1000)+" s");
-		if (modeNew) {
-			System.out.println("Already present: "+ allStats.countPresent+", uploaded: "+ allStats.countUploaded+", couldn't insert: "+allStats.pdbsWithWarnings.size());
-			System.out.println("There were "+ allStats.countErrorJob+" error jobs in "+ allStats.countUploaded+" uploaded entries.");
-		}
-		if (modeRemove) System.out.println("Removed: "+ allStats.countRemoved);
+
+		logger.info("Completed all "+jobDirs.size()+" entries in "+((totalEnd-totalStart)/1000)+" s");
+		// TODO check what to do with "already present" category now. Can we even know if they were present?
+		logger.info("Already present: "+ allStats.countPresent+", uploaded: "+ allStats.countUploaded+", couldn't insert: "+allStats.pdbsWithWarnings.size());
+		logger.info("There were "+ allStats.countErrorJob+" error jobs in "+ allStats.countUploaded+" uploaded entries.");
 
 		if (!allStats.pdbsWithWarnings.isEmpty()) {
-			System.out.println("These PDBs had problems while inserting to db: ");
-			for (String pdb:allStats.pdbsWithWarnings) {
-				System.out.print(pdb+" ");
-			}
-			System.out.println();
+			logger.info("These PDBs had problems while inserting to db: {}", String.join(" ", allStats.pdbsWithWarnings));
 		}
 
 		// make sure we exit with an error state in cases with many failures
 		int maxFailuresTolerated = (allStats.countPresent + allStats.countUploaded)/2;
 		if (allStats.pdbsWithWarnings.size() > maxFailuresTolerated) {
-			System.err.println("Total of "+allStats.pdbsWithWarnings.size()+" failures, more than "+maxFailuresTolerated+" failures. Something must be wrong!");
+			logger.error("Total of "+allStats.pdbsWithWarnings.size()+" failures, more than "+maxFailuresTolerated+" failures. Something must be wrong!");
 			System.exit(1);
 		}
 
 	}
-	
+
 	private static EntryData readSerializedFile(File serializedFile) {
 		PdbInfoDB pdbScoreItem = null;
 		List<InterfaceResidueFeaturesDB> interfResFeatures = null;
@@ -261,27 +242,27 @@ public class UploadToDb {
 			}
 
 			if (pdbScoreItem == null || interfResFeatures == null) {
-				System.err.println("Serialized zip file " +serializedFile+ " did not contain both needed json files: " + PDBINFO_SER_FILE_SUFFIX + ", " + INTERFRESFEAT_SER_FILE_SUFFIX);
+				logger.error("Serialized zip file " +serializedFile+ " did not contain both needed json files: " + PDBINFO_SER_FILE_SUFFIX + ", " + INTERFRESFEAT_SER_FILE_SUFFIX);
 			}
 
 		} catch (IOException e) {
-			System.err.println("Problem reading serialized file, skipping entry "+serializedFile+". Error: "+e.getMessage());
+			logger.error("Problem reading serialized file, skipping entry "+serializedFile+". Error: "+e.getMessage());
 			return null;
 		}
 		return new EntryData(pdbScoreItem, interfResFeatures);
 	}
-	
+
 	private static List<File> listAllDirs(boolean isDividedLayout, File rootDir) {
 		List<File> allDirs = new ArrayList<>();
 		if (isDividedLayout) {
 			File dividedRoot = new File(rootDir, DIVIDED_ROOT);
-			
+
 			for (File indexDir:dividedRoot.listFiles()) {
 				allDirs.addAll(Arrays.asList(indexDir.listFiles()));
 			}
-						
+
 			return allDirs;
-			
+
 		} else {
 			for (File dir:rootDir.listFiles()) {
 				if (dir.getName().equals(DIVIDED_ROOT)) continue;
@@ -292,16 +273,16 @@ public class UploadToDb {
 	}
 
 	private static File getDirectory(boolean isDividedLayout, File rootDir, String pdbCode) {
-		if (isDividedLayout) {		
+		if (isDividedLayout) {
 			String index = pdbCode.substring(1,	3);
 			return new File(rootDir, DIVIDED_ROOT+File.separatorChar+index+File.separatorChar+pdbCode);
-		} else {			
+		} else {
 			return new File(rootDir, pdbCode);
 		}
 	}
-	
+
 	private static List<String> readListFile(File file) {
-		
+
 		List<String> pdbCodes = new ArrayList<>();
 
 		try {
@@ -316,7 +297,7 @@ public class UploadToDb {
 			}
 			br.close();
 		} catch (IOException e) {
-			System.err.println("Problem reading list file "+file+", can't continue");
+			logger.error("Problem reading list file "+file+", can't continue");
 			System.exit(1);
 		}
 		return pdbCodes;
@@ -383,8 +364,6 @@ public class UploadToDb {
 
 	private static Stats loadSet(JobDir[] jobsDirectories) {
 
-		// Start the Process
-		int i = -1;
 		long avgTimeStart1 = 0;
 		long avgTimeEnd1 = 0;
 		long avgTimeStart2 = 0;
@@ -392,89 +371,49 @@ public class UploadToDb {
 
 		Stats stats = new Stats();
 
-		for (JobDir jobDirectory : jobsDirectories) {
-			i++;
+		if (!full) {
+			int i = -1;
+			// insert 1 by 1
+			for (JobDir jobDirectory : jobsDirectories) {
+				i++;
 
-			long start = System.currentTimeMillis();
+				String jobId = jobDirectory.dir.getName();
 
-			String jobId = jobDirectory.dir.getName();
+				try {
+					persistOne(stats, jobDirectory, jobId);
 
-			try {
-
-			    String msg = "";
-
-				//MODE FORCE
-//				if (modeEverything) {
-//					boolean ifRemoved = dbh.removeJob(jobId);
-//					if (ifRemoved) msg = "Found.. Removing and Updating.. ";
-//					else msg = "Not Found.. Adding.. ";
-//					if (!persistOne(stats, jobDirectory, jobId)) continue;
-//				}
-
-				//MODE NEW INSERT
-				if (modeNew){
-					// TODO
-					int isPresent = 0;// dbh.checkJobExist(jobId);
-					if(isPresent == 0){ // not present
-						msg = "Not Present.. Adding.. ";
-						if (!persistOne(stats, jobDirectory, jobId)) continue;
-
-					} else if (isPresent ==2) {
-						// already present but as an error, we have to remove and reinsert
-						// TODO
-						boolean ifRemoved = false;//dbh.removeJob(jobId);
-						if (ifRemoved) msg = "Found as error.. Removing and Updating.. ";
-						else {
-							logger.warn("{} Not Found, but there should be an error job. Skipping..", jobId);
-							continue;
-						}
-
-						if (!persistOne(stats, jobDirectory, jobId)) continue;
-
-					} else {
-						// already present and is not an error
-						stats.countPresent++;
-						msg = "Already Present.. Skipping.. ";
+					if (i % TIME_STATS_EVERY1 == 0) {
+						avgTimeEnd1 = System.currentTimeMillis();
+						if (i != 0) // no statistics before starting
+							logger.info("Last " + TIME_STATS_EVERY1 + " entries in " + ((avgTimeEnd1 - avgTimeStart1) / 1000) + " s");
+						avgTimeStart1 = System.currentTimeMillis();
 					}
+
+					if (i % TIME_STATS_EVERY2 == 0) {
+						avgTimeEnd2 = System.currentTimeMillis();
+						if (i != 0) // no statistics before starting
+							logger.info("Last " + TIME_STATS_EVERY2 + " entries in " + ((avgTimeEnd2 - avgTimeStart2) / 1000) + " s");
+						avgTimeStart2 = System.currentTimeMillis();
+					}
+
+				} catch (Exception e) {
+					logger.warn("Problems while inserting " + jobId + ". Error: " + e.getMessage());
+					stats.pdbsWithWarnings.add(jobId);
 				}
-
-				//MODE REMOVE
-//				if (modeRemove) {
-//					boolean ifRemoved = dbh.removeJob(jobId);
-//					if (ifRemoved) {
-//						msg = "Removed.. ";
-//						stats.countRemoved++;
-//					}
-//					else {
-//						msg = "Not Found.. ";
-//					}
-//				}
-
-				long end = System.currentTimeMillis();
-                logger.info("{} {} : {} ms", jobId, msg, (end-start));
-
-				if (i%TIME_STATS_EVERY1==0) {
-					avgTimeEnd1 = System.currentTimeMillis();
-
-					if (i!=0) // no statistics before starting
-                        logger.info("Last "+TIME_STATS_EVERY1+" entries in "+((avgTimeEnd1-avgTimeStart1)/1000)+" s");
-
-					avgTimeStart1 = System.currentTimeMillis();
+			}
+		} else {
+			List<JobDir> currentBatch = new ArrayList<>();
+			// insert by batches
+			for (int i=0; i<jobsDirectories.length; i++) {
+				currentBatch.add(jobsDirectories[i]);
+				if (currentBatch.size() == BATCH_SIZE) {
+					persistBatch(stats, currentBatch, i);
+					currentBatch = new ArrayList<>();
 				}
-
-				if (i%TIME_STATS_EVERY2==0) {
-					avgTimeEnd2 = System.currentTimeMillis();
-
-					if (i!=0) // no statistics before starting
-						logger.info("Last "+TIME_STATS_EVERY2+" entries in "+((avgTimeEnd2-avgTimeStart2)/1000)+" s");
-
-					avgTimeStart2 = System.currentTimeMillis();
-				}
-
-
-			} catch (Exception e) {
-				logger.warn("Problems while inserting "+jobId+". Error: "+e.getMessage());
-				stats.pdbsWithWarnings.add(jobId);
+			}
+			// finally persist the last batch if there is one
+			if (!currentBatch.isEmpty()) {
+				persistBatch(stats, currentBatch, jobsDirectories.length-1);
 			}
 		}
 		return stats;
@@ -488,17 +427,24 @@ public class UploadToDb {
 	 * @param jobId
 	 * @return
 	 */
-	private static boolean persistOne(Stats stats, JobDir jobDirectory, String jobId) {
+	private static void persistOne(Stats stats, JobDir jobDirectory, String jobId) {
 		if(jobDirectory.serializedFile !=null) {
 
 			EntryData entryData = readSerializedFile(jobDirectory.serializedFile);
 			// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
-			if (entryData == null) return false;
+			if (entryData == null) {
+				logger.error("Could not deserialize job {}. Skipping", jobDirectory.dir.getName());
+				return;
+			}
 			try {
+				long start = System.currentTimeMillis();
 				dao.insertPDBInfo(entryData.pdbInfoDB);
 				interfResDao.insertInterfResFeatures(entryData.interfResFeaturesDB);
+				long end = System.currentTimeMillis();
+				logger.info("Done inserting {}. Time: {}ms", jobId, (end - start));
+
 			} catch (DaoException e) {
-				System.err.println("Error persisting: " + jobId + ": " + e.getMessage());
+				logger.error("Problem persisting: " + jobId + ": " + e.getMessage());
 			}
 		}
 		else {
@@ -507,7 +453,54 @@ public class UploadToDb {
 			stats.countErrorJob++;
 		}
 		stats.countUploaded++;
-		return true;
+	}
+
+	private static void persistBatch(Stats stats, List<JobDir> jobDirs, int endIndexOfBatch) {
+		logger.info("Processing batch with end index {} (size {})", endIndexOfBatch, jobDirs.size());
+		List<PdbInfoDB> pdbInfoBatch = new ArrayList<>();
+		List<InterfaceResidueFeaturesDB> currentInterfResFeatBatch = new ArrayList<>();
+		try {
+			for (int i = 0; i < jobDirs.size(); i++) {
+				if (jobDirs.get(i).serializedFile != null) {
+					EntryData entryData = readSerializedFile(jobDirs.get(i).serializedFile);
+					// if something goes wrong while reading the file (a warning message is already printed in readFromSerializedFile)
+					if (entryData == null) {
+						logger.error("Could not deserialize job {}. Skipping", jobDirs.get(i).dir.getName());
+						continue;
+					}
+					pdbInfoBatch.add(entryData.pdbInfoDB);
+					currentInterfResFeatBatch.addAll(entryData.interfResFeaturesDB);
+
+				} else {
+					// TODO error jobs
+					//dbh.persistErrorJob(em, jobId);
+					stats.countErrorJob++;
+				}
+
+				if (currentInterfResFeatBatch.size() >= BATCH_SIZE) {
+					long start = System.currentTimeMillis();
+					interfResDao.insertInterfResFeatures(currentInterfResFeatBatch);
+					long end = System.currentTimeMillis();
+					logger.info("Done inserting InterfaceResidueFeaturesDB sub-batch with end index {} (size {}), corresponding to batch with end index {}. Time: {}ms", i, currentInterfResFeatBatch.size(), endIndexOfBatch, (end - start));
+					currentInterfResFeatBatch = new ArrayList<>();
+				}
+			}
+			long start = System.currentTimeMillis();
+			dao.insertPDBInfos(pdbInfoBatch);
+			long end = System.currentTimeMillis();
+			logger.info("Done inserting PdbInfoDB batch with end index {} (size {}). Time: {}ms", endIndexOfBatch, BATCH_SIZE, (end - start));
+			stats.countUploaded += pdbInfoBatch.size();
+			// insert last batch of interf res features
+			if (!currentInterfResFeatBatch.isEmpty()) {
+				start = System.currentTimeMillis();
+				interfResDao.insertInterfResFeatures(currentInterfResFeatBatch);
+				end = System.currentTimeMillis();
+				logger.info("Done inserting InterfaceResidueFeaturesDB sub-batch with end index {} (size {}), corresponding to batch with end index {}. Time: {}ms", jobDirs.size() - 1, currentInterfResFeatBatch.size(), endIndexOfBatch, (end - start));
+			}
+		} catch (DaoException e) {
+			List<String> ids = jobDirs.stream().map(j->j.dir.getName()).collect(Collectors.toList());
+			logger.error("Failed to write batch with end index {} (size {}). List of ids: {}", endIndexOfBatch, jobDirs.size(), ids.stream().map(String::valueOf).collect(Collectors.joining(",")));
+		}
 	}
 
 	private static class Stats {

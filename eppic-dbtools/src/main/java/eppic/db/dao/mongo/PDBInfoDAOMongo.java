@@ -9,6 +9,7 @@ import eppic.model.db.PdbInfoDB;
 
 import javax.persistence.Table;
 import java.util.Collections;
+import java.util.List;
 
 public class PDBInfoDAOMongo implements PDBInfoDAO {
 
@@ -49,4 +50,14 @@ public class PDBInfoDAOMongo implements PDBInfoDAO {
             throw new DaoException(e);
         }
     }
+
+    @Override
+    public void insertPDBInfos(List<PdbInfoDB> pdbInfos) throws DaoException {
+        try {
+            MongoUtils.writeObjects(mongoDb, collectionName, pdbInfos);
+        } catch (Exception e) {
+            throw new DaoException(e);
+        }
+    }
+
 }
