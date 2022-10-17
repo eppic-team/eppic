@@ -1,9 +1,7 @@
-package ch.systemsx.sybit.crkwebui.server.jobs.managers;
+package eppic.rest.jobs;
 
-import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
-import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import eppic.model.shared.StatusOfJob;
+import eppic.rest.commons.AppConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +23,14 @@ public class NativeJobManager implements JobManager
 
 	private static final Logger logger = LoggerFactory.getLogger(NativeJobManager.class);
 	private int submissionId;
-	private ExecutorService executor;
+	private final ExecutorService executor;
 
 	/**
 	 * Submission ids to tasks
  	 */
-	private Map<String, ShellTask> tasks;
+	private final Map<String, ShellTask> tasks;
 
-	private String jobsDirectory;
+	private final String jobsDirectory;
 
 	/**
 	 * Creates instance of native job manager.
@@ -52,10 +50,8 @@ public class NativeJobManager implements JobManager
 	public String startJob(String jobId,
 						   List<String> command,
 						   String jobDirectory,
-						   int nrOfThreadsForSubmission) throws JobHandlerException
-	{
-		try
-		{
+						   int nrOfThreadsForSubmission) throws JobHandlerException {
+		try {
 
 			//jobTemplate.setJobName(jobId);
 			File stdErr = new File(jobDirectory, jobId + ".e");
@@ -71,19 +67,16 @@ public class NativeJobManager implements JobManager
 
 	      	return String.valueOf(submissionId);
 		}
-		catch(Throwable e)
-		{
+		catch(Throwable e) {
 			throw new JobHandlerException(e);
 		}
 	}
 
 	@Override
-	public StatusOfJob getStatusOfJob(String jobId, String submissionId) throws JobHandlerException
-	{
+	public StatusOfJob getStatusOfJob(String jobId, String submissionId) throws JobHandlerException {
 		StatusOfJob statusOfJob;
 
-		try
-		{
+		try {
 			ShellTask task = tasks.get(submissionId);
 			if (task == null) {
 				// task==null : job is not present in this instance of NativeJobManager, which happens if jetty was restarted
@@ -130,8 +123,7 @@ public class NativeJobManager implements JobManager
 			}
 
 		}
-		catch (Throwable e)
-		{
+		catch (Throwable e) {
 			throw new JobHandlerException(e);
 		}
 
@@ -139,18 +131,15 @@ public class NativeJobManager implements JobManager
 	}
 
 	@Override
-	public void stopJob(String submissionId) throws JobHandlerException
-	{
+	public void stopJob(String submissionId) throws JobHandlerException {
 		ShellTask shellTask = tasks.get(submissionId);
 		if (shellTask == null) {
 			throw new JobHandlerException("Task with submissionId "+submissionId+" was not found. Something is wrong!");
 		}
-		try
-		{
+		try {
 			shellTask.stop();
 		}
-		catch (Throwable t)
-		{
+		catch (Throwable t) {
 			throw new JobHandlerException(t);
 		}
 	}
@@ -160,14 +149,12 @@ public class NativeJobManager implements JobManager
 	 * @param jobId identifier of the job
 	 * @return information whether directory for specified jobid exists
 	 */
-	private boolean checkIfJobWasSubmitted(String jobId)
-	{
+	private boolean checkIfJobWasSubmitted(String jobId) {
 		boolean wasJobSubmitted = false;
 
 		File jobDirectory = new File(jobsDirectory, jobId);
 
-		if(jobDirectory.exists())
-		{
+		if(jobDirectory.exists()) {
 			wasJobSubmitted = true;
 		}
 
@@ -181,21 +168,19 @@ public class NativeJobManager implements JobManager
 	 * @param jobId identifier of the job
 	 * @return information whether job was finished successfully
 	 */
-	private boolean checkIfJobWasFinishedSuccessfully(String jobId)
-	{
+	private boolean checkIfJobWasFinishedSuccessfully(String jobId) {
 		boolean wasJobFinishedSuccessfully = false;
 
 		File finishedJobDirectory = new File(jobsDirectory, jobId);
-		File finishedJobFile = new File(finishedJobDirectory, CrkWebServiceImpl.FINISHED_FILE_NAME);
+		File finishedJobFile = new File(finishedJobDirectory, AppConstants.FINISHED_FILE_NAME);
 
-		if(finishedJobFile.exists())
-		{
+		if(finishedJobFile.exists()) {
 			wasJobFinishedSuccessfully = true;
 		}
 
 		return wasJobFinishedSuccessfully;
 	}
-	
+
 	/**
 	 * Checks if job was stopped. If job was stopped then killed file exists
 	 * in job directory.
@@ -203,15 +188,13 @@ public class NativeJobManager implements JobManager
 	 * @param jobId identifier of the job
 	 * @return information whether job was stopped
 	 */
-	private boolean checkIfJobWasStopped(String jobId)
-	{
+	private boolean checkIfJobWasStopped(String jobId) {
 		boolean wasStopped = false;
 
 		File stoppedJobDirectory = new File(jobsDirectory, jobId);
-		File stoppedJobFile = new File(stoppedJobDirectory, CrkWebServiceImpl.KILLED_FILE_NAME);
+		File stoppedJobFile = new File(stoppedJobDirectory, AppConstants.KILLED_FILE_NAME);
 
-		if(stoppedJobFile.exists())
-		{
+		if(stoppedJobFile.exists()) {
 			wasStopped = true;
 		}
 
@@ -219,15 +202,12 @@ public class NativeJobManager implements JobManager
 	}
 
 	@Override
-	public void close() throws JobHandlerException
-	{
-		try
-		{
+	public void close() throws JobHandlerException {
+		try {
 			logger.info("Shutting down native job manager");
 			executor.shutdownNow();
 		}
-		catch (Throwable e)
-		{
+		catch (Throwable e) {
 			throw new JobHandlerException(e);
 		}
 	}

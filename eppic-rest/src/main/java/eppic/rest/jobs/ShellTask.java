@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.jobs.managers;
+package eppic.rest.jobs;
 
 import java.io.File;
 import java.io.IOException;

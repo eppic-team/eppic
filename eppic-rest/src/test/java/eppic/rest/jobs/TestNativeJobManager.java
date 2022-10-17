@@ -1,8 +1,5 @@
-package ch.systemsx.sybit.crkwebui.server.jobs.managers;
+package eppic.rest.jobs;
 
-import ch.systemsx.sybit.crkwebui.server.jobs.managers.commons.JobManager;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
-import ch.systemsx.sybit.crkwebui.shared.exceptions.JobManagerException;
 import eppic.model.shared.StatusOfJob;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,7 +13,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class TestNativeJobManager {
@@ -28,7 +24,7 @@ public class TestNativeJobManager {
     private static final int SLEEP_TIME = 4;
 
     @BeforeClass
-    public static void init() throws JobManagerException, IOException {
+    public static void init() throws IOException {
         jobManager = JobManagerFactory.getJobManager(jobDir, 2);
         writeScript();
     }

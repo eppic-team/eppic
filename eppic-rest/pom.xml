@@ -89,6 +89,14 @@
             <version>${jersey2.version}</version>
         </dependency>
 
+        <!-- For file submission endpoint -->
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+            <version>${jersey2.version}</version>
+        </dependency>
+
+        <!-- TODO review if this one is needed: in principle serialization is done via json-jackson below -->
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-moxy</artifactId>

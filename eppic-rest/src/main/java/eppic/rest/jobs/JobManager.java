@@ -1,8 +1,7 @@
-package ch.systemsx.sybit.crkwebui.server.jobs.managers.commons;
+package eppic.rest.jobs;
 
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.shared.exceptions.JobHandlerException;
 import eppic.model.shared.StatusOfJob;
 
 /**
@@ -10,8 +9,7 @@ import eppic.model.shared.StatusOfJob;
  * @author AS
  *
  */
-public interface JobManager
-{
+public interface JobManager {
 	/**
 	 * Starts new job.
 	 * @param jobId identifier of the job to submit

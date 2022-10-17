@@ -46,6 +46,22 @@ public class AppConstants {
     public static final String REST_API_DOCS_DIR = "api-docs";
     public static final String REST_API_DOCS_FILE = "eppic-restful-api-docs.json";
 
+    /**
+     * The file where the progress log of the eppic CLI program is written to (using -L option)
+     */
+    public static final String PROGRESS_LOG_FILE_NAME 	= "eppic_wui_progress.log";
+
+    /**
+     * The file that the eppic CLI writes upon successful completion, used to signal that the queuing job finished successfully
+     * Must coincide with EppicParams.FINISHED_FILE_NAME (from eppic-clie module, which is not a dependency for this module)
+     */
+    public static final String FINISHED_FILE_NAME 		= "finished";
+
+    /**
+     * The file to signal a killed job
+     */
+    public static final String KILLED_FILE_NAME 		= "killed";
+
 
     public static Properties getBuildProperties() {
         InputStream propstream = Thread.currentThread().getContextClassLoader().getResourceAsStream(ABOUT_PROPERTIES_FILE_NAME);

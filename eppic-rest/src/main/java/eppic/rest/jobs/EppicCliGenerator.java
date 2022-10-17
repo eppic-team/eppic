@@ -1,20 +1,19 @@
-package ch.systemsx.sybit.crkwebui.server.runners;
+package eppic.rest.jobs;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.systemsx.sybit.crkwebui.server.CrkWebServiceImpl;
 import eppic.model.dto.InputParameters;
 import eppic.model.shared.InputType;
+import eppic.rest.commons.AppConstants;
 
 /**
  * EPPIC command generator.
  * @author AS
  *
  */
-public class CrkCommandGenerator
-{
+public class EppicCliGenerator {
 	/**
 	 * Creates EPPIC command to execute.
 	 * @param crkApplicationLocation location of EPPIC executable jar
@@ -34,7 +33,7 @@ public class CrkCommandGenerator
 												int nrOfThreadsForSubmission,
 												int assignedMemory)
 	{
-		List<String> command = new ArrayList<String>();
+		List<String> command = new ArrayList<>();
 		command.add("-Xmx" + assignedMemory + "m");
 		command.add("-jar");
 		command.add(crkApplicationLocation);
@@ -71,7 +70,7 @@ public class CrkCommandGenerator
 		command.add("-s");
 
 		command.add("-L");
-		command.add(destinationDirectoryName + File.separator + CrkWebServiceImpl.PROGRESS_LOG_FILE_NAME);
+		command.add(destinationDirectoryName + File.separator + AppConstants.PROGRESS_LOG_FILE_NAME);
 		command.add("-l"); // for thumbnails and mmcif files
 		command.add("-P"); // for json files, assembly diagram thumbnails (requires dot)
 		command.add("-w"); // for webui.dat file
