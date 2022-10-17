@@ -16,7 +16,7 @@ import java.util.*;
  * @since 3.1.0
  */
 public class ViewsAdaptor {
-	
+
 	/**
 	 * Same as in LatticeGraph3D
 	 */
@@ -80,40 +80,42 @@ public class ViewsAdaptor {
         latticeGraph.setUnitCellTransforms(unitCellTransforms);
 
         List<LatticeGraphEdge> lgEdges =  new ArrayList<>();
-        // edges
-        for (GraphEdgeDB edge : graphEdges) {
-            LatticeGraphEdge lgEdge = new LatticeGraphEdge();
-            lgEdge.setColor(edge.getColor());
-            lgEdge.setXtalTrans("("+edge.getXtalTransA()+","+edge.getXtalTransB()+","+edge.getXtalTransC()+")");
-            lgEdge.setInterfaceId(edge.getInterfaceId());
-            lgEdge.setClusterId(edge.getInterfaceClusterId());
+        if (graphEdges != null) {
+            // edges
+            for (GraphEdgeDB edge : graphEdges) {
+                LatticeGraphEdge lgEdge = new LatticeGraphEdge();
+                lgEdge.setColor(edge.getColor());
+                lgEdge.setXtalTrans("(" + edge.getXtalTransA() + "," + edge.getXtalTransB() + "," + edge.getXtalTransC() + ")");
+                lgEdge.setInterfaceId(edge.getInterfaceId());
+                lgEdge.setClusterId(edge.getInterfaceClusterId());
 
-            List<Segment> segments = new ArrayList<>();
-            Segment segment = new Segment();
-            segment.setStart(new Point3D(edge.getStartPos3dX(), edge.getStartPos3dY(), edge.getStartPos3dZ()));
-            segment.setEnd(new Point3D(edge.getEndPos3dX(), edge.getEndPos3dY(), edge.getEndPos3dZ()));
-            // not setting angles and mid point, they aren't needed
-            segments.add(segment);
-            lgEdge.setSegments(segments);
+                List<Segment> segments = new ArrayList<>();
+                Segment segment = new Segment();
+                segment.setStart(new Point3D(edge.getStartPos3dX(), edge.getStartPos3dY(), edge.getStartPos3dZ()));
+                segment.setEnd(new Point3D(edge.getEndPos3dX(), edge.getEndPos3dY(), edge.getEndPos3dZ()));
+                // not setting angles and mid point, they aren't needed
+                segments.add(segment);
+                lgEdge.setSegments(segments);
 
-            List<Circle> circles = new ArrayList<>();
-            Circle circle = new Circle();
-            // calculating midpoint
-            Point3d start = new Point3d(edge.getStartPos3dX(), edge.getStartPos3dY(), edge.getStartPos3dZ());
-            Point3d end = new Point3d(edge.getEndPos3dX(), edge.getEndPos3dY(), edge.getEndPos3dZ());
-            Vector3d vec = new Vector3d(end);
-            vec.sub(start);
-            vec.scale(0.5);
-            Point3d center = new Point3d(start);
-            center.add(vec);
-            circle.setCenter(new Point3D(center.x, center.y, center.z));
-            // perpendicular is simply a point on the perpendicular to the circle, e.g the source of the edge
-            circle.setPerpendicular(new Point3D(start.x, start.y, start.z));
-            circle.setRadius(defaultInterfaceRadius);
-            circles.add(circle);
-            lgEdge.setCircles(circles);
+                List<Circle> circles = new ArrayList<>();
+                Circle circle = new Circle();
+                // calculating midpoint
+                Point3d start = new Point3d(edge.getStartPos3dX(), edge.getStartPos3dY(), edge.getStartPos3dZ());
+                Point3d end = new Point3d(edge.getEndPos3dX(), edge.getEndPos3dY(), edge.getEndPos3dZ());
+                Vector3d vec = new Vector3d(end);
+                vec.sub(start);
+                vec.scale(0.5);
+                Point3d center = new Point3d(start);
+                center.add(vec);
+                circle.setCenter(new Point3D(center.x, center.y, center.z));
+                // perpendicular is simply a point on the perpendicular to the circle, e.g the source of the edge
+                circle.setPerpendicular(new Point3D(start.x, start.y, start.z));
+                circle.setRadius(defaultInterfaceRadius);
+                circles.add(circle);
+                lgEdge.setCircles(circles);
 
-            lgEdges.add(lgEdge);
+                lgEdges.add(lgEdge);
+            }
         }
         latticeGraph.setEdges(lgEdges);
 
@@ -160,16 +162,18 @@ public class ViewsAdaptor {
             }
         }
 
-        for (GraphEdgeDB graphEdge : assembly.getGraphEdges()) {
-            if (graphEdge.isInGraph2d()) {
-                AssemblyDiagramEdge edge = new AssemblyDiagramEdge();
-                edge.setColor("#" + graphEdge.getColor());
-                edge.setFrom(graphEdge.getNode1Label());
-                edge.setTo(graphEdge.getNode2Label());
-                edge.setLabel(graphEdge.getInterfaceId() + "(" + graphEdge.getInterfaceClusterId() + ")");
-                edge.setTitle("(" + graphEdge.getXtalTransA() + "," + graphEdge.getXtalTransB() + "," + graphEdge.getXtalTransC() + ")");
+        if (assembly.getGraphEdges()!=null) {
+            for (GraphEdgeDB graphEdge : assembly.getGraphEdges()) {
+                if (graphEdge.isInGraph2d()) {
+                    AssemblyDiagramEdge edge = new AssemblyDiagramEdge();
+                    edge.setColor("#" + graphEdge.getColor());
+                    edge.setFrom(graphEdge.getNode1Label());
+                    edge.setTo(graphEdge.getNode2Label());
+                    edge.setLabel(graphEdge.getInterfaceId() + "(" + graphEdge.getInterfaceClusterId() + ")");
+                    edge.setTitle("(" + graphEdge.getXtalTransA() + "," + graphEdge.getXtalTransB() + "," + graphEdge.getXtalTransC() + ")");
 
-                edges.add(edge);
+                    edges.add(edge);
+                }
             }
         }
         return assemblyDiagram;
