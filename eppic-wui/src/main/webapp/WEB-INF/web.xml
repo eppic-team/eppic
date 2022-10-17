@@ -5,11 +5,11 @@
 
 <web-app>
 
-    <context-param> 
-       	<param-name>servletContPath</param-name> 
-       	<param-value>ewui</param-value> 
+    <context-param>
+       	<param-name>servletContPath</param-name>
+       	<param-value>ewui</param-value>
     </context-param>
-    
+
 	<filter>
 		<filter-name>GzipFilter</filter-name>
 		<!-- The gzip filter for older versions of jetty-->
@@ -28,11 +28,6 @@
 		</init-param>
 	</filter>
 
-	<filter>
-		<filter-name>CrawlerFilter</filter-name>
-		<filter-class>ch.systemsx.sybit.crkwebui.server.crawler.servlets.CrawlerFilter</filter-class>
-	</filter>
-	
 	<filter>
 		<filter-name>cross-origin</filter-name>
 		<filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
@@ -53,17 +48,17 @@
 			<param-value>false</param-value>
 		</init-param>
 	</filter>
-	
+
 	<filter-mapping>
 		<filter-name>GzipFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-	
+
 	<filter-mapping>
 		<filter-name>CrawlerFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-	
+
 	<filter-mapping>
 		<filter-name>cross-origin</filter-name>
 		<url-pattern>/*</url-pattern>
@@ -74,7 +69,7 @@
 	    <servlet-name>FileUploadService</servlet-name>
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.uploader.servlets.FileUploadServlet</servlet-class>
 	</servlet>
-	
+
 	<servlet>
 	    <servlet-name>FileDownloadService</servlet-name>
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet</servlet-class>
@@ -99,32 +94,32 @@
 		<servlet-name>CrkService</servlet-name>
 		<url-pattern>/ewui/crk</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet-mapping>
   		<servlet-name>xsrf</servlet-name>
   		<url-pattern>/ewui/xsrf</url-pattern>
 	</servlet-mapping>
-	
+
 	<servlet-mapping>
 	    <servlet-name>FileUploadService</servlet-name>
 	    <url-pattern>/ewui/fileUpload</url-pattern>
  	</servlet-mapping>
- 	
+
  	<servlet-mapping>
 	    <servlet-name>FileDownloadService</servlet-name>
 	    <url-pattern>/ewui/fileDownload</url-pattern>
  	</servlet-mapping>
- 	
+
  	<servlet-mapping>
 	    <servlet-name>DataDownloadService</servlet-name>
 	    <url-pattern>/ewui/dataDownload</url-pattern>
  	</servlet-mapping>
- 	
+
  	<servlet-mapping>
 	    <servlet-name>JmolViewerService</servlet-name>
 	    <url-pattern>/ewui/jmolViewer</url-pattern>
  	</servlet-mapping>
- 	
+
  	<servlet-mapping>
 	    <servlet-name>LatticeGraphService</servlet-name>
 	    <url-pattern>/ewui/latticeGraph</url-pattern>
@@ -135,12 +130,12 @@
 	    <url-pattern>/ewui/assemblyDiagram</url-pattern>
  	</servlet-mapping>
 
- 	<!-- Session timeout: if the client is idle for more than this time (in minutes) 
+ 	<!-- Session timeout: if the client is idle for more than this time (in minutes)
          then the session is lost. 1440min = 24x60min -->
  	 <session-config>
         <session-timeout>1440</session-timeout>
     </session-config>
-    
+
     <welcome-file-list>
 		<welcome-file>Ewui.html</welcome-file>
 	</welcome-file-list>
