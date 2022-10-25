@@ -3,16 +3,13 @@ package eppic.rest.endpoints;
 import eppic.rest.commons.FileFormat;
 import eppic.rest.service.SubmitService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -44,7 +41,7 @@ public class SubmitResource {
             responses = {
                     @ApiResponse(responseCode = "200",
                             description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON)),
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON)), // TODO document that it returns a submission id
                     @ApiResponse(responseCode = "404",
                             description = "Not Found")})
     public Response submitStructure(
@@ -58,10 +55,10 @@ public class SubmitResource {
 
     @PermitAll
     @GET
-    @Path("status/{jobId}")
+    @Path("status/{submissionId}")
     @Produces({MediaType.APPLICATION_JSON})
     @Tag(name = "Get status of submission")
-    public Response getStatus(@PathParam("jobId") String jobId) {
-        return submitService.getStatus(jobId);
+    public Response getStatus(@PathParam("submissionId") String submissionId) {
+        return submitService.getStatus(submissionId);
     }
 }
