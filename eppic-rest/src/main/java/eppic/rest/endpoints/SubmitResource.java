@@ -49,12 +49,11 @@ public class SubmitResource {
                             description = "Not Found")})
     public Response submitStructure(
             @FormDataParam("fileFormat") FileFormat fileFormat,
-            @FormDataParam("gzipped") boolean gzipped,
             @FormDataParam("fileName") String fileName,
             @FormDataParam("file") InputStream fileInputStream,
             @FormDataParam("email")String email) {
 
-        return submitService.submit(fileFormat, gzipped, fileName, fileInputStream, email);
+        return submitService.submit(fileFormat, fileName, fileInputStream, email);
     }
 
     @PermitAll
