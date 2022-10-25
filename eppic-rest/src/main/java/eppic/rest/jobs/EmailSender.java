@@ -1,4 +1,4 @@
-package ch.systemsx.sybit.crkwebui.server.email.managers;
+package eppic.rest.jobs;
 
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -17,8 +17,6 @@ import javax.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
-
 /**
  * This class is used to send emails.
  * @author srebniak_a
@@ -27,7 +25,7 @@ import ch.systemsx.sybit.crkwebui.server.email.data.EmailData;
 public class EmailSender
 {
 	private static final Logger logger = LoggerFactory.getLogger(EmailSender.class);
-	
+
 	private EmailData emailData;
 
 	public EmailSender(EmailData emailData)
@@ -40,15 +38,15 @@ public class EmailSender
 	 * @param recipient email recipient
 	 * @param subject subject of the email
 	 * @param text content of the email
-	 * @throws MessagingException 
+	 * @throws MessagingException
 	 */
 	public void send(String recipient,
 					 String subject,
 					 String text) throws MessagingException {
-		
+
 		if ((recipient != null)
 				&& (!recipient.equals(""))) {
-			
+
 			Properties properties = new Properties();
 			properties.put("mail.smtp.host", emailData.getHost());
 			properties.put("mail.smtp.port", emailData.getPort());
@@ -62,7 +60,7 @@ public class EmailSender
 
 			Session session = Session.getDefaultInstance(properties, new Authenticator() {
 				// this seems to be needed for google's smtp server - JD 2017-09-01
-                @Override                
+                @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
                     return new PasswordAuthentication(emailData.getEmailSenderUserName(), emailData.getEmailSenderPassword());
                 }
@@ -85,12 +83,12 @@ public class EmailSender
 			transport.sendMessage(simpleMessage,
 					simpleMessage.getAllRecipients());
 			transport.close();
-			
+
 			logger.info("Successfully sent email for recipient {} with subject '{}'", recipient, subject);
-			
+
 		}
 	}
-	
+
 	/**
 	 * Sends email in an independent thread so that the server doesn't get blocked
 	 * if something goes wrong in the sending.

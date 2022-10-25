@@ -1,11 +1,11 @@
-package ch.systemsx.sybit.crkwebui.server.email.data;
+package eppic.rest.jobs;
 
 import java.io.Serializable;
 
 public class EmailMessageData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private String emailJobSubmittedTitle;
 	private String emailJobSubmittedMessage;
 	private String emailJobSubmitErrorTitle;
@@ -13,14 +13,14 @@ public class EmailMessageData implements Serializable {
 	private String emailJobErrorTitle;
 	private String emailJobErrorMessage;
 	private String emailJobFinishedTitle;
-	private String emailJobFinishedMessage; 
+	private String emailJobFinishedMessage;
 
-	
+
 	public EmailMessageData() {
-		
+
 	}
-	
-	
+
+
 	public String getEmailJobSubmittedTitle() {
 		return emailJobSubmittedTitle;
 	}
@@ -69,5 +69,5 @@ public class EmailMessageData implements Serializable {
 	public void setEmailJobFinishedMessage(String emailJobFinishedMessage) {
 		this.emailJobFinishedMessage = emailJobFinishedMessage;
 	}
-	
+
 }

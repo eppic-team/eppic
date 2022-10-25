@@ -1,16 +1,16 @@
-package ch.systemsx.sybit.crkwebui.server.email.data;
+package eppic.rest.jobs;
 
 import java.io.Serializable;
 
 /**
  * Email sender data.
  * @author srebniak_a
- * 
+ *
  */
-public class EmailData implements Serializable 
+public class EmailData implements Serializable
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -18,27 +18,27 @@ public class EmailData implements Serializable
 	 * Recipient address.
 	 */
 	private String emailRecipient;
-	
+
 	/**
 	 * Sender address.
 	 */
 	private String emailSenderUserName;
-	
+
 	/**
 	 * Sender password.
 	 */
 	private String emailSenderPassword;
-	
+
 	/**
 	 * SMTP port.
 	 */
 	private String port;
-	
+
 	/**
 	 * SMTP host.
 	 */
 	private String host;
-	
+
 	/**
 	 * The reply-to address for sending emails.
 	 */
@@ -132,5 +132,5 @@ public class EmailData implements Serializable
 		this.replyToAddress = replyToAddress;
 	}
 
-	
+
 }
