@@ -15,11 +15,6 @@
     <name>eppic-rest</name>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.targetEncoding>UTF-8</project.build.targetEncoding>
-
-        <jdk.version>1.8</jdk.version>
-
         <jaxrs.version>2.1</jaxrs.version>
         <jersey2.version>2.35</jersey2.version>
         <swagger.version>2.0.8</swagger.version>
@@ -202,8 +197,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
                 <configuration>
-                    <source>${jdk.version}</source>
-                    <target>${jdk.version}</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
