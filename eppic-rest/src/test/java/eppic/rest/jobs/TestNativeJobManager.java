@@ -58,17 +58,17 @@ public class TestNativeJobManager {
         assertNotNull(submissionId);
 
         // initially should be queuing, it takes some small time to schedule it
-        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(submissionId);
         assertEquals(StatusOfJob.QUEUING, statusOfJob);
 
         // after half of the time, it should be running
         Thread.sleep(SLEEP_TIME*1000/2);
-        statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        statusOfJob = jobManager.getStatusOfJob(submissionId);
         assertEquals(StatusOfJob.RUNNING, statusOfJob);
 
         // after full time is over, it should be finished
         Thread.sleep(SLEEP_TIME*1000/2 + 1000);
-        statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        statusOfJob = jobManager.getStatusOfJob(submissionId);
         assertEquals(StatusOfJob.FINISHED, statusOfJob);
     }
 
@@ -93,30 +93,30 @@ public class TestNativeJobManager {
 
         // queue is of size 2: 2 running and the 3rd task should be queuing
         Thread.sleep(SLEEP_TIME*1000/2);
-        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId1, submissionId1);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(submissionId1);
         assertEquals(StatusOfJob.RUNNING, statusOfJob);
 
-        statusOfJob = jobManager.getStatusOfJob(jobId2, submissionId2);
+        statusOfJob = jobManager.getStatusOfJob(submissionId2);
         assertEquals(StatusOfJob.RUNNING, statusOfJob);
 
-        statusOfJob = jobManager.getStatusOfJob(jobId3, submissionId3);
+        statusOfJob = jobManager.getStatusOfJob(submissionId3);
         assertEquals(StatusOfJob.QUEUING, statusOfJob);
 
         Thread.sleep(SLEEP_TIME*1000/2 + 1000);
 
         // 2 should be done, 3rd running
-        statusOfJob = jobManager.getStatusOfJob(jobId1, submissionId1);
+        statusOfJob = jobManager.getStatusOfJob(submissionId1);
         assertEquals(StatusOfJob.FINISHED, statusOfJob);
 
-        statusOfJob = jobManager.getStatusOfJob(jobId2, submissionId2);
+        statusOfJob = jobManager.getStatusOfJob(submissionId2);
         assertEquals(StatusOfJob.FINISHED, statusOfJob);
 
-        statusOfJob = jobManager.getStatusOfJob(jobId3, submissionId3);
+        statusOfJob = jobManager.getStatusOfJob(submissionId3);
         assertEquals(StatusOfJob.RUNNING, statusOfJob);
 
         Thread.sleep(SLEEP_TIME*1000 + 1000);
 
-        statusOfJob = jobManager.getStatusOfJob(jobId3, submissionId3);
+        statusOfJob = jobManager.getStatusOfJob(submissionId3);
         assertEquals(StatusOfJob.FINISHED, statusOfJob);
     }
 
@@ -131,7 +131,7 @@ public class TestNativeJobManager {
         assertNotNull(submissionId);
 
         Thread.sleep(SLEEP_TIME*1000/2);
-        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(submissionId);
         assertEquals(StatusOfJob.ERROR, statusOfJob);
 
     }
@@ -146,11 +146,11 @@ public class TestNativeJobManager {
         String submissionId = jobManager.startJob(jobId, cmd , dir.toString(),1);
 
         Thread.sleep(SLEEP_TIME*1000/2);
-        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(submissionId);
         assertEquals(StatusOfJob.RUNNING, statusOfJob);
         jobManager.stopJob(submissionId);
         Thread.sleep(100);
-        statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        statusOfJob = jobManager.getStatusOfJob(submissionId);
 
         assertEquals(StatusOfJob.STOPPED, statusOfJob);
 
@@ -172,7 +172,7 @@ public class TestNativeJobManager {
         String submissionId = jobManager.startJob(jobId, cmd , dir.toString(),1);
 
         Thread.sleep(SLEEP_TIME*1000 + 1000);
-        StatusOfJob statusOfJob = jobManager.getStatusOfJob(jobId, submissionId);
+        StatusOfJob statusOfJob = jobManager.getStatusOfJob(submissionId);
         assertEquals(StatusOfJob.FINISHED, statusOfJob);
 
         assertTrue(oFile.exists());

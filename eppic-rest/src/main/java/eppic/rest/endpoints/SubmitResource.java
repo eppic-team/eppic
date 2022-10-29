@@ -1,6 +1,7 @@
 package eppic.rest.endpoints;
 
 import eppic.rest.commons.FileFormat;
+import eppic.rest.jobs.JobHandlerException;
 import eppic.rest.service.SubmitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.annotation.security.PermitAll;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -45,10 +47,10 @@ public class SubmitResource {
                     @ApiResponse(responseCode = "404",
                             description = "Not Found")})
     public Response submitStructure(
-            @FormDataParam("fileFormat") FileFormat fileFormat,
-            @FormDataParam("fileName") String fileName,
-            @FormDataParam("file") InputStream fileInputStream,
-            @FormDataParam("email")String email) {
+            @NotNull @FormDataParam("fileFormat") FileFormat fileFormat,
+            @NotNull @FormDataParam("fileName") String fileName,
+            @NotNull @FormDataParam("file") InputStream fileInputStream,
+            @FormDataParam("email")String email) throws JobHandlerException {
 
         return submitService.submit(fileFormat, fileName, fileInputStream, email);
     }
@@ -58,7 +60,7 @@ public class SubmitResource {
     @Path("status/{submissionId}")
     @Produces({MediaType.APPLICATION_JSON})
     @Tag(name = "Get status of submission")
-    public Response getStatus(@PathParam("submissionId") String submissionId) {
+    public Response getStatus(@PathParam("submissionId") String submissionId) throws JobHandlerException {
         return submitService.getStatus(submissionId);
     }
 }

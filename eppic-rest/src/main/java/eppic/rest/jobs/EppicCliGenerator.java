@@ -16,27 +16,27 @@ import eppic.rest.commons.AppConstants;
 public class EppicCliGenerator {
 	/**
 	 * Creates EPPIC command to execute.
-	 * @param crkApplicationLocation location of EPPIC executable jar
+	 * @param eppicJarPath location of EPPIC executable jar
 	 * @param input input
 	 * @param inputType type of the input
 	 * @param inputParameters input parameters
 	 * @param destinationDirectoryName directory where results of the job are to be stored
 	 * @param nrOfThreadsForSubmission nr of threads used to run command
-	 * @param assignedMemory memory assigned for execution of the command
+	 * @param assignedMemory memory to be assigned to JVM for execution of the command (in Megabytes)
 	 * @return crk command
 	 */
-	public static List<String> createCrkCommand(String crkApplicationLocation,
-												String input,
-												int inputType,
-												InputParameters inputParameters,
-												String destinationDirectoryName,
-												int nrOfThreadsForSubmission,
-												int assignedMemory)
+	public static List<String> generateCommand(String eppicJarPath,
+											   String input,
+											   int inputType,
+											   InputParameters inputParameters,
+											   String destinationDirectoryName,
+											   int nrOfThreadsForSubmission,
+											   int assignedMemory)
 	{
 		List<String> command = new ArrayList<>();
 		command.add("-Xmx" + assignedMemory + "m");
 		command.add("-jar");
-		command.add(crkApplicationLocation);
+		command.add(eppicJarPath);
 		command.add("-i");
 
 		String inputLocation = input;

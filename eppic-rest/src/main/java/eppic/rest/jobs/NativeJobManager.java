@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -22,7 +23,6 @@ public class NativeJobManager implements JobManager
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(NativeJobManager.class);
-	private int submissionId;
 	private final ExecutorService executor;
 
 	/**
@@ -43,7 +43,6 @@ public class NativeJobManager implements JobManager
 		tasks = new HashMap<>();
 
 		this.jobsDirectory = jobsDirectory;
-		this.submissionId = 0;
 	}
 
 	@Override
@@ -53,6 +52,8 @@ public class NativeJobManager implements JobManager
 						   int nrOfThreadsForSubmission) throws JobHandlerException {
 		try {
 
+			String submissionId = UUID.randomUUID().toString(); // perhaps strip hyphens?
+
 			//jobTemplate.setJobName(jobId);
 			File stdErr = new File(jobDirectory, jobId + ".e");
 			File stdOut = new File(jobDirectory, jobId + ".o");
@@ -60,12 +61,11 @@ public class NativeJobManager implements JobManager
 			ShellTask shellTask = new ShellTask(command, stdOut, stdErr, jobId);
 			Future<Integer> future = executor.submit(shellTask);
 
-			submissionId++;
 			//jobs.put(String.valueOf(submissionId), jobId);
 			shellTask.setOutput(future);
-			tasks.put(String.valueOf(submissionId), shellTask);
+			tasks.put(submissionId, shellTask);
 
-	      	return String.valueOf(submissionId);
+	      	return submissionId;
 		}
 		catch(Throwable e) {
 			throw new JobHandlerException(e);
@@ -73,7 +73,7 @@ public class NativeJobManager implements JobManager
 	}
 
 	@Override
-	public StatusOfJob getStatusOfJob(String jobId, String submissionId) throws JobHandlerException {
+	public StatusOfJob getStatusOfJob(String submissionId) throws JobHandlerException {
 		StatusOfJob statusOfJob;
 
 		try {
@@ -81,12 +81,12 @@ public class NativeJobManager implements JobManager
 			if (task == null) {
 				// task==null : job is not present in this instance of NativeJobManager, which happens if jetty was restarted
 				// we still try to see if we can find it in file system, in case the process kept running and could finish
-				if(checkIfJobWasFinishedSuccessfully(jobId)) {
-					logger.info("Job '{}' is unknown to the native job manager. However its finish file was found. Considering it FINISHED", jobId);
+				if(checkIfJobWasFinishedSuccessfully(submissionId)) {
+					logger.info("Job '{}' is unknown to the native job manager. However its finish file was found. Considering it FINISHED", submissionId);
 					statusOfJob = StatusOfJob.FINISHED;
 				} else {
 					// can't say much more. It could be running, it could be stopped, it could be in error. Let's just say we don't know about it
-					logger.info("Job '{}' is unknown to the native job manager and its finish file could not be found. Considering it NONEXISTING", jobId);
+					logger.info("Job '{}' is unknown to the native job manager and its finish file could not be found. Considering it NONEXISTING", submissionId);
 					statusOfJob = StatusOfJob.NONEXISTING;
 				}
 			} else {
@@ -100,13 +100,13 @@ public class NativeJobManager implements JobManager
 					if (finishStatus == 0) {
 						statusOfJob = StatusOfJob.FINISHED;
 					} else if (finishStatus == ShellTask.CANT_START_PROCESS_ERROR_CODE) {
-						logger.warn("Something went wrong when starting job execution for job {}", jobId);
+						logger.warn("Something went wrong when starting job execution for job {}", submissionId);
 						statusOfJob = StatusOfJob.ERROR;
 					} else if (finishStatus == ShellTask.SIGTERM_ERROR_CODE) {
-						logger.info("The job '{}' was stopped", jobId);
+						logger.info("The job '{}' was stopped", submissionId);
 						statusOfJob = StatusOfJob.STOPPED;
 					} else {
-						logger.info("Job {} reported non-0 exit status {}", jobId, finishStatus);
+						logger.info("Job {} reported non-0 exit status {}", submissionId, finishStatus);
 						statusOfJob = StatusOfJob.ERROR;
 					}
 
@@ -165,13 +165,13 @@ public class NativeJobManager implements JobManager
 	 * Checks if job was finished successfully. If job was finished successfully then finished file exists
 	 * in job directory.
 	 *
-	 * @param jobId identifier of the job
+	 * @param submissionId identifier of the job
 	 * @return information whether job was finished successfully
 	 */
-	private boolean checkIfJobWasFinishedSuccessfully(String jobId) {
+	private boolean checkIfJobWasFinishedSuccessfully(String submissionId) {
 		boolean wasJobFinishedSuccessfully = false;
 
-		File finishedJobDirectory = new File(jobsDirectory, jobId);
+		File finishedJobDirectory = new File(jobsDirectory, submissionId);
 		File finishedJobFile = new File(finishedJobDirectory, AppConstants.FINISHED_FILE_NAME);
 
 		if(finishedJobFile.exists()) {
@@ -223,7 +223,7 @@ public class NativeJobManager implements JobManager
 			String submissionId = it.next();
 			ShellTask task = tasks.get(submissionId);
 			try {
-				StatusOfJob statusOfJob = getStatusOfJob(task.getJobId(), submissionId);
+				StatusOfJob statusOfJob = getStatusOfJob(submissionId);
 				if (task.getSubmissionTime() < maxTime &&
 						statusOfJob != StatusOfJob.RUNNING && statusOfJob != StatusOfJob.QUEUING) {
 					it.remove();
@@ -248,7 +248,7 @@ public class NativeJobManager implements JobManager
 		for (String submId : tasks.keySet()) {
 			ShellTask task = tasks.get(submId);
 			try {
-				StatusOfJob statusOfJob = getStatusOfJob(task.getJobId(), submId);
+				StatusOfJob statusOfJob = getStatusOfJob(submId);
 				logger.info("Job '{}' (submission id {}) has status {}. It was queuing {} s and executing {} s",
 						task.getJobId(), submId, statusOfJob, task.getTimeInQueue() / 1000, task.getTimeRunning() / 1000);
 			} catch (JobHandlerException e) {

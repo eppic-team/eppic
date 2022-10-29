@@ -26,12 +26,11 @@ public interface JobManager {
 
 	/**
 	 * Retrieves current status of specified job.
-	 * @param jobId identifier of the job
 	 * @param submissionId submission identifier of the job
 	 * @return status of the job
 	 * @throws JobHandlerException when can not retrieve current status of the job
 	 */
-	StatusOfJob getStatusOfJob(String jobId, String submissionId) throws JobHandlerException;
+	StatusOfJob getStatusOfJob(String submissionId) throws JobHandlerException;
 
 	/**
 	 * Stops execution of the job.

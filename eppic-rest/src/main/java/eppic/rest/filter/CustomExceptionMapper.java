@@ -1,6 +1,7 @@
 package eppic.rest.filter;
 
 import eppic.db.dao.DaoException;
+import eppic.rest.jobs.JobHandlerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +37,7 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
 
             response = Response.Status.NOT_FOUND.getStatusCode();
             msg = "No results found";
-            logger.warn("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
+            logger.info("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
 
         } else if (ex instanceof NoResultException){
 
@@ -44,18 +45,21 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
 
             response = Response.Status.NOT_FOUND.getStatusCode();
             msg = "No results found";
-            logger.warn("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
+            logger.info("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
 
         } else if(ex instanceof WebApplicationException) {
 
             // jersey exceptions
-
+            // note that BadRequestException is a subexception of WebApplicationException, so this covers it
             response = ((WebApplicationException)ex).getResponse().getStatus();
             msg = ex.getMessage();
+            logger.info("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
+
+        } else if(ex instanceof JobHandlerException){
+            response = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+            msg = ex.getMessage();
             logger.warn("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
-
         } else {
-
             response = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
             msg = "Internal server error. If the problem persists, please report it to " + "info@rcsb.org";
             logger.error("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
@@ -67,7 +71,5 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
                 .build();
 
     }
-
-
 
 }

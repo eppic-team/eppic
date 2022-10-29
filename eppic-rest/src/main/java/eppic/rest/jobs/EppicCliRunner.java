@@ -56,7 +56,7 @@ public class EppicCliRunner {
 
 		List<String> eppicCommand = new ArrayList<>();
 		eppicCommand.add(javaVMExec);
-		eppicCommand.addAll(EppicCliGenerator.createCrkCommand(crkApplicationLocation,
+		eppicCommand.addAll(EppicCliGenerator.generateCommand(crkApplicationLocation,
 															  runJobData.getInput(),
 															  inputType,
 															  runJobData.getInputParameters(),
