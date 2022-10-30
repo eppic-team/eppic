@@ -19,6 +19,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -50,7 +51,7 @@ public class SubmitResource {
             @NotNull @FormDataParam("fileFormat") FileFormat fileFormat,
             @NotNull @FormDataParam("fileName") String fileName,
             @NotNull @FormDataParam("file") InputStream fileInputStream,
-            @FormDataParam("email")String email) throws JobHandlerException {
+            @FormDataParam("email")String email) throws JobHandlerException, IOException {
 
         return submitService.submit(fileFormat, fileName, fileInputStream, email);
     }
