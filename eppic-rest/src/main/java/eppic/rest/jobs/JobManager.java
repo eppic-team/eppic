@@ -14,7 +14,7 @@ public interface JobManager {
 	 * Starts new job.
 	 * @param jobId identifier of the job to submit
 	 * @param command command to execute
-	 * @param jobDirectory directory where results of the job are to be stored
+	 * @param jobDirectory base directory where results of jobs are to be stored
 	 * @param nrOfThreadsForSubmission nr of threads used to run command
 	 * @return submissionId
 	 * @throws JobHandlerException when job can not be successfully started

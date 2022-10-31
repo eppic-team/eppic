@@ -67,7 +67,7 @@ public class NativeJobManager implements JobManager
 
 	      	return submissionId;
 		}
-		catch(Throwable e) {
+		catch(Exception e) {
 			throw new JobHandlerException(e);
 		}
 	}
@@ -123,7 +123,7 @@ public class NativeJobManager implements JobManager
 			}
 
 		}
-		catch (Throwable e) {
+		catch (Exception e) {
 			throw new JobHandlerException(e);
 		}
 
@@ -139,7 +139,7 @@ public class NativeJobManager implements JobManager
 		try {
 			shellTask.stop();
 		}
-		catch (Throwable t) {
+		catch (Exception t) {
 			throw new JobHandlerException(t);
 		}
 	}
@@ -207,7 +207,7 @@ public class NativeJobManager implements JobManager
 			logger.info("Shutting down native job manager");
 			executor.shutdownNow();
 		}
-		catch (Throwable e) {
+		catch (Exception e) {
 			throw new JobHandlerException(e);
 		}
 	}
