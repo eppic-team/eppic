@@ -31,8 +31,15 @@ public class SubmitService {
      */
     private static final long MAX_ALLOWED_FILE_SIZE = 10 * 1024 * 1024;
 
-    // TODO we need a config file with these an other possible server settings
-    private static JobManager jobManager = JobManagerFactory.getJobManager("/tmp", 2);
+
+    private final JobManager jobManager;
+    private File baseOutDir;
+
+    public SubmitService() {
+        // TODO we need a config file with these an other possible server settings
+        baseOutDir = new File("/tmp");
+        jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), 2);
+    }
 
     /**
      *
@@ -44,9 +51,8 @@ public class SubmitService {
         fileName = validateFileName(fileName);
 
         // 2 write to disk so that CLI can read: first check if stream is gzipped or not, then write to disk ungzipped. Also validates the file size
-        // TODO file path
-        File outDir = new File("");
-        File file = new File(outDir, fileName);
+        File outDir = new File(baseOutDir, ); // TODO problem the outdir should be the submission id, right?
+        File file = new File(baseOutDir, fileName);
         writeToFile(handleGzip(inputStream), file);
 
         // 3 submit CLI job async: at end of job persist to db and send notification email
