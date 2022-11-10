@@ -12,14 +12,14 @@ import eppic.model.shared.StatusOfJob;
 public interface JobManager {
 	/**
 	 * Starts new job.
-	 * @param jobId identifier of the job to submit
+	 * @param submissionId identifier of the job to submit, jobs with submissionIds already seen by manager are rejected
 	 * @param command command to execute
 	 * @param jobDirectory base directory where results of jobs are to be stored
 	 * @param nrOfThreadsForSubmission nr of threads used to run command
 	 * @return submissionId
-	 * @throws JobHandlerException when job can not be successfully started
+	 * @throws JobHandlerException when job can not be successfully started, or when submissionId not unique
 	 */
-	String startJob(String jobId,
+	String startJob(String submissionId,
 					List<String> command,
 					String jobDirectory,
 					int nrOfThreadsForSubmission) throws JobHandlerException;

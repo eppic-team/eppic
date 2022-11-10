@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
 
@@ -33,7 +34,7 @@ public class SubmitService {
 
 
     private final JobManager jobManager;
-    private File baseOutDir;
+    private final File baseOutDir;
 
     public SubmitService() {
         // TODO we need a config file with these an other possible server settings
@@ -50,17 +51,20 @@ public class SubmitService {
         email = validateEmail(email);
         fileName = validateFileName(fileName);
 
-        // 2 write to disk so that CLI can read: first check if stream is gzipped or not, then write to disk ungzipped. Also validates the file size
-        File outDir = new File(baseOutDir, ); // TODO problem the outdir should be the submission id, right?
+        // 2 Create a submission id
+        String submissionId = UUID.randomUUID().toString(); // perhaps strip hyphens?
+
+        // 3 write to disk so that CLI can read: first check if stream is gzipped or not, then write to disk ungzipped. Also validates the file size
+        File outDir = new File(baseOutDir, submissionId);
         File file = new File(baseOutDir, fileName);
         writeToFile(handleGzip(inputStream), file);
 
-        // 3 submit CLI job async: at end of job persist to db and send notification email
+        // 4 submit CLI job async: at end of job persist to db and send notification email
         // TODO build command
-        String submissionId = jobManager.startJob(fileName, null, outDir.getAbsolutePath(), DEFAULT_NUM_THREADS_PER_JOB);
+        jobManager.startJob(submissionId, null, outDir.getAbsolutePath(), DEFAULT_NUM_THREADS_PER_JOB);
         // TODO write to db and emailing at completion or error
 
-        // 4 return generated id
+        // 5 return generated id
         return buildResponse(new SubmissionStatus(submissionId, StatusOfJob.WAITING));
     }
 

@@ -11,11 +11,11 @@ public class ShellTask implements Callable<Integer> {
     public static final int CANT_START_PROCESS_ERROR_CODE = -1;
     public static final int SIGTERM_ERROR_CODE = 143;
 
-    private List<String> cmd;
-    private File stdOut;
-    private File stdErr;
+    private final List<String> cmd;
+    private final File stdOut;
+    private final File stdErr;
 
-    private String jobId;
+    private final String submissionId;
 
     private Process process;
 
@@ -34,7 +34,7 @@ public class ShellTask implements Callable<Integer> {
         this.stdErr = stdErr;
         isRunning = false;
         submissionTime = System.currentTimeMillis();
-        this.jobId = jobId;
+        this.submissionId = jobId;
     }
 
     @Override
@@ -106,8 +106,8 @@ public class ShellTask implements Callable<Integer> {
         return finishTime;
     }
 
-    public String getJobId() {
-        return jobId;
+    public String getSubmissionId() {
+        return submissionId;
     }
 
     /**

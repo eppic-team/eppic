@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -46,22 +45,22 @@ public class NativeJobManager implements JobManager
 	}
 
 	@Override
-	public String startJob(String jobId,
+	public String startJob(String submissionId,
 						   List<String> command,
 						   String jobDirectory,
 						   int nrOfThreadsForSubmission) throws JobHandlerException {
 		try {
 
-			String submissionId = UUID.randomUUID().toString(); // perhaps strip hyphens?
+			if (tasks.containsKey(submissionId)) {
+				throw new JobHandlerException("Submission id " +submissionId+ " has been already used in NativeJobManager");
+			}
 
-			//jobTemplate.setJobName(jobId);
-			File stdErr = new File(jobDirectory, jobId + ".e");
-			File stdOut = new File(jobDirectory, jobId + ".o");
+			File stdErr = new File(jobDirectory, submissionId + ".e");
+			File stdOut = new File(jobDirectory, submissionId + ".o");
 
-			ShellTask shellTask = new ShellTask(command, stdOut, stdErr, jobId);
+			ShellTask shellTask = new ShellTask(command, stdOut, stdErr, submissionId);
 			Future<Integer> future = executor.submit(shellTask);
 
-			//jobs.put(String.valueOf(submissionId), jobId);
 			shellTask.setOutput(future);
 			tasks.put(submissionId, shellTask);
 
@@ -229,8 +228,7 @@ public class NativeJobManager implements JobManager
 					it.remove();
 				}
 			} catch (JobHandlerException e) {
-				logger.warn("Could not get job status for jobId '{}', submissionId '{}'. Will not remove it.",
-						task.getJobId(), submissionId);
+				logger.warn("Could not get job status for job with submissionId '{}'. Will not remove it.", submissionId);
 			}
 		}
 	}
@@ -249,10 +247,10 @@ public class NativeJobManager implements JobManager
 			ShellTask task = tasks.get(submId);
 			try {
 				StatusOfJob statusOfJob = getStatusOfJob(submId);
-				logger.info("Job '{}' (submission id {}) has status {}. It was queuing {} s and executing {} s",
-						task.getJobId(), submId, statusOfJob, task.getTimeInQueue() / 1000, task.getTimeRunning() / 1000);
+				logger.info("Job with submission id {} has status {}. It was queuing {} s and executing {} s",
+						submId, statusOfJob, task.getTimeInQueue() / 1000, task.getTimeRunning() / 1000);
 			} catch (JobHandlerException e) {
-				logger.warn("Can not log info for job '{}'. Error: {}", task.getJobId(), e.getMessage());
+				logger.warn("Can not log info for job with submission id '{}'. Error: {}", submId, e.getMessage());
 			}
 		}
 	}
