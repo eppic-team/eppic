@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
@@ -37,11 +38,19 @@ public class SubmitService {
 
     private final JobManager jobManager;
     private final File baseOutDir;
+    private final String javaVMExec;
+    private final int memForEppicProcess;
+    private final int numThreadsEppicProcess;
+    private final String eppicJarPath;
 
-    public SubmitService() {
-        // TODO we need a config file with these an other possible server settings
-        baseOutDir = new File("/tmp");
-        jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), 2);
+    public SubmitService(Map<String, Object> props) {
+        baseOutDir = new File((String)props.get("base.out.dir"));
+        int numThreadsJobManager = (int)props.get("num.threads.job.manager");
+        jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
+        javaVMExec = (String) props.get("java.jre.exec");
+        numThreadsEppicProcess = (int)props.get("num.threads.eppic.process");
+        memForEppicProcess = (int)props.get("mem.eppic.process");
+        eppicJarPath = (String) props.get("eppic.jar.path");
     }
 
     /**
@@ -62,7 +71,7 @@ public class SubmitService {
         writeToFile(handleGzip(inputStream), file);
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
-        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file , outDir, nrOfThreadsForSubmission, assignedMemory);
+        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file , outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess);
         jobManager.startJob(submissionId, cmd, outDir.getAbsolutePath(), DEFAULT_NUM_THREADS_PER_JOB);
         // TODO write to db and emailing at completion or error
 
