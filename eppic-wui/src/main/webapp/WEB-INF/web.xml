@@ -66,11 +66,6 @@
 
 
 	<servlet>
-	    <servlet-name>FileUploadService</servlet-name>
-	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.uploader.servlets.FileUploadServlet</servlet-class>
-	</servlet>
-
-	<servlet>
 	    <servlet-name>FileDownloadService</servlet-name>
 	    <servlet-class>ch.systemsx.sybit.crkwebui.server.files.downloader.servlets.FileDownloadServlet</servlet-class>
 	</servlet>

@@ -1,7 +1,6 @@
 package ch.systemsx.sybit.crkwebui.server.commons.validators;
 
 import ch.systemsx.sybit.crkwebui.shared.exceptions.ValidationException;
-import eppic.model.dto.InputParameters;
 
 /**
  * Run job data validator.
@@ -10,21 +9,6 @@ import eppic.model.dto.InputParameters;
  */
 public class RunJobDataValidator 
 {
-	/**
-	 * Checks whether input parameters fulfill the requirements.
-	 * @param inputParameters input parameters to validate
-	 * @throws ValidationException when values are not valid
-	 */
-	public static void validateInputParameters(InputParameters inputParameters) throws ValidationException
-	{
-		String searchMode = inputParameters.getSearchMode().toLowerCase();
-		
-		if(!searchMode.matches("^[a-z]+$"))
-		{
-			throw new ValidationException("Incorrect format of search mode - only a-z characters are allowed");
-		}
-	}
-	
 	/**
 	 * Checks whether jobid is alphanumeric value.
 	 * @param jobId job id to validate

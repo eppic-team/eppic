@@ -63,7 +63,7 @@ public class FileDownloadServletInputValidator
 			throw new ValidationException("Incorrect format of alignment.");
 		}
 		
-		RunJobDataValidator.validateJobId(jobId);
+		//RunJobDataValidator.validateJobId(jobId);
 		
 	}
 }

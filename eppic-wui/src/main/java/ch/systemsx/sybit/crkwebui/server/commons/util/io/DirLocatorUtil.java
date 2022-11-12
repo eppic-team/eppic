@@ -2,8 +2,6 @@ package ch.systemsx.sybit.crkwebui.server.commons.util.io;
 
 import java.io.File;
 
-import eppic.model.dto.ApplicationSettings;
-
 public class DirLocatorUtil {
 	
 	/**
@@ -46,7 +44,6 @@ public class DirLocatorUtil {
 	 * See ApplicationSettings#getResultsLocationForJob(String) for the equivalent client side call
 	 * @param baseUrl
 	 * @param jobId
-	 * @see ApplicationSettings#getResultsLocationForJob(String) 
 	 * @return
 	 */
 	public static String getJobUrlPath(String baseUrl, String jobId) {

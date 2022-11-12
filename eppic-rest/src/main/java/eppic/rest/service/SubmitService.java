@@ -3,6 +3,7 @@ package eppic.rest.service;
 import eppic.model.dto.SubmissionStatus;
 import eppic.model.shared.StatusOfJob;
 import eppic.rest.commons.FileFormat;
+import eppic.rest.jobs.EppicCliGenerator;
 import eppic.rest.jobs.JobHandlerException;
 import eppic.rest.jobs.JobManager;
 import eppic.rest.jobs.JobManagerFactory;
@@ -18,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
@@ -60,8 +62,8 @@ public class SubmitService {
         writeToFile(handleGzip(inputStream), file);
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
-        // TODO build command
-        jobManager.startJob(submissionId, null, outDir.getAbsolutePath(), DEFAULT_NUM_THREADS_PER_JOB);
+        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file , outDir, nrOfThreadsForSubmission, assignedMemory);
+        jobManager.startJob(submissionId, cmd, outDir.getAbsolutePath(), DEFAULT_NUM_THREADS_PER_JOB);
         // TODO write to db and emailing at completion or error
 
         // 5 return generated id

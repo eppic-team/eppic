@@ -1,35 +1,22 @@
 package eppic.db.tools;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.SingularAttribute;
 
-import eppic.model.shared.InputType;
-import eppic.model.shared.StatusOfJob;
 import eppic.model.db.ChainClusterDB;
-import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
-import eppic.model.db.JobDB;
 import eppic.model.db.PdbInfoDB;
 import eppic.model.db.SeqClusterDB;
 
