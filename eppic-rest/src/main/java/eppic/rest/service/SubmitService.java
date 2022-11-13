@@ -45,11 +45,11 @@ public class SubmitService {
 
     public SubmitService(Map<String, Object> props) {
         baseOutDir = new File((String)props.get("base.out.dir"));
-        int numThreadsJobManager = (int)props.get("num.threads.job.manager");
+        int numThreadsJobManager = Integer.parseInt((String)props.get("num.threads.job.manager"));
         jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
         javaVMExec = (String) props.get("java.jre.exec");
-        numThreadsEppicProcess = (int)props.get("num.threads.eppic.process");
-        memForEppicProcess = (int)props.get("mem.eppic.process");
+        numThreadsEppicProcess = Integer.parseInt((String)props.get("num.threads.eppic.process"));
+        memForEppicProcess = Integer.parseInt((String)props.get("mem.eppic.process"));
         eppicJarPath = (String) props.get("eppic.jar.path");
     }
 
