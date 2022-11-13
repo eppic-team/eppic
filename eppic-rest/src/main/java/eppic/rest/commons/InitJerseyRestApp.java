@@ -9,6 +9,7 @@ import eppic.rest.filter.CustomMapperProvider;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
 import org.glassfish.jersey.logging.LoggingFeature;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.filtering.SelectableEntityFilteringFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
@@ -61,6 +62,9 @@ public class InitJerseyRestApp extends ResourceConfig {
 
         // registering logging feature https://stackoverflow.com/questions/2332515/how-to-get-jersey-logs-at-server
         register(LoggingFeature.class);
+
+        // for file upload via Multipart
+        register(MultiPartFeature.class);
 
         logger.info("Initialising Mongo connections");
         // TODO consider passing an arbitrary file name (with system prop?)
