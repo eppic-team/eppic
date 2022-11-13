@@ -3,7 +3,6 @@ package eppic.rest.commons;
 
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoDbStore;
-import eppic.rest.endpoints.SubmitResource;
 import eppic.rest.filter.CORSResponseFilter;
 import eppic.rest.filter.CustomMapperProvider;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -22,8 +21,6 @@ import javax.ws.rs.core.Context;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 
@@ -79,10 +76,9 @@ public class InitJerseyRestApp extends ResourceConfig {
         Properties props = new Properties();
         try {
             props.load(new FileInputStream(confFile));
-            Map<String, Object> mapProp = new HashMap<>();
-            props.forEach((k, v) -> mapProp.put((String) k, v));
+            props.forEach((k, v) -> property((String) k, v));
             // see https://stackoverflow.com/questions/27431979/passing-parameter-to-a-jersey-ressource
-            new ResourceConfig(SubmitResource.class).setProperties(mapProp);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

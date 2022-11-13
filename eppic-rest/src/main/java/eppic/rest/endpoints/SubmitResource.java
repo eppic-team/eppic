@@ -28,13 +28,11 @@ import java.io.InputStream;
 @Path("/submit")
 public class SubmitResource {
 
-    private final SubmitService submitService;
-
+    // note this config injection only works after construction (i.e. don't try to call it in constructor because it'll be null)
     @Context
-    Configuration config;
+    private Configuration config;
 
     public SubmitResource() {
-        submitService = new SubmitService(config.getProperties());
     }
 
     @PermitAll
@@ -58,6 +56,7 @@ public class SubmitResource {
             @NotNull @FormDataParam("file") InputStream fileInputStream,
             @FormDataParam("email")String email) throws JobHandlerException, IOException {
 
+        SubmitService submitService = new SubmitService(config.getProperties());
         return submitService.submit(fileFormat, fileName, fileInputStream, email);
     }
 
@@ -67,6 +66,7 @@ public class SubmitResource {
     @Produces({MediaType.APPLICATION_JSON})
     @Tag(name = "Get status of submission")
     public Response getStatus(@PathParam("submissionId") String submissionId) throws JobHandlerException {
+        SubmitService submitService = new SubmitService(config.getProperties());
         return submitService.getStatus(submissionId);
     }
 }
