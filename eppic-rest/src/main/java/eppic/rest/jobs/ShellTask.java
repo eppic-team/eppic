@@ -69,6 +69,12 @@ public class ShellTask implements Callable<Integer> {
 
             isRunning = false;
 
+            if (exitStatus == 0) {
+                // TODO implement write to DB and emailing
+                //writeToDb();
+                //notifyByEmail();
+            }
+
             return exitStatus;
 
         } catch (InterruptedException e){

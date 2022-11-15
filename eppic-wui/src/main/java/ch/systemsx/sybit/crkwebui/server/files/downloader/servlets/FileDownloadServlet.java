@@ -27,6 +27,7 @@ import eppic.CoordFilesAdaptor;
 import eppic.db.dao.*;
 import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.db.PdbInfoDB;
 import eppic.model.dto.InputWithType;
 
@@ -213,7 +214,7 @@ public class FileDownloadServlet extends BaseServlet
 
 
 		// get data and produce file
-		PDBInfoDAO dao = new PDBInfoDAOMongo();
+		PDBInfoDAO dao = new PDBInfoDAOMongo(MongoDbStore.getMongoDb());
 		PdbInfoDB pdbInfo = dao.getPDBInfo(jobId);
 
 		JobDAO jobDAO = new JobDAOMongo();

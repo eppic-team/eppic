@@ -4,6 +4,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.PDBInfoDAO;
 
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.db.AssemblyDB;
 import eppic.model.db.ChainClusterDB;
 import eppic.model.db.InterfaceClusterDB;
@@ -24,7 +25,7 @@ public class PDBInfoDaoJpaTest {
 
         String pdbId ="1smt";
 
-        PDBInfoDAO dao = new PDBInfoDAOMongo();
+        PDBInfoDAO dao = new PDBInfoDAOMongo(MongoDbStore.getMongoDb());
         PdbInfoDB pdbInfoDB = dao.getPDBInfo(pdbId);
         assertNotNull(pdbInfoDB);
 

@@ -9,14 +9,21 @@ public class MongoDbStore {
 
     private static MongoDatabase mongoDb;
 
+    private static MongoDatabase mongoDbUserJobs;
+
     public static void init(File configFile) throws IOException {
         DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
-        String connUri = propsReader.getMongoUri();
 
-        mongoDb = MongoUtils.getMongoDatabase(propsReader.getDbName(), connUri);
+        mongoDb = MongoUtils.getMongoDatabase(propsReader.getDbName(), propsReader.getMongoUri());
+
+        mongoDbUserJobs = MongoUtils.getMongoDatabase(propsReader.getDbNameUserJobs(), propsReader.getMongoUriUserJobs());
     }
 
     public static MongoDatabase getMongoDb() {
         return mongoDb;
+    }
+
+    public static MongoDatabase getMongoDbUserJobs() {
+        return mongoDbUserJobs;
     }
 }

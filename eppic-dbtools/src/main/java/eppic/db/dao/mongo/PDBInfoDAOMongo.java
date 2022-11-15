@@ -3,7 +3,6 @@ package eppic.db.dao.mongo;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.PDBInfoDAO;
-import eppic.db.mongoutils.MongoDbStore;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.PdbInfoDB;
 
@@ -15,12 +14,6 @@ public class PDBInfoDAOMongo implements PDBInfoDAO {
 
     private final MongoDatabase mongoDb;
     private final String collectionName;
-
-    public PDBInfoDAOMongo() {
-        mongoDb = MongoDbStore.getMongoDb();
-        Table tableMetadata = MongoUtils.getTableMetadataFromJpa(PdbInfoDB.class);
-        this.collectionName = tableMetadata.name();
-    }
 
     public PDBInfoDAOMongo(MongoDatabase mongoDb) {
         this.mongoDb = mongoDb;

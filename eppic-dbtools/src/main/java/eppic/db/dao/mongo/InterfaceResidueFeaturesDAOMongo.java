@@ -3,7 +3,6 @@ package eppic.db.dao.mongo;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.InterfaceResidueFeaturesDAO;
-import eppic.db.mongoutils.MongoDbStore;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.InterfaceResidueFeaturesDB;
 import org.slf4j.Logger;
@@ -19,12 +18,6 @@ public class InterfaceResidueFeaturesDAOMongo implements InterfaceResidueFeature
 
     private final MongoDatabase mongoDb;
     private final String collectionName;
-
-    public InterfaceResidueFeaturesDAOMongo() {
-        this.mongoDb = MongoDbStore.getMongoDb();
-        Table tableMetadata = MongoUtils.getTableMetadataFromJpa(InterfaceResidueFeaturesDB.class);
-        this.collectionName = tableMetadata.name();
-    }
 
     public InterfaceResidueFeaturesDAOMongo(MongoDatabase mongoDb) {
         this.mongoDb = mongoDb;

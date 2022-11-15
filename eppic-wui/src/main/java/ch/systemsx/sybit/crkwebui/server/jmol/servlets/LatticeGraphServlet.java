@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import eppic.EppicParams;
 import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.db.PdbInfoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,7 +180,7 @@ public class LatticeGraphServlet extends BaseServlet
 	}
 	
 	static PdbInfoDB getPdbInfo(String jobId) throws DaoException {
-		PDBInfoDAO pdbDao = new PDBInfoDAOMongo();
+		PDBInfoDAO pdbDao = new PDBInfoDAOMongo(MongoDbStore.getMongoDb());
 		PdbInfoDB pdbinfo = pdbDao.getPDBInfo(jobId);
 		// Set additional job properties
 		JobDAO jobdao = new JobDAOMongo();

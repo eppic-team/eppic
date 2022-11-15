@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.db.AssemblyDB;
 import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
@@ -171,7 +172,7 @@ public class JmolViewerServlet extends BaseServlet
 	
 	private InterfaceDB getInterfaceData(String jobId, int interfaceId) throws DaoException {
 		
-		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(MongoDbStore.getMongoDb());
 		PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 				
 		InterfaceDB interf = pdbInfo.getInterface(interfaceId);
@@ -181,7 +182,7 @@ public class JmolViewerServlet extends BaseServlet
 
 	private AssemblyDB getAssemblyData(String jobId, int assemblyId) throws DaoException {
 
-		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo();
+		PDBInfoDAO pdbInfoDAO = new PDBInfoDAOMongo(MongoDbStore.getMongoDb());
 		PdbInfoDB pdbInfo = pdbInfoDAO.getPDBInfo(jobId);
 		
 		return pdbInfo.getAssemblyById(assemblyId);

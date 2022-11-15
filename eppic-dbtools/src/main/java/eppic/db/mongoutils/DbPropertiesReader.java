@@ -24,8 +24,23 @@ public class DbPropertiesReader {
         return null;
     }
 
+    public String getMongoUriUserJobs() {
+        String val = properties.getProperty("mongo.uri.userjobs");
+        if (val!=null && !val.isEmpty())
+            return val.trim();
+        return null;
+    }
+
     public String getDbName() {
         String val = properties.getProperty("dbname");
+        if (val!=null && !val.isEmpty()) {
+            return val.trim();
+        }
+        return null;
+    }
+
+    public String getDbNameUserJobs() {
+        String val = properties.getProperty("dbname.userjobs");
         if (val!=null && !val.isEmpty()) {
             return val.trim();
         }
