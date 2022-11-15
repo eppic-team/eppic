@@ -1,5 +1,6 @@
 package eppic.rest.service;
 
+import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.dto.SubmissionStatus;
 import eppic.model.shared.StatusOfJob;
 import eppic.rest.commons.FileFormat;
@@ -69,11 +70,11 @@ public class SubmitService {
         File outDir = new File(baseOutDir, submissionId);
         File file = new File(baseOutDir, fileName);
         writeToFile(handleGzip(inputStream), file);
+        String baseNameForOutput = truncateFileName(file.getName());
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
-        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file , outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess);
-        jobManager.startJob(submissionId, cmd, outDir.getAbsolutePath(), DEFAULT_NUM_THREADS_PER_JOB);
-        // TODO write to db and emailing at completion or error
+        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, baseNameForOutput, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess);
+        jobManager.startJob(submissionId, cmd, outDir, baseNameForOutput, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), email);
 
         // 5 return generated id
         return buildResponse(new SubmissionStatus(submissionId, StatusOfJob.WAITING));
@@ -142,5 +143,23 @@ public class SubmitService {
         OutputStream outStream = new FileOutputStream(file);
         outStream.write(buffer);
         outStream.close();
+    }
+
+    /**
+     * Truncates the given fileName by removing anything after the last dot.
+     * If no dot present in fileName then nothing is truncated.
+     * @param fileName the file name
+     * @return
+     */
+    private static String truncateFileName(String fileName) {
+        if( fileName == null) return null;
+
+        String newName = fileName;
+        int lastPeriodPos = fileName.lastIndexOf('.');
+        if (lastPeriodPos >= 0)
+        {
+            newName = fileName.substring(0, lastPeriodPos);
+        }
+        return newName;
     }
 }

@@ -23,6 +23,7 @@ public class EppicCliGenerator {
 	 */
 	public static List<String> generateCommand(String javaVMExec, String eppicJarPath,
 											   File inputFile,
+											   String baseNameForOutput,
 											   String destinationDirectoryName,
 											   int nrOfThreadsForSubmission,
 											   int assignedMemory) {
@@ -33,7 +34,7 @@ public class EppicCliGenerator {
 				"-jar", eppicJarPath,
 				"-i", inputFile.getAbsolutePath(),
 				"-o", destinationDirectoryName,
-				"-b", truncateFileName(inputFile.getName()),
+				"-b", baseNameForOutput,
 				"-a", String.valueOf(nrOfThreadsForSubmission),
 				"-s", // we always run evolutionary calculations (we used to be able to choose that from input, not anymore)
 				"-L", destinationDirectoryName + File.separator + AppConstants.PROGRESS_LOG_FILE_NAME,
@@ -41,24 +42,5 @@ public class EppicCliGenerator {
 				"-P", // for json files, assembly diagram thumbnails (requires dot)
 				"-w"  // for serialized output files
 		);
-	}
-
-	/**
-	 * Truncates the given fileName by removing anything after the last dot.
-	 * If no dot present in fileName then nothing is truncated.
-	 * @param fileName
-	 * @return
-	 */
-	private static String truncateFileName(String fileName) {
-		if( fileName == null) return null;
-
-		String newName = fileName;
-		int lastPeriodPos = fileName.lastIndexOf('.');
-		if (lastPeriodPos >= 0)
-		{
-			newName = fileName.substring(0, lastPeriodPos);
-		}
-		return newName;
-
 	}
 }

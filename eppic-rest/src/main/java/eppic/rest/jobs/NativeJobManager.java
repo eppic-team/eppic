@@ -1,5 +1,6 @@
 package eppic.rest.jobs;
 
+import com.mongodb.client.MongoDatabase;
 import eppic.model.shared.StatusOfJob;
 import eppic.rest.commons.AppConstants;
 import org.slf4j.Logger;
@@ -47,18 +48,18 @@ public class NativeJobManager implements JobManager
 	@Override
 	public String startJob(String submissionId,
 						   List<String> command,
-						   String jobDirectory,
-						   int nrOfThreadsForSubmission) throws JobHandlerException {
+						   File jobDirectory,
+						   String baseNameForOutput,
+						   int nrOfThreadsForSubmission,
+						   MongoDatabase mongoDb,
+						   String email) throws JobHandlerException {
 		try {
 
 			if (tasks.containsKey(submissionId)) {
 				throw new JobHandlerException("Submission id " +submissionId+ " has been already used in NativeJobManager");
 			}
 
-			File stdErr = new File(jobDirectory, submissionId + ".e");
-			File stdOut = new File(jobDirectory, submissionId + ".o");
-
-			ShellTask shellTask = new ShellTask(command, stdOut, stdErr, submissionId);
+			ShellTask shellTask = new ShellTask(command, jobDirectory, baseNameForOutput, submissionId, mongoDb, email);
 			Future<Integer> future = executor.submit(shellTask);
 
 			shellTask.setOutput(future);

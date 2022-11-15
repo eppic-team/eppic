@@ -40,7 +40,7 @@ public class UploadToDb {
 	private static final int TIME_STATS_EVERY1 = 100;
 	private static final int TIME_STATS_EVERY2 = 1000;
 
-	private static final String SERIALIZED_FILE_SUFFIX = ".json.zip";
+	public static final String SERIALIZED_FILE_SUFFIX = ".json.zip";
 	private static final String PDBINFO_SER_FILE_SUFFIX = ".pdbinfo.json";
 	private static final String INTERFRESFEAT_SER_FILE_SUFFIX = ".interf_features.json";
 
@@ -225,7 +225,7 @@ public class UploadToDb {
 
 	}
 
-	private static EntryData readSerializedFile(File serializedFile) {
+	public static EntryData readSerializedFile(File serializedFile) {
 		PdbInfoDB pdbScoreItem = null;
 		List<InterfaceResidueFeaturesDB> interfResFeatures = null;
 		try (ZipFile zipFile = new ZipFile(serializedFile)) {
@@ -438,8 +438,8 @@ public class UploadToDb {
 			}
 			try {
 				long start = System.currentTimeMillis();
-				dao.insertPDBInfo(entryData.pdbInfoDB);
-				interfResDao.insertInterfResFeatures(entryData.interfResFeaturesDB);
+				dao.insertPDBInfo(entryData.getPdbInfoDB());
+				interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
 				long end = System.currentTimeMillis();
 				logger.info("Done inserting {}. Time: {}ms", jobId, (end - start));
 
@@ -468,8 +468,8 @@ public class UploadToDb {
 						logger.error("Could not deserialize job {}. Skipping", jobDirs.get(i).dir.getName());
 						continue;
 					}
-					pdbInfoBatch.add(entryData.pdbInfoDB);
-					currentInterfResFeatBatch.addAll(entryData.interfResFeaturesDB);
+					pdbInfoBatch.add(entryData.getPdbInfoDB());
+					currentInterfResFeatBatch.addAll(entryData.getInterfResFeaturesDB());
 
 				} else {
 					// TODO error jobs
@@ -530,12 +530,4 @@ public class UploadToDb {
 		}
 	}
 
-	private static class EntryData {
-		PdbInfoDB pdbInfoDB;
-		List<InterfaceResidueFeaturesDB> interfResFeaturesDB;
-		public EntryData(PdbInfoDB pdbInfoDB, List<InterfaceResidueFeaturesDB> interfResFeaturesDB) {
-			this.pdbInfoDB = pdbInfoDB;
-			this.interfResFeaturesDB = interfResFeaturesDB;
-		}
-	}
 }

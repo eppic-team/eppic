@@ -1,5 +1,16 @@
 package eppic.rest.jobs;
 
+import com.mongodb.client.MongoDatabase;
+import eppic.db.dao.DaoException;
+import eppic.db.dao.InterfaceResidueFeaturesDAO;
+import eppic.db.dao.PDBInfoDAO;
+import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
+import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.loaders.EntryData;
+import eppic.db.loaders.UploadToDb;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -7,6 +18,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 public class ShellTask implements Callable<Integer> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShellTask.class);
 
     public static final int CANT_START_PROCESS_ERROR_CODE = -1;
     public static final int SIGTERM_ERROR_CODE = 143;
@@ -28,13 +41,32 @@ public class ShellTask implements Callable<Integer> {
     private long executionTime;
     private long finishTime;
 
-    public ShellTask(List<String> cmd, File stdOut, File stdErr, String jobId) {
+    private final File jobDirectory;
+
+    private final String baseNameForOutput;
+    private final MongoDatabase mongoDb;
+    private final String email;
+
+    /**
+     *
+     * @param cmd the full EPPIC CLI command
+     * @param jobDirectory the output directory for files produced by EPPIC CLI
+     * @param baseNameForOutput the base name for files produced by EPPIC CLI
+     * @param submissionId the submission id
+     * @param mongoDb the Mongo db, if null no writing to DB will be performed
+     * @param email the email address to notify, if null no email is sent
+     */
+    public ShellTask(List<String> cmd, File jobDirectory, String baseNameForOutput, String submissionId, MongoDatabase mongoDb, String email) {
         this.cmd = cmd;
-        this.stdOut = stdOut;
-        this.stdErr = stdErr;
+        this.stdErr = new File(jobDirectory, submissionId + ".e");
+        this.stdOut = new File(jobDirectory, submissionId + ".o");
         isRunning = false;
         submissionTime = System.currentTimeMillis();
-        this.submissionId = jobId;
+        this.submissionId = submissionId;
+        this.jobDirectory = jobDirectory;
+        this.baseNameForOutput = baseNameForOutput;
+        this.mongoDb = mongoDb;
+        this.email = email;
     }
 
     @Override
@@ -70,9 +102,16 @@ public class ShellTask implements Callable<Integer> {
             isRunning = false;
 
             if (exitStatus == 0) {
-                // TODO implement write to DB and emailing
-                //writeToDb();
-                //notifyByEmail();
+                try {
+                    writeToDb();
+                    notifyByEmail();
+                } catch (IOException | DaoException e) {
+                    logger.info("Could not write results to db. Setting exit status to 1 (error). Error message was: {}", e.getMessage());
+                    exitStatus = 1;
+                    // TODO send error email?
+                }
+            } else {
+                // TODO send error email? here or in service?
             }
 
             return exitStatus;
@@ -145,5 +184,28 @@ public class ShellTask implements Callable<Integer> {
             time = finishTime - executionTime;
         }
         return time;
+    }
+
+    private void writeToDb() throws IOException, DaoException {
+        if (mongoDb == null) {
+            logger.info("No writing to DB will be performed because MongoDB was set to null");
+            return;
+        }
+        PDBInfoDAO dao = new PDBInfoDAOMongo(mongoDb);
+        InterfaceResidueFeaturesDAO interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
+        EntryData entryData = UploadToDb.readSerializedFile(new File(jobDirectory, baseNameForOutput + UploadToDb.SERIALIZED_FILE_SUFFIX));
+        if (entryData == null) {
+            throw new IOException("Could not read serialized file");
+        }
+        dao.insertPDBInfo(entryData.getPdbInfoDB());
+        interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
+    }
+
+    private void notifyByEmail() {
+        if (email == null) {
+            logger.info("No email will be sent because email was set to null");
+            return;
+        }
+        // TODO implement
     }
 }
