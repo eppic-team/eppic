@@ -106,12 +106,18 @@ public class ShellTask implements Callable<Integer> {
                     writeToDb();
                     notifyByEmail();
                 } catch (IOException | DaoException e) {
-                    logger.info("Could not write results to db. Setting exit status to 1 (error). Error message was: {}", e.getMessage());
+                    logger.error("Could not write results to db. Setting exit status to 1 (error). Error message was: {}", e.getMessage());
                     exitStatus = 1;
-                    // TODO send error email?
                 }
+            }
+
+            if (exitStatus == 0) {
+                // TODO send success email
+                //EmailData data = new EmailData();
+                //EmailSender sender = new EmailSender(data);
+                //sender.send();
             } else {
-                // TODO send error email? here or in service?
+                // TODO send error email
             }
 
             return exitStatus;

@@ -97,15 +97,12 @@ public class EmailSender
 	 * @param text
 	 */
 	public void sendInSeparateThread(String recipient, String subject, String text) {
-		Executors.newSingleThreadExecutor().execute(new Runnable() {
-		    @Override
-		    public void run() {
-		    	try {
-		    		send(recipient, subject, text);
-		    	} catch (MessagingException e) {
-					logger.error("Could not send email for recipient {}. Email title was: {}. Error: {}", recipient, subject, e.getMessage());
-				}
-		    }
+		Executors.newSingleThreadExecutor().execute(() -> {
+			try {
+				send(recipient, subject, text);
+			} catch (MessagingException e) {
+				logger.error("Could not send email for recipient {}. Email title was: {}. Error: {}", recipient, subject, e.getMessage());
+			}
 		});
 	}
 }
