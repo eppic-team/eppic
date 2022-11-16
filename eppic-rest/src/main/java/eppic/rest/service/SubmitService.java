@@ -37,21 +37,29 @@ public class SubmitService {
     private static final long MAX_ALLOWED_FILE_SIZE = 10 * 1024 * 1024;
 
 
-    private final JobManager jobManager;
-    private final File baseOutDir;
-    private final String javaVMExec;
-    private final int memForEppicProcess;
-    private final int numThreadsEppicProcess;
-    private final String eppicJarPath;
+    // note the dreaded singleton! Jersey inits the service class with every request, so I don't see a way to avoid the singleton here
+    private static JobManager jobManager;
+    private File baseOutDir;
+    private String javaVMExec;
+    private int memForEppicProcess;
+    private int numThreadsEppicProcess;
+    private String eppicJarPath;
 
     public SubmitService(Map<String, Object> props) {
+        setConfigs(props);
+    }
+
+    private void setConfigs(Map<String, Object> props) {
         baseOutDir = new File((String)props.get("base.out.dir"));
         int numThreadsJobManager = Integer.parseInt((String)props.get("num.threads.job.manager"));
-        jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
         javaVMExec = (String) props.get("java.jre.exec");
         numThreadsEppicProcess = Integer.parseInt((String)props.get("num.threads.eppic.process"));
         memForEppicProcess = Integer.parseInt((String)props.get("mem.eppic.process"));
         eppicJarPath = (String) props.get("eppic.jar.path");
+        if (jobManager == null) {
+            // init only first time, it is a singleton
+            jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
+        }
     }
 
     /**
@@ -68,7 +76,10 @@ public class SubmitService {
 
         // 3 write to disk so that CLI can read: first check if stream is gzipped or not, then write to disk ungzipped. Also validates the file size
         File outDir = new File(baseOutDir, submissionId);
-        File file = new File(baseOutDir, fileName);
+        if (!outDir.exists()) {
+            outDir.mkdirs();
+        }
+        File file = new File(outDir, fileName);
         writeToFile(handleGzip(inputStream), file);
         String baseNameForOutput = truncateFileName(file.getName());
 

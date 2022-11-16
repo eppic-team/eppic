@@ -19,7 +19,7 @@ public class JobManagerFactory
 	 */
 	public static JobManager getJobManager(String jobsDirectory, int numWorkers) {
 
-		LOGGER.info("Initialising native job manager with jobsDirectory {}", jobsDirectory);
+		LOGGER.info("Initialising native job manager with jobsDirectory {} and num workers {}", jobsDirectory, numWorkers);
 
 		return new NativeJobManager(jobsDirectory, numWorkers);
 	}
