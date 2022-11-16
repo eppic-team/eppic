@@ -29,14 +29,14 @@ public class EmailMessageData implements Serializable {
 		return String.format(emailJobSubmittedTitle, submissionId);
 	}
 	public void setEmailJobSubmittedTitle(String emailJobSubmittedTitle) {
-		validateString(1, "emailJobSubmittedTitle");
+		validateString(1, emailJobSubmittedTitle, "emailJobSubmittedTitle");
 		this.emailJobSubmittedTitle = emailJobSubmittedTitle;
 	}
 	public String getEmailJobSubmittedMessage(String submissionId) {
 		return String.format(emailJobSubmittedMessage, baseUrlJobRetrieval,submissionId);
 	}
 	public void setEmailJobSubmittedMessage(String emailJobSubmittedMessage) {
-		validateString(2, "emailJobSubmittedMessage");
+		validateString(2, emailJobSubmittedMessage,"emailJobSubmittedMessage");
 		this.emailJobSubmittedMessage = emailJobSubmittedMessage;
 	}
 	public String getEmailJobSubmitErrorTitle() {
@@ -55,28 +55,28 @@ public class EmailMessageData implements Serializable {
 		return String.format(emailJobErrorTitle, submissionId);
 	}
 	public void setEmailJobErrorTitle(String emailJobErrorTitle) {
-		validateString(1, "emailJobErrorTitle");
+		validateString(1, emailJobErrorTitle,"emailJobErrorTitle");
 		this.emailJobErrorTitle = emailJobErrorTitle;
 	}
 	public String getEmailJobErrorMessage(String submissionId) {
 		return String.format(emailJobErrorMessage, baseUrlJobRetrieval, submissionId);
 	}
 	public void setEmailJobErrorMessage(String emailJobErrorMessage) {
-		validateString(2, "emailJobErrorMessage");
+		validateString(2, emailJobErrorMessage,"emailJobErrorMessage");
 		this.emailJobErrorMessage = emailJobErrorMessage;
 	}
 	public String getEmailJobFinishedTitle(String submissionId) {
 		return String.format(emailJobFinishedTitle, submissionId);
 	}
 	public void setEmailJobFinishedTitle(String emailJobFinishedTitle) {
-		validateString(1, "emailJobFinishedTitle");
+		validateString(1, emailJobFinishedTitle,"emailJobFinishedTitle");
 		this.emailJobFinishedTitle = emailJobFinishedTitle;
 	}
 	public String getEmailJobFinishedMessage(String submissionId) {
 		return String.format(emailJobFinishedMessage, baseUrlJobRetrieval, submissionId);
 	}
 	public void setEmailJobFinishedMessage(String emailJobFinishedMessage) {
-		validateString(2, "emailJobFinishedMessage");
+		validateString(2, emailJobFinishedMessage,"emailJobFinishedMessage");
 		this.emailJobFinishedMessage = emailJobFinishedMessage;
 	}
 
@@ -88,8 +88,8 @@ public class EmailMessageData implements Serializable {
 		this.baseUrlJobRetrieval = baseUrlJobRetrieval;
 	}
 
-	private void validateString(int occurrencesOfReplacementStr, String fieldName) {
-		int occurrences = countOccurrencesSubstring("%s", emailJobFinishedMessage);
+	private void validateString(int occurrencesOfReplacementStr, String strToCheck, String fieldName) {
+		int occurrences = countOccurrencesSubstring("%s", strToCheck);
 		if (occurrences != occurrencesOfReplacementStr) {
 			throw new IllegalArgumentException("'" + fieldName + "' needs "+occurrencesOfReplacementStr+" '%s' exactly, but found " + occurrences);
 		}
