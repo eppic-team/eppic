@@ -52,14 +52,14 @@ public class NativeJobManager implements JobManager
 						   String baseNameForOutput,
 						   int nrOfThreadsForSubmission,
 						   MongoDatabase mongoDb,
-						   String email) throws JobHandlerException {
+						   EmailData emailData) throws JobHandlerException {
 		try {
 
 			if (tasks.containsKey(submissionId)) {
 				throw new JobHandlerException("Submission id " +submissionId+ " has been already used in NativeJobManager");
 			}
 
-			ShellTask shellTask = new ShellTask(command, jobDirectory, baseNameForOutput, submissionId, mongoDb, email);
+			ShellTask shellTask = new ShellTask(command, jobDirectory, baseNameForOutput, submissionId, mongoDb, emailData);
 			Future<Integer> future = executor.submit(shellTask);
 
 			shellTask.setOutput(future);

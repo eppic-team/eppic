@@ -20,7 +20,7 @@ public interface JobManager {
 	 * @param baseNameForOutput the base name for files produced by EPPIC CLI
 	 * @param nrOfThreadsForSubmission nr of threads used to run command
 	 * @param mongoDb Mongo db to write job's output data to
-	 * @param email email address to notify when job finishes
+	 * @param emailData email data for notifications
 	 * @return submissionId
 	 * @throws JobHandlerException when job can not be successfully started, or when submissionId not unique
 	 */
@@ -30,7 +30,7 @@ public interface JobManager {
 					String baseNameForOutput,
 					int nrOfThreadsForSubmission,
 					MongoDatabase mongoDb,
-					String email) throws JobHandlerException;
+					EmailData emailData) throws JobHandlerException;
 
 	/**
 	 * Retrieves current status of specified job.

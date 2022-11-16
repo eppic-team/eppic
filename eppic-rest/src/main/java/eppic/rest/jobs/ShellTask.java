@@ -11,6 +11,7 @@ import eppic.db.loaders.UploadToDb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.mail.MessagingException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -23,6 +24,8 @@ public class ShellTask implements Callable<Integer> {
 
     public static final int CANT_START_PROCESS_ERROR_CODE = -1;
     public static final int SIGTERM_ERROR_CODE = 143;
+
+    public static final int CANT_WRITE_TO_DB_ERROR_CODE = 123;
 
     private final List<String> cmd;
     private final File stdOut;
@@ -45,7 +48,7 @@ public class ShellTask implements Callable<Integer> {
 
     private final String baseNameForOutput;
     private final MongoDatabase mongoDb;
-    private final String email;
+    private final EmailData emailData;
 
     /**
      *
@@ -54,9 +57,9 @@ public class ShellTask implements Callable<Integer> {
      * @param baseNameForOutput the base name for files produced by EPPIC CLI
      * @param submissionId the submission id
      * @param mongoDb the Mongo db, if null no writing to DB will be performed
-     * @param email the email address to notify, if null no email is sent
+     * @param emailData the email data for email notification, if null no email is sent
      */
-    public ShellTask(List<String> cmd, File jobDirectory, String baseNameForOutput, String submissionId, MongoDatabase mongoDb, String email) {
+    public ShellTask(List<String> cmd, File jobDirectory, String baseNameForOutput, String submissionId, MongoDatabase mongoDb, EmailData emailData) {
         this.cmd = cmd;
         this.stdErr = new File(jobDirectory, submissionId + ".e");
         this.stdOut = new File(jobDirectory, submissionId + ".o");
@@ -66,11 +69,13 @@ public class ShellTask implements Callable<Integer> {
         this.jobDirectory = jobDirectory;
         this.baseNameForOutput = baseNameForOutput;
         this.mongoDb = mongoDb;
-        this.email = email;
+        this.emailData = emailData;
     }
 
     @Override
     public Integer call() throws Exception {
+
+        notifyByEmailOnSubmit();
 
         ProcessBuilder builder = new ProcessBuilder();
 
@@ -105,21 +110,12 @@ public class ShellTask implements Callable<Integer> {
             if (exitStatus == 0) {
                 try {
                     writeToDb();
-                    notifyByEmail();
                 } catch (IOException | DaoException e) {
-                    logger.error("Could not write results to db. Setting exit status to 1 (error). Error message was: {}", e.getMessage());
-                    exitStatus = 1;
+                    logger.error("Could not write results to db. Setting exit status to {} (error). Error message was: {}", CANT_WRITE_TO_DB_ERROR_CODE, e.getMessage());
+                    exitStatus = CANT_WRITE_TO_DB_ERROR_CODE;
                 }
             }
-
-            if (exitStatus == 0) {
-                // TODO send success email
-                //EmailData data = new EmailData();
-                //EmailSender sender = new EmailSender(data);
-                //sender.send();
-            } else {
-                // TODO send error email
-            }
+            notifyByEmailOnFinish(exitStatus);
 
             return exitStatus;
 
@@ -208,11 +204,36 @@ public class ShellTask implements Callable<Integer> {
         interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
     }
 
-    private void notifyByEmail() {
-        if (email == null) {
+    private void notifyByEmailOnSubmit() {
+        if (emailData == null) {
             logger.info("No email will be sent because email was set to null");
             return;
         }
-        // TODO implement
+        EmailSender sender = new EmailSender(emailData);
+
+        try {
+            sender.sendSubmittedEmail(submissionId);
+        } catch(MessagingException e) {
+            logger.error("Could not send job submitted email. Error: {}", e.getMessage());
+        }
+    }
+
+    private void notifyByEmailOnFinish(int exitStatus) {
+        if (emailData == null) {
+            logger.info("No email will be sent because email was set to null");
+            return;
+        }
+
+        EmailSender sender = new EmailSender(emailData);
+
+        try {
+            if (exitStatus == 0) {
+                sender.sendFinishSuccesfullyEmail(submissionId);
+            } else {
+                sender.sendFinishWithErrorEmail(submissionId);
+            }
+        } catch (MessagingException e) {
+            logger.error("Could not send job finished email. Error: {}", e.getMessage());
+        }
     }
 }

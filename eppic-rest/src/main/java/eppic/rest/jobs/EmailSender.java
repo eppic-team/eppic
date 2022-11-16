@@ -26,7 +26,7 @@ public class EmailSender
 {
 	private static final Logger logger = LoggerFactory.getLogger(EmailSender.class);
 
-	private EmailData emailData;
+	private final EmailData emailData;
 
 	public EmailSender(EmailData emailData)
 	{
@@ -35,73 +35,78 @@ public class EmailSender
 
 	/**
 	 * Sends email.
-	 * @param recipient email recipient
-	 * @param subject subject of the email
-	 * @param text content of the email
 	 * @throws MessagingException
 	 */
-	public void send(String recipient,
-					 String subject,
-					 String text) throws MessagingException {
+	public void send(String subject, String bodyText) throws MessagingException {
 
-		if ((recipient != null)
-				&& (!recipient.equals(""))) {
+		Properties properties = new Properties();
+		properties.put("mail.smtp.host", emailData.getHost());
+		properties.put("mail.smtp.port", emailData.getPort());
+		// this seems to be needed for google's smtp server - JD 2017-09-01
+		properties.put("mail.smtp.auth", "true");
+		properties.put("mail.smtp.socketFactory.port", emailData.getPort());
+		properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		properties.put("mail.smtp.socketFactory.fallback", "false");
+		properties.put("mail.smtp.starttls.enable", "true");
 
-			Properties properties = new Properties();
-			properties.put("mail.smtp.host", emailData.getHost());
-			properties.put("mail.smtp.port", emailData.getPort());
+
+		Session session = Session.getDefaultInstance(properties, new Authenticator() {
 			// this seems to be needed for google's smtp server - JD 2017-09-01
-			properties.put("mail.smtp.auth", "true");
-			properties.put("mail.smtp.socketFactory.port", emailData.getPort());
-			properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-			properties.put("mail.smtp.socketFactory.fallback", "false");
-			properties.put("mail.smtp.starttls.enable", "true");
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(emailData.getEmailSenderUserName(), emailData.getEmailSenderPassword());
+			}
+		});
+		Message simpleMessage = new MimeMessage(session);
 
+		InternetAddress toAddress = new InternetAddress(emailData.getEmailRecipient());
+		Address[] replyTos = {new InternetAddress(emailData.getReplyToAddress())};
 
-			Session session = Session.getDefaultInstance(properties, new Authenticator() {
-				// this seems to be needed for google's smtp server - JD 2017-09-01
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(emailData.getEmailSenderUserName(), emailData.getEmailSenderPassword());
-                }
-            });
-			Message simpleMessage = new MimeMessage(session);
+		simpleMessage.setReplyTo(replyTos);
+		simpleMessage.setRecipient(RecipientType.TO, toAddress);
+		simpleMessage.setSubject(subject);
+		simpleMessage.setText(bodyText);
+		simpleMessage.saveChanges();
 
-			InternetAddress toAddress = new InternetAddress(recipient);
-			Address[] replyTos = {new InternetAddress(emailData.getReplyToAddress())};
+		Transport transport = session.getTransport("smtp");
+		// apparently the password is not needed here, don't know why -JD 2017-09-01
+		transport.connect(properties.getProperty("mail.smtp.host"),
+				emailData.getEmailSenderUserName(), "");
+		transport.sendMessage(simpleMessage,
+				simpleMessage.getAllRecipients());
+		transport.close();
 
-			simpleMessage.setReplyTo(replyTos);
-			simpleMessage.setRecipient(RecipientType.TO, toAddress);
-			simpleMessage.setSubject(subject);
-			simpleMessage.setText(text);
-			simpleMessage.saveChanges();
+		logger.info("Successfully sent email for recipient {} with subject '{}'", emailData.getEmailRecipient(), subject);
+	}
 
-			Transport transport = session.getTransport("smtp");
-			// apparently the password is not needed here, don't know why -JD 2017-09-01
-			transport.connect(properties.getProperty("mail.smtp.host"),
-					emailData.getEmailSenderUserName(), "");
-			transport.sendMessage(simpleMessage,
-					simpleMessage.getAllRecipients());
-			transport.close();
+	public void sendSubmittedEmail(String submissionId) throws MessagingException {
+		send(
+				emailData.getEmailMessageData().getEmailJobSubmittedTitle(submissionId),
+				emailData.getEmailMessageData().getEmailJobSubmittedMessage(submissionId));
+	}
 
-			logger.info("Successfully sent email for recipient {} with subject '{}'", recipient, subject);
+	public void sendFinishSuccesfullyEmail(String submissionId) throws MessagingException {
+		send(
+				emailData.getEmailMessageData().getEmailJobFinishedTitle(submissionId),
+				emailData.getEmailMessageData().getEmailJobFinishedMessage(submissionId));
+	}
 
-		}
+	public void sendFinishWithErrorEmail(String submissionId) throws MessagingException {
+		send(
+				emailData.getEmailMessageData().getEmailJobErrorTitle(submissionId),
+				emailData.getEmailMessageData().getEmailJobErrorMessage(submissionId));
 	}
 
 	/**
 	 * Sends email in an independent thread so that the server doesn't get blocked
 	 * if something goes wrong in the sending.
-	 * @param recipient
-	 * @param subject
-	 * @param text
 	 */
-	public void sendInSeparateThread(String recipient, String subject, String text) {
+	public void sendInSeparateThread(String subject, String bodyText) {
 		Executors.newSingleThreadExecutor().execute(() -> {
 			try {
-				send(recipient, subject, text);
+				send(subject, bodyText);
 			} catch (MessagingException e) {
-				logger.error("Could not send email for recipient {}. Email title was: {}. Error: {}", recipient, subject, e.getMessage());
+				logger.error("Could not send email for recipient {}. Email title was: {}. Error: {}", emailData.getEmailRecipient(), subject, e.getMessage());
 			}
 		});
 	}

@@ -9,9 +9,6 @@ import java.io.Serializable;
  */
 public class EmailData implements Serializable
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -43,6 +40,8 @@ public class EmailData implements Serializable
 	 * The reply-to address for sending emails.
 	 */
 	private String replyToAddress;
+
+	private EmailMessageData emailMessageData;
 
 	/**
 	 * Retrieves SMTP port.
@@ -132,5 +131,11 @@ public class EmailData implements Serializable
 		this.replyToAddress = replyToAddress;
 	}
 
+	public EmailMessageData getEmailMessageData() {
+		return emailMessageData;
+	}
 
+	public void setEmailMessageData(EmailMessageData emailMessageData) {
+		this.emailMessageData = emailMessageData;
+	}
 }

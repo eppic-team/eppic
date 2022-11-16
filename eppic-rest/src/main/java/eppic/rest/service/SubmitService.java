@@ -4,6 +4,8 @@ import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.dto.SubmissionStatus;
 import eppic.model.shared.StatusOfJob;
 import eppic.rest.commons.FileFormat;
+import eppic.rest.jobs.EmailData;
+import eppic.rest.jobs.EmailMessageData;
 import eppic.rest.jobs.EppicCliGenerator;
 import eppic.rest.jobs.JobHandlerException;
 import eppic.rest.jobs.JobManager;
@@ -45,6 +47,8 @@ public class SubmitService {
     private int numThreadsEppicProcess;
     private String eppicJarPath;
 
+    private EmailData emailData;
+
     public SubmitService(Map<String, Object> props) {
         setConfigs(props);
     }
@@ -60,6 +64,21 @@ public class SubmitService {
             // init only first time, it is a singleton
             jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
         }
+        emailData = new EmailData();
+        emailData.setHost((String)props.get("email_host"));
+        emailData.setPort((String)props.get("email_port"));
+        emailData.setEmailSenderPassword((String)props.get("email_password"));
+        emailData.setEmailSenderUserName((String)props.get("email_username"));
+        emailData.setReplyToAddress((String)props.get("email_replyto_address"));
+        EmailMessageData emailMessageData = new EmailMessageData();
+        emailData.setEmailMessageData(emailMessageData);
+        emailMessageData.setEmailJobSubmittedTitle((String)props.get("email_job_submitted_title"));
+        emailMessageData.setEmailJobSubmittedMessage((String)props.get("email_job_submitted_message"));
+        emailMessageData.setEmailJobFinishedTitle((String)props.get("email_job_finished_title"));
+        emailMessageData.setEmailJobFinishedMessage((String)props.get("email_job_finished_message"));
+        emailMessageData.setEmailJobErrorTitle((String)props.get("email_job_error_title"));
+        emailMessageData.setEmailJobErrorMessage((String)props.get("email_job_error_message"));
+        emailMessageData.setBaseUrlJobRetrieval((String)props.get("email_base_url_job_retrieval"));
     }
 
     /**
@@ -85,7 +104,7 @@ public class SubmitService {
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
         List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, baseNameForOutput, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess);
-        jobManager.startJob(submissionId, cmd, outDir, baseNameForOutput, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), email);
+        jobManager.startJob(submissionId, cmd, outDir, baseNameForOutput, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), emailData);
 
         // 5 return generated id
         return buildResponse(new SubmissionStatus(submissionId, StatusOfJob.WAITING));
