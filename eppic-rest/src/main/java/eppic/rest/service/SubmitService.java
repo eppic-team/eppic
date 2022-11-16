@@ -88,6 +88,11 @@ public class SubmitService {
     public Response submit(FileFormat fileFormat, String fileName, InputStream inputStream, String email) throws JobHandlerException, IOException {
         // 1 validate
         email = validateEmail(email);
+        if (email != null) {
+            emailData.setEmailRecipient(email);
+        } else {
+            emailData = null;
+        }
         fileName = validateFileName(fileName);
 
         // 2 Create a submission id
@@ -96,7 +101,10 @@ public class SubmitService {
         // 3 write to disk so that CLI can read: first check if stream is gzipped or not, then write to disk ungzipped. Also validates the file size
         File outDir = new File(baseOutDir, submissionId);
         if (!outDir.exists()) {
-            outDir.mkdirs();
+            boolean created = outDir.mkdirs();
+            if (!created) {
+                throw new IOException("Could not create job dir "+outDir);
+            }
         }
         File file = new File(outDir, fileName);
         writeToFile(handleGzip(inputStream), file);
@@ -179,7 +187,7 @@ public class SubmitService {
      * Truncates the given fileName by removing anything after the last dot.
      * If no dot present in fileName then nothing is truncated.
      * @param fileName the file name
-     * @return
+     * @return the truncated file name
      */
     private static String truncateFileName(String fileName) {
         if( fileName == null) return null;
