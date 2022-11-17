@@ -1,11 +1,15 @@
 package eppic.rest.service;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
 import eppic.db.adaptors.ViewsAdaptor;
 import eppic.db.dao.mongo.ContactDAOMongo;
 import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
+import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.db.AssemblyDB;
@@ -18,6 +22,7 @@ import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
 import eppic.model.db.ResidueBurialDB;
 import eppic.model.db.ResidueInfoDB;
+import eppic.model.dto.InputWithType;
 import eppic.model.dto.views.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +35,7 @@ import eppic.db.dao.*;
  * @author Jose Duarte
  */
 public class JobService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
 
     private static final Pattern PDBID_REGEX = Pattern.compile("^\\d\\w\\w\\w$");
@@ -368,6 +373,36 @@ public class JobService {
         }
 
         return ViewsAdaptor.getAssemblyDiagram(assembly);
+    }
+
+    public InputStream getCoordinateFile(String entryId, String interfId, String assemblyId) throws DaoException {
+
+        // Otherwise with explicit gzip content-encoding here, tools like 'curl --compressed' complain
+        // At the same time, wget (wget --header="accept-encoding: gzip") behaves weirdly without the explicit gzip
+        // content-encoding here, downloading file but returning a compressed file
+        // The wget problem seems to be a weird implementation by wget. Firefox, chrome and curl all behave well
+        // downloading to an uncompressed file (with transmission compressed).
+
+
+        // get data and produce file
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+
+        JobDAO jobDAO = new JobDAOMongo();
+        InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
+
+        File auFile = LatticeGraphServlet.getAuFileName(jobDir, input.getInputName());
+
+        CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
+
+        if (assemblyId!=null) {
+            adaptor.getAssemblyCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, Integer.parseInt(assemblyId), true);
+        } else if (interfId!=null) {
+            adaptor.getInterfaceCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, Integer.parseInt(interfId), true);
+        } else {
+            // should not happen, the validation took care of this
+            throw new ValidationException("Unsupported file type " + type);
+        }
+        return is;
     }
 
     private PDBInfoDAO getPdbInfoDAO(String entryId) {
