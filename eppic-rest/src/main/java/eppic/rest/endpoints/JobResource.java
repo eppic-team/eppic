@@ -23,17 +23,17 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.SortedSet;
 
 @Path("/job")
 public class JobResource {
+
+    @Context
+    private Configuration config;
 
     private final JobService jobService;
 
@@ -395,15 +395,14 @@ public class JobResource {
     @Produces({"chemical/x-cif"})
     public Response getInterfaceCoordinateFile(
             @PathParam("jobId") String jobId,
-            @PathParam("interfId") String interfId) throws DaoException {
+            @PathParam("interfId") String interfId) throws DaoException, IOException {
 
         String outputFileName = jobId + ".interface." + interfId + ".cif";
         ContentDisposition contentDisposition = ContentDisposition.type("attachment")
                 .fileName(outputFileName).creationDate(new Date()).build();
 
-        InputStream is = jobService.getCoordinateFile(jobId, interfId, null);
-        return Response.ok(
-                (StreamingOutput) is::transferTo).header("Content-Disposition",contentDisposition).build();
+        byte[] os = jobService.getCoordinateFile(jobId, interfId, null, config.getProperties());
+        return Response.ok(os).header("Content-Disposition",contentDisposition).build();
     }
 
     @GET
@@ -411,15 +410,13 @@ public class JobResource {
     @Produces({"chemical/x-cif"})
     public Response getAssemblyCoordinateFile(
             @PathParam("jobId") String jobId,
-            @PathParam("assemblyId") String assemblyId) throws DaoException {
+            @PathParam("assemblyId") String assemblyId) throws DaoException, IOException {
 
         String outputFileName = jobId + ".assembly." + assemblyId + ".cif";
         ContentDisposition contentDisposition = ContentDisposition.type("attachment")
                 .fileName(outputFileName).creationDate(new Date()).build();
 
-        InputStream is = jobService.getCoordinateFile(jobId, null, assemblyId);
-        OutputStream os = null;
-        return Response.ok(
-                (StreamingOutput) is::transferTo).header("Content-Disposition",contentDisposition).build();
+        byte[] os = jobService.getCoordinateFile(jobId, null, assemblyId, config.getProperties());
+        return Response.ok(os).header("Content-Disposition", contentDisposition).build();
     }
 }

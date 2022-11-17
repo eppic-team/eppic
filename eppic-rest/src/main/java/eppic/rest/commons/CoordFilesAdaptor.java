@@ -1,4 +1,4 @@
-package eppic;
+package eppic.rest.commons;
 
 import eppic.commons.sequence.AAAlphabet;
 import eppic.commons.util.FileTypeGuesser;
@@ -9,7 +9,11 @@ import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
 import eppic.model.db.ResidueInfoDB;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
-import org.biojava.nbio.structure.*;
+import org.biojava.nbio.structure.Atom;
+import org.biojava.nbio.structure.Calc;
+import org.biojava.nbio.structure.Chain;
+import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.io.FileParsingParameters;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.io.cif.AbstractCifFileSupplier;
@@ -25,7 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.vecmath.Matrix4d;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -38,7 +43,6 @@ import java.util.regex.Pattern;
  * @author Jose Duarte
  * @since 3.1.0
  */
-// TODO this is now duplicated in eppic-rest module. It is still here because it us used in a test. Should be removed eventually by rewriting the test somehow
 public class CoordFilesAdaptor {
 
     private static final Logger logger = LoggerFactory.getLogger(CoordFilesAdaptor.class);
@@ -55,15 +59,14 @@ public class CoordFilesAdaptor {
      *
      * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
      * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
-     * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
      * @param assemblyId the eppic assembly id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
+    public byte[] getAssemblyCoordsMmcif(String jobId, File auFile, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getAssemblyCoordsMmcif(jobId, s, os, pdbInfoDB, assemblyId, withEvolScores);
+        return getAssemblyCoordsMmcif(jobId, s, pdbInfoDB, assemblyId, withEvolScores);
     }
 
     /**
@@ -73,13 +76,12 @@ public class CoordFilesAdaptor {
      *
      * @param jobId      the job identifier to write in output stream, can be null if unavailable from caller
      * @param s          the input structure with a PDB structure (AU)
-     * @param os         the output stream with the assembly in mmCIF format
      * @param pdbInfoDB  the pdb data with chain clusters
      * @param assemblyId the eppic assembly id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
+    public byte[] getAssemblyCoordsMmcif(String jobId, Structure s, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
 
         List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
@@ -141,35 +143,33 @@ public class CoordFilesAdaptor {
         mmCifBlockBuilder.addCategory(atomSite);
 
         // writing content
-        os.write(CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile()));
+        return  CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile());
     }
 
     /**
      *
      * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
      * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
-     * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
      * @param interfaceId the interface id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
+    public byte[] getInterfaceCoordsMmcif(String jobId, File auFile, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getInterfaceCoordsMmcif(jobId, s, os, pdbInfoDB, interfaceId, withEvolScores);
+        return getInterfaceCoordsMmcif(jobId, s, pdbInfoDB, interfaceId, withEvolScores);
     }
 
     /**
      *
      * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
      * @param s the input structure with a PDB structure (AU)
-     * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
      * @param interfaceId the interface id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
+    public byte[] getInterfaceCoordsMmcif(String jobId, Structure s, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
 
         List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
@@ -248,7 +248,7 @@ public class CoordFilesAdaptor {
         mmCifBlockBuilder.addCategory(atomSite);
 
         // writing content
-        os.write(CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile()));
+        return CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile());
     }
 
     private Structure readCoords(File auFile) throws IOException {

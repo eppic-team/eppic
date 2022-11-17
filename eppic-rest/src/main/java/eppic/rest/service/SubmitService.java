@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -107,8 +108,12 @@ public class SubmitService {
             }
         }
         File file = new File(outDir, fileName);
+        File link = new File(outDir, submissionId);
         writeToFile(handleGzip(inputStream), file);
         String baseNameForOutput = truncateFileName(file.getName());
+
+        // A symlink link to the input file that uses the submissionId, needed by file download endpoints (see JobService.getCoordinateFile())
+        Files.createSymbolicLink(link.toPath(), file.toPath());
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
         List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, baseNameForOutput, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess);

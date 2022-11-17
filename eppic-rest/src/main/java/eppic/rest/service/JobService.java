@@ -1,7 +1,8 @@
 package eppic.rest.service;
 
+import java.io.DataOutputStream;
 import java.io.File;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -24,6 +25,7 @@ import eppic.model.db.ResidueBurialDB;
 import eppic.model.db.ResidueInfoDB;
 import eppic.model.dto.InputWithType;
 import eppic.model.dto.views.*;
+import eppic.rest.commons.CoordFilesAdaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -375,34 +377,35 @@ public class JobService {
         return ViewsAdaptor.getAssemblyDiagram(assembly);
     }
 
-    public InputStream getCoordinateFile(String entryId, String interfId, String assemblyId) throws DaoException {
+    public byte[] getCoordinateFile(String entryId, String interfId, String assemblyId, Map<String, Object> props) throws DaoException, IOException {
 
-        // Otherwise with explicit gzip content-encoding here, tools like 'curl --compressed' complain
-        // At the same time, wget (wget --header="accept-encoding: gzip") behaves weirdly without the explicit gzip
-        // content-encoding here, downloading file but returning a compressed file
-        // The wget problem seems to be a weird implementation by wget. Firefox, chrome and curl all behave well
-        // downloading to an uncompressed file (with transmission compressed).
-
+        if (assemblyId != null && interfId != null) {
+            throw new IllegalArgumentException("Only one of interfId or assemblyId can be not null");
+        }
 
         // get data and produce file
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
 
-        JobDAO jobDAO = new JobDAOMongo();
-        InputWithType input = jobDAO.getInputWithTypeForJob(jobId);
-
-        File auFile = LatticeGraphServlet.getAuFileName(jobDir, input.getInputName());
+        File baseOutDir = new File((String)props.get("base.out.dir"));
+        // for user jobs (this works because we create a symlink, see SubmitService)
+        File auFile = new File(baseOutDir, entryId);
+        if (!auFile.exists()) {
+            // for precomputed jobs
+            auFile = new File(baseOutDir, entryId + ".cif.gz");
+        }
 
         CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
 
+        byte[] data;
         if (assemblyId!=null) {
-            adaptor.getAssemblyCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, Integer.parseInt(assemblyId), true);
+            data = adaptor.getAssemblyCoordsMmcif(entryId, auFile, pdbInfo, Integer.parseInt(assemblyId), true);
         } else if (interfId!=null) {
-            adaptor.getInterfaceCoordsMmcif(jobId, auFile, response.getOutputStream(), pdbInfo, Integer.parseInt(interfId), true);
+            data = adaptor.getInterfaceCoordsMmcif(entryId, auFile, pdbInfo, Integer.parseInt(interfId), true);
         } else {
             // should not happen, the validation took care of this
-            throw new ValidationException("Unsupported file type " + type);
+            throw new RuntimeException("Unsupported file type ");
         }
-        return is;
+        return data;
     }
 
     private PDBInfoDAO getPdbInfoDAO(String entryId) {
