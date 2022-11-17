@@ -419,4 +419,6 @@ public class JobResource {
         byte[] os = jobService.getCoordinateFile(jobId, null, assemblyId, config.getProperties());
         return Response.ok(os).header("Content-Disposition", contentDisposition).build();
     }
+
+    // TODO endpoint to get alignment file
 }

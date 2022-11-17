@@ -9,7 +9,6 @@
 	<modules>
 		<module>eppic-model</module>
 		<module>eppic-cli</module>
-		<module>eppic-wui</module>
 		<module>eppic-dbtools</module>
 		<module>eppic-rest</module>
 		<module>eppic-util</module>
