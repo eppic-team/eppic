@@ -25,23 +25,25 @@ import eppic.model.db.SeqClusterDB;
  * removing a job or checking if a job is present in the database
  *
  * This is essentially a DAO layer. It duplicates what the {@link eppic.db.dao} package does.
- * TODO replace by new mongo DAO classes
  *
  * @author biyani_n
  *
  */
+// TODO since the move to MongoDB (3.4), this is now mostly dead code. It is needed by the scripts
+// ClusterCrystalForms, CompareLattices and FindBiomimics (all of them not need for prod functioning).
+// The scripts would need to be rewritten now using the Mongo DAO classes instead of this
 public class DBHandler {
-	
+
 	public static final String PERSISTENCE_UNIT_NAME = "eppicjpa";
 	public static final String DEFAULT_CONFIG_FILE_NAME = "eppic-db.properties";
 	public static final File DEFAULT_CONFIG_FILE = new File(System.getProperty("user.home"), DEFAULT_CONFIG_FILE_NAME);
-	
-	
+
+
 	private EntityManagerFactory emf;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param dbName the database name
 	 * @param userConfigFile a user supplied config file, if null the default location {@link #DEFAULT_CONFIG_FILE} will be used.
 	 */
@@ -52,7 +54,7 @@ public class DBHandler {
 	public EntityManager getEntityManager(){
 		//if (em==null)
 		//	em = this.emf.createEntityManager();
-		
+
 		return this.emf.createEntityManager();
 	}
 
@@ -63,10 +65,10 @@ public class DBHandler {
 	 */
 	public PdbInfoDB deserializePdb(String pdbCode) {
 		EntityManager em = this.getEntityManager();
-		
+
 		return deserializePdb(em, pdbCode);
 	}
-	
+
 	/**
 	 * Deserialize a PdbInfoDB object given its pdbCode and and EntityManager
 	 * @param em
@@ -100,58 +102,58 @@ public class DBHandler {
 	 * @return
 	 */
 	public List<PdbInfoDB> deserializePdbList(Collection<String> pdbCodes) {
-		
+
 		List<PdbInfoDB> list = new ArrayList<PdbInfoDB>();
-		
+
 
 		for (String pdbCode:pdbCodes) {
-			
+
 			// as of 3.0.1, only 20 calls to deserializePdb(pdbCode) worked, then hanging forever
 			// now using one em per call to see if it solves the problem - JD 2017-06-18
 			EntityManager em = this.getEntityManager();
-			
+
 			PdbInfoDB pdbInfo = deserializePdb(em, pdbCode);
 			if (pdbInfo!=null) {
 				list.add(pdbInfo);
 			}
 			em.close();
 		}
-		
+
 		return list;
 	}
 
 	/**
-	 * Deserialize all PdbInfoDB objects belonging to given clusterId of given 
-	 * clusterLevel 
+	 * Deserialize all PdbInfoDB objects belonging to given clusterId of given
+	 * clusterLevel
 	 * @param clusterId
 	 * @param clusterLevel one of the available levels: 100, 95, 90, 80, 70, 60, 50, 40, 30
 	 * @return
 	 */
 	public List<PdbInfoDB> deserializeSeqCluster(int clusterId, int clusterLevel) {
 		Set<String> pdbCodes = new HashSet<String>();
-		
+
 		EntityManager em = this.getEntityManager();
-		
+
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 
 		CriteriaQuery<SeqClusterDB> cq = cb.createQuery(SeqClusterDB.class);
 		Root<SeqClusterDB> root = cq.from(SeqClusterDB.class);
-		
+
 		SingularAttribute<SeqClusterDB, Integer> attribute = getSeqClusterDBAttribute(clusterLevel);
-		
+
 		cq.where(cb.equal(root.get(attribute), clusterId));
 		cq.select(root);
-		
+
 		List<SeqClusterDB> results = em.createQuery(cq).getResultList();
 		for (SeqClusterDB result:results) {
 			pdbCodes.add(result.getPdbCode());
 		}
-		
+
 		//em.close();
-		
+
 		return deserializePdbList(pdbCodes);
 	}
-	
+
 	/**
 	 * Gets the sequence cluster id for given pdbCode and clusterLevel
 	 * @param pdbCode
@@ -196,7 +198,7 @@ public class DBHandler {
 //		return results.get(0);
 		return 0;
 	}
-	
+
 	/**
 	 * Gets the ChainClusters for all members of a sequence cluster
 	 * @param clusterLevel
@@ -219,10 +221,10 @@ public class DBHandler {
 //		return results;
 		return null;
 	}
-	
+
 	/**
 	 * Get a list of all interfaces which have one partner in a particular cluster.
-	 * 
+	 *
 	 * Each interface is mapped to an integer indicating whether chain1 (1),
 	 * chain 2 (2), or both (3) matches the query cluster.
 	 * @param cluster Query ChainCluster
@@ -294,14 +296,14 @@ public class DBHandler {
 
 		return null;
 	}
-	
+
 	/**
 	 * Gets all sequence cluster ids in the database
 	 * @param clusterLevel
 	 * @return
 	 */
 	public Set<Integer> getAllClusterIds(int clusterLevel) {
-		
+
 //		EntityManager em = this.getEntityManager();
 //
 //		CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -358,7 +360,7 @@ public class DBHandler {
 //		return list;
 		return null;
 	}
-	
+
 	private SingularAttribute<SeqClusterDB, Integer> getSeqClusterDBAttribute(int clusterLevel) {
 //		SingularAttribute<SeqClusterDB, Integer> attribute = null;
 //
@@ -395,7 +397,7 @@ public class DBHandler {
 //		return attribute;
 		return null;
 	}
-	
+
 	/**
 	 * Gets a Map (chainCluster_uids to ChainClusterDB) of all chains in database
 	 * that have non-null pdbCode and hasUniProtRef==true,
@@ -403,7 +405,7 @@ public class DBHandler {
 	 * @return
 	 */
 	public Map<Integer, ChainClusterDB> getAllChainsWithRef() {
-		
+
 //		EntityManager em = this.getEntityManager();
 //
 //		CriteriaBuilder cb = em.getCriteriaBuilder();
@@ -435,7 +437,7 @@ public class DBHandler {
 //		return map;
 		return null;
 	}
-	
+
 	/**
 	 * Returns true if SeqCluster table is empty, false otherwise.
 	 * @return
@@ -465,14 +467,14 @@ public class DBHandler {
 		return false;
 
 	}
-	
+
 	/**
 	 * Persists the given SeqClusterDB
 	 * @param seqCluster
 	 */
 	public void persistSeqCluster(SeqClusterDB seqCluster) {
 		EntityManager em = this.getEntityManager();
-				
+
 		em.getTransaction().begin();
 		em.persist(seqCluster);
 		em.getTransaction().commit();
