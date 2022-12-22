@@ -7,29 +7,6 @@
 
     <display-name>EPPIC REST API</display-name>
 
-    <filter>
-        <filter-name>GzipFilter</filter-name>
-        <!-- The gzip filter for older versions of jetty-->
-        <!-- <filter-class>org.mortbay.servlet.jetty.IncludableGzipFilter</filter-class> -->
-        <!-- <filter-class>org.mortbay.servlet.GzipFilter</filter-class> -->
-
-        <!-- The gzip filter for jetty 8.1 and 9.2 -->
-        <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class>
-
-        <!-- The gzip filter for jetty 9.3 -->
-        <!-- <filter-class>org.eclipse.jetty.server.handler.gzip.GzipHandler</filter-class> -->
-
-        <init-param>
-            <param-name>mimeTypes</param-name>
-            <param-value>text/html,text/plain,text/xml,application/xhtml+xml,text/css,application/javascript,image/svg+xml,chemical/x-cif,application/json,application/xml</param-value>
-        </init-param>
-    </filter>
-
-    <filter-mapping>
-        <filter-name>GzipFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
     <servlet>
         <servlet-name>jersey-rest-service</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
