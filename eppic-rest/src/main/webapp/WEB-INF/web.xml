@@ -19,9 +19,9 @@
     </servlet>
 
     <servlet-mapping>
-        <!-- final path is /eppic-rest/api/* (eppic-rest comes from name of war, I think)-->
+        <!-- This is targeted to our OpenStack tomcat deployment where we by convention deploy as a ROOT app -->
         <servlet-name>jersey-rest-service</servlet-name>
-        <url-pattern>/api/*</url-pattern>
+        <url-pattern>/rest/api/*</url-pattern>
     </servlet-mapping>
 
     <!-- the variable ${project.artifact.selectedVersion.majorVersion} gets expanded by maven at build time
@@ -29,7 +29,7 @@
     <!-- Notice that this path is also set in openapi-config.json -->
     <servlet-mapping>
         <servlet-name>jersey-rest-service</servlet-name>
-        <url-pattern>/api/v${project.artifact.selectedVersion.majorVersion}/*</url-pattern>
+        <url-pattern>/rest/api/v${project.artifact.selectedVersion.majorVersion}/*</url-pattern>
     </servlet-mapping>
 
 </web-app>
