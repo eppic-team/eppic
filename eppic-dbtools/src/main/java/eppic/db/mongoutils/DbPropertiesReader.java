@@ -3,6 +3,7 @@ package eppic.db.mongoutils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class DbPropertiesReader {
@@ -15,6 +16,11 @@ public class DbPropertiesReader {
     public DbPropertiesReader(File configurationFile) throws IOException {
         properties = new Properties();
         properties.load(new FileInputStream(configurationFile));
+    }
+
+    public DbPropertiesReader(InputStream inputStream) throws IOException {
+        properties = new Properties();
+        properties.load(inputStream);
     }
 
     public String getMongoUri() {

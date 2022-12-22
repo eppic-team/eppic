@@ -18,9 +18,9 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Context;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
 
@@ -64,10 +64,22 @@ public class InitJerseyRestApp extends ResourceConfig {
         register(MultiPartFeature.class);
 
         logger.info("Initialising Mongo connections");
-        // TODO consider passing an arbitrary file name (with system prop?)
-        File confFile = DbPropertiesReader.DEFAULT_CONFIG_FILE;
+
+        URL confFile;
         try {
-            MongoDbStore.init(confFile);
+            confFile = DbPropertiesReader.DEFAULT_CONFIG_FILE.toURI().toURL();
+            String fromSysProp = System.getProperty(AppConstants.CONFIG_FILE_URL_SYS_PROPERTY);
+            if (fromSysProp != null && !fromSysProp.equals("")) {
+                confFile = new URL(fromSysProp);
+            } else {
+                logger.info("Using default config file location {}, because no other location was passed with -D{}", confFile, AppConstants.CONFIG_FILE_URL_SYS_PROPERTY);
+            }
+        } catch (MalformedURLException e) {
+            logger.error("Malformed url for config file {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+        try {
+            MongoDbStore.init(confFile.openStream());
         } catch (IOException e) {
             logger.error("Failed to read db properties from config file {}", confFile);
             throw new RuntimeException(e);
@@ -75,7 +87,7 @@ public class InitJerseyRestApp extends ResourceConfig {
 
         Properties props = new Properties();
         try {
-            props.load(new FileInputStream(confFile));
+            props.load(confFile.openStream());
             props.forEach((k, v) -> property((String) k, v));
             // see https://stackoverflow.com/questions/27431979/passing-parameter-to-a-jersey-ressource
 

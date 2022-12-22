@@ -62,6 +62,8 @@ public class AppConstants {
      */
     public static final String KILLED_FILE_NAME 		= "killed";
 
+    public static final String CONFIG_FILE_URL_SYS_PROPERTY = "eppicServerConfFile";
+
 
     public static Properties getBuildProperties() {
         InputStream propstream = Thread.currentThread().getContextClassLoader().getResourceAsStream(ABOUT_PROPERTIES_FILE_NAME);
