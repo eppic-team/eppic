@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import eppic.db.serializers.NanAwareDoubleSerializer;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -35,6 +37,9 @@ public class ConfigurableMapper {
 
         // for text json files to have pretty json printed
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+
+        // custom serializer for doubles so that NaN as written as null
+        mapper.registerModule(new SimpleModule().addSerializer(double.class, new NanAwareDoubleSerializer()));
     }
 
     public static ObjectMapper getMapper() {
