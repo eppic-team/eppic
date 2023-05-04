@@ -39,7 +39,7 @@ public class ConfigurableMapper {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 
         // custom serializer for doubles so that NaN as written as null
-        mapper.registerModule(new SimpleModule().addSerializer(double.class, new NanAwareDoubleSerializer()));
+        mapper.registerModule(new SimpleModule().addSerializer(Double.class, new NanAwareDoubleSerializer()));
     }
 
     public static ObjectMapper getMapper() {
