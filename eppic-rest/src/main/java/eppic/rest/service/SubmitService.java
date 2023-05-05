@@ -102,17 +102,22 @@ public class SubmitService {
         // 3 write to disk so that CLI can read: first check if stream is gzipped or not, then write to disk ungzipped. Also validates the file size
         File outDir = new File(baseOutDir, submissionId);
         if (!outDir.exists()) {
-            boolean created = outDir.mkdirs();
+            boolean created = outDir.mkdir();
             if (!created) {
+                logger.error("Could not create job dir {}", outDir);
                 throw new IOException("Could not create job dir "+outDir);
+            } else {
+                logger.info("Created job dir {}", outDir);
             }
         }
         File file = new File(outDir, fileName);
         File link = new File(outDir, submissionId);
+        logger.info("Writing user's file for job '{}' to file '{}'", submissionId, file);
         writeToFile(handleGzip(inputStream), file);
         String baseNameForOutput = truncateFileName(file.getName());
 
         // A symlink link to the input file that uses the submissionId, needed by file download endpoints (see JobService.getCoordinateFile())
+        logger.info("Creating symlink for job '{}'. From '{}' to '{}'", submissionId, link, file);
         Files.createSymbolicLink(link.toPath(), file.toPath());
 
         // 4 submit CLI job async: at end of job persist to db and send notification email

@@ -75,14 +75,21 @@ public class ShellTask implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
+        logger.info("Running shell task with submissionId {}", submissionId);
+
         notifyByEmailOnSubmit();
 
         ProcessBuilder builder = new ProcessBuilder();
 
         builder.command(cmd);
 
-        builder.redirectOutput(stdOut);
-        builder.redirectError(stdErr);
+        // only write if dir exists, otherwise process fails
+        if (stdOut.getParentFile().exists()) {
+            builder.redirectOutput(stdOut);
+        }
+        if (stdErr.getParentFile().exists()) {
+            builder.redirectError(stdErr);
+        }
 
         try {
             process = builder.start();
