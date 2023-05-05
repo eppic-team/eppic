@@ -62,7 +62,15 @@ public class NativeJobManager implements JobManager
 			probeFile.delete();
 		}
 		if (!success)
-			logger.error("Could not write probe file '{}' to job dir. The JobManager won't be able to write tasks outputs", probeFile);
+			logger.error("Could not write probe file '{}' to job dir '{}'. The JobManager won't be able to write tasks outputs", probeFile, jobsDirectory);
+
+		// can we create a dir?
+		logger.info("Probing if we can create dirs under jobs dir '{}' by writing probe dir '{}'", jobsDirectory, probeFile);
+		success = probeFile.mkdirs();
+		if (!success)
+			logger.error("Could not write probe dir '{}' under job dir '{}'. The JobManager won't be able to write tasks outputs", probeFile, jobsDirectory);
+		else
+			probeFile.delete();
 	}
 
 	@Override
