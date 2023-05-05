@@ -90,6 +90,11 @@ public class NativeJobManager implements JobManager
 			logger.info("About to submit shell task with submissionId '{}', in jobDirectory '{}' and baseNameForOutput '{}' for command: '{}'",
 					submissionId, jobDirectory, baseNameForOutput, command);
 			ShellTask shellTask = new ShellTask(command, jobDirectory, baseNameForOutput, submissionId, mongoDb, emailData);
+			boolean couldCreateJobDir = jobDirectory.mkdir();
+			if (!couldCreateJobDir) {
+				logger.error("Could not create job dir {}", jobDirectory);
+			}
+
 			Future<Integer> future = executor.submit(shellTask);
 
 			shellTask.setOutput(future);

@@ -81,13 +81,6 @@ public class ShellTask implements Callable<Integer> {
 
         builder.command(cmd);
 
-        boolean couldCreateJobDir = jobDirectory.mkdir();
-
-        if (!couldCreateJobDir) {
-            logger.error("Could not create job dir {}", jobDirectory);
-            return CANT_START_PROCESS_ERROR_CODE;
-        }
-
         builder.redirectOutput(stdOut);
         builder.redirectError(stdErr);
 
