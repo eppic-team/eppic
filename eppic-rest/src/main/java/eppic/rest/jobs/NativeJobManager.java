@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +44,24 @@ public class NativeJobManager implements JobManager
 		tasks = new HashMap<>();
 
 		this.jobsDirectory = jobsDirectory;
+
+		checkJobsDirWritable();
+
+	}
+
+	private void checkJobsDirWritable() {
+		File probeFile = new File(jobsDirectory, "eppic_probe_file.dummy");
+		boolean success;
+		try {
+			probeFile.delete();
+			success = probeFile.createNewFile();
+		} catch (IOException e) {
+			success = false;
+		} finally {
+			probeFile.delete();
+		}
+		if (!success)
+			logger.error("Could not write probe file '{}' to job dir. The JobManager won't be able to write tasks outputs", probeFile);
 	}
 
 	@Override
