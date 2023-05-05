@@ -81,13 +81,15 @@ public class ShellTask implements Callable<Integer> {
 
         builder.command(cmd);
 
-        // only write if dir exists, otherwise process fails
-        if (stdOut.getParentFile().exists()) {
-            builder.redirectOutput(stdOut);
+        boolean couldCreateJobDir = jobDirectory.mkdir();
+
+        if (!couldCreateJobDir) {
+            logger.error("Could not create job dir {}", jobDirectory);
+            return CANT_START_PROCESS_ERROR_CODE;
         }
-        if (stdErr.getParentFile().exists()) {
-            builder.redirectError(stdErr);
-        }
+
+        builder.redirectOutput(stdOut);
+        builder.redirectError(stdErr);
 
         try {
             process = builder.start();
