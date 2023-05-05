@@ -50,7 +50,7 @@ public class NativeJobManager implements JobManager
 	}
 
 	private void checkJobsDirWritable() {
-		File probeFile = new File(jobsDirectory, "eppic_probe_file.dummy");
+		File probeFile = new File(jobsDirectory, "051ea675-8cc6-4ad6-be18-6b1ae5753fce");
 		boolean success;
 		try {
 			logger.info("Probing if jobs dir '{}' is writable by writing probe file '{}'", jobsDirectory, probeFile);
