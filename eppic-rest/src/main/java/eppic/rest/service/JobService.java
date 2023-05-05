@@ -1,29 +1,26 @@
 package eppic.rest.service;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
 import eppic.db.adaptors.ViewsAdaptor;
 import eppic.db.dao.mongo.ContactDAOMongo;
 import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
-import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.db.AssemblyDB;
 import eppic.model.db.ChainClusterDB;
 import eppic.model.db.ContactDB;
 import eppic.model.db.GraphEdgeDB;
+import eppic.model.db.HomologDB;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
 import eppic.model.db.ResidueBurialDB;
 import eppic.model.db.ResidueInfoDB;
-import eppic.model.dto.InputWithType;
 import eppic.model.dto.views.*;
 import eppic.rest.commons.CoordFilesAdaptor;
 import org.slf4j.Logger;
@@ -139,6 +136,49 @@ public class JobService {
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
 
         return pdbInfo.getChainClusters();
+    }
+
+    public Map<String, String> getAlignment(String entryId, String repChainId) throws DaoException {
+        List<ChainClusterDB> chainClusterDBS = getSequenceData(entryId);
+        ChainClusterDB chainClusterDB = null;
+        for (ChainClusterDB ccDb : chainClusterDBS) {
+            if (ccDb.getRepChain().equals(repChainId)) {
+                chainClusterDB = ccDb;
+                break;
+            }
+        }
+        if (chainClusterDB == null) {
+            logger.warn("No ChainClusterDB object found for entry {} and repChain {}", entryId, repChainId);
+            return null;
+        }
+        Map<String, String> seqs = new LinkedHashMap<>();
+        String queryId = constructSeqId(chainClusterDB.getRefUniProtId(), chainClusterDB.getRefUniProtStart(), chainClusterDB.getRefUniProtEnd());
+        seqs.put(queryId, chainClusterDB.getMsaAlignedSeq());
+        for (HomologDB hom : chainClusterDB.getHomologs()) {
+            String upId = hom.getUniProtId();
+            String seq = hom.getAlignedSeq();
+            String id = constructSeqId(upId, hom.getSubjectStart(), hom.getSubjectEnd());
+            seqs.put(id, seq);
+        }
+        return seqs;
+    }
+
+    private String constructSeqId(String uniprotId, int start, int end) {
+        return uniprotId + "_" + start + "-" + end;
+    }
+
+    public String serializeToFasta(Map<String, String> sequences) {
+        StringBuilder sb = new StringBuilder();
+
+        int len = 80;
+        for (Map.Entry<String, String> entry : sequences.entrySet()) {
+            sb.append("> ").append(entry.getKey()).append("\n");
+            String seq = entry.getValue();
+            for (int i = 0; i < seq.length(); i += len) {
+                sb.append(seq, i, Math.min(i + len, seq.length())).append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     /**

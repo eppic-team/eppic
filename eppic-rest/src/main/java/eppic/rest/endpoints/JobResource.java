@@ -27,6 +27,7 @@ import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 
 @Path("/job")
@@ -420,5 +421,19 @@ public class JobResource {
         return Response.ok(os).header("Content-Disposition", contentDisposition).build();
     }
 
-    // TODO endpoint to get alignment file
+    @GET
+    @Path("/msaFastaFile/{jobId}/{repChainId}")
+    @Produces({"text/plain"})
+    @Tag(name = "Alignment file service",
+            description = "returns the Multiple Sequence Alignment used to find evolutionary scores in FASTA format.")
+    public Response getAlignmentFastaFile(
+            @PathParam("jobId") String jobId,
+            @PathParam("repChainId") String repChainId) throws DaoException, IOException {
+        Map<String, String> sequences = jobService.getAlignment(jobId, repChainId);
+        Response.ResponseBuilder responseBuilder =  Response
+                .status(Response.Status.OK)
+                .type(MediaType.TEXT_PLAIN)
+                .entity(jobService.serializeToFasta(sequences));
+        return responseBuilder.build();
+    }
 }
