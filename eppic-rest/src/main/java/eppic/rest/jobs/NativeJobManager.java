@@ -53,6 +53,7 @@ public class NativeJobManager implements JobManager
 		File probeFile = new File(jobsDirectory, "eppic_probe_file.dummy");
 		boolean success;
 		try {
+			logger.info("Probing if jobs dir '{}' is writable by writing probe file '{}'", jobsDirectory, probeFile);
 			probeFile.delete();
 			success = probeFile.createNewFile();
 		} catch (IOException e) {
