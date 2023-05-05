@@ -59,6 +59,8 @@ public class NativeJobManager implements JobManager
 				throw new JobHandlerException("Submission id " +submissionId+ " has been already used in NativeJobManager");
 			}
 
+			logger.info("About to submit shell task with submissionId '{}', in jobDirectory '{}' and baseNameForOutput '{}' for command: '{}'",
+					submissionId, jobDirectory, baseNameForOutput, command);
 			ShellTask shellTask = new ShellTask(command, jobDirectory, baseNameForOutput, submissionId, mongoDb, emailData);
 			Future<Integer> future = executor.submit(shellTask);
 

@@ -92,6 +92,7 @@ public class ShellTask implements Callable<Integer> {
         try {
             process = builder.start();
         } catch (IOException e) {
+            logger.error("Could not start shell command. Error: {}", e.getMessage());
             // if file not found or can't be executed
             return CANT_START_PROCESS_ERROR_CODE;
         }
