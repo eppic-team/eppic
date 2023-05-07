@@ -26,7 +26,8 @@ public class EppicCliGenerator {
 											   String baseNameForOutput,
 											   String destinationDirectoryName,
 											   int nrOfThreadsForSubmission,
-											   int assignedMemory) {
+											   int assignedMemory,
+											   File cliConfigFile) {
 
 		return Arrays.asList(
 				javaVMExec,
@@ -40,7 +41,8 @@ public class EppicCliGenerator {
 				"-L", destinationDirectoryName + File.separator + AppConstants.PROGRESS_LOG_FILE_NAME,
 				"-l", // for thumbnails and mmcif files
 				"-P", // for json files, assembly diagram thumbnails (requires dot)
-				"-w"  // for serialized output files
+				"-w", // for serialized output files
+				"-g", cliConfigFile.getAbsolutePath()
 		);
 	}
 }

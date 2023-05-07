@@ -47,6 +47,7 @@ public class SubmitService {
     private int memForEppicProcess;
     private int numThreadsEppicProcess;
     private String eppicJarPath;
+    private File cliConfigFile;
 
     private EmailData emailData;
 
@@ -61,6 +62,7 @@ public class SubmitService {
         numThreadsEppicProcess = Integer.parseInt((String)props.get("num.threads.eppic.process"));
         memForEppicProcess = Integer.parseInt((String)props.get("mem.eppic.process"));
         eppicJarPath = (String) props.get("eppic.jar.path");
+        cliConfigFile = new File((String) props.get("cli.config.file"));
         if (jobManager == null) {
             // init only first time, it is a singleton
             jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
@@ -121,7 +123,7 @@ public class SubmitService {
         Files.createSymbolicLink(link.toPath(), file.toPath());
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
-        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, baseNameForOutput, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess);
+        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, baseNameForOutput, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile);
         jobManager.startJob(submissionId, cmd, outDir, baseNameForOutput, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), emailData);
 
         // 5 return generated id
