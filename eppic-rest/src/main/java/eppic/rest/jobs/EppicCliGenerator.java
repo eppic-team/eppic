@@ -42,7 +42,11 @@ public class EppicCliGenerator {
 				"-l", // for thumbnails and mmcif files
 				"-P", // for json files, assembly diagram thumbnails (requires dot)
 				"-w", // for serialized output files
-				"-g", cliConfigFile.getAbsolutePath()
+				"-g", cliConfigFile.getAbsolutePath(),
+				// TODO temporary solution for easier frontend testing: REMOVE WHEN DONE TESTING
+				"-G", "/opt/eppic/configs/eppic-db.properties",
+				"-U",
+				"-B"
 		);
 	}
 }
