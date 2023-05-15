@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import eppic.db.dao.*;
 
+import javax.persistence.NoResultException;
+
 /**
  * The service implementation to retrieve data as needed by the REST endpoints.
  * @author Nikhil Biyani
@@ -70,6 +72,10 @@ public class JobService {
     {
 
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+
+        if (pdbInfo == null) {
+            throw new NoResultException("Could not find id '" + entryId + "' in database");
+        }
 
         if (!getInterfaceInfo) {
             pdbInfo.setInterfaceClusters(null);
@@ -192,6 +198,11 @@ public class JobService {
 
         // 1st get burial info
         InterfaceResidueFeaturesDB features = getInterfaceFeaturesDAO(entryId).getInterfResFeatures(entryId, interfId);
+
+        if (features == null) {
+            throw new NoResultException("Could not find id '" + entryId + "' in database");
+        }
+
         List<ResidueBurialDB> burials1 = features.getResBurials1();
         List<ResidueBurialDB> burials2 = features.getResBurials2();
 
@@ -410,7 +421,7 @@ public class JobService {
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
 
-        if (assembly==null) {
+        if (assembly == null) {
             throw new DaoException("Could not find assembly data for entry "+entryId+" and PDB assembly id "+assemblyId);
         }
 
