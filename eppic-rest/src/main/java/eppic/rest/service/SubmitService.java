@@ -123,7 +123,7 @@ public class SubmitService {
         Files.createSymbolicLink(link.toPath(), file.toPath());
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
-        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, baseNameForOutput, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile);
+        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, baseNameForOutput, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile);
         jobManager.startJob(submissionId, cmd, outDir, baseNameForOutput, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), emailData);
 
         // 5 return generated id

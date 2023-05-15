@@ -251,6 +251,8 @@ public class EppicParams {
 	// the parameters
 	private String inputStr;
 	private String pdbCode;
+	// an entry Id to use for output json serialized file (and thus for db) when using CLI from web server (to pass the "secret" user job id)
+	private String entryId;
 	private boolean doEvolScoring;
 	private double homSoftIdCutoff;
 	private double homHardIdCutoff;
@@ -364,6 +366,7 @@ public class EppicParams {
 		
 		this.inputStr = null;
 		this.pdbCode = null;
+		this.entryId = null;
 		this.doEvolScoring = false;
 		this.homSoftIdCutoff = DEF_HOM_SOFT_ID_CUTOFF;
 		this.homHardIdCutoff = DEF_HOM_HARD_ID_CUTOFF;
@@ -397,7 +400,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:G:Uuh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:G:UI:uh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -484,6 +487,9 @@ public class EppicParams {
 			case 'U':
 				useLocalUniProtInfo = true;
 				break;
+			case 'I':
+				entryId = g.getOptarg();
+				break;
 			case 'u':
 				debug = true;
 				break;
@@ -568,6 +574,8 @@ public class EppicParams {
 		"                  log written to std output\n" +
 		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +
 		"                  config file in the user's home directory\n" +
+		"  [-I <string>]:  an identifier of the input, this will be the PdbInfo.entryId written out\n" +
+		"                  Useful for web server to override entryId from user id\n" +
 		"  [-u]         :  debug, if specified debug output will be also shown on standard\n" +
 		"                  output\n\n";
 		
@@ -738,6 +746,10 @@ public class EppicParams {
 	
 	public String getPdbCode() {
 		return pdbCode;
+	}
+
+	public String getEntryId() {
+		return entryId;
 	}
 	
 	/**

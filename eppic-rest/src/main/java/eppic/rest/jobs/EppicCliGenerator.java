@@ -16,6 +16,7 @@ public class EppicCliGenerator {
 	 * Creates EPPIC command to execute.
 	 * @param eppicJarPath location of EPPIC executable jar
 	 * @param inputFile input
+	 * @param entryId an identifier to write out to json serialized file and db as the entryId
 	 * @param destinationDirectoryName directory where results of the job are to be stored
 	 * @param nrOfThreadsForSubmission nr of threads used to run command
 	 * @param assignedMemory memory to be assigned to JVM for execution of the command (in Megabytes)
@@ -23,6 +24,7 @@ public class EppicCliGenerator {
 	 */
 	public static List<String> generateCommand(String javaVMExec, String eppicJarPath,
 											   File inputFile,
+											   String entryId,
 											   String baseNameForOutput,
 											   String destinationDirectoryName,
 											   int nrOfThreadsForSubmission,
@@ -34,6 +36,7 @@ public class EppicCliGenerator {
 				"-Xmx" + assignedMemory + "m",
 				"-jar", eppicJarPath,
 				"-i", inputFile.getAbsolutePath(),
+				"-I", entryId,
 				"-o", destinationDirectoryName,
 				"-b", baseNameForOutput,
 				"-a", String.valueOf(nrOfThreadsForSubmission),
