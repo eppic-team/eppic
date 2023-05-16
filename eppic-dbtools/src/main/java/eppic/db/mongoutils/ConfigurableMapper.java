@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import eppic.db.serializers.NanAwareDoubleSerializer;
 
 import java.text.DateFormat;
@@ -40,6 +41,11 @@ public class ConfigurableMapper {
 
         // custom serializer for doubles so that NaN as written as null
         mapper.registerModule(new SimpleModule().addSerializer(Double.class, new NanAwareDoubleSerializer()));
+
+        // without this, serialization into json to write out to MongoDB fails with :
+        // java.lang.IllegalArgumentException: Cannot resolve PropertyFilter with id 'eppic.model.db.PdbInfoDB'; no FilterProvider configured
+        // see https://stackoverflow.com/questions/9382094/jsonfilter-throws-jsonmappingexception-can-not-resolve-beanpropertyfilter
+        mapper.setFilterProvider(new SimpleFilterProvider().setFailOnUnknownId(false));
     }
 
     public static ObjectMapper getMapper() {
