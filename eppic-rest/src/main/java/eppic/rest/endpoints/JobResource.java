@@ -18,13 +18,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.*;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +37,8 @@ import java.util.SortedSet;
 
 @Path("/job")
 public class JobResource {
+
+    private static final Logger logger = LoggerFactory.getLogger(JobResource.class);
 
     @Context
     private Configuration config;
@@ -435,5 +442,19 @@ public class JobResource {
                 .type(MediaType.TEXT_PLAIN)
                 .entity(jobService.serializeToFasta(sequences));
         return responseBuilder.build();
+    }
+
+    @Path("/image/{jobId}/{type}/{id}")
+    @Produces("image/png")
+    public Response getFullImage(
+            @PathParam("jobId") String jobId,
+            @PathParam("type") String type,
+            @PathParam("id") String id) throws IOException {
+
+        File f = new File("/opt/eppic/jobs/" + jobId + "/1smt." + type + "." + id + ".75x75.png");
+        logger.info("Serving image file {}", f);
+        InputStream is = new FileInputStream(f);
+
+        return Response.ok(is).build();
     }
 }
