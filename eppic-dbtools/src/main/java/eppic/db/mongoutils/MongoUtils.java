@@ -153,4 +153,9 @@ public class MongoUtils {
         return new Document("$and", list);
     }
 
+    public static boolean isCollectionEmpty(MongoDatabase mongoDb, Class<?> modelClass) {
+        long count = mongoDb.getCollection(getTableMetadataFromJpa(modelClass).name()).countDocuments();
+        return count == 0;
+    }
+
 }
