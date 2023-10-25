@@ -524,20 +524,19 @@ public class Main {
 	public long doWriteTextOutputFiles() throws EppicException {
 
 		long start = System.currentTimeMillis();
-		
+
+		// we don't write text files if in -w
+		if (params.isGenerateModelSerializedFile()) return System.currentTimeMillis() - start;
+
 		TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), modelAdaptor.getInterfFeatures(), params);
-		
-		// 0 write .A.aln file : always write it, with our without -w 
+
+		// 0 write .A.aln file
 		try {
 			toW.writeAlnFiles();
 		} catch (IOException e) {
 			throw new EppicException(e, "Could not write the homologs alignment files: "+e.getMessage(), true);
 		}
 
-		// we don't write text files if in -w
-		if (params.isGenerateModelSerializedFile()) return System.currentTimeMillis() - start;
-
-		
 		// 1 interfaces info file and contacts info file
 		try {
 			// if no interfaces found (e.g. NMR) we don't want to write the file
