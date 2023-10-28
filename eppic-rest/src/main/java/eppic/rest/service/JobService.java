@@ -463,17 +463,21 @@ public class JobService {
     }
 
     private PDBInfoDAO getPdbInfoDAO(String entryId) {
-        if (PDBID_REGEX.matcher(entryId).matches()) {
+        if (!isUserJob(entryId)) {
             return pdbInfoDAO;
         }
         return pdbInfoDAOUserJobs;
     }
 
     private InterfaceResidueFeaturesDAO getInterfaceFeaturesDAO(String entryId) {
-        if (PDBID_REGEX.matcher(entryId).matches()) {
+        if (!isUserJob(entryId)) {
             return featuresDAO;
         }
         return featuresDAOUserJobs;
+    }
+
+    private boolean isUserJob(String entryId) {
+        return !PDBID_REGEX.matcher(entryId).matches();
     }
 
     /**
@@ -484,14 +488,13 @@ public class JobService {
      */
     private File getJobDir(String entryId, Map<String, Object> props) {
         File baseOutDir;
-        if (PDBID_REGEX.matcher(entryId).matches()) {
+        if (isUserJob(entryId)) {
+            baseOutDir = new File((String) props.get("base.userjobs.dir"));
+        } else {
             baseOutDir = new File((String) props.get("base.precomp.dir"));
             baseOutDir = new File(baseOutDir, entryId.substring(1,3));
-            baseOutDir = new File(baseOutDir, entryId);
-        } else {
-            baseOutDir = new File((String) props.get("base.userjobs.dir"));
-            baseOutDir = new File(baseOutDir, entryId);
         }
+        baseOutDir = new File(baseOutDir, entryId);
         return baseOutDir;
     }
 
