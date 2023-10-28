@@ -439,14 +439,14 @@ public class JobService {
         // get data and produce file
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
 
-        File baseOutDir = new File((String)props.get("base.out.dir"));
+        File baseOutDir = getJobDir(entryId, props);
         // for user jobs (this works because we create a symlink, see SubmitService)
         File auFile = new File(baseOutDir, entryId);
         if (!auFile.exists()) {
             // for precomputed jobs
             auFile = new File(baseOutDir, entryId + ".cif.gz");
         }
-
+        logger.info("Will read AU coordinates from file {}", auFile);
         CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
 
         byte[] data;
@@ -475,8 +475,30 @@ public class JobService {
         return featuresDAOUserJobs;
     }
 
+    /**
+     * Get the directory where all files from job are stored in the web server.
+     * @param entryId the job identifier
+     * @param props the config properties
+     * @return the base directory
+     */
+    private File getJobDir(String entryId, Map<String, Object> props) {
+        File baseOutDir;
+        if (PDBID_REGEX.matcher(entryId).matches()) {
+            baseOutDir = new File((String) props.get("base.precomp.dir"));
+            baseOutDir = new File(baseOutDir, entryId.substring(1,3));
+            baseOutDir = new File(baseOutDir, entryId);
+        } else {
+            baseOutDir = new File((String) props.get("base.userjobs.dir"));
+            baseOutDir = new File(baseOutDir, entryId);
+        }
+        return baseOutDir;
+    }
+
     public byte[] getImageFile(String entryId, String type, String id,Map<String, Object> props) throws IOException {
-        File baseOutDir = new File((String)props.get("base.out.dir"));
+        if (!type.equals("interface") && !type.equals("assembly") && !type.equals("diagram")) {
+            throw new IllegalArgumentException("The type parameter must be 'interface', 'diagram' or 'assembly'");
+        }
+        File baseOutDir = getJobDir(entryId, props);
         File f = new File(baseOutDir, entryId + "." + type + "." + id + ".75x75.png");
         logger.info("Serving image file {}", f);
         byte[] data;

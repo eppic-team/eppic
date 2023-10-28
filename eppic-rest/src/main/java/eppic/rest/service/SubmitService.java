@@ -56,7 +56,7 @@ public class SubmitService {
     }
 
     private void setConfigs(Map<String, Object> props) {
-        baseOutDir = new File((String)props.get("base.out.dir"));
+        baseOutDir = new File((String)props.get("base.userjobs.dir"));
         int numThreadsJobManager = Integer.parseInt((String)props.get("num.threads.job.manager"));
         javaVMExec = (String) props.get("java.jre.exec");
         numThreadsEppicProcess = Integer.parseInt((String)props.get("num.threads.eppic.process"));
