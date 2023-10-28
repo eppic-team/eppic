@@ -444,6 +444,7 @@ public class JobResource {
         return responseBuilder.build();
     }
 
+    @GET
     @Path("/image/{jobId}/{type}/{id}")
     @Produces("image/png")
     public Response getFullImage(
@@ -451,10 +452,7 @@ public class JobResource {
             @PathParam("type") String type,
             @PathParam("id") String id) throws IOException {
 
-        File f = new File("/opt/eppic/jobs/" + jobId + "/1smt." + type + "." + id + ".75x75.png");
-        logger.info("Serving image file {}", f);
-        InputStream is = new FileInputStream(f);
-
-        return Response.ok(is).build();
+        byte[] os = jobService.getImageFile(jobId, type, id, config.getProperties());
+        return Response.ok(os).build();
     }
 }

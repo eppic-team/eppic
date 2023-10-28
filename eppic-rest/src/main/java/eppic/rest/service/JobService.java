@@ -1,7 +1,9 @@
 package eppic.rest.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -471,5 +473,16 @@ public class JobService {
             return featuresDAO;
         }
         return featuresDAOUserJobs;
+    }
+
+    public byte[] getImageFile(String entryId, String type, String id,Map<String, Object> props) throws IOException {
+        File baseOutDir = new File((String)props.get("base.out.dir"));
+        File f = new File(baseOutDir, entryId + "." + type + "." + id + ".75x75.png");
+        logger.info("Serving image file {}", f);
+        byte[] data;
+        try (InputStream is = new FileInputStream(f)) {
+            data = is.readAllBytes();
+        }
+        return data;
     }
 }
