@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import eppic.db.dao.*;
 
 import javax.persistence.NoResultException;
-import javax.ws.rs.BadRequestException;
 
 /**
  * The service implementation to retrieve data as needed by the REST endpoints.
@@ -462,6 +461,23 @@ public class JobService {
         return data;
     }
 
+    public byte[] getImageFile(String entryId, String type, String id,Map<String, Object> props) throws IOException {
+        if (!type.equals("interface") && !type.equals("assembly") && !type.equals("diagram")) {
+            throw new IllegalArgumentException("The type parameter must be 'interface', 'diagram' or 'assembly'");
+        }
+        File baseOutDir = getJobDir(entryId, props);
+        File f = new File(baseOutDir, entryId + "." + type + "." + id + ".75x75.png");
+        if (!f.exists()) {
+            throw new NoResultException("Could not find image for job id " + entryId + ", type '" + type + "', id '" + id + "'");
+        }
+        logger.info("Serving image file {}", f);
+        byte[] data;
+        try (InputStream is = new FileInputStream(f)) {
+            data = is.readAllBytes();
+        }
+        return data;
+    }
+
     private PDBInfoDAO getPdbInfoDAO(String entryId) {
         if (!isUserJob(entryId)) {
             return pdbInfoDAO;
@@ -496,22 +512,5 @@ public class JobService {
         }
         baseOutDir = new File(baseOutDir, entryId);
         return baseOutDir;
-    }
-
-    public byte[] getImageFile(String entryId, String type, String id,Map<String, Object> props) throws IOException {
-        if (!type.equals("interface") && !type.equals("assembly") && !type.equals("diagram")) {
-            throw new BadRequestException("The type parameter must be 'interface', 'diagram' or 'assembly'");
-        }
-        File baseOutDir = getJobDir(entryId, props);
-        File f = new File(baseOutDir, entryId + "." + type + "." + id + ".75x75.png");
-        if (!f.exists()) {
-            throw new NoResultException("Could not find image for job id " + entryId + ", type '" + type + "', id '" + id + "'");
-        }
-        logger.info("Serving image file {}", f);
-        byte[] data;
-        try (InputStream is = new FileInputStream(f)) {
-            data = is.readAllBytes();
-        }
-        return data;
     }
 }

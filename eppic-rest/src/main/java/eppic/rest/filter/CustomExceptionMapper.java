@@ -47,7 +47,7 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
             msg = "No results found";
             logger.info("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
 
-        } else if(ex instanceof WebApplicationException) {
+        } else if (ex instanceof WebApplicationException) {
 
             // jersey exceptions
             // note that BadRequestException is a subexception of WebApplicationException, so this covers it
@@ -55,10 +55,14 @@ public class CustomExceptionMapper<K> implements ExceptionMapper<Throwable> {
             msg = ex.getMessage();
             logger.info("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
 
-        } else if(ex instanceof JobHandlerException){
+        } else if (ex instanceof JobHandlerException){
             response = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
             msg = ex.getMessage();
             logger.warn("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
+        } else if (ex instanceof IllegalArgumentException) {
+            response = Response.Status.BAD_REQUEST.getStatusCode();
+            msg = ex.getMessage();
+            logger.info("{}. Exception: {}. Error: {}", msg, ex.getClass().getName(), ex.getMessage());
         } else {
             response = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
             msg = "Internal server error. If the problem persists, please report it to " + "info@rcsb.org";
