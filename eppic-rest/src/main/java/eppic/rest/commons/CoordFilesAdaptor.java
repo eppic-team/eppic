@@ -31,10 +31,12 @@ import org.slf4j.LoggerFactory;
 import javax.vecmath.Matrix4d;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Adaptor of db data models to produce coordinate mmcif files for
@@ -64,7 +66,7 @@ public class CoordFilesAdaptor {
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public byte[] getAssemblyCoordsMmcif(String jobId, File auFile, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
+    public byte[] getAssemblyCoordsMmcif(String jobId, URL auFile, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
         return getAssemblyCoordsMmcif(jobId, s, pdbInfoDB, assemblyId, withEvolScores);
     }
@@ -155,7 +157,7 @@ public class CoordFilesAdaptor {
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public byte[] getInterfaceCoordsMmcif(String jobId, File auFile, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
+    public byte[] getInterfaceCoordsMmcif(String jobId, URL auFile, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
         return getInterfaceCoordsMmcif(jobId, s, pdbInfoDB, interfaceId, withEvolScores);
     }
@@ -251,36 +253,43 @@ public class CoordFilesAdaptor {
         return CifIO.writeText(mmCifBlockBuilder.leaveBlock().leaveFile());
     }
 
-    private Structure readCoords(File auFile) throws IOException {
+    private Structure readCoords(URL auCoordsFileUrl) throws IOException {
 
         long start = System.currentTimeMillis();
 
         Structure structure;
-
-        int fileType = FileTypeGuesser.guessFileType(auFile);
-
         FileParsingParameters fileParsingParams = new FileParsingParameters();
         fileParsingParams.setAlignSeqRes(true);
 
-        if (fileType==FileTypeGuesser.CIF_FILE) {
+        if (auCoordsFileUrl.getProtocol().startsWith("http")) {
+            if (!auCoordsFileUrl.toString().endsWith(".cif.gz")) {
+                throw new IOException("Expected a URL ending with .cif.gz for PDB archive url " + auCoordsFileUrl);
+            }
+            structure = CifStructureConverter.fromInputStream(new GZIPInputStream(auCoordsFileUrl.openStream()), fileParsingParams);
+        } else if (auCoordsFileUrl.getProtocol().equals("file")) {
+            File auFile = new File(auCoordsFileUrl.getFile());
+            int fileType = FileTypeGuesser.guessFileType(auFile);
 
-            structure = CifStructureConverter.fromInputStream(IOUtils.openFile(auFile), fileParsingParams);
+            if (fileType==FileTypeGuesser.CIF_FILE) {
+                structure = CifStructureConverter.fromInputStream(IOUtils.openFile(auFile), fileParsingParams);
+            } else if (fileType == FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
+                PDBFileParser parser = new PDBFileParser();
 
-        } else if (fileType == FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
-            PDBFileParser parser = new PDBFileParser();
+                parser.setFileParsingParameters(fileParsingParams);
 
-            parser.setFileParsingParameters(fileParsingParams);
-
-            structure = parser.parsePDBFile(IOUtils.openFile(auFile));
+                structure = parser.parsePDBFile(IOUtils.openFile(auFile));
+            } else {
+                // TODO support mmtf, add it to file type guesser
+                throw new IOException("AU coordinate file "+auCoordsFileUrl.toString()+" does not seem to be in one of the supported formats");
+            }
 
         } else {
-            // TODO support mmtf, add it to file type guesser
-            throw new IOException("AU coordinate file "+auFile.toString()+" does not seem to be in one of the supported formats");
+            throw new IOException("Unsupported protocol for file url " + auCoordsFileUrl);
         }
 
         long end = System.currentTimeMillis();
 
-        logger.info("Time needed to parse file {}: {} ms", auFile.toString(), end-start);
+        logger.info("Time needed to parse file {}: {} ms", auCoordsFileUrl.toString(), end-start);
 
         return structure;
     }

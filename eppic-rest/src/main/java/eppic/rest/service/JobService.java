@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -42,6 +43,8 @@ public class JobService {
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
 
     private static final Pattern PDBID_REGEX = Pattern.compile("^\\d\\w\\w\\w$");
+
+    private static final String CIFGZ_BASE_URL = "https://files.rcsb.org/download/";
 
     private final PDBInfoDAO pdbInfoDAO;
     private final PDBInfoDAO pdbInfoDAOUserJobs;
@@ -439,21 +442,24 @@ public class JobService {
         // get data and produce file
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
 
+        URL fileUrl;
         File baseOutDir = getJobDir(entryId, props);
         // for user jobs (this works because we create a symlink, see SubmitService)
         File auFile = new File(baseOutDir, entryId);
         if (!auFile.exists()) {
             // for precomputed jobs
-            auFile = new File(baseOutDir, entryId + ".cif.gz");
+            fileUrl = new URL(CIFGZ_BASE_URL + entryId.toUpperCase() + "cif.gz");
+        } else {
+            fileUrl = auFile.toURI().toURL();
         }
         logger.info("Will read AU coordinates from file {}", auFile);
         CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
 
         byte[] data;
         if (assemblyId!=null) {
-            data = adaptor.getAssemblyCoordsMmcif(entryId, auFile, pdbInfo, Integer.parseInt(assemblyId), true);
+            data = adaptor.getAssemblyCoordsMmcif(entryId, fileUrl, pdbInfo, Integer.parseInt(assemblyId), true);
         } else if (interfId!=null) {
-            data = adaptor.getInterfaceCoordsMmcif(entryId, auFile, pdbInfo, Integer.parseInt(interfId), true);
+            data = adaptor.getInterfaceCoordsMmcif(entryId, fileUrl, pdbInfo, Integer.parseInt(interfId), true);
         } else {
             // should not happen, the validation took care of this
             throw new RuntimeException("Unsupported file type ");
