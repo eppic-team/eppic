@@ -10,10 +10,6 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -30,7 +26,6 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
-import org.biojava.nbio.structure.io.CifFileReader;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.chem.ChemCompGroupFactory;
 import org.biojava.nbio.structure.chem.DownloadChemCompProvider;
@@ -255,15 +250,6 @@ public class Main {
 			URL cifGzUrl = new URL(url);
 			pdb = CifStructureConverter.fromInputStream(new GZIPInputStream(cifGzUrl.openStream()), fileParsingParams);
 
-			// now we get the file and copy it to the output dir if in -w mode
-			if (params.isGenerateModelSerializedFile()) {
-				cifGzUrl = new URL(url);
-				ReadableByteChannel readableByteChannel = Channels.newChannel(cifGzUrl.openStream());
-				FileOutputStream fileOutputStream = new FileOutputStream(params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION));
-				fileOutputStream.getChannel()
-						.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-			}
-
 		} else {
 
 			// 2. Use standard PDB http repository as available via BioJava
@@ -290,14 +276,6 @@ public class Main {
 
 			pdb = StructureIO.getStructure(params.getPdbCode());
 
-			// now we get the file and copy it to the output dir if in -w mode
-			if (params.isGenerateModelSerializedFile()) {
-				CifFileReader reader = new CifFileReader(cache.getPath());
-				reader.setFetchBehavior(cache.getFetchBehavior());
-				reader.setObsoleteBehavior(cache.getObsoleteBehavior());
-				File file = reader.getLocalFile(params.getPdbCode());
-				Files.copy(file.toPath(), params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION).toPath(), StandardCopyOption.REPLACE_EXISTING);
-			}
 		}
 
 		return pdb;
