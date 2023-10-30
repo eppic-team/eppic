@@ -401,6 +401,7 @@ public class JobResource {
     @GET
     @Path("/interfaceCifFile/{jobId}/{interfId}")
     @Produces({"chemical/x-cif"})
+    @Tag(name = "Interface coordinate file service", description = "Returns the CIF format coordinates of the interface")
     public Response getInterfaceCoordinateFile(
             @PathParam("jobId") String jobId,
             @PathParam("interfId") String interfId) throws DaoException, IOException {
@@ -416,6 +417,7 @@ public class JobResource {
     @GET
     @Path("/assemblyCifFile/{jobId}/{assemblyId}")
     @Produces({"chemical/x-cif"})
+    @Tag(name = "Assembly coordinate file service", description = "Returns the CIF format coordinates of the assembly")
     public Response getAssemblyCoordinateFile(
             @PathParam("jobId") String jobId,
             @PathParam("assemblyId") String assemblyId) throws DaoException, IOException {
