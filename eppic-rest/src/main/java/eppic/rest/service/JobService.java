@@ -452,7 +452,7 @@ public class JobService {
         } else {
             fileUrl = auFile.toURI().toURL();
         }
-        logger.info("Will read AU coordinates from file {}", auFile);
+        logger.info("Will read AU coordinates from file {}", fileUrl);
         CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
 
         byte[] data;

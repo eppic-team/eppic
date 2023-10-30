@@ -60,7 +60,7 @@ public class CoordFilesAdaptor {
      * with b-factors set to the evolutionary scores from the db model objects.
      *
      * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
-     * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
+     * @param auFile the URL of input file with a PDB structure (AU) in mmCIF/PDB format
      * @param pdbInfoDB the pdb data with chain clusters
      * @param assemblyId the eppic assembly id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
@@ -151,7 +151,7 @@ public class CoordFilesAdaptor {
     /**
      *
      * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
-     * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
+     * @param auFile the URL of input file with a PDB structure (AU) in mmCIF/PDB format
      * @param pdbInfoDB the pdb data with chain clusters
      * @param interfaceId the interface id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
