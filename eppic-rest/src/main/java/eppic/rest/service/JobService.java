@@ -448,7 +448,7 @@ public class JobService {
         File auFile = new File(baseOutDir, entryId);
         if (!auFile.exists()) {
             // for precomputed jobs
-            fileUrl = new URL(CIFGZ_BASE_URL + entryId.toUpperCase() + "cif.gz");
+            fileUrl = new URL(CIFGZ_BASE_URL + entryId.toUpperCase() + ".cif.gz");
         } else {
             fileUrl = auFile.toURI().toURL();
         }
