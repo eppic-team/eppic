@@ -20,7 +20,7 @@ public class EppicCliGenerator {
 	 * @param destinationDirectoryName directory where results of the job are to be stored
 	 * @param nrOfThreadsForSubmission nr of threads used to run command
 	 * @param assignedMemory memory to be assigned to JVM for execution of the command (in Megabytes)
-	 * @return crk command
+	 * @return the eppic CLI command
 	 */
 	public static List<String> generateCommand(String javaVMExec, String eppicJarPath,
 											   File inputFile,

@@ -476,7 +476,7 @@ public class JobService {
         if (!f.exists()) {
             throw new NoResultException("Could not find image for job id " + entryId + ", type '" + type + "', id '" + id + "'");
         }
-        logger.info("Serving image file {}", f);
+        logger.debug("Serving image file {}", f);
         byte[] data;
         try (InputStream is = new FileInputStream(f)) {
             data = is.readAllBytes();
