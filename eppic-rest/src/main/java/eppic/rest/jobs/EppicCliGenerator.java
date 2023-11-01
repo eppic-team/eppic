@@ -36,7 +36,7 @@ public class EppicCliGenerator {
 				"-Xmx" + assignedMemory + "m",
 				"-jar", eppicJarPath,
 				"-i", inputFile.getAbsolutePath(),
-				"-I", entryId,
+				"-b", entryId,
 				"-o", destinationDirectoryName,
 				"-b", baseNameForOutput,
 				"-a", String.valueOf(nrOfThreadsForSubmission),

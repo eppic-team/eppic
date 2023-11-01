@@ -128,11 +128,9 @@ public class DataModelAdaptor {
 		pdbInfo.setPdbCode(params.getPdbCode());
 		if (params.getPdbCode() != null) {
 			pdbInfo.setEntryId(params.getPdbCode());
-		} else if (params.getEntryId() != null) {
-			// this is useful for REST service to pass the "secret" user id
-			pdbInfo.setEntryId(params.getEntryId());
 		} else {
 			// else (file input from actual CLI) take it from base name (which is taken from filename, see logic of basename)
+			// this is useful for REST service to pass the "secret" user id
 			pdbInfo.setEntryId(params.getBaseName());
 		}
 		runParameters = new RunParametersDB();
