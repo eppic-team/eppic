@@ -1,6 +1,5 @@
 package eppic.rest.endpoints;
 
-import eppic.rest.commons.FileFormat;
 import eppic.rest.jobs.JobHandlerException;
 import eppic.rest.service.SubmitService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,13 +50,12 @@ public class SubmitResource {
                     @ApiResponse(responseCode = "404",
                             description = "Not Found")})
     public Response submitStructure(
-            @NotNull @FormDataParam("fileFormat") FileFormat fileFormat,
             @NotNull @FormDataParam("fileName") String fileName,
             @NotNull @FormDataParam("file") InputStream fileInputStream,
             @FormDataParam("email")String email) throws JobHandlerException, IOException {
 
         SubmitService submitService = new SubmitService(config.getProperties());
-        return submitService.submit(fileFormat, fileName, fileInputStream, email);
+        return submitService.submit(fileName, fileInputStream, email);
     }
 
     @PermitAll

@@ -3,7 +3,6 @@ package eppic.rest.service;
 import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.dto.SubmissionStatus;
 import eppic.model.shared.StatusOfJob;
-import eppic.rest.commons.FileFormat;
 import eppic.rest.jobs.EmailData;
 import eppic.rest.jobs.EmailMessageData;
 import eppic.rest.jobs.EppicCliGenerator;
@@ -88,7 +87,7 @@ public class SubmitService {
      *
      * @return the newly created job identifier for the submission
      */
-    public Response submit(FileFormat fileFormat, String fileName, InputStream inputStream, String email) throws JobHandlerException, IOException {
+    public Response submit(String fileName, InputStream inputStream, String email) throws JobHandlerException, IOException {
         // 1 validate
         email = validateEmail(email);
         if (email != null) {
@@ -96,7 +95,6 @@ public class SubmitService {
         } else {
             emailData = null;
         }
-        fileName = validateFileName(fileName);
 
         // 2 Create a submission id
         String submissionId = UUID.randomUUID().toString(); // perhaps strip hyphens?
@@ -112,14 +110,12 @@ public class SubmitService {
                 logger.info("Created job dir {}", outDir);
             }
         }
-        File file = new File(outDir, fileName);
-        File link = new File(outDir, submissionId);
-        logger.info("Writing user's file for job '{}' to file '{}'", submissionId, file);
+        File file = new File(outDir, submissionId);
+        logger.info("Writing user's coordinate input file for job '{}' to file '{}'", submissionId, file);
+        // note that file will be written ungzipped
         writeToFile(handleGzip(inputStream), file);
 
-        // A symlink link to the input file that uses the submissionId, needed by file download endpoints (see JobService.getCoordinateFile())
-        logger.info("Creating symlink for job '{}'. From '{}' to '{}'", submissionId, link, file);
-        Files.createSymbolicLink(link.toPath(), file.toPath());
+        // TODO write original file name to serialized file and then to db, then we'd have a nice display name for UI
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
         List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile);
