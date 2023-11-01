@@ -77,7 +77,6 @@ public class NativeJobManager implements JobManager
 	public String startJob(String submissionId,
 						   List<String> command,
 						   File jobDirectory,
-						   String baseNameForOutput,
 						   int nrOfThreadsForSubmission,
 						   MongoDatabase mongoDb,
 						   EmailData emailData) throws JobHandlerException {
@@ -87,9 +86,9 @@ public class NativeJobManager implements JobManager
 				throw new JobHandlerException("Submission id " +submissionId+ " has been already used in NativeJobManager");
 			}
 
-			logger.info("About to submit shell task with submissionId '{}', in jobDirectory '{}' and baseNameForOutput '{}' for command: '{}'",
-					submissionId, jobDirectory, baseNameForOutput, command);
-			ShellTask shellTask = new ShellTask(command, jobDirectory, baseNameForOutput, submissionId, mongoDb, emailData);
+			logger.info("About to submit shell task with submissionId '{}', in jobDirectory '{}' for command: '{}'",
+					submissionId, jobDirectory, command);
+			ShellTask shellTask = new ShellTask(command, jobDirectory, submissionId, mongoDb, emailData);
 
 			Future<Integer> future = executor.submit(shellTask);
 

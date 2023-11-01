@@ -17,7 +17,6 @@ public interface JobManager {
 	 * @param submissionId identifier of the job to submit, jobs with submissionIds already seen by manager are rejected
 	 * @param command command to execute
 	 * @param jobDirectory base directory where results of jobs are to be stored
-	 * @param baseNameForOutput the base name for files produced by EPPIC CLI
 	 * @param nrOfThreadsForSubmission nr of threads used to run command
 	 * @param mongoDb Mongo db to write job's output data to
 	 * @param emailData email data for notifications
@@ -27,7 +26,6 @@ public interface JobManager {
 	String startJob(String submissionId,
 					List<String> command,
 					File jobDirectory,
-					String baseNameForOutput,
 					int nrOfThreadsForSubmission,
 					MongoDatabase mongoDb,
 					EmailData emailData) throws JobHandlerException;

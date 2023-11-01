@@ -54,7 +54,7 @@ public class TestNativeJobManager {
         List<String> cmd = new ArrayList<>();
         cmd.add(script.toString());
 
-        String submissionId = jobManager.startJob(jobId, cmd , dir, "", 1, null, null);
+        String submissionId = jobManager.startJob(jobId, cmd , dir, 1, null, null);
         assertNotNull(submissionId);
 
         // initially should be queuing, it takes some small time to schedule it
@@ -84,9 +84,9 @@ public class TestNativeJobManager {
         List<String> cmd = new ArrayList<>();
         cmd.add(script.toString());
 
-        String submissionId1 = jobManager.startJob(jobId1, cmd , dir1, "",1, null, null);
-        String submissionId2 = jobManager.startJob(jobId2, cmd , dir2, "",1, null, null);
-        String submissionId3 = jobManager.startJob(jobId3, cmd , dir3, "",1, null, null);
+        String submissionId1 = jobManager.startJob(jobId1, cmd , dir1, 1, null, null);
+        String submissionId2 = jobManager.startJob(jobId2, cmd , dir2, 1, null, null);
+        String submissionId3 = jobManager.startJob(jobId3, cmd , dir3, 1, null, null);
 
         assertNotEquals(submissionId1, submissionId2);
         assertNotEquals(submissionId1, submissionId3);
@@ -127,7 +127,7 @@ public class TestNativeJobManager {
         List<String> cmd = new ArrayList<>();
         cmd.add("unexistingScript.sh");
 
-        String submissionId = jobManager.startJob(jobId, cmd , dir, "",1, null, null);
+        String submissionId = jobManager.startJob(jobId, cmd , dir, 1, null, null);
         assertNotNull(submissionId);
 
         Thread.sleep(SLEEP_TIME*1000/2);
@@ -143,7 +143,7 @@ public class TestNativeJobManager {
         List<String> cmd = new ArrayList<>();
         cmd.add(script.toString());
 
-        String submissionId = jobManager.startJob(jobId, cmd , dir, "", 1, null, null);
+        String submissionId = jobManager.startJob(jobId, cmd , dir,  1, null, null);
 
         Thread.sleep(SLEEP_TIME*1000/2);
         StatusOfJob statusOfJob = jobManager.getStatusOfJob(submissionId);
@@ -169,7 +169,7 @@ public class TestNativeJobManager {
         List<String> cmd = new ArrayList<>();
         cmd.add(script.toString());
 
-        String submissionId = jobManager.startJob(jobId, cmd , dir,"", 1, null, null);
+        String submissionId = jobManager.startJob(jobId, cmd , dir, 1, null, null);
 
         Thread.sleep(SLEEP_TIME*1000 + 1000);
         StatusOfJob statusOfJob = jobManager.getStatusOfJob(submissionId);
@@ -205,8 +205,8 @@ public class TestNativeJobManager {
 
         assertEquals(0, ((NativeJobManager)jobManager).getSize());
 
-        String submissionId1 = jobManager.startJob(jobId1, cmd , dir1, "",1, null, null);
-        String submissionId2 = jobManager.startJob(jobId2, cmd , dir2, "",1, null, null);
+        String submissionId1 = jobManager.startJob(jobId1, cmd , dir1, 1, null, null);
+        String submissionId2 = jobManager.startJob(jobId2, cmd , dir2, 1, null, null);
 
         assertEquals(2, ((NativeJobManager)jobManager).getSize());
 

@@ -116,15 +116,14 @@ public class SubmitService {
         File link = new File(outDir, submissionId);
         logger.info("Writing user's file for job '{}' to file '{}'", submissionId, file);
         writeToFile(handleGzip(inputStream), file);
-        String baseNameForOutput = truncateFileName(file.getName());
 
         // A symlink link to the input file that uses the submissionId, needed by file download endpoints (see JobService.getCoordinateFile())
         logger.info("Creating symlink for job '{}'. From '{}' to '{}'", submissionId, link, file);
         Files.createSymbolicLink(link.toPath(), file.toPath());
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
-        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, baseNameForOutput, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile);
-        jobManager.startJob(submissionId, cmd, outDir, baseNameForOutput, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), emailData);
+        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile);
+        jobManager.startJob(submissionId, cmd, outDir, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), emailData);
 
         // 5 return generated id
         return buildResponse(new SubmissionStatus(submissionId, StatusOfJob.WAITING));
@@ -195,21 +194,4 @@ public class SubmitService {
         outStream.close();
     }
 
-    /**
-     * Truncates the given fileName by removing anything after the last dot.
-     * If no dot present in fileName then nothing is truncated.
-     * @param fileName the file name
-     * @return the truncated file name
-     */
-    private static String truncateFileName(String fileName) {
-        if( fileName == null) return null;
-
-        String newName = fileName;
-        int lastPeriodPos = fileName.lastIndexOf('.');
-        if (lastPeriodPos >= 0)
-        {
-            newName = fileName.substring(0, lastPeriodPos);
-        }
-        return newName;
-    }
 }

@@ -25,7 +25,6 @@ public class EppicCliGenerator {
 	public static List<String> generateCommand(String javaVMExec, String eppicJarPath,
 											   File inputFile,
 											   String entryId,
-											   String baseNameForOutput,
 											   String destinationDirectoryName,
 											   int nrOfThreadsForSubmission,
 											   int assignedMemory,
@@ -38,7 +37,6 @@ public class EppicCliGenerator {
 				"-i", inputFile.getAbsolutePath(),
 				"-b", entryId,
 				"-o", destinationDirectoryName,
-				"-b", baseNameForOutput,
 				"-a", String.valueOf(nrOfThreadsForSubmission),
 				"-s", // we always run evolutionary calculations (we used to be able to choose that from input, not anymore)
 				"-L", destinationDirectoryName + File.separator + AppConstants.PROGRESS_LOG_FILE_NAME,

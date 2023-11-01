@@ -46,7 +46,6 @@ public class ShellTask implements Callable<Integer> {
 
     private final File jobDirectory;
 
-    private final String baseNameForOutput;
     private final MongoDatabase mongoDb;
     private final EmailData emailData;
 
@@ -54,12 +53,11 @@ public class ShellTask implements Callable<Integer> {
      *
      * @param cmd the full EPPIC CLI command
      * @param jobDirectory the output directory for files produced by EPPIC CLI
-     * @param baseNameForOutput the base name for files produced by EPPIC CLI
      * @param submissionId the submission id
      * @param mongoDb the Mongo db, if null no writing to DB will be performed
      * @param emailData the email data for email notification, if null no email is sent
      */
-    public ShellTask(List<String> cmd, File jobDirectory, String baseNameForOutput, String submissionId, MongoDatabase mongoDb, EmailData emailData) {
+    public ShellTask(List<String> cmd, File jobDirectory, String submissionId, MongoDatabase mongoDb, EmailData emailData) {
         this.cmd = cmd;
         this.stdErr = new File(jobDirectory, submissionId + ".e");
         this.stdOut = new File(jobDirectory, submissionId + ".o");
@@ -67,7 +65,6 @@ public class ShellTask implements Callable<Integer> {
         submissionTime = System.currentTimeMillis();
         this.submissionId = submissionId;
         this.jobDirectory = jobDirectory;
-        this.baseNameForOutput = baseNameForOutput;
         this.mongoDb = mongoDb;
         this.emailData = emailData;
     }
@@ -199,10 +196,11 @@ public class ShellTask implements Callable<Integer> {
         }
         PDBInfoDAO dao = new PDBInfoDAOMongo(mongoDb);
         InterfaceResidueFeaturesDAO interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
-        EntryData entryData = UploadToDb.readSerializedFile(new File(jobDirectory, baseNameForOutput + UploadToDb.SERIALIZED_FILE_SUFFIX));
+        EntryData entryData = UploadToDb.readSerializedFile(new File(jobDirectory, submissionId + UploadToDb.SERIALIZED_FILE_SUFFIX));
         if (entryData == null) {
             throw new IOException("Could not read serialized file");
         }
+        logger.info("Will write user job '{}' to db", submissionId);
         dao.insertPDBInfo(entryData.getPdbInfoDB());
         interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
     }
