@@ -11,6 +11,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import javax.annotation.security.PermitAll;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -52,10 +53,11 @@ public class SubmitResource {
     public Response submitStructure(
             @NotNull @FormDataParam("fileName") String fileName,
             @NotNull @FormDataParam("file") InputStream fileInputStream,
-            @FormDataParam("email")String email) throws JobHandlerException, IOException {
+            @FormDataParam("email") String email,
+            @FormDataParam("skipEvolAnalysis") @DefaultValue("false") boolean skipEvolAnalysis) throws JobHandlerException, IOException {
 
         SubmitService submitService = new SubmitService(config.getProperties());
-        return submitService.submit(fileName, fileInputStream, email);
+        return submitService.submit(fileName, fileInputStream, email, skipEvolAnalysis);
     }
 
     @PermitAll

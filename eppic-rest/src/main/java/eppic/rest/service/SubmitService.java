@@ -87,7 +87,7 @@ public class SubmitService {
      *
      * @return the newly created job identifier for the submission
      */
-    public Response submit(String fileName, InputStream inputStream, String email) throws JobHandlerException, IOException {
+    public Response submit(String fileName, InputStream inputStream, String email, boolean skipEvolAnalysis) throws JobHandlerException, IOException {
         // 1 validate
         email = validateEmail(email);
         if (email != null) {
@@ -118,7 +118,7 @@ public class SubmitService {
         // TODO write original file name to serialized file and then to db, then we'd have a nice display name for UI
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
-        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile);
+        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile, skipEvolAnalysis);
         jobManager.startJob(submissionId, cmd, outDir, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), emailData);
 
         // 5 return generated id
