@@ -3,7 +3,6 @@ package eppic.rest.commons;
 
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoDbStore;
-import eppic.rest.filter.CORSResponseFilter;
 import eppic.rest.filter.CustomMapperProvider;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;

@@ -3,12 +3,11 @@ package eppic.rest.endpoints;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import eppic.rest.service.UtilService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * Utilities via REST
@@ -16,15 +15,13 @@ import javax.ws.rs.core.Response;
  * @author Jose Duarte
  * @since 3.2.0
  */
-@Path("/util")
+@RestController
+@RequestMapping("/util")
 public class UtilResource {
 
-    @GET
-    @Path("/alive")
+    @GetMapping(value = "/alive", produces = MediaType.TEXT_PLAIN_VALUE)
     @Tag(name = "Alive service")
-    @Produces(MediaType.TEXT_PLAIN)
     public String alive() {
-
 
         if (UtilService.isDbHealthy() && UtilService.isTempDiskHealthy()) {
             return "true";
@@ -33,18 +30,11 @@ public class UtilResource {
         }
     }
 
-    @GET
-    @Path("/info")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Info service")
-    public Response getInfo() {
+    public ObjectNode getInfo() {
 
-        ObjectNode jsonObj = UtilService.getInfo();
+        return UtilService.getInfo();
 
-        return Response
-                .ok()
-                .entity(jsonObj.toString())
-                .type(MediaType.APPLICATION_JSON)
-                .build();
     }
 }

@@ -6,26 +6,16 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Configuration;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 
-
-@Path("/submit")
+@RestController
+@RequestMapping("/submit")
 public class SubmitResource {
 
     // note this config injection only works after construction (i.e. don't try to call it in constructor because it'll be null)
@@ -36,10 +26,7 @@ public class SubmitResource {
     }
 
     @PermitAll
-    @POST
-    @Path("new")
-    @Consumes({MediaType.MULTIPART_FORM_DATA})
-    @Produces({MediaType.APPLICATION_JSON})
+    @PostMapping(value = "new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Submit user-provided structure",
             description = "Submit a user-provided structure to perform full EPPIC analysis on it")
     @Operation(
@@ -47,25 +34,23 @@ public class SubmitResource {
             responses = {
                     @ApiResponse(responseCode = "200",
                             description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON)), // TODO document that it returns a submission id
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)), // TODO document that it returns a submission id
                     @ApiResponse(responseCode = "404",
                             description = "Not Found")})
     public Response submitStructure(
-            @NotNull @FormDataParam("fileName") String fileName,
-            @NotNull @FormDataParam("file") InputStream fileInputStream,
-            @FormDataParam("email") String email,
-            @FormDataParam("skipEvolAnalysis") @DefaultValue("false") boolean skipEvolAnalysis) throws JobHandlerException, IOException {
+            @NotNull @RequestParam("fileName") String fileName,
+            @NotNull @RequestParam("file") InputStream fileInputStream,
+            @RequestParam("email") String email,
+            @RequestParam("skipEvolAnalysis") @DefaultValue("false") boolean skipEvolAnalysis) throws JobHandlerException, IOException {
 
         SubmitService submitService = new SubmitService(config.getProperties());
         return submitService.submit(fileName, fileInputStream, email, skipEvolAnalysis);
     }
 
     @PermitAll
-    @GET
-    @Path("status/{submissionId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @GetMapping(value = "status/{submissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Get status of submission")
-    public Response getStatus(@PathParam("submissionId") String submissionId) throws JobHandlerException {
+    public Response getStatus(@PathVariable("submissionId") String submissionId) throws JobHandlerException {
         SubmitService submitService = new SubmitService(config.getProperties());
         return submitService.getStatus(submissionId);
     }

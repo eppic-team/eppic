@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.db.dao.*;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.NoResultException;
 
@@ -38,6 +39,7 @@ import javax.persistence.NoResultException;
  * @author Nikhil Biyani
  * @author Jose Duarte
  */
+@Service
 public class JobService {
 
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
