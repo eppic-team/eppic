@@ -3,6 +3,7 @@ package eppic.rest.service;
 import eppic.db.mongoutils.MongoDbStore;
 import eppic.model.dto.SubmissionStatus;
 import eppic.model.shared.StatusOfJob;
+import eppic.rest.commons.ServerProperties;
 import eppic.rest.jobs.EmailData;
 import eppic.rest.jobs.EmailMessageData;
 import eppic.rest.jobs.EppicCliGenerator;
@@ -11,23 +12,21 @@ import eppic.rest.jobs.JobManager;
 import eppic.rest.jobs.JobManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
-
+@Service
 public class SubmitService {
 
     private static final Logger logger = LoggerFactory.getLogger(SubmitService.class);
@@ -50,44 +49,48 @@ public class SubmitService {
 
     private EmailData emailData;
 
-    public SubmitService(Map<String, Object> props) {
-        setConfigs(props);
+    private final ServerProperties serverProperties;
+
+    @Autowired
+    public SubmitService(ServerProperties serverProperties) {
+        this.serverProperties = serverProperties;
+        init();
     }
 
-    private void setConfigs(Map<String, Object> props) {
-        baseOutDir = new File((String)props.get("base.userjobs.dir"));
-        int numThreadsJobManager = Integer.parseInt((String)props.get("num.threads.job.manager"));
-        javaVMExec = (String) props.get("java.jre.exec");
-        numThreadsEppicProcess = Integer.parseInt((String)props.get("num.threads.eppic.process"));
-        memForEppicProcess = Integer.parseInt((String)props.get("mem.eppic.process"));
-        eppicJarPath = (String) props.get("eppic.jar.path");
-        cliConfigFile = new File((String) props.get("cli.config.file"));
+    private void init() {
+        baseOutDir = new File(serverProperties.getBaseUserjobsDir());
+        int numThreadsJobManager = serverProperties.getNumThreadsJobManager();
+        javaVMExec = serverProperties.getJavaJreExec();
+        numThreadsEppicProcess = serverProperties.getNumThreadsEppicProcess();
+        memForEppicProcess = serverProperties.getMemEppicProcess();
+        eppicJarPath = serverProperties.getEppicJarPath();
+        cliConfigFile = new File(serverProperties.getCliConfigFile());
         if (jobManager == null) {
             // init only first time, it is a singleton
             jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
         }
         emailData = new EmailData();
-        emailData.setHost((String)props.get("email_host"));
-        emailData.setPort((String)props.get("email_port"));
-        emailData.setEmailSenderPassword((String)props.get("email_password"));
-        emailData.setEmailSenderUserName((String)props.get("email_username"));
-        emailData.setReplyToAddress((String)props.get("email_replyto_address"));
+        emailData.setHost(serverProperties.getEmailHost());
+        emailData.setPort(String.valueOf(serverProperties.getEmailPort()));
+        emailData.setEmailSenderPassword(serverProperties.getEmailPassword());
+        emailData.setEmailSenderUserName(serverProperties.getEmailUsername());
+        emailData.setReplyToAddress(serverProperties.getEmailReplytoAddress());
         EmailMessageData emailMessageData = new EmailMessageData();
         emailData.setEmailMessageData(emailMessageData);
-        emailMessageData.setEmailJobSubmittedTitle((String)props.get("email_job_submitted_title"));
-        emailMessageData.setEmailJobSubmittedMessage((String)props.get("email_job_submitted_message"));
-        emailMessageData.setEmailJobFinishedTitle((String)props.get("email_job_finished_title"));
-        emailMessageData.setEmailJobFinishedMessage((String)props.get("email_job_finished_message"));
-        emailMessageData.setEmailJobErrorTitle((String)props.get("email_job_error_title"));
-        emailMessageData.setEmailJobErrorMessage((String)props.get("email_job_error_message"));
-        emailMessageData.setBaseUrlJobRetrieval((String)props.get("email_base_url_job_retrieval"));
+        emailMessageData.setEmailJobSubmittedTitle(serverProperties.getEmailJobSubmittedTitle());
+        emailMessageData.setEmailJobSubmittedMessage(serverProperties.getEmailJobSubmittedMessage());
+        emailMessageData.setEmailJobFinishedTitle(serverProperties.getEmailJobFinishedTitle());
+        emailMessageData.setEmailJobFinishedMessage(serverProperties.getEmailJobFinishedMessage());
+        emailMessageData.setEmailJobErrorTitle(serverProperties.getEmailJobErrorTitle());
+        emailMessageData.setEmailJobErrorMessage(serverProperties.getEmailJobErrorMessage());
+        emailMessageData.setBaseUrlJobRetrieval(serverProperties.getEmailBaseUrlJobRetrieval());
     }
 
     /**
      *
      * @return the newly created job identifier for the submission
      */
-    public Response submit(String fileName, InputStream inputStream, String email, boolean skipEvolAnalysis) throws JobHandlerException, IOException {
+    public SubmissionStatus submit(String fileName, InputStream inputStream, String email, boolean skipEvolAnalysis) throws JobHandlerException, IOException {
         // 1 validate
         email = validateEmail(email);
         if (email != null) {
@@ -122,20 +125,12 @@ public class SubmitService {
         jobManager.startJob(submissionId, cmd, outDir, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), emailData);
 
         // 5 return generated id
-        return buildResponse(new SubmissionStatus(submissionId, StatusOfJob.WAITING));
+        return new SubmissionStatus(submissionId, StatusOfJob.WAITING);
     }
 
-    public Response getStatus(String submissionId) throws JobHandlerException {
+    public SubmissionStatus getStatus(String submissionId) throws JobHandlerException {
         StatusOfJob status = jobManager.getStatusOfJob(submissionId);
-        return buildResponse(new SubmissionStatus(submissionId, status));
-    }
-
-    private Response buildResponse(Object obj) {
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(obj);
-        return responseBuilder.build();
+        return new SubmissionStatus(submissionId, status);
     }
 
     private String validateEmail(String email) {

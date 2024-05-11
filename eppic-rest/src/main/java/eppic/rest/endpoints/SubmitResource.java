@@ -1,12 +1,13 @@
 package eppic.rest.endpoints;
 
+import eppic.model.dto.SubmissionStatus;
 import eppic.rest.jobs.JobHandlerException;
 import eppic.rest.service.SubmitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,15 +15,16 @@ import javax.annotation.security.PermitAll;
 import java.io.IOException;
 import java.io.InputStream;
 
+// TODO base path v${project.artifact.selectedVersion.majorVersion}
 @RestController
 @RequestMapping("/submit")
 public class SubmitResource {
 
-    // note this config injection only works after construction (i.e. don't try to call it in constructor because it'll be null)
-    @Context
-    private Configuration config;
+    private final SubmitService submitService;
 
-    public SubmitResource() {
+    @Autowired
+    public SubmitResource(SubmitService submitService) {
+        this.submitService = submitService;
     }
 
     @PermitAll
@@ -37,21 +39,19 @@ public class SubmitResource {
                             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)), // TODO document that it returns a submission id
                     @ApiResponse(responseCode = "404",
                             description = "Not Found")})
-    public Response submitStructure(
-            @NotNull @RequestParam("fileName") String fileName,
-            @NotNull @RequestParam("file") InputStream fileInputStream,
-            @RequestParam("email") String email,
-            @RequestParam("skipEvolAnalysis") @DefaultValue("false") boolean skipEvolAnalysis) throws JobHandlerException, IOException {
+    public SubmissionStatus submitStructure(
+            @RequestParam("fileName") String fileName,
+            @RequestParam("file") InputStream fileInputStream,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "skipEvolAnalysis", defaultValue = "false", required = false) boolean skipEvolAnalysis) throws JobHandlerException, IOException {
 
-        SubmitService submitService = new SubmitService(config.getProperties());
         return submitService.submit(fileName, fileInputStream, email, skipEvolAnalysis);
     }
 
     @PermitAll
     @GetMapping(value = "status/{submissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Get status of submission")
-    public Response getStatus(@PathVariable("submissionId") String submissionId) throws JobHandlerException {
-        SubmitService submitService = new SubmitService(config.getProperties());
+    public SubmissionStatus getStatus(@PathVariable("submissionId") String submissionId) throws JobHandlerException {
         return submitService.getStatus(submissionId);
     }
 }

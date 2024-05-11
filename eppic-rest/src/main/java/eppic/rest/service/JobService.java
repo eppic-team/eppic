@@ -26,10 +26,12 @@ import eppic.model.db.ResidueBurialDB;
 import eppic.model.db.ResidueInfoDB;
 import eppic.model.dto.views.*;
 import eppic.rest.commons.CoordFilesAdaptor;
+import eppic.rest.commons.ServerProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.db.dao.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.NoResultException;
@@ -53,7 +55,12 @@ public class JobService {
     private final InterfaceResidueFeaturesDAO featuresDAO;
     private final InterfaceResidueFeaturesDAO featuresDAOUserJobs;
 
-    public JobService() {
+    private final ServerProperties serverProperties;
+
+    @Autowired
+    public JobService(ServerProperties serverProperties) {
+        this.serverProperties = serverProperties;
+
         pdbInfoDAO = new PDBInfoDAOMongo(MongoDbStore.getMongoDb());
         featuresDAO = new InterfaceResidueFeaturesDAOMongo(MongoDbStore.getMongoDb());
 
@@ -435,7 +442,7 @@ public class JobService {
         return ViewsAdaptor.getAssemblyDiagram(assembly);
     }
 
-    public byte[] getCoordinateFile(String entryId, String interfId, String assemblyId, Map<String, Object> props) throws DaoException, IOException {
+    public byte[] getCoordinateFile(String entryId, String interfId, String assemblyId) throws DaoException, IOException {
 
         if (assemblyId != null && interfId != null) {
             throw new IllegalArgumentException("Only one of interfId or assemblyId can be not null");
@@ -445,7 +452,7 @@ public class JobService {
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
 
         URL fileUrl;
-        File baseOutDir = getJobDir(entryId, props);
+        File baseOutDir = getJobDir(entryId);
         // for user jobs (this works because we create a symlink, see SubmitService)
         File auFile = new File(baseOutDir, entryId);
         if (!auFile.exists()) {
@@ -469,11 +476,11 @@ public class JobService {
         return data;
     }
 
-    public byte[] getImageFile(String entryId, String type, String id,Map<String, Object> props) throws IOException {
+    public byte[] getImageFile(String entryId, String type, String id) throws IOException {
         if (!type.equals("interface") && !type.equals("assembly") && !type.equals("diagram")) {
             throw new IllegalArgumentException("The type parameter must be 'interface', 'diagram' or 'assembly'");
         }
-        File baseOutDir = getJobDir(entryId, props);
+        File baseOutDir = getJobDir(entryId);
         File f = new File(baseOutDir, entryId + "." + type + "." + id + ".75x75.png");
         if (!f.exists()) {
             throw new NoResultException("Could not find image for job id " + entryId + ", type '" + type + "', id '" + id + "'");
@@ -507,15 +514,14 @@ public class JobService {
     /**
      * Get the directory where all files from job are stored in the web server.
      * @param entryId the job identifier
-     * @param props the config properties
      * @return the base directory
      */
-    private File getJobDir(String entryId, Map<String, Object> props) {
+    private File getJobDir(String entryId) {
         File baseOutDir;
         if (isUserJob(entryId)) {
-            baseOutDir = new File((String) props.get("base.userjobs.dir"));
+            baseOutDir = new File(serverProperties.getBaseUserjobsDir());
         } else {
-            baseOutDir = new File((String) props.get("base.precomp.dir"));
+            baseOutDir = new File(serverProperties.getBasePrecompDir());
             baseOutDir = new File(baseOutDir, entryId.substring(1,3));
         }
         baseOutDir = new File(baseOutDir, entryId);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jose Duarte
  * @since 3.2.0
  */
+// TODO base path v${project.artifact.selectedVersion.majorVersion}
 @RestController
 @RequestMapping("/util")
 public class UtilResource {

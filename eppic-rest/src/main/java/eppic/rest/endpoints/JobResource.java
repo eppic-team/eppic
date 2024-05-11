@@ -29,15 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+// TODO base path v${project.artifact.selectedVersion.majorVersion}
 @RestController
 @RequestMapping("/job")
 @CrossOrigin
 public class JobResource {
 
     private static final Logger logger = LoggerFactory.getLogger(JobResource.class);
-
-    @Context
-    private Configuration config;
 
     private final JobService jobService;
 
@@ -287,7 +285,7 @@ public class JobResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDisposition(contentDisposition);
 
-        byte[] os = jobService.getCoordinateFile(jobId, interfId, null, config.getProperties());
+        byte[] os = jobService.getCoordinateFile(jobId, interfId, null);
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(os);
     }
 
@@ -305,8 +303,8 @@ public class JobResource {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDisposition(contentDisposition);
 
-        byte[] os = jobService.getCoordinateFile(jobId, null, assemblyId, config.getProperties());
-        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(os);;
+        byte[] os = jobService.getCoordinateFile(jobId, null, assemblyId);
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(os);
     }
 
     @GetMapping(value = "/msaFastaFile/{jobId}/{repChainId}", produces = MediaType.TEXT_PLAIN_VALUE)
@@ -326,7 +324,7 @@ public class JobResource {
             @PathVariable("type") String type,
             @PathVariable("id") String id) throws IOException {
 
-        byte[] os = jobService.getImageFile(jobId, type, id, config.getProperties());
+        byte[] os = jobService.getImageFile(jobId, type, id);
         return os;
     }
 }

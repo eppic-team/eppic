@@ -11,7 +11,7 @@
 
     <artifactId>eppic-rest</artifactId>
 
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>eppic-rest</name>
 
     <properties>
@@ -106,26 +106,6 @@
         <finalName>eppic-rest</finalName>
         <plugins>
             <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.2</version>
-                <!-- The following configuration is to be able to expand maven variables
-                    in web.xml so that we can pass the major version. See https://stackoverflow.com/questions/15355708/how-to-replace-a-value-in-web-xml-with-a-maven-property
-                    - JD 2017-11-03 -->
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <filtering>true</filtering>
-                            <directory>src/main/webapp</directory>
-                            <includes>
-                                <include>**/web.xml</include>
-                            </includes>
-                        </resource>
-                    </webResources>
-                    <warSourceDirectory>src/main/webapp</warSourceDirectory>
-                    <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
@@ -177,7 +157,6 @@
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>**/about.properties</include>
-                                        <include>**/openapi-config.json</include>
                                     </includes>
                                 </resource>
                                 <resource>
@@ -188,7 +167,6 @@
                                     </includes>
                                     <excludes>
                                         <exclude>**/about.properties</exclude>
-                                        <exclude>**/openapi-config.json</exclude>
                                     </excludes>
                                 </resource>
                             </resources>
@@ -197,29 +175,6 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>io.swagger.core.v3</groupId>
-                <artifactId>swagger-maven-plugin</artifactId>
-                <version>${swagger.version}</version>
-                <configuration>
-                    <outputFileName>openapi</outputFileName>
-                    <outputPath>${project.build.directory}/${project.name}/</outputPath>
-                    <outputFormat>JSONANDYAML</outputFormat>
-                    <!-- The prettyPrint setting in openapi-config.json does not work -->
-                    <prettyPrint>true</prettyPrint>
-
-                    <configurationFilePath>${project.build.outputDirectory}/openapi-config.json</configurationFilePath>
-
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>resolve</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 
         </plugins>
     </build>
