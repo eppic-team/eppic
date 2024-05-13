@@ -1,11 +1,12 @@
 package eppic.tools;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.net.URL;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eppic.EppicParams;
 import eppic.commons.sequence.*;
 import eppic.commons.util.Interval;
@@ -42,7 +43,9 @@ public class WriteUniqueUniprots {
 						" -s <file>  	  : SIFTS file path \n" +
 						" [-f <file>]     : a file with a list of PDB ids. Only sequences corresponding\n" +
 						"                   to these PDB ids will be written out. If not provided, then\n" +
-						"                   all sequences in SIFTS files are written out\n" +
+						"                   all sequences in SIFTS files are written out. The file can be either \n" +
+						"                   a plain text file with one PDB id per line or a json.gz file with a \n" +
+						"                   single dictionary with keys the PDB ids\n" +
 						" -o <dir/file>   : If directory, sequences are written to individual FASTA \n"+
 						"                   files in the directory.\n" +
 						"                   If file all sequences are written to it as a single FASTA\n";
@@ -51,7 +54,7 @@ public class WriteUniqueUniprots {
 		
 		String scFilePath = null;
 		File outPath = null;
-		File listFile = null;
+		String listFileStr = null;
 
 		int c;
 		while ((c = g.getopt()) != -1) {
@@ -60,7 +63,7 @@ public class WriteUniqueUniprots {
 				scFilePath = g.getOptarg();
 				break;
 			case 'f':
-				listFile = new File(g.getOptarg());
+				listFileStr = g.getOptarg();
 				break;
 			case 'o':
 				outPath = new File(g.getOptarg());
@@ -99,8 +102,13 @@ public class WriteUniqueUniprots {
 
 		WriteUniqueUniprots wuni = new WriteUniqueUniprots(scFilePath);
 		Set<String> pdbIds = null;
-		if (listFile!=null) {
-			pdbIds = readListFile(listFile);
+		if (listFileStr !=null) {
+			if (listFileStr.endsWith(".json.gz")) {
+				URL url = new URL(listFileStr);
+				pdbIds = readListFileJsonGz(url);
+			} else {
+				pdbIds = readListFile(new File(listFileStr));
+			}
 		}
 		Map<String, List<Interval>> uniqueMap = wuni.sc.getUniqueMappings(pdbIds);
 
@@ -223,6 +231,19 @@ public class WriteUniqueUniprots {
 		}
 
 		logger.info("Finished dumping sequences successfully");
+	}
+
+	private static Set<String> readListFileJsonGz(URL listFileUrl) throws IOException {
+		Set<String> set = new HashSet<>();
+		InputStream is = new GZIPInputStream(listFileUrl.openStream());
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode tree = mapper.readTree(is);
+		Iterator<String> it = tree.fieldNames();
+		while (it.hasNext()) {
+			String key = it.next();
+			set.add(key.toLowerCase());
+		}
+		return set;
 	}
 
 	private static Set<String> readListFile(File listFile) throws IOException {
