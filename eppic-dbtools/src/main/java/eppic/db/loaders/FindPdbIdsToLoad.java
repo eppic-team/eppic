@@ -61,9 +61,7 @@ public class FindPdbIdsToLoad {
                         " [-B]          : base URL refers to a BCIF.gz repo. If not provided defaults to a CIF.gz repo\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
                         "                 the config will be read from file " + DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME + " in home dir\n" +
-                        " [-F]          : whether FULL mode should be used: the db contents are ignored and all relevant \n" +
-                        "                 PDB ids are used. Otherwise INCREMENTAL mode: the difference between contents \n" +
-                        "                 of db and PDB file repo is used\n";
+                        " [-F]          : whether FULL mode should be used: the DB collections are wiped and recreated. \n";
 
 
         Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:b:Bg:Fh?");
@@ -99,10 +97,6 @@ public class FindPdbIdsToLoad {
             }
         }
 
-        if (dbName == null) {
-            System.err.println("A database name must be provided with -D");
-            System.exit(1);
-        }
         if (jsonGzUrl == null) {
             System.err.println("A json gz url must be provided with -l");
             System.exit(1);
