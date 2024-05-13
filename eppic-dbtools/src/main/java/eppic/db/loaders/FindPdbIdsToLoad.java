@@ -66,7 +66,7 @@ public class FindPdbIdsToLoad {
                         "                 of db and PDB file repo is used\n";
 
 
-        Getopt g = new Getopt("UploadToDB", args, "D:l:b:Bg:Fh?");
+        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:b:Bg:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -124,7 +124,7 @@ public class FindPdbIdsToLoad {
 
         MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
 
-        // TODO if this is to be kept here, then it needs to be removed from UploadToDb
+        // TODO we need to drop also the sequence data (HitHsp etc): how to do it? probably with another CLI param to control for it
         if (full) {
             // remove content and create collections and index
             logger.info("FULL mode was selected. Will drop all data and recreate collections and indexes");
