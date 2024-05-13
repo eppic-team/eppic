@@ -41,10 +41,14 @@ public class FindPdbIdsToLoad {
 
     private static final Logger logger = LoggerFactory.getLogger(FindPdbIdsToLoad.class);
 
+    private static final String DEFAULT_CIF_BASE_URL = "https://models.rcsb.org/";
+
     private static String dbName = null;
     private static File configFile = null;
     private static boolean full = false;
     private static String jsonGzUrl = null;
+    private static String baseCifUrl = null;
+    private static boolean isBcifRepo = false;
 
     public static void main(String[] args) throws IOException {
 
@@ -52,6 +56,9 @@ public class FindPdbIdsToLoad {
                 "Usage: FindPdbIdsToLoad\n" +
                         "  -D <string>  : the database name to use\n" +
                         "  -l <url>     : URL to json.gz file with PDB archive contents\n" +
+                        " [-b <url>]    : base URL for grabbing CIF.gz or BCIF.gz PDB archive files. If %s placeholder\n" +
+                        "                 present, it is replaced by the 2 middle letters from the PDB id\n" +
+                        " [-B]          : base URL refers to a BCIF.gz repo. If not provided defaults to a CIF.gz repo\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
                         "                 the config will be read from file " + DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME + " in home dir\n" +
                         " [-F]          : whether FULL mode should be used: the db contents are ignored and all relevant \n" +
@@ -59,7 +66,7 @@ public class FindPdbIdsToLoad {
                         "                 of db and PDB file repo is used\n";
 
 
-        Getopt g = new Getopt("UploadToDB", args, "D:l:g:Fh?");
+        Getopt g = new Getopt("UploadToDB", args, "D:l:b:Bg:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -68,6 +75,12 @@ public class FindPdbIdsToLoad {
                     break;
                 case 'l':
                     jsonGzUrl = g.getOptarg();
+                    break;
+                case 'b':
+                    baseCifUrl = g.getOptarg();
+                    break;
+                case 'B':
+                    isBcifRepo = true;
                     break;
                 case 'g':
                     configFile = new File(g.getOptarg());
@@ -93,6 +106,17 @@ public class FindPdbIdsToLoad {
         if (jsonGzUrl == null) {
             System.err.println("A json gz url must be provided with -l");
             System.exit(1);
+        }
+        if (baseCifUrl == null) {
+            logger.warn("Base CIF URL not provided. Using default: {}", DEFAULT_CIF_BASE_URL);
+            baseCifUrl = DEFAULT_CIF_BASE_URL;
+        } else {
+            if (!baseCifUrl.endsWith("/")) baseCifUrl = baseCifUrl + "/";
+        }
+        if (isBcifRepo) {
+            logger.info("Considering base URL {} a BCIF.gz repo", baseCifUrl);
+        } else {
+            logger.info("Considering base URL {} a CIF.gz repo", baseCifUrl);
         }
 
         DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
@@ -122,6 +146,8 @@ public class FindPdbIdsToLoad {
 
         Map<String, OffsetDateTime> dbEntries = getDbEntries(mongoDb);
         Map<String, OffsetDateTime> currentEntries = getAllCurrentPdbIds();
+        logger.info("Entries in db: {}", dbEntries.size());
+        logger.info("Current entries from holdings file ({}): {}", jsonGzUrl, currentEntries.size() );
 
         Map<String, UpdateType> candidates = findToUpdateCandidates(dbEntries, currentEntries);
         long numOutdated = candidates.values().stream().filter(v -> v == UpdateType.UPDATED).count();
@@ -129,23 +155,32 @@ public class FindPdbIdsToLoad {
         long numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("Found total of {} candidates. From those: {} are outdated, {} are obsoleted, {} are missing", candidates.size(), numOutdated, numObsoleted,  numMissing);
 
-        // TODO pass base url as parameter
         candidates.entrySet().removeIf(e ->
-                e.getValue() == UpdateType.MISSING &&
-                        !isValidEntry("https://files.rcsb.org/download/" + e.getKey() + ".cif.gz"));
+                e.getValue() == UpdateType.MISSING && !isValidEntry(e.getKey()));
         numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("From the missing set, only {} need adding. The rest are invalid (non crystallograpic or not containing protein)", numMissing);
         // TODO write it out to file
     }
 
     /**
-     * Parse given cif.gz PDB entry and return true if entry is crystallograpic and contains at least 1 protein entity.
+     * For the given pdbId parse its cif.gz/bcif.gz file using base URL baseCifUrl and return true if entry is crystallograpic and contains at least 1 protein entity.
      * Otherwise false
-     * @param cifgzFileUrlStr
+     * @param pdbId
      * @return
      * @throws UncheckedIOException if an IOException happens when reading url
      */
-    private static boolean isValidEntry(String cifgzFileUrlStr) {
+    private static boolean isValidEntry(String pdbId) {
+        String cifgzFileUrlStr;
+        if (isBcifRepo) {
+            cifgzFileUrlStr = baseCifUrl + pdbId + ".bcif.gz";
+        } else {
+            if (baseCifUrl.contains("%s")) {
+                String hash = pdbId.substring(1, 3);
+                cifgzFileUrlStr = String.format(baseCifUrl, hash) + pdbId + ".cif.gz";
+            } else {
+                cifgzFileUrlStr = baseCifUrl + pdbId + ".cif.gz";
+            }
+        }
         URL url;
         try {
             url = new URL(cifgzFileUrlStr);
