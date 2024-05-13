@@ -22,14 +22,20 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
+
+import static com.mongodb.client.model.Projections.*;
+import static com.mongodb.client.model.Projections.include;
 
 public class FindPdbIdsToLoad {
 
@@ -114,28 +120,45 @@ public class FindPdbIdsToLoad {
             }
         }
 
-        // TODO get entries in db with timestamps
-        Map<String, OffsetDateTime> map = getAllPdbIds();
-        for (Map.Entry<String, OffsetDateTime> entry : map.entrySet()) {
+        Map<String, OffsetDateTime> dbEntries = getDbEntries(mongoDb);
+        Map<String, OffsetDateTime> currentEntries = getAllCurrentPdbIds();
 
-            if (!isValidEntry(new URL("https://files.rcsb.org/download/" + entry.getKey() + ".cif.gz"))) {
-                logger.info("Skipping entry: {}", entry.getKey());
-                continue;
-            }
-            // TODO compare timestamps
-        }
+        Map<String, UpdateType> candidates = findToUpdateCandidates(dbEntries, currentEntries);
+        long numOutdated = candidates.values().stream().filter(v -> v == UpdateType.UPDATED).count();
+        long numObsoleted = candidates.values().stream().filter(v -> v == UpdateType.OBSOLETED).count();
+        long numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
+        logger.info("Found total of {} candidates. From those: {} are outdated, {} are obsoleted, {} are missing", candidates.size(), numOutdated, numObsoleted,  numMissing);
 
+        // TODO pass base url as parameter
+        candidates.entrySet().removeIf(e ->
+                e.getValue() == UpdateType.MISSING &&
+                        !isValidEntry("https://files.rcsb.org/download/" + e.getKey() + ".cif.gz"));
+        numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
+        logger.info("From the missing set, only {} need adding. The rest are invalid (non crystallograpic or not containing protein)", numMissing);
+        // TODO write it out to file
     }
 
     /**
      * Parse given cif.gz PDB entry and return true if entry is crystallograpic and contains at least 1 protein entity.
      * Otherwise false
-     * @param cifgzFileUrl
+     * @param cifgzFileUrlStr
      * @return
-     * @throws IOException
+     * @throws UncheckedIOException if an IOException happens when reading url
      */
-    private static boolean isValidEntry(URL cifgzFileUrl) throws IOException {
-        CifFile cifFile = CifIO.readFromURL(cifgzFileUrl);
+    private static boolean isValidEntry(String cifgzFileUrlStr) {
+        URL url;
+        try {
+            url = new URL(cifgzFileUrlStr);
+        } catch (MalformedURLException e) {
+            logger.error("Malformed URL: {}. Please make sure input cif base URL is correct", cifgzFileUrlStr);
+            throw new UncheckedIOException(e);
+        }
+        CifFile cifFile;
+        try {
+            cifFile = CifIO.readFromURL(url);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         MmCifFile mmCifFile = cifFile.as(StandardSchemata.MMCIF);
 
         // get first block of CIF
@@ -157,7 +180,7 @@ public class FindPdbIdsToLoad {
      * @return
      * @throws IOException
      */
-    private static Map<String, OffsetDateTime> getAllPdbIds() throws IOException {
+    private static Map<String, OffsetDateTime> getAllCurrentPdbIds() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         URL url;
         try {
@@ -176,5 +199,41 @@ public class FindPdbIdsToLoad {
             pdbIds.put(key.toLowerCase(), t);
         }
         return pdbIds;
+    }
+
+    private static Map<String, OffsetDateTime> getDbEntries(MongoDatabase db) {
+        return db.getCollection("PdbInfo")
+                .find()
+                .projection(fields(excludeId(), include("entryId"), include("releaseDate")))
+                .into(new ArrayList<>())
+                .stream()
+                .collect(Collectors.toMap(
+                        d -> d.getString("entryId"),
+                        d -> OffsetDateTime.parse(d.getString("releaseDate"), DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+    }
+
+    private static Map<String, UpdateType> findToUpdateCandidates(Map<String, OffsetDateTime> dbEntries, Map<String, OffsetDateTime> currentEntries) {
+        Map<String, UpdateType> candidates = new HashMap<>();
+        // loop through all current entries and find if they are in db and up-to-date
+        for (Map.Entry<String, OffsetDateTime> currentEntry : currentEntries.entrySet()) {
+            if (!dbEntries.containsKey(currentEntry.getKey())) {
+                candidates.put(currentEntry.getKey(), UpdateType.MISSING);
+            } else {
+                if (currentEntry.getValue().isAfter(dbEntries.get(currentEntry.getKey()))) {
+                    candidates.put(currentEntry.getKey(), UpdateType.UPDATED);
+                }
+            }
+        }
+        // loop through all db entries and find if any are not in current set (then it is obsolete)
+        for (Map.Entry<String, OffsetDateTime> dbEntry : dbEntries.entrySet()) {
+            if (!currentEntries.containsKey(dbEntry.getKey())) {
+                candidates.put(dbEntry.getKey(), UpdateType.OBSOLETED);
+            }
+        }
+        return candidates;
+    }
+
+    private enum UpdateType {
+        MISSING, UPDATED, OBSOLETED
     }
 }
