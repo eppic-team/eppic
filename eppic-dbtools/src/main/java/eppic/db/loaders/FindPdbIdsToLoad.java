@@ -170,16 +170,15 @@ public class FindPdbIdsToLoad {
      * @throws UncheckedIOException if an IOException happens when reading url
      */
     private static boolean isValidEntry(String pdbId) {
+        if (baseCifUrl.contains("%s")) {
+            String hash = pdbId.substring(1, 3);
+            baseCifUrl = String.format(baseCifUrl, hash);
+        }
         String cifgzFileUrlStr;
         if (isBcifRepo) {
             cifgzFileUrlStr = baseCifUrl + pdbId + ".bcif.gz";
         } else {
-            if (baseCifUrl.contains("%s")) {
-                String hash = pdbId.substring(1, 3);
-                cifgzFileUrlStr = String.format(baseCifUrl, hash) + pdbId + ".cif.gz";
-            } else {
-                cifgzFileUrlStr = baseCifUrl + pdbId + ".cif.gz";
-            }
+            cifgzFileUrlStr = baseCifUrl + pdbId + ".cif.gz";
         }
         URL url;
         try {
