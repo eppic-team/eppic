@@ -6,8 +6,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
-import eppic.model.db.InterfaceResidueFeaturesDB;
-import eppic.model.db.PdbInfoDB;
+import eppic.model.db.*;
 import gnu.getopt.Getopt;
 import org.rcsb.cif.CifIO;
 import org.rcsb.cif.model.CifFile;
@@ -26,10 +25,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -41,6 +37,7 @@ public class FindPdbIdsToLoad {
 
     private static final Logger logger = LoggerFactory.getLogger(FindPdbIdsToLoad.class);
 
+    private static final List<Class<?>> COLLECTIONS_TO_RESET = List.of(PdbInfoDB.class, InterfaceResidueFeaturesDB.class, HitHspDB.class, UniProtInfoDB.class, UniProtMetadataDB.class);
     private static final String DEFAULT_CIF_BASE_URL = "https://models.rcsb.org/";
 
     private static String dbName = null;
@@ -140,14 +137,14 @@ public class FindPdbIdsToLoad {
 
         MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
 
-        // TODO we need to drop also the sequence data (HitHsp etc): how to do it? probably with another CLI param to control for it
         if (full) {
             // remove content and create collections and index
             logger.info("FULL mode was selected. Will drop all data and recreate collections and indexes");
-            MongoUtils.dropCollection(mongoDb, PdbInfoDB.class);
-            MongoUtils.dropCollection(mongoDb, InterfaceResidueFeaturesDB.class);
-            MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
-            MongoUtils.createIndices(mongoDb, InterfaceResidueFeaturesDB.class);
+            COLLECTIONS_TO_RESET.forEach(coll -> {
+                logger.info("Dropping collection and recreating index for {}", coll);
+                MongoUtils.dropCollection(mongoDb, coll);
+                MongoUtils.createIndices(mongoDb, coll);
+            });
         } else {
             // we might be doing incremental but start from an empty db: we must add indexes in this case too
             if (MongoUtils.isCollectionEmpty(mongoDb, PdbInfoDB.class)) {
