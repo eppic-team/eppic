@@ -49,14 +49,16 @@ public class FindPdbIdsToLoad {
     private static String jsonGzUrl = null;
     private static String baseCifUrl = null;
     private static boolean isBcifRepo = false;
-    private static File outFile = null;
+    private static File outUpdateFile = null;
+    private static File outObsoleteFile = null;
 
     public static void main(String[] args) throws IOException {
 
         String help =
                 "Usage: FindPdbIdsToLoad\n" +
                         "  -l <url>     : URL to json.gz file with PDB archive contents\n" +
-                        "  -o <file>    : output json.gz file to write the calculated diff out\n" +
+                        "  -o <file>    : output json.gz file to write the list of PDB ids that need updating\n" +
+                        "  -O <file>    : output json.gz file to write the list of PDB ids that are obsoleted\n" +
                         " [-D <string>] : the database name to use. If not provided it is read from config file in -g\n" +
                         " [-b <url>]    : base URL for grabbing CIF.gz or BCIF.gz PDB archive files. If %s placeholder\n" +
                         "                 present, it is replaced by the 2 middle letters from the PDB id\n" +
@@ -66,7 +68,7 @@ public class FindPdbIdsToLoad {
                         " [-F]          : whether FULL mode should be used: the DB collections are wiped and recreated. \n";
 
 
-        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:o:b:Bg:Fh?");
+        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:o:O:b:Bg:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -77,7 +79,10 @@ public class FindPdbIdsToLoad {
                     jsonGzUrl = g.getOptarg();
                     break;
                 case 'o':
-                    outFile = new File(g.getOptarg());
+                    outUpdateFile = new File(g.getOptarg());
+                    break;
+                case 'O':
+                    outObsoleteFile = new File(g.getOptarg());
                     break;
                 case 'b':
                     baseCifUrl = g.getOptarg();
@@ -106,8 +111,12 @@ public class FindPdbIdsToLoad {
             System.err.println("A json gz url must be provided with -l");
             System.exit(1);
         }
-        if (outFile == null) {
-            System.err.println("An output file path to write out the calculated diff as json.gz must be provided with -o");
+        if (outUpdateFile == null) {
+            System.err.println("An output file path to write out the PDB ids that need updating (as json.gz) must be provided with -o");
+            System.exit(1);
+        }
+        if (outObsoleteFile == null) {
+            System.err.println("An output file path to write out the PDB ids that are obsoleted (as json.gz) must be provided with -O");
             System.exit(1);
         }
         if (baseCifUrl == null) {
@@ -167,15 +176,22 @@ public class FindPdbIdsToLoad {
         numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("From the missing set, only {} need adding. The rest are invalid (non crystallograpic or not containing protein)", numMissing);
 
-        writeDiffToOutputFile(candidates);
+        writeDiffToOutputFiles(candidates);
     }
 
-    private static void writeDiffToOutputFile(Map<String, UpdateType> candidates) throws IOException {
+    private static void writeDiffToOutputFiles(Map<String, UpdateType> candidates) throws IOException {
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(candidates);
-        try (Writer writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outFile)), StandardCharsets.UTF_8)) {
+        String json = ow.writeValueAsString(candidates.entrySet().stream().filter(e -> e.getValue() == UpdateType.UPDATED || e.getValue() == UpdateType.MISSING).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        try (Writer writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outUpdateFile)), StandardCharsets.UTF_8)) {
             writer.write(json);
         }
+        logger.info("Wrote out {}", outUpdateFile);
+
+        json = ow.writeValueAsString(candidates.entrySet().stream().filter(e -> e.getValue() == UpdateType.OBSOLETED).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        try (Writer writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outObsoleteFile)), StandardCharsets.UTF_8)) {
+            writer.write(json);
+        }
+        logger.info("Wrote out {}", outObsoleteFile);
     }
 
     /**
