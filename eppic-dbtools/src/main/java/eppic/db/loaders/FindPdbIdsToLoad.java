@@ -2,6 +2,7 @@ package eppic.db.loaders;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
@@ -19,12 +20,10 @@ import org.rcsb.cif.schema.mm.MmCifFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,6 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static com.mongodb.client.model.Projections.*;
 import static com.mongodb.client.model.Projections.include;
@@ -49,12 +49,14 @@ public class FindPdbIdsToLoad {
     private static String jsonGzUrl = null;
     private static String baseCifUrl = null;
     private static boolean isBcifRepo = false;
+    private static File outFile = null;
 
     public static void main(String[] args) throws IOException {
 
         String help =
                 "Usage: FindPdbIdsToLoad\n" +
                         "  -l <url>     : URL to json.gz file with PDB archive contents\n" +
+                        "  -o <file>    : output json.gz file to write the calculated diff out\n" +
                         " [-D <string>] : the database name to use. If not provided it is read from config file in -g\n" +
                         " [-b <url>]    : base URL for grabbing CIF.gz or BCIF.gz PDB archive files. If %s placeholder\n" +
                         "                 present, it is replaced by the 2 middle letters from the PDB id\n" +
@@ -64,7 +66,7 @@ public class FindPdbIdsToLoad {
                         " [-F]          : whether FULL mode should be used: the DB collections are wiped and recreated. \n";
 
 
-        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:b:Bg:Fh?");
+        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:o:b:Bg:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -73,6 +75,9 @@ public class FindPdbIdsToLoad {
                     break;
                 case 'l':
                     jsonGzUrl = g.getOptarg();
+                    break;
+                case 'o':
+                    outFile = new File(g.getOptarg());
                     break;
                 case 'b':
                     baseCifUrl = g.getOptarg();
@@ -99,6 +104,10 @@ public class FindPdbIdsToLoad {
 
         if (jsonGzUrl == null) {
             System.err.println("A json gz url must be provided with -l");
+            System.exit(1);
+        }
+        if (outFile == null) {
+            System.err.println("An output file path to write out the calculated diff as json.gz must be provided with -o");
             System.exit(1);
         }
         if (baseCifUrl == null) {
@@ -157,7 +166,16 @@ public class FindPdbIdsToLoad {
                 e.getValue() == UpdateType.MISSING && !isValidEntry(e.getKey()));
         numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("From the missing set, only {} need adding. The rest are invalid (non crystallograpic or not containing protein)", numMissing);
-        // TODO write it out to file
+
+        writeDiffToOutputFile(candidates);
+    }
+
+    private static void writeDiffToOutputFile(Map<String, UpdateType> candidates) throws IOException {
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(candidates);
+        try (Writer writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outFile)), StandardCharsets.UTF_8)) {
+            writer.write(json);
+        }
     }
 
     /**
