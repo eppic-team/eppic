@@ -55,7 +55,7 @@ public class FindPdbIdsToLoad {
         String help =
                 "Usage: FindPdbIdsToLoad\n" +
                         "  -l <url>     : URL to json.gz file with PDB archive contents\n" +
-                        "  -D <string>  : the database name to use. If not provided it is read from config file in -g\n" +
+                        " [-D <string>] : the database name to use. If not provided it is read from config file in -g\n" +
                         " [-b <url>]    : base URL for grabbing CIF.gz or BCIF.gz PDB archive files. If %s placeholder\n" +
                         "                 present, it is replaced by the 2 middle letters from the PDB id\n" +
                         " [-B]          : base URL refers to a BCIF.gz repo. If not provided defaults to a CIF.gz repo\n" +
