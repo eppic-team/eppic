@@ -168,8 +168,8 @@ public class FindPdbIdsToLoad {
         long numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("Found total of {} candidates. From those: {} are outdated, {} are obsoleted, {} are missing", candidates.size(), numOutdated, numObsoleted,  numMissing);
 
-        candidates.entrySet().removeIf(e ->
-                e.getValue() == UpdateType.MISSING && !isValidEntry(e.getKey()));
+        logger.info("Will now find out which are valid entries for EPPIC workflow by parsing {} CIF files", numMissing);
+        candidates.entrySet().removeIf(e -> e.getValue() == UpdateType.MISSING && !isValidEntry(e.getKey()));
         numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("From the missing set, only {} need adding. The rest are invalid (non crystallograpic or not containing protein)", numMissing);
 
