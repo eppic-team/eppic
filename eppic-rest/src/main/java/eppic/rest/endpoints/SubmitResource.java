@@ -18,6 +18,7 @@ import java.io.InputStream;
 
 @RestController
 @RequestMapping(AppConstants.ENDPOINTS_COMMON_PREFIX + "v${build.project_major_version}/submit")
+@CrossOrigin
 public class SubmitResource {
 
     private final SubmitService submitService;
