@@ -1,6 +1,7 @@
 package eppic.rest.endpoints;
 
 import eppic.model.dto.SubmissionStatus;
+import eppic.model.dto.UserJobSubmission;
 import eppic.rest.commons.AppConstants;
 import eppic.rest.jobs.JobHandlerException;
 import eppic.rest.service.SubmitService;
@@ -8,18 +9,21 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.PermitAll;
 import java.io.IOException;
-import java.io.InputStream;
 
 @RestController
 @RequestMapping(AppConstants.ENDPOINTS_COMMON_PREFIX + "v${build.project_major_version}/submit")
 @CrossOrigin
 public class SubmitResource {
+
+    private static final Logger logger = LoggerFactory.getLogger(SubmitResource.class);
 
     private final SubmitService submitService;
 
@@ -29,7 +33,7 @@ public class SubmitResource {
     }
 
     @PermitAll
-    @PostMapping(value = "new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "new", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Submit user-provided structure",
             description = "Submit a user-provided structure to perform full EPPIC analysis on it")
     @Operation(
@@ -41,12 +45,13 @@ public class SubmitResource {
                     @ApiResponse(responseCode = "404",
                             description = "Not Found")})
     public SubmissionStatus submitStructure(
-            @RequestParam("fileName") String fileName,
-            @RequestParam("file") InputStream fileInputStream,
-            @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "skipEvolAnalysis", defaultValue = "false", required = false) boolean skipEvolAnalysis) throws JobHandlerException, IOException {
-
-        return submitService.submit(fileName, fileInputStream, email, skipEvolAnalysis);
+            @RequestBody UserJobSubmission userJobSubmission) throws JobHandlerException, IOException {
+        logger.info("Got structure upload request - length: {}, email: {}, file_name: {}, skip_entropy: {}",
+                userJobSubmission.getData().length(),
+                userJobSubmission.getEmail(),
+                userJobSubmission.getFileName(),
+                userJobSubmission.isSkipEvolAnalysis());
+        return submitService.submit(userJobSubmission);
     }
 
     @PermitAll

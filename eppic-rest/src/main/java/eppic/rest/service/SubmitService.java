@@ -3,6 +3,7 @@ package eppic.rest.service;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.dto.SubmissionStatus;
+import eppic.model.dto.UserJobSubmission;
 import eppic.model.shared.StatusOfJob;
 import eppic.rest.commons.ServerProperties;
 import eppic.rest.jobs.EmailData;
@@ -17,12 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.BadRequestException;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
@@ -95,9 +92,11 @@ public class SubmitService {
      *
      * @return the newly created job identifier for the submission
      */
-    public SubmissionStatus submit(String fileName, InputStream inputStream, String email, boolean skipEvolAnalysis) throws JobHandlerException, IOException {
+    public SubmissionStatus submit(UserJobSubmission userJobSubmission) throws JobHandlerException, IOException {
+        // TODO what to do with fileName (that comes in userJobSumission object)
+
         // 1 validate
-        email = validateEmail(email);
+        String email = validateEmail(userJobSubmission.getEmail());
         if (email != null) {
             emailData.setEmailRecipient(email);
         } else {
@@ -121,12 +120,14 @@ public class SubmitService {
         File file = new File(outDir, submissionId);
         logger.info("Writing user's coordinate input file for job '{}' to file '{}'", submissionId, file);
         // note that file will be written ungzipped
+        byte[] uploadedFileContent = Base64.getDecoder().decode(userJobSubmission.getData());
+        InputStream inputStream = new ByteArrayInputStream(uploadedFileContent);
         writeToFile(handleGzip(inputStream), file);
 
         // TODO write original file name to serialized file and then to db, then we'd have a nice display name for UI
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
-        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile, skipEvolAnalysis);
+        List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile, userJobSubmission.isSkipEvolAnalysis());
         jobManager.startJob(submissionId, cmd, outDir, DEFAULT_NUM_THREADS_PER_JOB, mongoDbUserJobs, emailData);
 
         // 5 return generated id
