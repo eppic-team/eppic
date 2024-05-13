@@ -266,7 +266,7 @@ public class FindPdbIdsToLoad {
     }
 
     private static Map<String, OffsetDateTime> getDbEntries(MongoDatabase db) {
-        return db.getCollection("PdbInfo")
+        return db.getCollection(MongoUtils.getTableMetadataFromJpa(PdbInfoDB.class).name())
                 .find()
                 .projection(fields(excludeId(), include("entryId"), include("releaseDate")))
                 .into(new ArrayList<>())
