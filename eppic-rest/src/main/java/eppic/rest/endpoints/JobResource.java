@@ -10,6 +10,7 @@ import eppic.model.db.PdbInfoDB;
 import eppic.model.dto.views.AssemblyDiagram;
 import eppic.model.dto.views.LatticeGraph;
 import eppic.model.dto.views.Residue;
+import eppic.rest.commons.AppConstants;
 import eppic.rest.commons.Utils;
 import eppic.rest.service.JobService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,9 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
-// TODO base path v${project.artifact.selectedVersion.majorVersion}
 @RestController
-@RequestMapping("/job")
+@RequestMapping(AppConstants.ENDPOINTS_COMMON_PREFIX + "v${build.project_major_version}/job")
 @CrossOrigin
 public class JobResource {
 

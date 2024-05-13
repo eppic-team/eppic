@@ -159,12 +159,43 @@
                 </configuration>
             </plugin>
 
-            <!-- Maven resources plugin to expand variables in about.properties at
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <!-- Trick to parse major version out of property search.api.version, taken from https://stackoverflow.com/questions/12002033/in-maven-how-can-i-dynamically-build-a-property-value-at-runtime -->
+                    <execution>
+                        <id>regex-property</id>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <!-- This is the name of the property available in application.properties and elsewhere -->
+                            <name>project.major.version</name>
+                            <value>${project.version}</value>
+                            <regex>^([0-9]+)\.([0-9]+)\.([0-9]+)(-\w+)?$</regex>
+                            <replacement>$1</replacement>
+                            <failIfNoMatch>true</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven resources plugin to expand variables in application.properties at
                 build time and to include it in the final artifact -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.1</version>
+                <configuration>
+                    <!-- This config is needed so that application.properties can use maven properties, see https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.properties-and-configuration
+                         Then the properties can be referenced in annotations in code with ${property} -->
+                    <delimiters>
+                        <delimiter>@</delimiter>
+                    </delimiters>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copy-resources</id>
@@ -180,7 +211,7 @@
                                     <directory>src/main/resources</directory>
                                     <filtering>true</filtering>
                                     <includes>
-                                        <include>**/about.properties</include>
+                                        <include>**/application.properties</include>
                                     </includes>
                                 </resource>
                                 <resource>
@@ -190,7 +221,7 @@
                                         <include>**/*</include>
                                     </includes>
                                     <excludes>
-                                        <exclude>**/about.properties</exclude>
+                                        <exclude>**/application.properties</exclude>
                                     </excludes>
                                 </resource>
                             </resources>

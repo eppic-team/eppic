@@ -1,6 +1,7 @@
 package eppic.rest.endpoints;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import eppic.rest.commons.AppConstants;
 import eppic.rest.service.UtilService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
@@ -15,9 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Jose Duarte
  * @since 3.2.0
  */
-// TODO base path v${project.artifact.selectedVersion.majorVersion}
 @RestController
-@RequestMapping("/util")
+@RequestMapping(AppConstants.ENDPOINTS_COMMON_PREFIX + "v${build.project_major_version}/util")
 public class UtilResource {
 
     @GetMapping(value = "/alive", produces = MediaType.TEXT_PLAIN_VALUE)

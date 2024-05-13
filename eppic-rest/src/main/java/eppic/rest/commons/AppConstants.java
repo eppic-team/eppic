@@ -11,6 +11,8 @@ public class AppConstants {
     private static final Logger logger = LoggerFactory.getLogger(AppConstants.class);
 
 
+    public static final String ENDPOINTS_COMMON_PREFIX = "rest/api/";
+
     /**
      * The name of the parameter to be passed to JVM as system property with -D
      */

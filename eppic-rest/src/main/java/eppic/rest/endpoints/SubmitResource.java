@@ -1,6 +1,7 @@
 package eppic.rest.endpoints;
 
 import eppic.model.dto.SubmissionStatus;
+import eppic.rest.commons.AppConstants;
 import eppic.rest.jobs.JobHandlerException;
 import eppic.rest.service.SubmitService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,9 +16,8 @@ import javax.annotation.security.PermitAll;
 import java.io.IOException;
 import java.io.InputStream;
 
-// TODO base path v${project.artifact.selectedVersion.majorVersion}
 @RestController
-@RequestMapping("/submit")
+@RequestMapping(AppConstants.ENDPOINTS_COMMON_PREFIX + "v${build.project_major_version}/submit")
 public class SubmitResource {
 
     private final SubmitService submitService;
