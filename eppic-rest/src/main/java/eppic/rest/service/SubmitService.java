@@ -1,6 +1,7 @@
 package eppic.rest.service;
 
-import eppic.db.mongoutils.MongoDbStore;
+import com.mongodb.client.MongoDatabase;
+import eppic.db.mongoutils.MongoUtils;
 import eppic.model.dto.SubmissionStatus;
 import eppic.model.shared.StatusOfJob;
 import eppic.rest.commons.ServerProperties;
@@ -49,6 +50,8 @@ public class SubmitService {
 
     private EmailData emailData;
 
+    private MongoDatabase mongoDbUserJobs;
+
     private final ServerProperties serverProperties;
 
     @Autowired
@@ -84,6 +87,8 @@ public class SubmitService {
         emailMessageData.setEmailJobErrorTitle(serverProperties.getEmailJobErrorTitle());
         emailMessageData.setEmailJobErrorMessage(serverProperties.getEmailJobErrorMessage());
         emailMessageData.setBaseUrlJobRetrieval(serverProperties.getEmailBaseUrlJobRetrieval());
+
+        mongoDbUserJobs = MongoUtils.getMongoDatabase(serverProperties.getDbNameUserjobs(), serverProperties.getMongoUriUserjobs());
     }
 
     /**
@@ -122,7 +127,7 @@ public class SubmitService {
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
         List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile, skipEvolAnalysis);
-        jobManager.startJob(submissionId, cmd, outDir, DEFAULT_NUM_THREADS_PER_JOB, MongoDbStore.getMongoDbUserJobs(), emailData);
+        jobManager.startJob(submissionId, cmd, outDir, DEFAULT_NUM_THREADS_PER_JOB, mongoDbUserJobs, emailData);
 
         // 5 return generated id
         return new SubmissionStatus(submissionId, StatusOfJob.WAITING);

@@ -8,11 +8,12 @@ import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import com.mongodb.client.MongoDatabase;
 import eppic.db.adaptors.ViewsAdaptor;
 import eppic.db.dao.mongo.ContactDAOMongo;
 import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
-import eppic.db.mongoutils.MongoDbStore;
+import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.AssemblyDB;
 import eppic.model.db.ChainClusterDB;
 import eppic.model.db.ContactDB;
@@ -50,22 +51,29 @@ public class JobService {
 
     private static final String CIFGZ_BASE_URL = "https://files.rcsb.org/download/";
 
-    private final PDBInfoDAO pdbInfoDAO;
-    private final PDBInfoDAO pdbInfoDAOUserJobs;
-    private final InterfaceResidueFeaturesDAO featuresDAO;
-    private final InterfaceResidueFeaturesDAO featuresDAOUserJobs;
+    private PDBInfoDAO pdbInfoDAO;
+    private PDBInfoDAO pdbInfoDAOUserJobs;
+    private InterfaceResidueFeaturesDAO featuresDAO;
+    private InterfaceResidueFeaturesDAO featuresDAOUserJobs;
 
     private final ServerProperties serverProperties;
 
     @Autowired
     public JobService(ServerProperties serverProperties) {
         this.serverProperties = serverProperties;
+        initDaos();
+    }
 
-        pdbInfoDAO = new PDBInfoDAOMongo(MongoDbStore.getMongoDb());
-        featuresDAO = new InterfaceResidueFeaturesDAOMongo(MongoDbStore.getMongoDb());
+    private void initDaos() {
 
-        pdbInfoDAOUserJobs = new PDBInfoDAOMongo(MongoDbStore.getMongoDbUserJobs());
-        featuresDAOUserJobs = new InterfaceResidueFeaturesDAOMongo(MongoDbStore.getMongoDbUserJobs());
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(serverProperties.getDbName(), serverProperties.getMongoUri());
+        MongoDatabase mongoDbUserJobs = MongoUtils.getMongoDatabase(serverProperties.getDbNameUserjobs(), serverProperties.getMongoUriUserjobs());
+
+        pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
+        featuresDAO = new InterfaceResidueFeaturesDAOMongo(mongoDb);
+
+        pdbInfoDAOUserJobs = new PDBInfoDAOMongo(mongoDbUserJobs);
+        featuresDAOUserJobs = new InterfaceResidueFeaturesDAOMongo(mongoDbUserJobs);
     }
 
     /**

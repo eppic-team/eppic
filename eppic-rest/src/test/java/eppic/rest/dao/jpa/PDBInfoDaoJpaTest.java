@@ -4,20 +4,22 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.PDBInfoDAO;
 
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
-import eppic.db.mongoutils.MongoDbStore;
+import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.AssemblyDB;
 import eppic.model.db.ChainClusterDB;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
+import eppic.rest.commons.ServerProperties;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class PDBInfoDaoJpaTest {
 
+
     /**
-     * Test Mongo dao, must pass config with -DeppicDbProperties
+     * Test Mongo dao, must pass config with spring mechanisms
      */
     @Ignore
     @Test
@@ -25,7 +27,9 @@ public class PDBInfoDaoJpaTest {
 
         String pdbId ="1smt";
 
-        PDBInfoDAO dao = new PDBInfoDAOMongo(MongoDbStore.getMongoDb());
+        // TODO this needs to be injected. For now the test is broken
+        ServerProperties serverProperties = new ServerProperties();
+        PDBInfoDAO dao = new PDBInfoDAOMongo(MongoUtils.getMongoDatabase(serverProperties.getDbName(), serverProperties.getMongoUri()));
         PdbInfoDB pdbInfoDB = dao.getPDBInfo(pdbId);
         assertNotNull(pdbInfoDB);
 
