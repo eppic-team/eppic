@@ -106,7 +106,7 @@ public class UploadSearchSeqCacheToDb {
         }
 
         if (uniProtVersion == null) {
-            logger.warn("UniRef version not passed with -v option. UniRef version won't be available in db.");
+            logger.warn("UniRef version not passed with -v option. Will not write a UniRef version to db.");
         }
 
         DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
@@ -117,9 +117,7 @@ public class UploadSearchSeqCacheToDb {
         HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb);
 
         if (full) {
-            logger.info("FULL mode: dropping collection and recreating index");
-            MongoUtils.dropCollection(mongoDb, HitHspDB.class);
-            MongoUtils.createIndices(mongoDb, HitHspDB.class);
+            logger.info("FULL mode: will write all entries to db and will not check for presence (this assumes the DB is already empty)");
         } else {
             logger.info("INCREMENTAL mode: will respect existing data and check presence before inserting");
         }
@@ -212,7 +210,10 @@ public class UploadSearchSeqCacheToDb {
 
             // a rough way of guessing that the insertion of records was successful
             if (lineNum - couldntInsert > 1000) {
-                persistUniprotMetadata(mongoDb, uniRefType, uniProtVersion);
+                if (uniProtVersion!=null)
+                    persistUniprotMetadata(mongoDb, uniRefType, uniProtVersion);
+                else
+                    logger.info("Will not persist any uniprot metadata, because a UniProt version wasn't provided");
             } else {
                 logger.info("It does not look like the insertion of records was successful. Will not try to add UniProtMetadata record.");
             }

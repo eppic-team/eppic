@@ -155,8 +155,8 @@ public class DataModelAdaptor {
 	
 	public void setPdbMetadata(Structure pdb) {
 		pdbInfo.setTitle(pdb.getPDBHeader().getTitle());
-		// TODO here we used to have the release date but it doesn't seem to be in biojava, do we want it?
-		pdbInfo.setReleaseDate(pdb.getPDBHeader().getDepDate());
+		// this sets the latest modification date (useful for incremental update logic)
+		pdbInfo.setReleaseDate(pdb.getPDBHeader().getModDate());
 		PDBCrystallographicInfo pdbXtallographicInfo = pdb.getCrystallographicInfo();
 		SpaceGroup sg = (pdbXtallographicInfo==null?null:pdbXtallographicInfo.getSpaceGroup());
 		pdbInfo.setSpaceGroup(sg==null?null:sg.getShortSymbol());

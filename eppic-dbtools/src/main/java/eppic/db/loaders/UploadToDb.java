@@ -157,25 +157,6 @@ public class UploadToDb {
 		dao = new PDBInfoDAOMongo(mongoDb);
 		interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
 
-		if (full) {
-			// remove content and create collections and index
-			logger.info("FULL mode was selected. Will drop all data and recreate collections and indexes");
-			MongoUtils.dropCollection(mongoDb, PdbInfoDB.class);
-			MongoUtils.dropCollection(mongoDb, InterfaceResidueFeaturesDB.class);
-			MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
-			MongoUtils.createIndices(mongoDb, InterfaceResidueFeaturesDB.class);
-		} else {
-			// we might be doing incremental but start from an empty db: we must add indexes in this case too
-			if (MongoUtils.isCollectionEmpty(mongoDb, PdbInfoDB.class)) {
-				logger.info("Empty PdbInfoDB collection. Creating indices for it, even though we are in INCREMENTAL mode");
-				MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
-			}
-			if (MongoUtils.isCollectionEmpty(mongoDb, InterfaceResidueFeaturesDB.class)) {
-				logger.info("Empty InterfaceResidueFeaturesDB collection. Creating indices for it, even though we are in INCREMENTAL mode");
-				MongoUtils.createIndices(mongoDb, InterfaceResidueFeaturesDB.class);
-			}
-		}
-
 		ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
 		List<Future<Stats>> allResults = new ArrayList<>();
 
