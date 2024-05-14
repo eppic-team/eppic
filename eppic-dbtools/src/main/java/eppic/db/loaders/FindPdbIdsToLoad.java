@@ -148,20 +148,18 @@ public class FindPdbIdsToLoad {
             // remove content and create collections and index
             logger.info("FULL mode was selected. Will drop all data and recreate collections and indexes");
             COLLECTIONS_TO_RESET.forEach(coll -> {
-                logger.info("Dropping collection and recreating index for {}", coll);
+                logger.info("Dropping collection and recreating index for {}", coll.getName());
                 MongoUtils.dropCollection(mongoDb, coll);
                 MongoUtils.createIndices(mongoDb, coll);
             });
         } else {
             // we might be doing incremental but start from an empty db: we must add indexes in this case too
-            if (MongoUtils.isCollectionEmpty(mongoDb, PdbInfoDB.class)) {
-                logger.info("Empty PdbInfoDB collection. Creating indices for it, even though we are in INCREMENTAL mode");
-                MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
-            }
-            if (MongoUtils.isCollectionEmpty(mongoDb, InterfaceResidueFeaturesDB.class)) {
-                logger.info("Empty InterfaceResidueFeaturesDB collection. Creating indices for it, even though we are in INCREMENTAL mode");
-                MongoUtils.createIndices(mongoDb, InterfaceResidueFeaturesDB.class);
-            }
+            COLLECTIONS_TO_RESET.forEach(coll -> {
+                        if (MongoUtils.isCollectionEmpty(mongoDb, coll)) {
+                            logger.info("Empty {} collection. Creating indices for it, even though we are in INCREMENTAL mode", coll.getName());
+                            MongoUtils.createIndices(mongoDb, coll);
+                        }
+            });
         }
 
         Map<String, OffsetDateTime> dbEntries = getDbEntries(mongoDb);
