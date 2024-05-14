@@ -26,6 +26,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -48,8 +50,9 @@ public class FindPdbIdsToLoad {
     private static boolean isBcifRepo = false;
     private static File outUpdateFile = null;
     private static File outObsoleteFile = null;
+    private static int numThreads = 1;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
 
         String help =
                 "Usage: FindPdbIdsToLoad\n" +
@@ -57,6 +60,7 @@ public class FindPdbIdsToLoad {
                         "  -o <file>    : output json.gz file to write the list of PDB ids that need updating\n" +
                         "  -O <file>    : output json.gz file to write the list of PDB ids that are obsoleted\n" +
                         " [-D <string>] : the database name to use. If not provided it is read from config file in -g\n" +
+                        " [-n <int>]    : number of threads for parsing CIF files to filter valid entries \n" +
                         " [-b <url>]    : base URL for grabbing CIF.gz or BCIF.gz PDB archive files. If %s placeholder\n" +
                         "                 present, it is replaced by the 2 middle letters from the PDB id\n" +
                         " [-B]          : base URL refers to a BCIF.gz repo. If not provided defaults to a CIF.gz repo\n" +
@@ -65,7 +69,7 @@ public class FindPdbIdsToLoad {
                         " [-F]          : whether FULL mode should be used: the DB collections are wiped and recreated. \n";
 
 
-        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:o:O:b:Bg:Fh?");
+        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:o:O:n:b:Bg:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -80,6 +84,9 @@ public class FindPdbIdsToLoad {
                     break;
                 case 'O':
                     outObsoleteFile = new File(g.getOptarg());
+                    break;
+                case 'n':
+                    numThreads = Integer.parseInt(g.getOptarg());
                     break;
                 case 'b':
                     baseCifUrl = g.getOptarg();
@@ -168,12 +175,18 @@ public class FindPdbIdsToLoad {
         long numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("Found total of {} candidates. From those: {} are outdated, {} are obsoleted, {} are missing", candidates.size(), numOutdated, numObsoleted,  numMissing);
 
-        logger.info("Will now find out which are valid entries for EPPIC workflow by parsing {} CIF files", numMissing);
-        candidates.entrySet().removeIf(e -> e.getValue() == UpdateType.MISSING && !isValidEntry(e.getKey()));
-        numMissing = candidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
+        logger.info("Will now find out which are valid entries for EPPIC workflow by parsing {} CIF files. Will use {} threads for parsing", numMissing, numThreads);
+        ForkJoinPool myPool = new ForkJoinPool(numThreads);
+        Map<String, UpdateType> filteredCandidates = myPool.submit(() ->
+                candidates.entrySet().parallelStream()
+                        .filter(e -> e.getValue() != UpdateType.MISSING || isValidEntry(e.getKey()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+        ).get();
+        filteredCandidates.entrySet().removeIf(e -> e.getValue() == UpdateType.MISSING && !isValidEntry(e.getKey()));
+        numMissing = filteredCandidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("From the missing set, only {} need adding. The rest are invalid (non crystallograpic or not containing protein)", numMissing);
 
-        writeDiffToOutputFiles(candidates);
+        writeDiffToOutputFiles(filteredCandidates);
     }
 
     private static void writeDiffToOutputFiles(Map<String, UpdateType> candidates) throws IOException {
