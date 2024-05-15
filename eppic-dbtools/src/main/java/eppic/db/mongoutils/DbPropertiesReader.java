@@ -23,22 +23,23 @@ public class DbPropertiesReader {
         properties.load(inputStream);
     }
 
+
     public String getMongoUri() {
-        String val = properties.getProperty("mongo.uri");
+        String val = properties.getProperty("eppic-rest.mongo-uri");
         if (val!=null && !val.isEmpty())
             return val.trim();
         return null;
     }
 
     public String getMongoUriUserJobs() {
-        String val = properties.getProperty("mongo.uri.userjobs");
+        String val = properties.getProperty("eppic-rest.mongo-uri-userjobs");
         if (val!=null && !val.isEmpty())
             return val.trim();
         return null;
     }
 
     public String getDbName() {
-        String val = properties.getProperty("dbname");
+        String val = properties.getProperty("eppic-rest.db-name");
         if (val!=null && !val.isEmpty()) {
             return val.trim();
         }
@@ -46,7 +47,7 @@ public class DbPropertiesReader {
     }
 
     public String getDbNameUserJobs() {
-        String val = properties.getProperty("dbname.userjobs");
+        String val = properties.getProperty("eppic-rest.db-name-userjobs");
         if (val!=null && !val.isEmpty()) {
             return val.trim();
         }
