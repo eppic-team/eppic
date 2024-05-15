@@ -54,7 +54,6 @@ public class UploadUniprotInfoToDb {
 
         String help =
                         "Usage: UploadUniprotInfoToDb\n" +
-                        "  -D <string>  : the database name to use\n"+
                         "  -f <file>    : the blast tabular format file containing all hits\n" +
                         "  -a <file>    : UniRef FASTA file (plain text or gzipped, if gzipped must have .gz suffix)\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
@@ -68,17 +67,13 @@ public class UploadUniprotInfoToDb {
 
         File blastTabFile = null;
         File unirefFastaFile = null;
-        String dbName = null;
         File configFile = DbPropertiesReader.DEFAULT_CONFIG_FILE;
         full = false;
 
-        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:a:g:Fh?");
+        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "f:a:g:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch(c){
-                case 'D':
-                    dbName = g.getOptarg();
-                    break;
                 case 'f':
                     blastTabFile = new File(g.getOptarg());
                     break;
@@ -102,11 +97,6 @@ public class UploadUniprotInfoToDb {
             }
         }
 
-        if (dbName == null) {
-            System.err.println("A database name must be provided with -D");
-            System.exit(1);
-        }
-
         if (blastTabFile == null) {
             System.err.println("A blast tabular format file must be provided with -f");
             System.exit(1);
@@ -121,7 +111,7 @@ public class UploadUniprotInfoToDb {
         DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
         String connUri = propsReader.getMongoUri();
 
-        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(propsReader.getDbName(), connUri);
 
         if (full) {
             logger.info("FULL mode: dropping collection and recreating index");
