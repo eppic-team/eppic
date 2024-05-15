@@ -42,7 +42,6 @@ public class UploadSearchSeqCacheToDb {
 
         String help =
                 "Usage: UploadSearchSeqCacheToDb\n" +
-                        "  -D <string>  : the database name to use\n"+
                         "  -f <file>    : the blast tabular format file containing all hits\n" +
                         " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
                         "                 the config will be read from file "+ DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
@@ -52,19 +51,15 @@ public class UploadSearchSeqCacheToDb {
                         "                 is dropped and indexes reset. FULL is much faster because it uses Mongo batch insert\n";
 
         File blastTabFile = null;
-        String dbName = null;
         File configFile = DbPropertiesReader.DEFAULT_CONFIG_FILE;
         String uniProtVersion = null;
         String uniRefType = null;
         full = false;
 
-        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "D:f:g:r:v:Fh?");
+        Getopt g = new Getopt("UploadSearchSeqCacheToDb", args, "f:g:r:v:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch(c){
-                case 'D':
-                    dbName = g.getOptarg();
-                    break;
                 case 'f':
                     blastTabFile = new File(g.getOptarg());
                     break;
@@ -91,11 +86,6 @@ public class UploadSearchSeqCacheToDb {
             }
         }
 
-        if (dbName == null) {
-            System.err.println("A database name must be provided with -D");
-            System.exit(1);
-        }
-
         if (blastTabFile == null) {
             System.err.println("A blast tabular format file must be provided with -f");
             System.exit(1);
@@ -112,7 +102,7 @@ public class UploadSearchSeqCacheToDb {
         DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
         String connUri = propsReader.getMongoUri();
 
-        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(propsReader.getDbName(), connUri);
 
         HitHspDAO hitHspDAO = new HitHspDAOMongo(mongoDb);
 
