@@ -48,7 +48,6 @@ public class UploadToDb {
 
 	private static final int BATCH_SIZE = 1000;
 
-	private static String dbName = null;
 	private static File configFile = null;
 	private static File choosefromFile = null;
 	private static int numWorkers = 1;
@@ -61,7 +60,6 @@ public class UploadToDb {
 
 		String help =
 				"Usage: UploadToDB\n" +
-				"  -D <string>  : the database name to use\n"+
 				"  -d <dir>     : root dir of eppic output files with subdirs as job dirs (user jobs only, no PDB ids jobs) \n" +
 				" [-l]          : if specified, subdirs under root dir (-d) are considered to be in PDB divided \n" +
 				"                 layout and leaf dirs must be PDB ids (this affects the behaviour of -d and -f).\n"+
@@ -79,13 +77,10 @@ public class UploadToDb {
 
 		File jobDirectoriesRoot = null;
 
-		Getopt g = new Getopt("UploadToDB", args, "D:d:lf:g:n:Fh?");
+		Getopt g = new Getopt("UploadToDB", args, "d:lf:g:n:Fh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
-			case 'D':
-				dbName = g.getOptarg();
-				break;
 			case 'd':
 				jobDirectoriesRoot = new File(g.getOptarg());
 				break;
@@ -113,11 +108,6 @@ public class UploadToDb {
 				System.exit(1);
 				break; // getopt() already printed an error
 			}
-		}
-
-		if (dbName == null) {
-			System.err.println("A database name must be provided with -D");
-			System.exit(1);
 		}
 
 		if (jobDirectoriesRoot == null || ! jobDirectoriesRoot.isDirectory() ){
@@ -152,6 +142,13 @@ public class UploadToDb {
 		DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
 		String connUri = propsReader.getMongoUri();
 
+		String dbName;
+		if (isDividedLayout)
+			dbName = propsReader.getDbName();
+		else
+			dbName = propsReader.getDbNameUserJobs();
+
+		logger.info("Will use db name {}", dbName);
 		MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
 
 		dao = new PDBInfoDAOMongo(mongoDb);
