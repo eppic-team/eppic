@@ -3,9 +3,9 @@ package eppic.rest.commons;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
-@ConfigurationProperties(prefix = "server")
+@ConfigurationProperties(prefix = "eppic-rest")
 @ConfigurationPropertiesScan
-public class ServerProperties {
+public class EppicRestProperties {
 
     // pass a file at runtime with -Dspring.config.location=/var/www/application.properties
 

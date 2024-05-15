@@ -5,7 +5,7 @@ import eppic.db.mongoutils.MongoUtils;
 import eppic.model.dto.SubmissionStatus;
 import eppic.model.dto.UserJobSubmission;
 import eppic.model.shared.StatusOfJob;
-import eppic.rest.commons.ServerProperties;
+import eppic.rest.commons.EppicRestProperties;
 import eppic.rest.jobs.EmailData;
 import eppic.rest.jobs.EmailMessageData;
 import eppic.rest.jobs.EppicCliGenerator;
@@ -49,43 +49,43 @@ public class SubmitService {
 
     private MongoDatabase mongoDbUserJobs;
 
-    private final ServerProperties serverProperties;
+    private final EppicRestProperties eppicRestProperties;
 
     @Autowired
-    public SubmitService(ServerProperties serverProperties) {
-        this.serverProperties = serverProperties;
+    public SubmitService(EppicRestProperties eppicRestProperties) {
+        this.eppicRestProperties = eppicRestProperties;
         init();
     }
 
     private void init() {
-        baseOutDir = new File(serverProperties.getBaseUserjobsDir());
-        int numThreadsJobManager = serverProperties.getNumThreadsJobManager();
-        javaVMExec = serverProperties.getJavaJreExec();
-        numThreadsEppicProcess = serverProperties.getNumThreadsEppicProcess();
-        memForEppicProcess = serverProperties.getMemEppicProcess();
-        eppicJarPath = serverProperties.getEppicJarPath();
-        cliConfigFile = new File(serverProperties.getCliConfigFile());
+        baseOutDir = new File(eppicRestProperties.getBaseUserjobsDir());
+        int numThreadsJobManager = eppicRestProperties.getNumThreadsJobManager();
+        javaVMExec = eppicRestProperties.getJavaJreExec();
+        numThreadsEppicProcess = eppicRestProperties.getNumThreadsEppicProcess();
+        memForEppicProcess = eppicRestProperties.getMemEppicProcess();
+        eppicJarPath = eppicRestProperties.getEppicJarPath();
+        cliConfigFile = new File(eppicRestProperties.getCliConfigFile());
         if (jobManager == null) {
             // init only first time, it is a singleton
             jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
         }
         emailData = new EmailData();
-        emailData.setHost(serverProperties.getEmailHost());
-        emailData.setPort(String.valueOf(serverProperties.getEmailPort()));
-        emailData.setEmailSenderPassword(serverProperties.getEmailPassword());
-        emailData.setEmailSenderUserName(serverProperties.getEmailUsername());
-        emailData.setReplyToAddress(serverProperties.getEmailReplytoAddress());
+        emailData.setHost(eppicRestProperties.getEmailHost());
+        emailData.setPort(String.valueOf(eppicRestProperties.getEmailPort()));
+        emailData.setEmailSenderPassword(eppicRestProperties.getEmailPassword());
+        emailData.setEmailSenderUserName(eppicRestProperties.getEmailUsername());
+        emailData.setReplyToAddress(eppicRestProperties.getEmailReplytoAddress());
         EmailMessageData emailMessageData = new EmailMessageData();
         emailData.setEmailMessageData(emailMessageData);
-        emailMessageData.setEmailJobSubmittedTitle(serverProperties.getEmailJobSubmittedTitle());
-        emailMessageData.setEmailJobSubmittedMessage(serverProperties.getEmailJobSubmittedMessage());
-        emailMessageData.setEmailJobFinishedTitle(serverProperties.getEmailJobFinishedTitle());
-        emailMessageData.setEmailJobFinishedMessage(serverProperties.getEmailJobFinishedMessage());
-        emailMessageData.setEmailJobErrorTitle(serverProperties.getEmailJobErrorTitle());
-        emailMessageData.setEmailJobErrorMessage(serverProperties.getEmailJobErrorMessage());
-        emailMessageData.setBaseUrlJobRetrieval(serverProperties.getEmailBaseUrlJobRetrieval());
+        emailMessageData.setEmailJobSubmittedTitle(eppicRestProperties.getEmailJobSubmittedTitle());
+        emailMessageData.setEmailJobSubmittedMessage(eppicRestProperties.getEmailJobSubmittedMessage());
+        emailMessageData.setEmailJobFinishedTitle(eppicRestProperties.getEmailJobFinishedTitle());
+        emailMessageData.setEmailJobFinishedMessage(eppicRestProperties.getEmailJobFinishedMessage());
+        emailMessageData.setEmailJobErrorTitle(eppicRestProperties.getEmailJobErrorTitle());
+        emailMessageData.setEmailJobErrorMessage(eppicRestProperties.getEmailJobErrorMessage());
+        emailMessageData.setBaseUrlJobRetrieval(eppicRestProperties.getEmailBaseUrlJobRetrieval());
 
-        mongoDbUserJobs = MongoUtils.getMongoDatabase(serverProperties.getDbNameUserjobs(), serverProperties.getMongoUriUserjobs());
+        mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs());
     }
 
     /**

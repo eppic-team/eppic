@@ -27,7 +27,7 @@ import eppic.model.db.ResidueBurialDB;
 import eppic.model.db.ResidueInfoDB;
 import eppic.model.dto.views.*;
 import eppic.rest.commons.CoordFilesAdaptor;
-import eppic.rest.commons.ServerProperties;
+import eppic.rest.commons.EppicRestProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,18 +56,18 @@ public class JobService {
     private InterfaceResidueFeaturesDAO featuresDAO;
     private InterfaceResidueFeaturesDAO featuresDAOUserJobs;
 
-    private final ServerProperties serverProperties;
+    private final EppicRestProperties eppicRestProperties;
 
     @Autowired
-    public JobService(ServerProperties serverProperties) {
-        this.serverProperties = serverProperties;
+    public JobService(EppicRestProperties eppicRestProperties) {
+        this.eppicRestProperties = eppicRestProperties;
         initDaos();
     }
 
     private void initDaos() {
 
-        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(serverProperties.getDbName(), serverProperties.getMongoUri());
-        MongoDatabase mongoDbUserJobs = MongoUtils.getMongoDatabase(serverProperties.getDbNameUserjobs(), serverProperties.getMongoUriUserjobs());
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri());
+        MongoDatabase mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs());
 
         pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         featuresDAO = new InterfaceResidueFeaturesDAOMongo(mongoDb);
@@ -527,9 +527,9 @@ public class JobService {
     private File getJobDir(String entryId) {
         File baseOutDir;
         if (isUserJob(entryId)) {
-            baseOutDir = new File(serverProperties.getBaseUserjobsDir());
+            baseOutDir = new File(eppicRestProperties.getBaseUserjobsDir());
         } else {
-            baseOutDir = new File(serverProperties.getBasePrecompDir());
+            baseOutDir = new File(eppicRestProperties.getBasePrecompDir());
             baseOutDir = new File(baseOutDir, entryId.substring(1,3));
         }
         baseOutDir = new File(baseOutDir, entryId);
