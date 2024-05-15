@@ -189,13 +189,23 @@ public class FindPdbIdsToLoad {
 
     private static void writeDiffToOutputFiles(Map<String, UpdateType> candidates) throws IOException {
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(candidates.entrySet().stream().filter(e -> e.getValue() == UpdateType.UPDATED || e.getValue() == UpdateType.MISSING).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+        // IMPORTANT: we want a shuffle update list so that update process will spread jobs randomly (avoiding large PDB entries in same batch)
+        List<Map.Entry<String, UpdateType>> toUpdate = candidates.entrySet().stream()
+                .filter(e -> e.getValue() == UpdateType.UPDATED || e.getValue() == UpdateType.MISSING)
+                .collect(Collectors.toList());
+        Collections.shuffle(toUpdate);
+        Map<String, UpdateType> toUpdateMap = new LinkedHashMap<>();
+        toUpdate.forEach(e -> toUpdateMap.put(e.getKey(), e.getValue()));
         try (Writer writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outUpdateFile)), StandardCharsets.UTF_8)) {
-            writer.write(json);
+            writer.write(ow.writeValueAsString(toUpdateMap));
         }
         logger.info("Wrote out {}", outUpdateFile);
 
-        json = ow.writeValueAsString(candidates.entrySet().stream().filter(e -> e.getValue() == UpdateType.OBSOLETED).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        // for obsolete there's no need to shuffle
+        String json = ow.writeValueAsString(candidates.entrySet().stream()
+                .filter(e -> e.getValue() == UpdateType.OBSOLETED)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
         try (Writer writer = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(outObsoleteFile)), StandardCharsets.UTF_8)) {
             writer.write(json);
         }
