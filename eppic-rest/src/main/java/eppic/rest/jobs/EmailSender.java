@@ -43,11 +43,14 @@ public class EmailSender
 		properties.put("mail.smtp.host", emailData.getHost());
 		properties.put("mail.smtp.port", emailData.getPort());
 		// this seems to be needed for google's smtp server - JD 2017-09-01
+		// https://stackoverflow.com/questions/67556270/javax-net-ssl-sslhandshakeexception-no-appropriate-protocol-protocol-is-disabl
 		properties.put("mail.smtp.auth", "true");
 		properties.put("mail.smtp.socketFactory.port", emailData.getPort());
 		properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
 		properties.put("mail.smtp.socketFactory.fallback", "false");
 		properties.put("mail.smtp.starttls.enable", "true");
+		properties.put("mail.smtp.starttls.required", "true");
+		properties.put("mail.smtp.ssl.protocols", "TLSv1.2");
 
 
 		Session session = Session.getDefaultInstance(properties, new Authenticator() {
