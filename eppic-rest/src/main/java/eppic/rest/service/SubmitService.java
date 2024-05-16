@@ -85,6 +85,8 @@ public class SubmitService {
         emailMessageData.setEmailJobErrorMessage(eppicRestProperties.getEmailJobErrorMessage());
         emailMessageData.setBaseUrlJobRetrieval(eppicRestProperties.getEmailBaseUrlJobRetrieval());
 
+        logger.info("Initialised email data: {}", emailData);
+
         mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs());
     }
 

@@ -103,4 +103,19 @@ public class EmailMessageData implements Serializable {
 		}
 		return count;
 	}
+
+	@Override
+	public String toString() {
+		return "EmailMessageData{" +
+				"emailJobSubmittedTitle='" + emailJobSubmittedTitle + '\'' +
+				", emailJobSubmittedMessage='" + emailJobSubmittedMessage + '\'' +
+				", emailJobSubmitErrorTitle='" + emailJobSubmitErrorTitle + '\'' +
+				", emailJobSubmitErrorMessage='" + emailJobSubmitErrorMessage + '\'' +
+				", emailJobErrorTitle='" + emailJobErrorTitle + '\'' +
+				", emailJobErrorMessage='" + emailJobErrorMessage + '\'' +
+				", emailJobFinishedTitle='" + emailJobFinishedTitle + '\'' +
+				", emailJobFinishedMessage='" + emailJobFinishedMessage + '\'' +
+				", baseUrlJobRetrieval='" + baseUrlJobRetrieval + '\'' +
+				'}';
+	}
 }

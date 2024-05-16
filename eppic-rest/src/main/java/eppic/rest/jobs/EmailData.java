@@ -138,4 +138,17 @@ public class EmailData implements Serializable
 	public void setEmailMessageData(EmailMessageData emailMessageData) {
 		this.emailMessageData = emailMessageData;
 	}
+
+	@Override
+	public String toString() {
+		return "EmailData{" +
+				"emailRecipient='" + emailRecipient + '\'' +
+				", emailSenderUserName='" + emailSenderUserName + '\'' +
+				", emailSenderPassword='" + (emailSenderPassword==null?"null":"*****") + '\'' +
+				", port='" + port + '\'' +
+				", host='" + host + '\'' +
+				", replyToAddress='" + replyToAddress + '\'' +
+				", emailMessageData=" + emailMessageData +
+				'}';
+	}
 }
