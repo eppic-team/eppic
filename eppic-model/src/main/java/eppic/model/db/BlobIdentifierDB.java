@@ -2,13 +2,13 @@ package eppic.model.db;
 
 public class BlobIdentifierDB {
 
-    public static final String BLOBS_COLLECTION_NAME = "blobs";
-    public static final String BLOBS_ID_KEY = "blobId";
-    public static final String BLOB_KEY = "blob";
-
     private String jobId;
     private String type;
     private String id;
+
+    public BlobIdentifierDB() {
+
+    }
 
     public BlobIdentifierDB(String jobId, String type, String id) {
         this.jobId = jobId;
