@@ -10,11 +10,13 @@ import java.util.regex.Pattern;
 
 import com.mongodb.client.MongoDatabase;
 import eppic.db.adaptors.ViewsAdaptor;
+import eppic.db.dao.mongo.BlobsDAOMongo;
 import eppic.db.dao.mongo.ContactDAOMongo;
 import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.AssemblyDB;
+import eppic.model.db.BlobIdentifierDB;
 import eppic.model.db.ChainClusterDB;
 import eppic.model.db.ContactDB;
 import eppic.model.db.GraphEdgeDB;
@@ -55,6 +57,7 @@ public class JobService {
     private PDBInfoDAO pdbInfoDAOUserJobs;
     private InterfaceResidueFeaturesDAO featuresDAO;
     private InterfaceResidueFeaturesDAO featuresDAOUserJobs;
+    private BlobsDao blobsDaoUserJobs;
 
     private final EppicRestProperties eppicRestProperties;
 
@@ -74,6 +77,7 @@ public class JobService {
 
         pdbInfoDAOUserJobs = new PDBInfoDAOMongo(mongoDbUserJobs);
         featuresDAOUserJobs = new InterfaceResidueFeaturesDAOMongo(mongoDbUserJobs);
+        blobsDaoUserJobs = new BlobsDAOMongo(mongoDbUserJobs);
     }
 
     /**
@@ -484,10 +488,20 @@ public class JobService {
         return data;
     }
 
-    public byte[] getImageFile(String entryId, String type, String id) throws IOException {
+    public byte[] getImageFile(String entryId, String type, String id) throws IOException, DaoException {
         if (!type.equals("interface") && !type.equals("assembly") && !type.equals("diagram")) {
             throw new IllegalArgumentException("The type parameter must be 'interface', 'diagram' or 'assembly'");
         }
+        byte[] data;
+        if (isUserJob(entryId)) {
+            data = getImageFileFromDb(entryId, type, id);
+        } else {
+            data = getImageFileFromFileSystem(entryId, type, id);
+        }
+        return data;
+    }
+
+    private byte[] getImageFileFromFileSystem(String entryId, String type, String id) throws IOException {
         File baseOutDir = getJobDir(entryId);
         File f = new File(baseOutDir, entryId + "." + type + "." + id + ".75x75.png");
         if (!f.exists()) {
@@ -499,6 +513,10 @@ public class JobService {
             data = is.readAllBytes();
         }
         return data;
+    }
+
+    private byte[] getImageFileFromDb(String entryId, String type, String id) throws DaoException {
+        return blobsDaoUserJobs.get(new BlobIdentifierDB(entryId, type, id));
     }
 
     private PDBInfoDAO getPdbInfoDAO(String entryId) {

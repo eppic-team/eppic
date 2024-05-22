@@ -322,9 +322,8 @@ public class JobResource {
     public byte[] getFullImage(
             @PathVariable("jobId") String jobId,
             @PathVariable("type") String type,
-            @PathVariable("id") String id) throws IOException {
+            @PathVariable("id") String id) throws DaoException, IOException {
 
-        byte[] os = jobService.getImageFile(jobId, type, id);
-        return os;
+        return  jobService.getImageFile(jobId, type, id);
     }
 }

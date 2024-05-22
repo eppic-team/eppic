@@ -1,22 +1,30 @@
 package eppic.rest.jobs;
 
 import com.mongodb.client.MongoDatabase;
+import eppic.db.dao.BlobsDao;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.InterfaceResidueFeaturesDAO;
 import eppic.db.dao.PDBInfoDAO;
+import eppic.db.dao.mongo.BlobsDAOMongo;
 import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.loaders.EntryData;
 import eppic.db.loaders.UploadToDb;
+import eppic.model.db.BlobIdentifierDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.mail.MessagingException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 public class ShellTask implements Callable<Integer> {
 
@@ -203,6 +211,33 @@ public class ShellTask implements Callable<Integer> {
         logger.info("Will write user job '{}' to db", submissionId);
         dao.insertPDBInfo(entryData.getPdbInfoDB());
         interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
+
+        // write input file and images as blobs to db
+        BlobsDao blobsDao = new BlobsDAOMongo(mongoDb);
+        File inputFile = new File(jobDirectory, submissionId);
+        try (InputStream is = new FileInputStream(inputFile)) {
+            logger.info("Writing input coordinates file '{}' to db", inputFile);
+            blobsDao.insert(new BlobIdentifierDB(submissionId, "coords", null), is.readAllBytes());
+        }
+        try (Stream<Path> stream = Files.list(jobDirectory.toPath())) {
+            List<Path> list = stream
+                    .filter(file -> !Files.isDirectory(file))
+                    .filter(file -> file.toFile().getName().endsWith(".png"))
+                    .toList();
+            for (Path f : list) {
+                // expected file name is like abcdef-abcdef-abcdef.assembly.1.75x75.png
+                String[] tokens = f.toFile().getName().split("\\.");
+                if (tokens.length != 5) {
+                    logger.warn("File {} does not have the expected 5 tokens", f);
+                    continue;
+                }
+                BlobIdentifierDB blobId = new BlobIdentifierDB(tokens[0], tokens[1], tokens[2]);
+                try (InputStream pngIs = new FileInputStream(f.toFile())) {
+                    logger.info("Writing image file '{}' to db", f);
+                    blobsDao.insert(blobId, pngIs.readAllBytes());
+                }
+            }
+        }
     }
 
     private void notifyByEmailOnSubmit() {
