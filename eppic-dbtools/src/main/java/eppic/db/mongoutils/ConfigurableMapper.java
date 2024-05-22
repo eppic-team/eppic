@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import eppic.db.serializers.BytesDeserializer;
+import eppic.db.serializers.BytesSerializer;
 import eppic.db.serializers.NanAwareDoubleSerializer;
 
 import java.text.DateFormat;
@@ -46,6 +48,11 @@ public class ConfigurableMapper {
         // java.lang.IllegalArgumentException: Cannot resolve PropertyFilter with id 'eppic.model.db.PdbInfoDB'; no FilterProvider configured
         // see https://stackoverflow.com/questions/9382094/jsonfilter-throws-jsonmappingexception-can-not-resolve-beanpropertyfilter
         mapper.setFilterProvider(new SimpleFilterProvider().setFailOnUnknownId(false));
+
+        // needed to serialize/deserialize blobs that are in json fields (only way is using base64 encoding)
+        // see https://stackoverflow.com/questions/40993617/how-to-deserialize-serialize-byte-array-using-jackson-and-wrapper-object
+        mapper.registerModule(new SimpleModule().addSerializer(byte[].class, new BytesSerializer()));
+        mapper.registerModule(new SimpleModule().addDeserializer(byte[].class, new BytesDeserializer()));
     }
 
     public static ObjectMapper getMapper() {
