@@ -1,6 +1,7 @@
 package eppic.rest.service;
 
 import com.mongodb.client.MongoDatabase;
+import eppic.commons.util.FileTypeGuesser;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.dto.SubmissionStatus;
 import eppic.model.dto.UserJobSubmission;
@@ -125,7 +126,7 @@ public class SubmitService {
         byte[] uploadedFileContent = Base64.getDecoder().decode(userJobSubmission.getData());
         InputStream inputStream = new ByteArrayInputStream(uploadedFileContent);
         // note that file will be written gzipped (whatever the input was)
-        writeToFile(handleGzip(inputStream), file);
+        writeToFile(FileTypeGuesser.handleGzip(inputStream), file);
 
         // TODO write original file name to serialized file and then to db, then we'd have a nice display name for UI
 
@@ -165,22 +166,6 @@ public class SubmitService {
             throw new BadRequestException("File name must not be empty");
         }
         return fileName.trim();
-    }
-
-    private InputStream handleGzip(InputStream inputStream) throws IOException {
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-        bufferedInputStream.mark(2);
-        int b0 = bufferedInputStream.read();
-        int b1 = bufferedInputStream.read();
-        bufferedInputStream.reset();
-
-        // apply GZIPInputStream decorator if gzipped content
-        if ((b1 << 8 | b0) == GZIPInputStream.GZIP_MAGIC) {
-            logger.debug("Reading gzip");
-            return new GZIPInputStream(bufferedInputStream);
-        }
-        logger.debug("Reading uncompressed");
-        return bufferedInputStream;
     }
 
     private void writeToFile(InputStream is, File file) throws IOException, BadRequestException {

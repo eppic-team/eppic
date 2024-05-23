@@ -1,15 +1,13 @@
 package eppic.commons.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  * Class: 		FileTypeGuesser
@@ -28,6 +26,8 @@ import org.biojava.nbio.core.sequence.io.util.IOUtils;
  * - CMView contact map files
  */
 public class FileTypeGuesser {
+
+	private static final Logger logger = LoggerFactory.getLogger(FileTypeGuesser.class);
 
 	/*------------------------------ constants ------------------------------*/
 	// file types
@@ -85,7 +85,7 @@ public class FileTypeGuesser {
 	 * @return the determined file type or UNKNOWN_FILE_TYPE
 	 */
 	public static int guessFileType(InputStream is) throws IOException {
-		BufferedReader in = new BufferedReader(new InputStreamReader(is));
+		BufferedReader in = new BufferedReader(new InputStreamReader(handleGzip(is)));
 		String firstLine = in.readLine();
 		if(firstLine != null) {
 			// be lenient here and allow one empty line at the beginning
@@ -100,6 +100,23 @@ public class FileTypeGuesser {
 		in.close();
 		return UNKNOWN_FILE;
 	}
+
+	public static InputStream handleGzip(InputStream inputStream) throws IOException {
+		BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+		bufferedInputStream.mark(2);
+		int b0 = bufferedInputStream.read();
+		int b1 = bufferedInputStream.read();
+		bufferedInputStream.reset();
+
+		// apply GZIPInputStream decorator if gzipped content
+		if ((b1 << 8 | b0) == GZIPInputStream.GZIP_MAGIC) {
+			logger.debug("Reading gzip");
+			return new GZIPInputStream(bufferedInputStream);
+		}
+		logger.debug("Reading uncompressed");
+		return bufferedInputStream;
+	}
+
 	/**
 	 * Returns a string with the name of the given file type constant or null if no name is defined.
 	 * The file types are defined as public constants in this class.
