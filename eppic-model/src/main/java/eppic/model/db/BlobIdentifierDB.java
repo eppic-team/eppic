@@ -3,14 +3,14 @@ package eppic.model.db;
 public class BlobIdentifierDB {
 
     private String jobId;
-    private String type;
+    private FileTypeEnum type;
     private String id;
 
     public BlobIdentifierDB() {
 
     }
 
-    public BlobIdentifierDB(String jobId, String type, String id) {
+    public BlobIdentifierDB(String jobId, FileTypeEnum type, String id) {
         this.jobId = jobId;
         this.type = type;
         this.id = id;
@@ -24,11 +24,11 @@ public class BlobIdentifierDB {
         this.jobId = jobId;
     }
 
-    public String getType() {
+    public FileTypeEnum getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(FileTypeEnum type) {
         this.type = type;
     }
 

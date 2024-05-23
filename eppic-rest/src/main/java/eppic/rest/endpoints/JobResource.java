@@ -4,6 +4,7 @@ import eppic.db.dao.DaoException;
 import eppic.model.db.AssemblyDB;
 import eppic.model.db.ChainClusterDB;
 import eppic.model.db.ContactDB;
+import eppic.model.db.FileTypeEnum;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
@@ -321,7 +322,7 @@ public class JobResource {
     @Produces("image/png")
     public byte[] getFullImage(
             @PathVariable("jobId") String jobId,
-            @PathVariable("type") String type,
+            @PathVariable("type") FileTypeEnum type,
             @PathVariable("id") String id) throws DaoException, IOException {
 
         return  jobService.getImageFile(jobId, type, id);

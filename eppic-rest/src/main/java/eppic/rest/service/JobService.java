@@ -1,5 +1,6 @@
 package eppic.rest.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,6 +20,7 @@ import eppic.model.db.AssemblyDB;
 import eppic.model.db.BlobIdentifierDB;
 import eppic.model.db.ChainClusterDB;
 import eppic.model.db.ContactDB;
+import eppic.model.db.FileTypeEnum;
 import eppic.model.db.GraphEdgeDB;
 import eppic.model.db.HomologDB;
 import eppic.model.db.InterfaceClusterDB;
@@ -463,24 +465,29 @@ public class JobService {
         // get data and produce file
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
 
-        URL fileUrl;
-        File baseOutDir = getJobDir(entryId);
-        // for user jobs (this works because we create a symlink, see SubmitService)
-        File auFile = new File(baseOutDir, entryId);
-        if (!auFile.exists()) {
+        InputStream is;
+        if (!isUserJob(entryId)) {
             // for precomputed jobs
-            fileUrl = new URL(CIFGZ_BASE_URL + entryId.toUpperCase() + ".cif.gz");
+            String url = CIFGZ_BASE_URL + entryId.toUpperCase() + ".cif.gz";
+            is = new URL(url).openStream();
+            logger.info("Will read AU coordinates from url {}", url);
         } else {
-            fileUrl = auFile.toURI().toURL();
+            try {
+                is = new ByteArrayInputStream(blobsDaoUserJobs.get(new BlobIdentifierDB(entryId, FileTypeEnum.COORDS, null)));
+                logger.info("Will read AU coordinates from db");
+            } catch (DaoException e) {
+                logger.error("Could not find coordinates blob in db for id '{}'. Something is wrong!", entryId);
+                throw e;
+            }
         }
-        logger.info("Will read AU coordinates from file {}", fileUrl);
+
         CoordFilesAdaptor adaptor = new CoordFilesAdaptor();
 
         byte[] data;
         if (assemblyId!=null) {
-            data = adaptor.getAssemblyCoordsMmcif(entryId, fileUrl, pdbInfo, Integer.parseInt(assemblyId), true);
+            data = adaptor.getAssemblyCoordsMmcif(entryId, is, pdbInfo, Integer.parseInt(assemblyId), true);
         } else if (interfId!=null) {
-            data = adaptor.getInterfaceCoordsMmcif(entryId, fileUrl, pdbInfo, Integer.parseInt(interfId), true);
+            data = adaptor.getInterfaceCoordsMmcif(entryId, is, pdbInfo, Integer.parseInt(interfId), true);
         } else {
             // should not happen, the validation took care of this
             throw new RuntimeException("Unsupported file type ");
@@ -488,10 +495,7 @@ public class JobService {
         return data;
     }
 
-    public byte[] getImageFile(String entryId, String type, String id) throws IOException, DaoException {
-        if (!type.equals("interface") && !type.equals("assembly") && !type.equals("diagram")) {
-            throw new IllegalArgumentException("The type parameter must be 'interface', 'diagram' or 'assembly'");
-        }
+    public byte[] getImageFile(String entryId, FileTypeEnum type, String id) throws IOException, DaoException {
         byte[] data;
         if (isUserJob(entryId)) {
             data = getImageFileFromDb(entryId, type, id);
@@ -501,9 +505,9 @@ public class JobService {
         return data;
     }
 
-    private byte[] getImageFileFromFileSystem(String entryId, String type, String id) throws IOException {
+    private byte[] getImageFileFromFileSystem(String entryId, FileTypeEnum type, String id) throws IOException {
         File baseOutDir = getJobDir(entryId);
-        File f = new File(baseOutDir, entryId + "." + type + "." + id + ".75x75.png");
+        File f = new File(baseOutDir, entryId + "." + type.name().toLowerCase() + "." + id + ".75x75.png");
         if (!f.exists()) {
             throw new NoResultException("Could not find image for job id " + entryId + ", type '" + type + "', id '" + id + "'");
         }
@@ -515,7 +519,7 @@ public class JobService {
         return data;
     }
 
-    private byte[] getImageFileFromDb(String entryId, String type, String id) throws DaoException {
+    private byte[] getImageFileFromDb(String entryId, FileTypeEnum type, String id) throws DaoException {
         return blobsDaoUserJobs.get(new BlobIdentifierDB(entryId, type, id));
     }
 

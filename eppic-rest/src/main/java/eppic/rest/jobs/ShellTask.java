@@ -11,6 +11,7 @@ import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.loaders.EntryData;
 import eppic.db.loaders.UploadToDb;
 import eppic.model.db.BlobIdentifierDB;
+import eppic.model.db.FileTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -217,7 +218,7 @@ public class ShellTask implements Callable<Integer> {
         File inputFile = new File(jobDirectory, submissionId);
         try (InputStream is = new FileInputStream(inputFile)) {
             logger.info("Writing input coordinates file '{}' to db", inputFile);
-            blobsDao.insert(new BlobIdentifierDB(submissionId, "coords", null), is.readAllBytes());
+            blobsDao.insert(new BlobIdentifierDB(submissionId, FileTypeEnum.COORDS, null), is.readAllBytes());
         }
         try (Stream<Path> stream = Files.list(jobDirectory.toPath())) {
             List<Path> list = stream
@@ -231,7 +232,7 @@ public class ShellTask implements Callable<Integer> {
                     logger.warn("File {} does not have the expected 5 tokens", f);
                     continue;
                 }
-                BlobIdentifierDB blobId = new BlobIdentifierDB(tokens[0], tokens[1], tokens[2]);
+                BlobIdentifierDB blobId = new BlobIdentifierDB(tokens[0], FileTypeEnum.valueOf(tokens[1].toUpperCase()), tokens[2]);
                 try (InputStream pngIs = new FileInputStream(f.toFile())) {
                     logger.info("Writing image file '{}' to db", f);
                     blobsDao.insert(blobId, pngIs.readAllBytes());
