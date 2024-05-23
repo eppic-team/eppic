@@ -33,9 +33,14 @@ public class SubmitService {
 
     private static final int DEFAULT_NUM_THREADS_PER_JOB = 2;
     /**
-     * Max allowed file size (uncompressed) in bytes. If more than this, it is rejected with a 400
+     * Max allowed file size to write to db (gzip compressed). If more than this, it is rejected with a 400
      */
     private static final long MAX_ALLOWED_FILE_SIZE = 10 * 1024 * 1024;
+    /**
+     * Max allowed file size to upload (however the upload comes, be it gzipped or not) in bytes
+     */
+    private static final long MAX_ALLOWED_FILE_SIZE_UPLOAD = 100 * 1024 * 1024;
+
 
 
     // note the dreaded singleton! Jersey inits the service class with every request, so I don't see a way to avoid the singleton here
@@ -125,8 +130,13 @@ public class SubmitService {
         logger.info("Writing user's coordinate input file for job '{}' to file '{}'", submissionId, file);
         byte[] uploadedFileContent = Base64.getDecoder().decode(userJobSubmission.getData());
         InputStream inputStream = new ByteArrayInputStream(uploadedFileContent);
+        byte[] bytes = inputStream.readAllBytes();
+        if (bytes.length > MAX_ALLOWED_FILE_SIZE_UPLOAD) {
+            long maxInMb = MAX_ALLOWED_FILE_SIZE_UPLOAD / (1024*1024);
+            throw new BadRequestException("Input file exceeds the maximum allowed size. Please only submit files up to " + maxInMb +" MB");
+        }
         // note that file will be written gzipped (whatever the input was)
-        writeToFile(FileTypeGuesser.handleGzip(inputStream), file);
+        writeToFile(FileTypeGuesser.handleGzip(new ByteArrayInputStream(bytes)), file);
 
         // TODO write original file name to serialized file and then to db, then we'd have a nice display name for UI
 
