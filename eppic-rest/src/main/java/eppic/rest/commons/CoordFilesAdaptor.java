@@ -29,8 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.vecmath.Matrix4d;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +73,11 @@ public class CoordFilesAdaptor {
         return getAssemblyCoordsMmcif(jobId, s, pdbInfoDB, assemblyId, withEvolScores);
     }
 
+    public byte[] getAssemblyCoordsMmcif(String jobId, InputStream is, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
+        Structure s = readCoords(is);
+        return getAssemblyCoordsMmcif(jobId, s, pdbInfoDB, assemblyId, withEvolScores);
+    }
+
     /**
      * Given an input file with coordinates of an AU in mmCIF format produces
      * an mmCIF format output stream representing the given assembly db model object
@@ -83,7 +90,7 @@ public class CoordFilesAdaptor {
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public byte[] getAssemblyCoordsMmcif(String jobId, Structure s, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
+    private byte[] getAssemblyCoordsMmcif(String jobId, Structure s, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
 
         List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
@@ -162,6 +169,11 @@ public class CoordFilesAdaptor {
         return getInterfaceCoordsMmcif(jobId, s, pdbInfoDB, interfaceId, withEvolScores);
     }
 
+    public byte[] getInterfaceCoordsMmcif(String jobId, InputStream is, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
+        Structure s = readCoords(is);
+        return getInterfaceCoordsMmcif(jobId, s, pdbInfoDB, interfaceId, withEvolScores);
+    }
+
     /**
      *
      * @param jobId the job identifier to write in output stream, can be null if unavailable from caller
@@ -171,7 +183,7 @@ public class CoordFilesAdaptor {
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public byte[] getInterfaceCoordsMmcif(String jobId, Structure s, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
+    private byte[] getInterfaceCoordsMmcif(String jobId, Structure s, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
 
         List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
@@ -293,6 +305,45 @@ public class CoordFilesAdaptor {
 
         return structure;
     }
+
+    private Structure readCoords(InputStream is) throws IOException {
+
+        long start = System.currentTimeMillis();
+
+        Structure structure;
+        FileParsingParameters fileParsingParams = new FileParsingParameters();
+        fileParsingParams.setAlignSeqRes(true);
+
+        // we assume that the blob in db is always gzipped
+
+        // read the stream once into memory, in case it is from network (e.g. db or url)
+        byte[] bytes = new GZIPInputStream(is).readAllBytes();
+
+        // we still need a stream for using in other methods below
+        InputStream bytesIs = new ByteArrayInputStream(bytes);
+
+        int fileType = FileTypeGuesser.guessFileType(bytesIs);
+
+        if (fileType==FileTypeGuesser.CIF_FILE) {
+            structure = CifStructureConverter.fromInputStream(bytesIs, fileParsingParams);
+        } else if (fileType == FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
+            PDBFileParser parser = new PDBFileParser();
+
+            parser.setFileParsingParameters(fileParsingParams);
+
+            structure = parser.parsePDBFile(bytesIs);
+        } else {
+            // TODO support bcif, add it to file type guesser
+            throw new IOException("AU coordinate stream does not seem to be in one of the supported formats");
+        }
+
+        long end = System.currentTimeMillis();
+
+        logger.info("Time needed to parse coordinates input stream: {} ms", end-start);
+
+        return structure;
+    }
+
 
     private void addEvolutionaryScores(Chain c, PdbInfoDB pdbInfoDB) {
 
