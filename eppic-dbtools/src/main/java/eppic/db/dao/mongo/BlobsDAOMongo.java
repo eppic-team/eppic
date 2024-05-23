@@ -7,6 +7,7 @@ import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.BlobDB;
 import eppic.model.db.BlobIdentifierDB;
 import javax.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -34,9 +35,15 @@ public class BlobsDAOMongo implements BlobsDao {
     @Override
     public byte[] get(BlobIdentifierDB blobId) throws DaoException {
         // TODO how to deal with field names without hard coding
+        // note we have to use this instead of List.of because List.of doesn't allow nulls
+        List<Object> idList = new ArrayList<>();
+        idList.add(blobId.getJobId());
+        idList.add(blobId.getType().toString());
+        idList.add(blobId.getId());
+
         BlobDB blob = MongoUtils.findOne(mongoDb, collectionName,
                 List.of("blobId.jobId", "blobId.type", "blobId.id"),
-                List.of(blobId.getJobId(), blobId.getType().toString(), blobId.getId()),
+                idList,
                 BlobDB.class);
 
         if (blob == null) {

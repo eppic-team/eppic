@@ -319,19 +319,16 @@ public class CoordFilesAdaptor {
         // read the stream once into memory, in case it is from network (e.g. db or url)
         byte[] bytes = new GZIPInputStream(is).readAllBytes();
 
-        // we still need a stream for using in other methods below
-        InputStream bytesIs = new ByteArrayInputStream(bytes);
-
-        int fileType = FileTypeGuesser.guessFileType(bytesIs);
+        int fileType = FileTypeGuesser.guessFileType(new ByteArrayInputStream(bytes));
 
         if (fileType==FileTypeGuesser.CIF_FILE) {
-            structure = CifStructureConverter.fromInputStream(bytesIs, fileParsingParams);
+            structure = CifStructureConverter.fromInputStream(new ByteArrayInputStream(bytes), fileParsingParams);
         } else if (fileType == FileTypeGuesser.PDB_FILE || fileType==FileTypeGuesser.RAW_PDB_FILE) {
             PDBFileParser parser = new PDBFileParser();
 
             parser.setFileParsingParameters(fileParsingParams);
 
-            structure = parser.parsePDBFile(bytesIs);
+            structure = parser.parsePDBFile(new ByteArrayInputStream(bytes));
         } else {
             // TODO support bcif, add it to file type guesser
             throw new IOException("AU coordinate stream does not seem to be in one of the supported formats");
