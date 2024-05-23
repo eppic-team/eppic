@@ -216,6 +216,7 @@ public class ShellTask implements Callable<Integer> {
         // write input file and images as blobs to db
         BlobsDao blobsDao = new BlobsDAOMongo(mongoDb);
         File inputFile = new File(jobDirectory, submissionId);
+        // note SubmitService writes gzipped, then this will write to db gzipped
         try (InputStream is = new FileInputStream(inputFile)) {
             logger.info("Writing input coordinates file '{}' to db", inputFile);
             blobsDao.insert(new BlobIdentifierDB(submissionId, FileTypeEnum.COORDS, null), is.readAllBytes());

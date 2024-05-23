@@ -23,6 +23,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 @Service
 public class SubmitService {
@@ -108,7 +109,7 @@ public class SubmitService {
         // 2 Create a submission id
         String submissionId = UUID.randomUUID().toString(); // perhaps strip hyphens?
 
-        // 3 write to disk so that CLI can read: first check if stream is gzipped or not, then write to disk ungzipped. Also validates the file size
+        // 3 write to disk so that CLI can read: first check if stream is gzipped or not, then write to disk gzipped. Also validates the file size
         File outDir = new File(baseOutDir, submissionId);
         if (!outDir.exists()) {
             boolean created = outDir.mkdir();
@@ -121,9 +122,9 @@ public class SubmitService {
         }
         File file = new File(outDir, submissionId);
         logger.info("Writing user's coordinate input file for job '{}' to file '{}'", submissionId, file);
-        // note that file will be written ungzipped
         byte[] uploadedFileContent = Base64.getDecoder().decode(userJobSubmission.getData());
         InputStream inputStream = new ByteArrayInputStream(uploadedFileContent);
+        // note that file will be written gzipped (whatever the input was)
         writeToFile(handleGzip(inputStream), file);
 
         // TODO write original file name to serialized file and then to db, then we'd have a nice display name for UI
@@ -184,13 +185,16 @@ public class SubmitService {
 
     private void writeToFile(InputStream is, File file) throws IOException, BadRequestException {
         byte[] buffer = is.readAllBytes();
-        if (buffer.length > MAX_ALLOWED_FILE_SIZE) {
+
+        OutputStream outStream = new GZIPOutputStream(new FileOutputStream(file));
+        outStream.write(buffer);
+        outStream.close();
+
+        // we check the size of the gzipped file
+        if (file.length() > MAX_ALLOWED_FILE_SIZE) {
             long maxInMb = MAX_ALLOWED_FILE_SIZE / (1024*1024);
             throw new BadRequestException("Input file exceeds the maximum allowed size. Please only submit files up to " + maxInMb +" MB");
         }
-        OutputStream outStream = new FileOutputStream(file);
-        outStream.write(buffer);
-        outStream.close();
     }
 
 }
