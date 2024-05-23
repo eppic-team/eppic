@@ -36,7 +36,7 @@ public class BlobsDAOMongo implements BlobsDao {
         // TODO how to deal with field names without hard coding
         BlobDB blob = MongoUtils.findOne(mongoDb, collectionName,
                 List.of("blobId.jobId", "blobId.type", "blobId.id"),
-                List.of(blobId.getJobId(), blobId.getType(), blobId.getId()),
+                List.of(blobId.getJobId(), blobId.getType().toString(), blobId.getId()),
                 BlobDB.class);
 
         if (blob == null) {
