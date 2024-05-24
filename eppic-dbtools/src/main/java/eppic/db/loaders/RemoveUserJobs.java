@@ -106,11 +106,9 @@ public class RemoveUserJobs {
 				logger.warn("Was expecting to remove 1 PdbInfo object, but actually removed {}", removed);
 			}
 			removed = interfResDao.remove(id);
-			if (removed!=1) {
-				logger.warn("Was expecting to remove 1 InterfaceResidueFeatures object, but actually removed {}", removed);
-			}
-			long count = blobsDao.remove(id);
-			logger.info("Removed all data for id {}. There were {} blobs associated to it.", id, count);
+			logger.info("Removed InterfaceResidueFeature data for id {}. There were {} objects", id, removed);
+			removed = blobsDao.remove(id);
+			logger.info("Removed all data for id {}. There were {} blobs associated to it.", id, removed);
 		}
 	}
 
