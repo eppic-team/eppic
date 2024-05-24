@@ -26,6 +26,11 @@ public class PdbInfoDB implements Serializable {
 	 */
 	private String entryId;
 
+	/**
+	 * The upload date for user jobs, otherwise null
+	 */
+	private Date uploadDate;
+
 	private String title;
 	private Date releaseDate;
 	private String spaceGroup;
@@ -436,6 +441,14 @@ public class PdbInfoDB implements Serializable {
 
 	public void setCrystalFormId(int crystalFormId) {
 		this.crystalFormId = crystalFormId;
+	}
+
+	public Date getUploadDate() {
+		return uploadDate;
+	}
+
+	public void setUploadDate(Date uploadDate) {
+		this.uploadDate = uploadDate;
 	}
 
 	@JsonIgnore

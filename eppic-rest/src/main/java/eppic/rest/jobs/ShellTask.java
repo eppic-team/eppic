@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -210,6 +211,10 @@ public class ShellTask implements Callable<Integer> {
             throw new IOException("Could not read serialized file");
         }
         logger.info("Will write user job '{}' to db", submissionId);
+
+        // important write the upload date so that we can track age of jobs
+        entryData.getPdbInfoDB().setUploadDate(new Date());
+
         dao.insertPDBInfo(entryData.getPdbInfoDB());
         interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
 
