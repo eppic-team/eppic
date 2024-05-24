@@ -88,6 +88,7 @@ public class RemoveUserJobs {
 		// 1st: double check that indices for blobs exist. If not, create them
 		boolean indicesFound = MongoUtils.hasExpectedIndices(mongoDb, BlobDB.class);
 		if (!indicesFound) {
+			logger.info("Creating indices for user jobs Blob collection");
 			MongoUtils.createIndices(mongoDb, BlobDB.class);
 		}
 
