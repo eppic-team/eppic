@@ -17,7 +17,9 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Indexes.ascending;
@@ -113,6 +115,20 @@ public class MongoUtils {
                     .createIndex(ascending(fieldList), new IndexOptions()
                             .unique(index.unique()).name(index.name()));
         }
+    }
+
+    public static boolean hasExpectedIndices(MongoDatabase mongoDb, Class<?> modelClass) {
+        Table tableMetadata = getTableMetadataFromJpa(modelClass);
+        Set<String> existingIndices = new HashSet<>();
+        for (Document doc : mongoDb.getCollection(tableMetadata.name()).listIndexes()) {
+            existingIndices.add(doc.getString("name"));
+        }
+        for (Index index : tableMetadata.indexes()) {
+            if (!existingIndices.contains(index.name())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static Table getTableMetadataFromJpa(Class<?> modelClass) {

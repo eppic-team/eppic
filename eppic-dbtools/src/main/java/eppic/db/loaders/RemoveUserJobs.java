@@ -10,6 +10,8 @@ import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
+import eppic.model.db.BlobDB;
+import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
@@ -82,6 +84,12 @@ public class RemoveUserJobs {
 		dao = new PDBInfoDAOMongo(mongoDb);
 		interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
 		blobsDao = new BlobsDAOMongo(mongoDb);
+
+		// 1st: double check that indices for blobs exist. If not, create them
+		boolean indicesFound = MongoUtils.hasExpectedIndices(mongoDb, BlobDB.class);
+		if (!indicesFound) {
+			MongoUtils.createIndices(mongoDb, BlobDB.class);
+		}
 
 		List<PdbInfoDB> list;
 		try {
