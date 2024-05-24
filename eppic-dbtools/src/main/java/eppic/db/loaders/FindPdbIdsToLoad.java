@@ -184,6 +184,8 @@ public class FindPdbIdsToLoad {
         numMissing = filteredCandidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("From the missing set, only {} need adding. The rest are invalid (non crystallograpic or not containing protein)", numMissing);
 
+        logger.info("Final stats. To be loaded (MISSING): {}. To be reloaded (UPDATED): {}. Total to update: {}", numMissing, numOutdated, numMissing + numObsoleted);
+
         writeDiffToOutputFiles(filteredCandidates);
     }
 
