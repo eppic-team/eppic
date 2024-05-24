@@ -10,7 +10,6 @@ import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
-import eppic.model.db.BlobDB;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
