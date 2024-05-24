@@ -94,6 +94,8 @@ public class RemoveUserJobs {
 		logger.info("Total of {} user jobs found", list.size());
 
 		Date dateKeepFromHere = Date.from(keepFromHere.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+		logger.info("Will remove user jobs submitted before {}", dateKeepFromHere);
+
 		List<String> idsToRemove = list.stream().filter(pdbInfoDB -> pdbInfoDB.getUploadDate().before(dateKeepFromHere)).map(PdbInfoDB::getEntryId).toList();
 
 		logger.info("User jobs older than {} days: {}. Will proceed to remove them", numDays, idsToRemove.size());
