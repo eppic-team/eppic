@@ -3,7 +3,8 @@ package eppic.model.db;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
-@Table(name = "Blob", indexes = @Index(name = "blobId_idx", columnList = "blobId.jobdId,blobId.type,blobId.id", unique = true))
+@Table(name = "Blob",
+        indexes = {@Index(name = "blobId_idx", columnList = "blobId.jobdId,blobId.type,blobId.id", unique = true), @Index(name = "blobId-jobId_idx", columnList = "blobId.jobId")})
 public class BlobDB {
 
     public static final String BLOBS_ID_KEY = "blobId";
