@@ -8,4 +8,6 @@ public interface BlobsDao {
 
     byte[] get(BlobIdentifierDB blobId) throws DaoException;
 
+    long remove(String entryId) throws DaoException;
+
 }

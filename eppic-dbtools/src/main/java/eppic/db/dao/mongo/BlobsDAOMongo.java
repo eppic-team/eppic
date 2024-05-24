@@ -53,4 +53,9 @@ public class BlobsDAOMongo implements BlobsDao {
 
         return blob.getBlob();
     }
+
+    @Override
+    public long remove(String entryId) throws DaoException {
+        return MongoUtils.remove(mongoDb, collectionName, "blobId.jobId", List.of(entryId));
+    }
 }

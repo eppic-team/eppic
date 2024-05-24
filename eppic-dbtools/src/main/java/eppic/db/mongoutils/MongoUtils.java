@@ -5,6 +5,7 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -141,6 +142,13 @@ public class MongoUtils {
                 .into(new ArrayList<>());
     }
 
+    public static <T> List<T> findAll(MongoDatabase mongoDb, String collectionName, Class<T> modelClass) {
+        return mongoDb.getCollection(collectionName).find()
+                .projection(excludeId())
+                .map(doc -> ConfigurableMapper.getMapper().convertValue(doc, modelClass))
+                .into(new ArrayList<>());
+    }
+
     public static Bson getIdentifierQuery(List<String> idFields, List<Object> id) {
 
         if (id.size() != idFields.size())
@@ -156,6 +164,13 @@ public class MongoUtils {
     public static boolean isCollectionEmpty(MongoDatabase mongoDb, Class<?> modelClass) {
         long count = mongoDb.getCollection(getTableMetadataFromJpa(modelClass).name()).countDocuments();
         return count == 0;
+    }
+
+    public static long remove(MongoDatabase mongoDb, String collectionName, String field, List<String> ids) {
+        List<Document> allIds = ids.stream().map(id -> new Document(field, id)).toList();
+        Bson q = new Document("$or", allIds);
+        DeleteResult deleteResult = mongoDb.getCollection(collectionName).deleteMany(q);
+        return deleteResult.getDeletedCount();
     }
 
 }

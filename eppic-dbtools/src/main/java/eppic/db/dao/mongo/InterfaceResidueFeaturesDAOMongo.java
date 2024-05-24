@@ -52,4 +52,9 @@ public class InterfaceResidueFeaturesDAOMongo implements InterfaceResidueFeature
         }
         return feat;
     }
+
+    @Override
+    public long remove(String entryId) throws DaoException {
+        return MongoUtils.remove(mongoDb, collectionName, "entryId", List.of(entryId));
+    }
 }

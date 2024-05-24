@@ -53,4 +53,19 @@ public class PDBInfoDAOMongo implements PDBInfoDAO {
         }
     }
 
+    @Override
+    public List<PdbInfoDB> getAll() throws DaoException {
+       List<PdbInfoDB> list;
+       try {
+           list = MongoUtils.findAll(mongoDb, collectionName, PdbInfoDB.class);
+       } catch (Exception e) {
+           throw new DaoException(e);
+       }
+       return list;
+    }
+
+    @Override
+    public long remove(String entryId) throws DaoException {
+        return MongoUtils.remove(mongoDb, collectionName, "entryId", List.of(entryId));
+    }
 }

@@ -32,4 +32,12 @@ public interface PDBInfoDAO
 	 * @throws DaoException
 	 */
 	void insertPDBInfos(List<PdbInfoDB> pdbInfos) throws DaoException;
+
+	/**
+	 * Get all objects in PdbInfo
+	 * @return list of PdbInfoDB objects
+	 */
+	List<PdbInfoDB> getAll() throws DaoException;
+
+	long remove(String entryId) throws DaoException;
 }
