@@ -10,6 +10,7 @@ import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
+import eppic.model.db.BlobDB;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
@@ -93,6 +94,14 @@ public class RemoveUserJobs {
 
 		logger.info("Total of {} user jobs found", list.size());
 
+		if (list.isEmpty()) {
+			logger.info("No user jobs. Will exit now.");
+			System.exit(0);
+		}
+
+		long countAllBlobs = blobsDao.countAll();
+		logger.info("Number of blobs in user job db is: {}", countAllBlobs);
+
 		Date dateKeepFromHere = Date.from(keepFromHere.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
 		logger.info("Will remove user jobs submitted before {}", dateKeepFromHere);
 
@@ -110,6 +119,10 @@ public class RemoveUserJobs {
 			removed = blobsDao.remove(id);
 			logger.info("Removed all data for id {}. There were {} blobs associated to it.", id, removed);
 		}
+
+		long countAllPdbInfos = list.size() - idsToRemove.size();
+		countAllBlobs = blobsDao.countAll();
+		logger.info("There are {} user jobs remaining in db, with {} blobs", countAllPdbInfos, countAllBlobs);
 	}
 
 }

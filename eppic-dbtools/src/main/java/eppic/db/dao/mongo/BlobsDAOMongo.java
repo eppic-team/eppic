@@ -55,6 +55,16 @@ public class BlobsDAOMongo implements BlobsDao {
     }
 
     @Override
+    public List<BlobDB> getAll() throws DaoException {
+        return MongoUtils.findAll(mongoDb, collectionName, BlobDB.class);
+    }
+
+    @Override
+    public long countAll() throws DaoException {
+        return MongoUtils.countDocuments(mongoDb, collectionName);
+    }
+
+    @Override
     public long remove(String entryId) throws DaoException {
         return MongoUtils.remove(mongoDb, collectionName, "blobId.jobId", List.of(entryId));
     }

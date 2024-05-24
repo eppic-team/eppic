@@ -6,6 +6,8 @@ import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.result.DeleteResult;
+import org.bson.BsonDocument;
+import org.bson.BsonInt64;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -171,6 +173,19 @@ public class MongoUtils {
         Bson q = new Document("$or", allIds);
         DeleteResult deleteResult = mongoDb.getCollection(collectionName).deleteMany(q);
         return deleteResult.getDeletedCount();
+    }
+
+    public static long countDocuments(MongoDatabase mongoDb, String collectionName) {
+        return mongoDb.getCollection(collectionName).countDocuments();
+    }
+
+    // TODO finish up. This only gets stats for whole db
+    // https://www.mongodb.com/docs/drivers/java/sync/current/usage-examples/command/
+    public static long getSize(MongoDatabase mongoDb, String collectionName) {
+        Bson command = new BsonDocument("dbStats", new BsonInt64(1));
+        Document doc = mongoDb.runCommand(command);
+
+        return 0; // TODO implement
     }
 
 }
