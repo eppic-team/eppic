@@ -426,6 +426,13 @@ public class UploadToDb {
 			}
 			try {
 				long start = System.currentTimeMillis();
+				PdbInfoDB existingPdbInfo = dao.getPDBInfo(jobId);
+				if (existingPdbInfo != null) {
+					logger.info("Existing PDBInfo document found for {}. Will remove all data for it before inserting a new one", jobId);
+					long delPdbInfo = dao.remove(jobId);
+					long delInterfRes = interfResDao.remove(jobId);
+					logger.info("Done deleting data for id {}. Deleted {} PDBInfo documents and {} InterfaceResidueFeature documents", jobId, delPdbInfo, delInterfRes);
+				}
 				dao.insertPDBInfo(entryData.getPdbInfoDB());
 				interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
 				long end = System.currentTimeMillis();
