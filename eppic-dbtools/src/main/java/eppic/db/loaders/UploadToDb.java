@@ -48,6 +48,8 @@ public class UploadToDb {
 
 	private static final int BATCH_SIZE = 1000;
 
+	private static final double MAX_FAILURE_RATE_TOLERATED = 0.10;
+
 	private static File configFile = null;
 	private static File choosefromFile = null;
 	private static int numWorkers = 1;
@@ -196,8 +198,7 @@ public class UploadToDb {
 		}
 
         logger.info("Completed all {} entries in {} s", jobDirs.size(), (totalEnd - totalStart) / 1000);
-		// TODO check what to do with "already present" category now. Can we even know if they were present?
-        logger.info("Already present: {}, uploaded: {}, couldn't insert: {}", allStats.countPresent, allStats.countUploaded, allStats.pdbsWithWarnings.size());
+        logger.info("Uploaded: {}, couldn't insert: {}", allStats.countUploaded, allStats.pdbsWithWarnings.size());
         logger.info("There were {} error jobs in {} uploaded entries.", allStats.countErrorJob, allStats.countUploaded);
 
 		if (!allStats.pdbsWithWarnings.isEmpty()) {
@@ -205,7 +206,7 @@ public class UploadToDb {
 		}
 
 		// make sure we exit with an error state in cases with many failures
-		int maxFailuresTolerated = (allStats.countPresent + allStats.countUploaded)/2;
+		double maxFailuresTolerated = jobDirs.size() * MAX_FAILURE_RATE_TOLERATED;
 		if (allStats.pdbsWithWarnings.size() > maxFailuresTolerated) {
             logger.error("Total of {} failures, more than {} failures. Something must be wrong!", allStats.pdbsWithWarnings.size(), maxFailuresTolerated);
 			System.exit(1);
@@ -225,16 +226,16 @@ public class UploadToDb {
 					pdbScoreItem = ConfigurableMapper.getMapper().readValue(zipFile.getInputStream(entry), PdbInfoDB.class);
 				}
 				if (entry.getName().endsWith(INTERFRESFEAT_SER_FILE_SUFFIX)) {
-					interfResFeatures = ConfigurableMapper.getMapper().readValue(zipFile.getInputStream(entry), new TypeReference<List<InterfaceResidueFeaturesDB>>(){} );
+					interfResFeatures = ConfigurableMapper.getMapper().readValue(zipFile.getInputStream(entry), new TypeReference<>(){} );
 				}
 			}
 
 			if (pdbScoreItem == null || interfResFeatures == null) {
-				logger.error("Serialized zip file " +serializedFile+ " did not contain both needed json files: " + PDBINFO_SER_FILE_SUFFIX + ", " + INTERFRESFEAT_SER_FILE_SUFFIX);
+                logger.error("Serialized zip file {} did not contain both needed json files: {}, {}", serializedFile, PDBINFO_SER_FILE_SUFFIX, INTERFRESFEAT_SER_FILE_SUFFIX);
 			}
 
 		} catch (IOException e) {
-			logger.error("Problem reading serialized file, skipping entry "+serializedFile+". Error: "+e.getMessage());
+            logger.error("Problem reading serialized file, skipping entry {}. Error: {}", serializedFile, e.getMessage());
 			return null;
 		}
 		return new EntryData(pdbScoreItem, interfResFeatures);
@@ -366,27 +367,20 @@ public class UploadToDb {
 				i++;
 
 				String jobId = jobDirectory.dir.getName();
+				persistOne(stats, jobDirectory, jobId);
 
-				try {
-					persistOne(stats, jobDirectory, jobId);
+				if (i % TIME_STATS_EVERY1 == 0) {
+					avgTimeEnd1 = System.currentTimeMillis();
+					if (i != 0) // no statistics before starting
+						logger.info("Last " + TIME_STATS_EVERY1 + " entries in " + ((avgTimeEnd1 - avgTimeStart1) / 1000) + " s");
+					avgTimeStart1 = System.currentTimeMillis();
+				}
 
-					if (i % TIME_STATS_EVERY1 == 0) {
-						avgTimeEnd1 = System.currentTimeMillis();
-						if (i != 0) // no statistics before starting
-							logger.info("Last " + TIME_STATS_EVERY1 + " entries in " + ((avgTimeEnd1 - avgTimeStart1) / 1000) + " s");
-						avgTimeStart1 = System.currentTimeMillis();
-					}
-
-					if (i % TIME_STATS_EVERY2 == 0) {
-						avgTimeEnd2 = System.currentTimeMillis();
-						if (i != 0) // no statistics before starting
-							logger.info("Last " + TIME_STATS_EVERY2 + " entries in " + ((avgTimeEnd2 - avgTimeStart2) / 1000) + " s");
-						avgTimeStart2 = System.currentTimeMillis();
-					}
-
-				} catch (Exception e) {
-                    logger.warn("Problems while inserting {}. Error: {}", jobId, e.getMessage());
-					stats.pdbsWithWarnings.add(jobId);
+				if (i % TIME_STATS_EVERY2 == 0) {
+					avgTimeEnd2 = System.currentTimeMillis();
+					if (i != 0) // no statistics before starting
+						logger.info("Last " + TIME_STATS_EVERY2 + " entries in " + ((avgTimeEnd2 - avgTimeStart2) / 1000) + " s");
+					avgTimeStart2 = System.currentTimeMillis();
 				}
 			}
 		} else {
@@ -437,17 +431,17 @@ public class UploadToDb {
 				interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
 				long end = System.currentTimeMillis();
 				logger.info("Done inserting {}. Time: {}ms", jobId, (end - start));
+				stats.countUploaded++;
 
 			} catch (DaoException e) {
-                logger.error("Problem persisting: {}: {}", jobId, e.getMessage());
+                logger.warn("Problem persisting: {}: {}", jobId, e.getMessage());
+				stats.pdbsWithWarnings.add(jobId);
 			}
-		}
-		else {
+		} else {
 			// TODO error jobs
 			//dbh.persistErrorJob(em, jobId);
 			stats.countErrorJob++;
 		}
-		stats.countUploaded++;
 	}
 
 	private static void persistBatch(Stats stats, List<JobDir> jobDirs, int endIndexOfBatch) {
@@ -494,21 +488,18 @@ public class UploadToDb {
 			}
 		} catch (DaoException e) {
 			List<String> ids = jobDirs.stream().map(j->j.dir.getName()).toList();
-			logger.error("Failed to write batch with end index {} (size {}). List of ids: {}", endIndexOfBatch, jobDirs.size(), ids.stream().map(String::valueOf).collect(Collectors.joining(",")));
+			logger.warn("Failed to write batch with end index {} (size {}). List of ids: {}", endIndexOfBatch, jobDirs.size(), ids.stream().map(String::valueOf).collect(Collectors.joining(",")));
+			stats.pdbsWithWarnings.addAll(ids);
 		}
 	}
 
 	private static class Stats {
-		int countPresent = 0;
 		int countUploaded = 0;
-		int countRemoved = 0;
 		int countErrorJob = 0;
 		List<String> pdbsWithWarnings = new ArrayList<>();
 
 		public void add(Stats stats) {
-			this.countPresent += stats.countPresent;
 			this.countUploaded += stats.countUploaded;
-			this.countRemoved += stats.countRemoved;
 			this.countErrorJob += stats.countErrorJob;
 			pdbsWithWarnings.addAll(stats.pdbsWithWarnings);
 		}
