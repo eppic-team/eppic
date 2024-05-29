@@ -69,8 +69,8 @@ public class UploadToDb {
 				" [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
 				"                 the config will be read from file "+ DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
 				" [-n <int>]    : number of workers. Default 1. \n"+
-				" [-F]          : whether FULL mode should be used. Otherwise INCREMENTAL mode. In FULL the collection \n" +
-				"                 is dropped and indexes reset. FULL is much faster because it uses Mongo batch insert\n";
+				" [-F]          : whether FULL mode should be used. Otherwise INCREMENTAL mode. FULL is much faster \n" +
+				"                 because it uses Mongo batch insert and avoids lookups\n";
 
 
 		boolean isDividedLayout = false;
