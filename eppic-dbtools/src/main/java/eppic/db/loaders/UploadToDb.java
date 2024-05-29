@@ -132,9 +132,9 @@ public class UploadToDb {
 		List<JobDir> jobDirs = listSerializedFiles(jobsDirectories, isDividedLayout);
 
 		if (isDividedLayout) {
-			logger.info("Directories under "+jobDirectoriesRoot+" will be considered to have PDB divided layout, i.e. "+jobDirectoriesRoot+File.separatorChar+DIVIDED_ROOT+File.separatorChar+"<PDB-code-middle-2-letters>");
+            logger.info("Directories under {} will be considered to have PDB divided layout, i.e. {}{}" + DIVIDED_ROOT + "{}<PDB-code-middle-2-letters>", jobDirectoriesRoot, jobDirectoriesRoot, File.separatorChar, File.separatorChar);
 		} else {
-			logger.info("Directories under "+jobDirectoriesRoot+" will be considered to be user jobs, no PDB divided layout will be used. ");
+            logger.info("Directories under {} will be considered to be user jobs, no PDB divided layout will be used. ", jobDirectoriesRoot);
 		}
 
 		logger.info("Will use " + numWorkers + " workers");
@@ -195,10 +195,10 @@ public class UploadToDb {
 
 		}
 
-		logger.info("Completed all "+jobDirs.size()+" entries in "+((totalEnd-totalStart)/1000)+" s");
+        logger.info("Completed all {} entries in {} s", jobDirs.size(), (totalEnd - totalStart) / 1000);
 		// TODO check what to do with "already present" category now. Can we even know if they were present?
-		logger.info("Already present: "+ allStats.countPresent+", uploaded: "+ allStats.countUploaded+", couldn't insert: "+allStats.pdbsWithWarnings.size());
-		logger.info("There were "+ allStats.countErrorJob+" error jobs in "+ allStats.countUploaded+" uploaded entries.");
+        logger.info("Already present: {}, uploaded: {}, couldn't insert: {}", allStats.countPresent, allStats.countUploaded, allStats.pdbsWithWarnings.size());
+        logger.info("There were {} error jobs in {} uploaded entries.", allStats.countErrorJob, allStats.countUploaded);
 
 		if (!allStats.pdbsWithWarnings.isEmpty()) {
 			logger.info("These PDBs had problems while inserting to db: {}", String.join(" ", allStats.pdbsWithWarnings));
@@ -207,7 +207,7 @@ public class UploadToDb {
 		// make sure we exit with an error state in cases with many failures
 		int maxFailuresTolerated = (allStats.countPresent + allStats.countUploaded)/2;
 		if (allStats.pdbsWithWarnings.size() > maxFailuresTolerated) {
-			logger.error("Total of "+allStats.pdbsWithWarnings.size()+" failures, more than "+maxFailuresTolerated+" failures. Something must be wrong!");
+            logger.error("Total of {} failures, more than {} failures. Something must be wrong!", allStats.pdbsWithWarnings.size(), maxFailuresTolerated);
 			System.exit(1);
 		}
 
@@ -285,7 +285,7 @@ public class UploadToDb {
 			}
 			br.close();
 		} catch (IOException e) {
-			logger.error("Problem reading list file "+file+", can't continue");
+            logger.error("Problem reading list file {}, can't continue", file);
 			System.exit(1);
 		}
 		return pdbCodes;
@@ -385,7 +385,7 @@ public class UploadToDb {
 					}
 
 				} catch (Exception e) {
-					logger.warn("Problems while inserting " + jobId + ". Error: " + e.getMessage());
+                    logger.warn("Problems while inserting {}. Error: {}", jobId, e.getMessage());
 					stats.pdbsWithWarnings.add(jobId);
 				}
 			}
@@ -432,7 +432,7 @@ public class UploadToDb {
 				logger.info("Done inserting {}. Time: {}ms", jobId, (end - start));
 
 			} catch (DaoException e) {
-				logger.error("Problem persisting: " + jobId + ": " + e.getMessage());
+                logger.error("Problem persisting: {}: {}", jobId, e.getMessage());
 			}
 		}
 		else {
@@ -486,7 +486,7 @@ public class UploadToDb {
 				logger.info("Done inserting InterfaceResidueFeaturesDB sub-batch with end index {} (size {}), corresponding to batch with end index {}. Time: {}ms", jobDirs.size() - 1, currentInterfResFeatBatch.size(), endIndexOfBatch, (end - start));
 			}
 		} catch (DaoException e) {
-			List<String> ids = jobDirs.stream().map(j->j.dir.getName()).collect(Collectors.toList());
+			List<String> ids = jobDirs.stream().map(j->j.dir.getName()).toList();
 			logger.error("Failed to write batch with end index {} (size {}). List of ids: {}", endIndexOfBatch, jobDirs.size(), ids.stream().map(String::valueOf).collect(Collectors.joining(",")));
 		}
 	}
