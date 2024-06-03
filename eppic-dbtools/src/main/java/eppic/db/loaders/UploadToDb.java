@@ -37,8 +37,7 @@ public class UploadToDb {
 	private static final String DIVIDED_ROOT = "divided";
 
 	// after this number of entry uploads time statistics will be produced
-	private static final int TIME_STATS_EVERY1 = 100;
-	private static final int TIME_STATS_EVERY2 = 1000;
+	private static final int TIME_STATS_EVERY = 1000;
 
 	public static final String SERIALIZED_FILE_SUFFIX = ".json.zip";
 	private static final String PDBINFO_SER_FILE_SUFFIX = ".pdbinfo.json";
@@ -371,14 +370,10 @@ public class UploadToDb {
 
 	private static Stats loadSet(JobDir[] jobsDirectories) {
 
-		long avgTimeStart1 = 0;
-		long avgTimeEnd1 = 0;
-		long avgTimeStart2 = 0;
-		long avgTimeEnd2 = 0;
-
 		Stats stats = new Stats();
 
 		if (!full) {
+			long avgTimeStart = 0;
 			int i = -1;
 			// insert 1 by 1
 			for (JobDir jobDirectory : jobsDirectories) {
@@ -387,18 +382,11 @@ public class UploadToDb {
 				String jobId = jobDirectory.dir.getName();
 				persistOne(stats, jobDirectory, jobId);
 
-				if (i % TIME_STATS_EVERY1 == 0) {
-					avgTimeEnd1 = System.currentTimeMillis();
+				if (i % TIME_STATS_EVERY == 0) {
+					long avgTimeEnd = System.currentTimeMillis();
 					if (i != 0) // no statistics before starting
-						logger.info("Last " + TIME_STATS_EVERY1 + " entries in " + ((avgTimeEnd1 - avgTimeStart1) / 1000) + " s");
-					avgTimeStart1 = System.currentTimeMillis();
-				}
-
-				if (i % TIME_STATS_EVERY2 == 0) {
-					avgTimeEnd2 = System.currentTimeMillis();
-					if (i != 0) // no statistics before starting
-						logger.info("Last " + TIME_STATS_EVERY2 + " entries in " + ((avgTimeEnd2 - avgTimeStart2) / 1000) + " s");
-					avgTimeStart2 = System.currentTimeMillis();
+                        logger.info("Last " + TIME_STATS_EVERY + " entries in {} s", (avgTimeEnd - avgTimeStart) / 1000);
+					avgTimeStart = System.currentTimeMillis();
 				}
 			}
 		} else {
