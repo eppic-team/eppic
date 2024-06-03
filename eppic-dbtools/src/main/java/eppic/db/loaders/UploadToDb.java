@@ -46,7 +46,8 @@ public class UploadToDb {
 
 	private static boolean full = false;
 
-	private static final int BATCH_SIZE = 1000;
+	private static final int DEFAULT_BATCH_SIZE = 1000;
+	private static int batchSize = DEFAULT_BATCH_SIZE;
 
 	private static final double MAX_FAILURE_RATE_TOLERATED = 0.10;
 
@@ -73,14 +74,15 @@ public class UploadToDb {
 				" [-n <int>]    : number of workers. Default 1. \n"+
 				" [-F]          : whether FULL mode should be used. Otherwise INCREMENTAL mode. FULL is much faster \n" +
 				"                 because it uses Mongo batch insert and avoids lookups. FULL will drop collections and \n" +
-				"                 recreate them to ensure idempotency of process\n";
+				"                 recreate them to ensure idempotency of process\n" +
+				" [-b <int>]    : batch size for -F mode. Default is " +DEFAULT_BATCH_SIZE+".\n";
 
 
 		boolean isDividedLayout = false;
 
 		File jobDirectoriesRoot = null;
 
-		Getopt g = new Getopt("UploadToDB", args, "d:lf:g:n:Fh?");
+		Getopt g = new Getopt("UploadToDB", args, "d:lf:g:n:Fb:h?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch(c){
@@ -101,6 +103,9 @@ public class UploadToDb {
 				break;
 			case 'F':
 				full = true;
+				break;
+			case 'b':
+				batchSize = Integer.parseInt(g.getOptarg());
 				break;
 			case 'h':
 				System.out.println(help);
@@ -401,7 +406,7 @@ public class UploadToDb {
 			// insert by batches
 			for (int i=0; i<jobsDirectories.length; i++) {
 				currentBatch.add(jobsDirectories[i]);
-				if (currentBatch.size() == BATCH_SIZE) {
+				if (currentBatch.size() == batchSize) {
 					persistBatch(stats, currentBatch, i);
 					currentBatch = new ArrayList<>();
 				}
@@ -479,7 +484,7 @@ public class UploadToDb {
 					stats.countErrorJob++;
 				}
 
-				if (currentInterfResFeatBatch.size() >= BATCH_SIZE) {
+				if (currentInterfResFeatBatch.size() >= batchSize) {
 					long start = System.currentTimeMillis();
 					interfResDao.insertInterfResFeatures(currentInterfResFeatBatch);
 					long end = System.currentTimeMillis();
@@ -490,7 +495,7 @@ public class UploadToDb {
 			long start = System.currentTimeMillis();
 			dao.insertPDBInfos(pdbInfoBatch);
 			long end = System.currentTimeMillis();
-			logger.info("Done inserting PdbInfoDB batch with end index {} (size {}). Time: {}ms", endIndexOfBatch, BATCH_SIZE, (end - start));
+			logger.info("Done inserting PdbInfoDB batch with end index {} (size {}). Time: {}ms", endIndexOfBatch, batchSize, (end - start));
 			stats.countUploaded += pdbInfoBatch.size();
 			// insert last batch of interf res features
 			if (!currentInterfResFeatBatch.isEmpty()) {
