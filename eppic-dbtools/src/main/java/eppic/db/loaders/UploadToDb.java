@@ -72,7 +72,8 @@ public class UploadToDb {
 				"                 the config will be read from file "+ DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME+" in home dir\n" +
 				" [-n <int>]    : number of workers. Default 1. \n"+
 				" [-F]          : whether FULL mode should be used. Otherwise INCREMENTAL mode. FULL is much faster \n" +
-				"                 because it uses Mongo batch insert and avoids lookups\n";
+				"                 because it uses Mongo batch insert and avoids lookups. FULL will drop collections and \n" +
+				"                 recreate them to ensure idempotency of process\n";
 
 
 		boolean isDividedLayout = false;
@@ -155,6 +156,18 @@ public class UploadToDb {
 
 		dao = new PDBInfoDAOMongo(mongoDb);
 		interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
+
+		if (full) {
+			// remove content and create collections and index
+			// NOTE we do dropping of db data in FindPdbIdsToLoad too, but here it is still necessary to drop data to ensure
+			// idempotency in -F case: if we restart the process it should still be able to load everything (in batches and
+			// without lookups) and that requires an empty db
+			logger.info("FULL mode was selected. Will drop all data and recreate collections and indexes");
+			MongoUtils.dropCollection(mongoDb, PdbInfoDB.class);
+			MongoUtils.dropCollection(mongoDb, InterfaceResidueFeaturesDB.class);
+			MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
+			MongoUtils.createIndices(mongoDb, InterfaceResidueFeaturesDB.class);
+		}
 
 		ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);
 		List<Future<Stats>> allResults = new ArrayList<>();
