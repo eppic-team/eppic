@@ -70,8 +70,14 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 					axis = new AxisAngle4d();
 				}
 			} else {
-				Rotation rotation = pointgroup.getRotation(pointgroup.getHigherOrderRotationAxis());
-				axis = rotation.getAxisAngle();
+				// in some cases like 4osm, 4oto (possibly because of helical symmetry) the higher order index is not present in pointgroup.getRotation(index)
+				if (pointgroup.getHigherOrderRotationAxis() >= pointgroup.getOrder()) {
+					logger.warn("Point group order is less than higher order rotation axis. Something is wrong, possibly because of helical symmetry.");
+					axis = new AxisAngle4d();
+				} else {
+					Rotation rotation = pointgroup.getRotation(pointgroup.getHigherOrderRotationAxis());
+					axis = rotation.getAxisAngle();
+				}
 			}
 			Point3d zenith = new Point3d(axis.x,axis.y,axis.z);
 			zenith.add(center);
