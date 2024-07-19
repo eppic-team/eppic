@@ -420,7 +420,20 @@ public class Main {
 		long start = System.currentTimeMillis();
 
 		params.getProgressLog().println("Calculating possible assemblies...");
-		validAssemblies = new CrystalAssemblies(pdb, interfaces, params.isForceContractedAssemblyEnumeration()); 
+
+		try {
+			validAssemblies = new CrystalAssemblies(pdb, interfaces, params.isForceContractedAssemblyEnumeration());
+		} catch (ConcurrentModificationException e) {
+			LOGGER.error("Caught ConcurrentModificationException while finding assemblies. This is a known bug in the contraction of heteromeric assemblies graphs");
+			if (params.isGenerateModelSerializedFile()) {
+				// TODO fix the bug in eppic.assembly.GraphContractor.contract(). This is a workaround so that the precomp workflow
+				//  doesn't report an error and can proceed
+				LOGGER.error("Will exit now with success, though no output files will be produced. This is so that the precomputation workflow can run in full. Note that this is a bug.");
+				System.exit(0);
+			} else {
+				throw e;
+			}
+		}
 
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
