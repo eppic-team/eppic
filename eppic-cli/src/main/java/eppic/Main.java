@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -188,11 +189,15 @@ public class Main {
 		fileParsingParams.setParseBioAssembly(true);
 
 		pdb = null;
+		long modDate = 0;
 		try {
 			if (!params.isInputAFile()) {
 
 				try {
 					pdb = readStructureFromPdbCode(fileParsingParams);
+					if (params.getCifRepositoryTemplateUrl()!=null) {
+						modDate = getLastModDateFromUrl(params.getPdbCode().toLowerCase());
+					}
 
 				} catch(IOException e) {
 					throw new EppicException(e,"Couldn't get cif file from AtomCache for code "+params.getPdbCode()+". Error: "+e.getMessage(),true);
@@ -235,6 +240,12 @@ public class Main {
 		modelAdaptor = new DataModelAdaptor();
 		modelAdaptor.setParams(params);
 		modelAdaptor.setPdbMetadata(pdb);
+
+		if (!params.isInputAFile() && params.getCifRepositoryTemplateUrl()!=null && params.isGenerateModelSerializedFile()) {
+			// Only for weekly update pipeline: use mod date from URL. Because the holdings json file has literally the actual file timestamps. Which not always coincide
+			// with the last mod date written in mmCIF. So if we don't use the actual timestamps for the db then the incremental update logic would be wrong
+			modelAdaptor.setPdbModDate(modDate);
+		}
 
 		return System.currentTimeMillis() - start;
 	}
@@ -289,6 +300,12 @@ public class Main {
 	 */
 	private static String getPathUrl(String filesFolderPath, String pdbCode) {
 		return filesFolderPath.replaceAll("\\{id}", pdbCode.toLowerCase()).replaceAll("\\{middle}", pdbCode.substring(1, 3).toLowerCase());
+	}
+
+	private long getLastModDateFromUrl(String pdbCode) throws IOException {
+		URL cifGzUrl = new URL(getPathUrl(params.getCifRepositoryTemplateUrl(), pdbCode));
+		HttpURLConnection httpCon = (HttpURLConnection) cifGzUrl.openConnection();
+		return httpCon.getLastModified();
 	}
 
 	public long doFindInterfaces() throws EppicException {

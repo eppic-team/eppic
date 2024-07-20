@@ -155,7 +155,7 @@ public class DataModelAdaptor {
 	
 	public void setPdbMetadata(Structure pdb) {
 		pdbInfo.setTitle(pdb.getPDBHeader().getTitle());
-		// this sets the latest modification date (useful for incremental update logic)
+		// note that for precomp workflow we reset the mod date in a separate call later
 		pdbInfo.setReleaseDate(pdb.getPDBHeader().getModDate());
 		PDBCrystallographicInfo pdbXtallographicInfo = pdb.getCrystallographicInfo();
 		SpaceGroup sg = (pdbXtallographicInfo==null?null:pdbXtallographicInfo.getSpaceGroup());
@@ -193,6 +193,11 @@ public class DataModelAdaptor {
 			pdbInfo.setCellGamma(cc.getGamma());			
 		}
 
+	}
+
+	public void setPdbModDate(long modDate) {
+		// this sets the latest modification date (useful for incremental update logic)
+		pdbInfo.setReleaseDate(new Date(modDate));
 	}
 
 	public void setChainClustersData(Structure pdb) {
