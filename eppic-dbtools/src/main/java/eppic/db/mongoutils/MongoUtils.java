@@ -1,8 +1,8 @@
 package eppic.db.mongoutils;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoClient;
 import com.mongodb.MongoWriteException;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.result.DeleteResult;
@@ -84,9 +84,8 @@ public class MongoUtils {
     public static MongoDatabase getMongoDatabase(String dbName, String connUriStr) {
 
         MongoClient mongoClient;
-        MongoClientURI uri = new MongoClientURI(connUriStr);
         try {
-            mongoClient = new MongoClient(uri);
+            mongoClient = MongoClients.create(connUriStr);
         } catch (Exception e) {
             logger.error("Cannot connect to mongodb using connection parameters: {}", connUriStr);
             throw e;
