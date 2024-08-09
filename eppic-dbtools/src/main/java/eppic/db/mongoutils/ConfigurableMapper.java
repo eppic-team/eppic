@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import eppic.db.serializers.BytesDeserializer;
 import eppic.db.serializers.BytesSerializer;
 import eppic.db.serializers.NanAwareDoubleSerializer;
@@ -35,7 +36,9 @@ public class ConfigurableMapper {
         // keep the original camel case in java types by not setting anything
         //mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        // date serialization: it's important to get the timezones right! Using the ISO-8601 recipe from https://www.baeldung.com/jackson-serialize-dates
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        DateFormat df = new StdDateFormat().withColonInTimeZone(true);
         mapper.setDateFormat(df);
 
         // for text json files to have pretty json printed
