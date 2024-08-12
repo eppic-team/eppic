@@ -29,17 +29,21 @@ public class FindIfNewUniProt {
         File outFile = null;
         String dbName = null;
         String upUrl = null;
+        boolean force = false;
 
         String help =
                 "Usage: FindIfNewUniProt\n" +
                         "  -u <url>     : URL to a UniProt resource (e.g. FASTA file) from which the release date will\n" +
                         "                 be obtained by looking at http headers\n" +
-                        "  -o <file>    : output text file to write the new UniProt release version\n" +
+                        "  -o <file>    : output text file to write the new UniProt release version. If no new UniProt\n" +
+                        "                 is available, then 'False' is written out\n" +
                         "  -g <file>    : a configuration file containing the database access parameters\n" +
+                        " [-F]          : force new UniProt version: if this switch is provided we consider the online\n" +
+                        "                 UniProt version to be new, irrespective of the contents of the database\n" +
                         " [-D <string>] : the database name to use. If not provided it is read from config file in -g\n";
 
 
-        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:u:o:g:h?");
+        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:u:o:g:Fh?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -54,6 +58,9 @@ public class FindIfNewUniProt {
                     break;
                 case 'g':
                     configFile = new File(g.getOptarg());
+                    break;
+                case 'F':
+                    force = true;
                     break;
                 case 'h':
                     System.out.println(help);
@@ -88,12 +95,17 @@ public class FindIfNewUniProt {
 
         MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
 
-        String collName = MongoUtils.getTableMetadataFromJpa(UniProtMetadataDB.class).name();
-        UniProtMetadataDB upMetadata = ConfigurableMapper.getMapper().convertValue(mongoDb.getCollection(collName).find()
-                .projection(excludeId()).first(), UniProtMetadataDB.class);
         String dbVersion = null;
-        if (upMetadata != null) {
-            dbVersion = upMetadata.getVersion();
+
+        if (!force) {
+            String collName = MongoUtils.getTableMetadataFromJpa(UniProtMetadataDB.class).name();
+            UniProtMetadataDB upMetadata = ConfigurableMapper.getMapper().convertValue(mongoDb.getCollection(collName).find()
+                    .projection(excludeId()).first(), UniProtMetadataDB.class);
+            if (upMetadata != null) {
+                dbVersion = upMetadata.getVersion();
+            }
+        } else {
+            logger.info("The -F switch was provided: forcing a new UniProt version without looking at db contents");
         }
         logger.info("Found UniProt version in database: {}", dbVersion);
 
@@ -109,6 +121,8 @@ public class FindIfNewUniProt {
         try(PrintWriter pw = new PrintWriter(Files.newBufferedWriter(outFile.toPath()))) {
             if (isNewUniProt) {
                 pw.println(onlineUniProtVer);
+            } else {
+                pw.println("False");
             }
         }
     }
