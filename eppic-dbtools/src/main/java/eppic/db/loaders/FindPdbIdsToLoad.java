@@ -59,13 +59,12 @@ public class FindPdbIdsToLoad {
                         "  -l <url>     : URL to json.gz file with PDB archive contents\n" +
                         "  -o <file>    : output json.gz file to write the list of PDB ids that need updating\n" +
                         "  -O <file>    : output json.gz file to write the list of PDB ids that are obsoleted\n" +
+                        "  -g <file>    : a configuration file containing the database access parameters\n" +
                         " [-D <string>] : the database name to use. If not provided it is read from config file in -g\n" +
                         " [-n <int>]    : number of threads for parsing CIF files to filter valid entries \n" +
                         " [-b <url>]    : base URL for grabbing CIF.gz or BCIF.gz PDB archive files. If %s placeholder\n" +
                         "                 present, it is replaced by the 2 middle letters from the PDB id\n" +
                         " [-B]          : base URL refers to a BCIF.gz repo. If not provided defaults to a CIF.gz repo\n" +
-                        " [-g <file>]   : a configuration file containing the database access parameters, if not provided\n" +
-                        "                 the config will be read from file " + DbPropertiesReader.DEFAULT_CONFIG_FILE_NAME + " in home dir\n" +
                         " [-F]          : whether FULL mode should be used: the DB collections are wiped and recreated. \n";
 
 
@@ -121,6 +120,10 @@ public class FindPdbIdsToLoad {
         }
         if (outObsoleteFile == null) {
             System.err.println("An output file path to write out the PDB ids that are obsoleted (as json.gz) must be provided with -O");
+            System.exit(1);
+        }
+        if (configFile == null) {
+            System.err.println("A config file path must be provided with -g");
             System.exit(1);
         }
         if (baseCifUrl == null) {
