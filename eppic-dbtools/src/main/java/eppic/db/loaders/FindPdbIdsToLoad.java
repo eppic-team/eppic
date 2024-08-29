@@ -51,6 +51,7 @@ public class FindPdbIdsToLoad {
     private static File outUpdateFile = null;
     private static File outObsoleteFile = null;
     private static int numThreads = 1;
+    private static Set<String> excludeIds;
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
 
@@ -65,10 +66,11 @@ public class FindPdbIdsToLoad {
                         " [-b <url>]    : base URL for grabbing CIF.gz or BCIF.gz PDB archive files. If %s placeholder\n" +
                         "                 present, it is replaced by the 2 middle letters from the PDB id\n" +
                         " [-B]          : base URL refers to a BCIF.gz repo. If not provided defaults to a CIF.gz repo\n" +
-                        " [-F]          : whether FULL mode should be used: the DB collections are wiped and recreated. \n";
+                        " [-F]          : whether FULL mode should be used: the DB collections are wiped and recreated. \n" +
+                        " [-x] <string> : comma separated list of PDB ids to exclude";
 
 
-        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:o:O:n:b:Bg:Fh?");
+        Getopt g = new Getopt("FindPdbIdsToLoad", args, "D:l:o:O:n:b:Bg:Fx:h?");
         int c;
         while ((c = g.getopt()) != -1) {
             switch (c) {
@@ -98,6 +100,9 @@ public class FindPdbIdsToLoad {
                     break;
                 case 'F':
                     full = true;
+                    break;
+                case 'x':
+                    excludeIds = Set.of(g.getOptarg().split(","));
                     break;
                 case 'h':
                     System.out.println(help);
@@ -169,6 +174,10 @@ public class FindPdbIdsToLoad {
         Map<String, OffsetDateTime> currentEntries = getAllCurrentPdbIds();
         logger.info("Entries in db: {}", dbEntries.size());
         logger.info("Current entries from holdings file ({}): {}", jsonGzUrl, currentEntries.size() );
+        if (excludeIds != null) {
+            excludeIds.forEach(currentEntries::remove);
+            logger.info("An exclude list was passed: final number of current entries after excluding from list is: {}. The list is {}", currentEntries.size(), String.join(",", excludeIds));
+        }
 
         Map<String, UpdateType> candidates = findToUpdateCandidates(dbEntries, currentEntries);
         long numOutdated = candidates.values().stream().filter(v -> v == UpdateType.UPDATED).count();
