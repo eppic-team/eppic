@@ -32,10 +32,11 @@ public class UtilResource {
     @Tag(name = "Alive service")
     public String alive() {
 
-        if (utilService.isDbHealthy() && utilService.isTempDiskHealthy()) {
+        if (false) { //(utilService.isDbHealthy() && utilService.isTempDiskHealthy()) {
             return "true";
         } else {
-            return "false";
+            // this should achieve sending out a 500, so that we are k8s compliant
+            throw new IllegalStateException("Service is not healthy");
         }
     }
 
