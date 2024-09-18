@@ -6,6 +6,7 @@ import eppic.db.dao.PDBInfoDAO;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.PdbInfoDB;
 
+import javax.persistence.NoResultException;
 import javax.persistence.Table;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +32,10 @@ public class PDBInfoDAOMongo implements PDBInfoDAO {
                     PdbInfoDB.class);
         } catch (Exception e) {
             throw new DaoException(e);
+        }
+
+        if (pdbInfoDB == null) {
+            throw new NoResultException("Could not find PDBInfo data for id " + entryId);
         }
         return pdbInfoDB;
     }
