@@ -18,7 +18,7 @@ public class Main {
 		String toolName = args[0];
 		String[] toolParams = Arrays.copyOfRange(args, 1, args.length);
 		try {
-			Class<?> toolClass = Class.forName("eppic.db.tools." + toolName);
+			Class<?> toolClass = Class.forName("eppic.db.loaders." + toolName);
 			Method main = toolClass.getMethod("main", String[].class);
 			main.invoke(null, new Object[] { toolParams });
 		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {

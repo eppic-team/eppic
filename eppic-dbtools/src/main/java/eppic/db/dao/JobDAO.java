@@ -4,8 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import eppic.model.dto.InputWithType;
-import eppic.model.dto.JobStatusDetails;
-import eppic.model.dto.ProcessingInProgressData;
+//import eppic.model.dto.ProcessingInProgressData;
 import eppic.model.shared.StatusOfJob;
 import eppic.model.db.JobDB;
 import eppic.model.db.PdbInfoDB;
@@ -47,28 +46,28 @@ public interface JobDAO
 	 */
 	void updateStatusOfJob(String jobId, StatusOfJob stopped) throws DaoException;
 
-	/**
-	 * Removes links between jobs and selected session.
-	 * @param sessionId identifier of the session
-	 * @throws DaoException when can not update information in data storage
-	 */
-	void untieJobsFromSession(String sessionId) throws DaoException;
+//	/**
+//	 * Removes links between jobs and selected session.
+//	 * @param sessionId identifier of the session
+//	 * @throws DaoException when can not update information in data storage
+//	 */
+//	void untieJobsFromSession(String sessionId) throws DaoException;
 
-	/**
-	 * Retrieves list of jobs for selected session.
-	 * @param sessionId identifier of the session
-	 * @return list of jobs for selected session
-	 * @throws DaoException when can not retrieve information from data storage
-	 */
-	List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException;
+//	/**
+//	 * Retrieves list of jobs for selected session.
+//	 * @param sessionId identifier of the session
+//	 * @return list of jobs for selected session
+//	 * @throws DaoException when can not retrieve information from data storage
+//	 */
+//	List<ProcessingInProgressData> getJobsForSession(String sessionId) throws DaoException;
 
-	/**
-	 * Retrieves number of jobs for selected session.
-	 * @param sessionId identifier of the session
-	 * @return number of jobs for selected session
-	 * @throws DaoException when can not retrieve information from data storage
-	 */
-	Long getNrOfJobsForSessionId(String sessionId) throws DaoException;
+//	/**
+//	 * Retrieves number of jobs for selected session.
+//	 * @param sessionId identifier of the session
+//	 * @return number of jobs for selected session
+//	 * @throws DaoException when can not retrieve information from data storage
+//	 */
+//	Long getNrOfJobsForSessionId(String sessionId) throws DaoException;
 
 	/**
 	 * Retrieves status of the selected job.
@@ -86,12 +85,12 @@ public interface JobDAO
 	 */
 	int getInputTypeForJob(String jobId) throws DaoException;
 
-	/**
-	 * Creates processing in progress instance.
-	 * @param job job data
-	 * @return processing in progress instance
-	 */
-	ProcessingInProgressData createProcessingInProgressData(JobDB job);
+//	/**
+//	 * Creates processing in progress instance.
+//	 * @param job job data
+//	 * @return processing in progress instance
+//	 */
+//	ProcessingInProgressData createProcessingInProgressData(JobDB job);
 
 	/**
 	 * Retrieves number of jobs for specified ip address during last day.
@@ -100,22 +99,6 @@ public interface JobDAO
 	 * @throws DaoException when can not retrieve information from data storage
 	 */
 	Long getNrOfJobsForIPDuringLastDay(String ip) throws DaoException;
-
-	/**
-	 * Retrieves oldest job submission date during the last day for specified ip address.
-	 * @param ip ip address
-	 * @return oldest job submission date during the last day for specified ip address
-	 * @throws DaoException when can not retrieve information from data storage
-	 */
-	Date getOldestJobSubmissionDateDuringLastDay(String ip) throws DaoException;
-
-	/**
-	 * Removes session - job link for specified job and session.
-	 * @param sessionId identifier of the session
-	 * @param jobToUntie identifier of the job to untie
-	 * @throws DaoException when can not retrieve information from data storage
-	 */
-	void untieSelectedJobFromSession(String sessionId, String jobToUntie) throws DaoException;
 
 	/**
 	 * Retrieves input with type(pdb code/name) for specified job.
@@ -133,12 +116,12 @@ public interface JobDAO
 	 */
 	void setPdbScoreItemForJob(String jobId, PdbInfoDB pdbScoreItem) throws DaoException;
 
-	/**
-	 * Retrieves list of jobs which are not finished yet.
-	 * @return list of jobs which have not been finished yet
-	 * @throws DaoException when can not retrieve list of unfinished jobs
-	 */
-	List<JobStatusDetails> getListOfUnfinishedJobs() throws DaoException;
+//	/**
+//	 * Retrieves list of jobs which are not finished yet.
+//	 * @return list of jobs which have not been finished yet
+//	 * @throws DaoException when can not retrieve list of unfinished jobs
+//	 */
+//	List<JobStatusDetails> getListOfUnfinishedJobs() throws DaoException;
 	
 	/**
 	 * Retrieves submission id for selected job id.

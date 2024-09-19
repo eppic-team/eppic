@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import eppic.model.db.InterfaceResidueFeaturesDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +28,13 @@ public class TextOutputWriter {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(TextOutputWriter.class);
 	
-	private PdbInfoDB pdbInfo;
-	private EppicParams params;
+	private final PdbInfoDB pdbInfo;
+	private final List<InterfaceResidueFeaturesDB> resFeatures;
+	private final EppicParams params;
 	
-	public TextOutputWriter (PdbInfoDB pdbInfo, EppicParams params) {
+	public TextOutputWriter (PdbInfoDB pdbInfo, List<InterfaceResidueFeaturesDB> resFeatures, EppicParams params) {
 		this.pdbInfo = pdbInfo;
+		this.resFeatures = resFeatures;
 		this.params = params;
 		
 		LOGGER.debug("Is non-standard SG: {}", pdbInfo.isNonStandardSg());
@@ -68,64 +71,89 @@ public class TextOutputWriter {
 			}
 		}
 	}
+
+	private InterfaceResidueFeaturesDB getResFeatureForIterface(int interfId) {
+		for (InterfaceResidueFeaturesDB resFeat : resFeatures) {
+			if (resFeat.getInterfaceId() == interfId)
+				return resFeat;
+		}
+		return null;
+	}
 	
 	private void printInterfacesMolInfo(PrintStream ps, InterfaceDB interfaceItem, boolean side, boolean usePdbResSer) {
 		
-		List<ResidueBurialDB> cores = new ArrayList<ResidueBurialDB>();
-		
-		for (ResidueBurialDB residue:interfaceItem.getResidueBurials()) {
-			if (residue.getSide()==side) {
-				
-				if (residue.getRegion()==ResidueBurialDB.CORE_GEOMETRY) cores.add(residue);
-			}
+		List<ResidueBurialDB> cores = new ArrayList<>();
+
+		InterfaceResidueFeaturesDB resFeat = getResFeatureForIterface(interfaceItem.getInterfaceId());
+		if (resFeat == null) {
+			LOGGER.warn("Could not find res features for interface id {}", interfaceItem.getInterfaceId());
+			return;
 		}
-		
-		String pdbChainCode = null;
-		if (side==false) pdbChainCode = interfaceItem.getChain1();
-		if (side==true)  pdbChainCode = interfaceItem.getChain2();
-		
+
+		List<ResidueBurialDB> resBurialsForOnePartner = resFeat.getResBurials1();
+		String pdbChainCode = interfaceItem.getChain1();
+		if (side) {
+			resBurialsForOnePartner = resFeat.getResBurials2();
+			pdbChainCode = interfaceItem.getChain2();
+		}
+
+		resBurialsForOnePartner.forEach(residue -> {
+			if (residue.getRegion() == ResidueBurialDB.CORE_GEOMETRY) cores.add(residue);
+		});
+
 		ps.println(side+"\t"+pdbChainCode+"\tprotein");
 
 		if (cores.size()>0) {
-			ps.printf("## core (%4.2f): %s\n", params.getCAcutoffForGeom(), getResString(cores, usePdbResSer));
+			ps.printf("## core (%4.2f): %s\n", params.getCAcutoffForGeom(), getResString(cores, pdbChainCode, usePdbResSer));
 		}
 		ps.println("## seqres pdb res asa bsa burial(percent)");
 
-		for (ResidueBurialDB residue:interfaceItem.getResidueBurials()) {	
-			if (residue.getSide()==side) {
-				ResidueInfoDB residueInfo = residue.getResidueInfo();
-				int resNum = 0;
-				String pdbResNum = "0";
-				String resType = "XXX";
-				if (residueInfo!=null) {
-					resNum = residueInfo.getResidueNumber();
-					pdbResNum = residueInfo.getPdbResidueNumber();
-					resType = residueInfo.getResidueType();
-				}
-				ps.printf("%d\t%s\t%s\t%6.2f\t%6.2f",
-						resNum,
-						pdbResNum,
-						resType,
-						residue.getAsa(),residue.getBsa());
-				double percentBurial = 100.0*residue.getBsa()/residue.getAsa();
-				if (percentBurial>0.1) {
-					ps.printf("\t%5.1f\n",percentBurial);
-				} else {
-					ps.println();
-				}
+		for (ResidueBurialDB residue:resBurialsForOnePartner) {
+
+			int resser = residue.getResSerial();
+			if (resser == -1) {
+				LOGGER.warn("Got resser==-1 for residue burial object. Will skip");
+				continue;
+			}
+			ResidueInfoDB residueInfo = pdbInfo.getChainCluster(pdbChainCode).getResidue(resser);
+			int resNum = 0;
+			String pdbResNum = "0";
+			String resType = "XXX";
+			if (residueInfo!=null) {
+				resNum = residueInfo.getResidueNumber();
+				pdbResNum = residueInfo.getPdbResidueNumber();
+				resType = residueInfo.getResidueType();
+			}
+			ps.printf("%d\t%s\t%s\t%6.2f\t%6.2f",
+					resNum,
+					pdbResNum,
+					resType,
+					residue.getAsa(),residue.getBsa());
+			double percentBurial = 100.0*residue.getBsa()/residue.getAsa();
+			if (percentBurial>0.1) {
+				ps.printf("\t%5.1f\n",percentBurial);
+			} else {
+				ps.println();
 			}
 		}
+
 	}
 	
-	private String getResString(List<ResidueBurialDB> residues, boolean usePdbResSer) {
+	private String getResString(List<ResidueBurialDB> residues, String pdbChainCode, boolean usePdbResSer) {
 		String str = "";
 		for (int i=0;i<residues.size();i++) {
+			int resser = residues.get(i).getResSerial();
+			if (resser == -1) {
+				LOGGER.warn("Got resser==-1 for residue burial object. Will skip");
+				continue;
+			}
+			ResidueInfoDB residueInfo = pdbInfo.getChainCluster(pdbChainCode).getResidue(resser);
 			String serial = "0";
-			if (residues.get(i).getResidueInfo()!=null) {
+			if (residueInfo!=null) {
 				if (usePdbResSer) {
-					serial = residues.get(i).getResidueInfo().getPdbResidueNumber();
+					serial = residueInfo.getPdbResidueNumber();
 				} else {
-					serial = ""+residues.get(i).getResidueInfo().getResidueNumber();
+					serial = ""+residueInfo.getResidueNumber();
 				}
 			}
 			if (i!=residues.size()-1)

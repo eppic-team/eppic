@@ -11,29 +11,16 @@
 
     <artifactId>eppic-rest</artifactId>
 
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>eppic-rest</name>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.targetEncoding>UTF-8</project.build.targetEncoding>
-
-        <jdk.version>1.8</jdk.version>
-
         <jaxrs.version>2.1</jaxrs.version>
-        <jersey2.version>2.27</jersey2.version>
-        <swagger.version>2.0.8</swagger.version>
-    </properties>
+        <jersey2.version>2.35</jersey2.version>
 
-    <url>http://maven.apache.org</url>
-    <repositories>
-        <repository>
-            <id>maven2-repository.java.net</id>
-            <name>Java.net Repository for Maven</name>
-            <url>http://download.java.net/maven/2/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
+        <spring.version>3.1.10</spring.version>
+        <springdoc.version>2.3.0</springdoc.version>
+    </properties>
 
     <dependencies>
 
@@ -47,108 +34,95 @@
             <groupId>org.eppic-web</groupId>
             <artifactId>eppic-dbtools</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <!-- JAX-RS -->
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>${jaxrs.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlets</artifactId>
-            <version>9.4.41.v20210516</version>
-        </dependency>
-
-        <!-- Jersey -->
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-            <version>${jersey2.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>${jersey2.version}</version>
+            <groupId>org.biojava</groupId>
+            <artifactId>biojava-structure</artifactId>
+            <version>${biojava.version}</version>
         </dependency>
 
-        <!-- The explicit hk2 dependency is needed since jersey 2.26.
-		 See https://stackoverflow.com/questions/44088493/jersey-stopped-working-with-injectionmanagerfactory-not-found -->
+        <!-- Spring boot -->
         <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <version>${jersey2.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <!-- Swagger UI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- TODO review if this one is needed: in principle serialization is done via json-jackson below -->
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-moxy</artifactId>
             <version>${jersey2.version}</version>
         </dependency>
 
-        <!-- Swagger core, needed for swagger annotations. Building the openapi json happens with
-             maven plugin -->
+        <!-- This library is needed to do serialization to json that's configurable.
+			See CustomMapperProvider class. -->
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey2.version}</version>
+        </dependency>
 
         <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-core</artifactId>
-            <version>${swagger.version}</version>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.1</version>
         </dependency>
-        <!-- End Swagger -->
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-        <!-- binding for log4j 2 -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j.version}</version>
-            <!-- runtime scope includes the test scope as well -->
-            <scope>runtime</scope>
-        </dependency>
-        <!-- Log4j API and Core implementation required for binding -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-            <!-- runtime scope includes the test scope as well -->
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-            <!-- runtime scope includes the test scope as well -->
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-web</artifactId>
-            <version>${log4j.version}</version>
-            <!-- runtime scope includes the test scope as well -->
-            <scope>runtime</scope>
-        </dependency>
-
 
     </dependencies>
 
@@ -156,32 +130,12 @@
         <finalName>eppic-rest</finalName>
         <plugins>
             <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.0.0</version>
-                <!-- The following configuration is to be able to expand maven variables
-                    in web.xml so that we can pass the major version. See https://stackoverflow.com/questions/15355708/how-to-replace-a-value-in-web-xml-with-a-maven-property
-                    - JD 2017-11-03 -->
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <filtering>true</filtering>
-                            <directory>src/main/webapp</directory>
-                            <includes>
-                                <include>**/web.xml</include>
-                            </includes>
-                        </resource>
-                    </webResources>
-                    <warSourceDirectory>src/main/webapp</warSourceDirectory>
-                    <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.7.0</version>
                 <configuration>
-                    <source>${jdk.version}</source>
-                    <target>${jdk.version}</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
@@ -205,12 +159,43 @@
                 </configuration>
             </plugin>
 
-            <!-- Maven resources plugin to expand variables in about.properties at
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <!-- Trick to parse major version out of property search.api.version, taken from https://stackoverflow.com/questions/12002033/in-maven-how-can-i-dynamically-build-a-property-value-at-runtime -->
+                    <execution>
+                        <id>regex-property</id>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                            <!-- This is the name of the property available in application.properties and elsewhere -->
+                            <name>project.major.version</name>
+                            <value>${project.version}</value>
+                            <regex>^([0-9]+)\.([0-9]+)\.([0-9]+)(-\w+)?$</regex>
+                            <replacement>$1</replacement>
+                            <failIfNoMatch>true</failIfNoMatch>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven resources plugin to expand variables in application.properties at
                 build time and to include it in the final artifact -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.1</version>
+                <configuration>
+                    <!-- This config is needed so that application.properties can use maven properties, see https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto.properties-and-configuration
+                         Then the properties can be referenced in annotations in code with ${property} -->
+                    <delimiters>
+                        <delimiter>@</delimiter>
+                    </delimiters>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copy-resources</id>
@@ -226,8 +211,7 @@
                                     <directory>src/main/resources</directory>
                                     <filtering>true</filtering>
                                     <includes>
-                                        <include>**/about.properties</include>
-                                        <include>**/openapi-config.json</include>
+                                        <include>**/application.properties</include>
                                     </includes>
                                 </resource>
                                 <resource>
@@ -237,8 +221,7 @@
                                         <include>**/*</include>
                                     </includes>
                                     <excludes>
-                                        <exclude>**/about.properties</exclude>
-                                        <exclude>**/openapi-config.json</exclude>
+                                        <exclude>**/application.properties</exclude>
                                     </excludes>
                                 </resource>
                             </resources>
@@ -247,29 +230,23 @@
                 </executions>
             </plugin>
 
+            <!-- https://www.baeldung.com/executable-jar-with-maven -->
             <plugin>
-                <groupId>io.swagger.core.v3</groupId>
-                <artifactId>swagger-maven-plugin</artifactId>
-                <version>${swagger.version}</version>
-                <configuration>
-                    <outputFileName>openapi</outputFileName>
-                    <outputPath>${project.build.directory}/${project.name}/</outputPath>
-                    <outputFormat>JSONANDYAML</outputFormat>
-                    <!-- The prettyPrint setting in openapi-config.json does not work -->
-                    <prettyPrint>true</prettyPrint>
-
-                    <configurationFilePath>${project.build.outputDirectory}/openapi-config.json</configurationFilePath>
-
-                </configuration>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.version}</version>
                 <executions>
                     <execution>
-                        <phase>compile</phase>
                         <goals>
-                            <goal>resolve</goal>
+                            <goal>repackage</goal>
                         </goals>
+                        <configuration>
+                            <mainClass>eppic.rest.EppicApp</mainClass>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+
 
         </plugins>
     </build>

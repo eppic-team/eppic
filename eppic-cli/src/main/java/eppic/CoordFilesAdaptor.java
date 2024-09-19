@@ -2,7 +2,12 @@ package eppic;
 
 import eppic.commons.sequence.AAAlphabet;
 import eppic.commons.util.FileTypeGuesser;
-import eppic.model.dto.*;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.GraphNodeDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
+import eppic.model.db.ResidueInfoDB;
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.io.FileParsingParameters;
@@ -33,6 +38,7 @@ import java.util.regex.Pattern;
  * @author Jose Duarte
  * @since 3.1.0
  */
+// TODO this is now duplicated in eppic-rest module. It is still here because it us used in a test. Should be removed eventually by rewriting the test somehow
 public class CoordFilesAdaptor {
 
     private static final Logger logger = LoggerFactory.getLogger(CoordFilesAdaptor.class);
@@ -51,13 +57,13 @@ public class CoordFilesAdaptor {
      * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
-     * @param assemblyDB the db model data with assembly and residue info data
+     * @param assemblyId the eppic assembly id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfo pdbInfoDB, Assembly assemblyDB, boolean withEvolScores) throws IOException {
+    public void getAssemblyCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getAssemblyCoordsMmcif(jobId, s, os, pdbInfoDB, assemblyDB, withEvolScores);
+        getAssemblyCoordsMmcif(jobId, s, os, pdbInfoDB, assemblyId, withEvolScores);
     }
 
     /**
@@ -69,15 +75,15 @@ public class CoordFilesAdaptor {
      * @param s          the input structure with a PDB structure (AU)
      * @param os         the output stream with the assembly in mmCIF format
      * @param pdbInfoDB  the pdb data with chain clusters
-     * @param assemblyDB the db model data with assembly and residue info data
+     * @param assemblyId the eppic assembly id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getAssemblyCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfo pdbInfoDB, Assembly assemblyDB, boolean withEvolScores) throws IOException {
+    public void getAssemblyCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfoDB pdbInfoDB, int assemblyId, boolean withEvolScores) throws IOException {
 
         List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
 
-        for (GraphNode node : assemblyDB.getGraphNodes()) {
+        for (GraphNodeDB node : pdbInfoDB.getAssemblyById(assemblyId).getGraphNodes()) {
 
             if (!node.isIn3dStructure())
                 continue;
@@ -129,7 +135,7 @@ public class CoordFilesAdaptor {
         // TODO check what's the right charset to use
 
         MmCifBlockBuilder mmCifBlockBuilder = CifBuilder.enterFile(StandardSchemata.MMCIF)
-                .enterBlock("eppic_jobId_" + jobId + "_assemblyId_" + assemblyDB.getId());
+                .enterBlock("eppic_jobId_" + jobId + "_assemblyId_" + assemblyId);
 
         Category atomSite = wrappedAtoms.stream().collect(AbstractCifFileSupplier.toAtomSite());
         mmCifBlockBuilder.addCategory(atomSite);
@@ -144,13 +150,13 @@ public class CoordFilesAdaptor {
      * @param auFile the input file with a PDB structure (AU) in mmCIF/PDB format
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
-     * @param interfaceDB the interface data
+     * @param interfaceId the interface id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfo pdbInfoDB, Interface interfaceDB, boolean withEvolScores) throws IOException {
+    public void getInterfaceCoordsMmcif(String jobId, File auFile, OutputStream os, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
         Structure s = readCoords(auFile);
-        getInterfaceCoordsMmcif(jobId, s, os, pdbInfoDB, interfaceDB, withEvolScores);
+        getInterfaceCoordsMmcif(jobId, s, os, pdbInfoDB, interfaceId, withEvolScores);
     }
 
     /**
@@ -159,13 +165,15 @@ public class CoordFilesAdaptor {
      * @param s the input structure with a PDB structure (AU)
      * @param os the output stream with the assembly in mmCIF format
      * @param pdbInfoDB the pdb data with chain clusters
-     * @param interfaceDB the interface data
+     * @param interfaceId the interface id
      * @param withEvolScores whether to set b-factors to evolutionary scores from residue info data or not
      * @throws IOException
      */
-    public void getInterfaceCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfo pdbInfoDB, Interface interfaceDB, boolean withEvolScores) throws IOException {
+    public void getInterfaceCoordsMmcif(String jobId, Structure s, OutputStream os, PdbInfoDB pdbInfoDB, int interfaceId, boolean withEvolScores) throws IOException {
 
         List<AbstractCifFileSupplier.WrappedAtom> wrappedAtoms = new ArrayList<>();
+
+        InterfaceDB interfaceDB = pdbInfoDB.getInterface(interfaceId);
 
         String chainName1 = interfaceDB.getChain1();
         String chainName2 = interfaceDB.getChain2();
@@ -188,7 +196,7 @@ public class CoordFilesAdaptor {
         // for the NCS case (mostly viral capsids) we've got to hack in the operators that create the full AU
         if (pdbInfoDB.isNcsOpsPresent()) {
             // we don't have the NCS ops at interface level, we've got to grab them from the unit cell assembly
-            Assembly unitCellAssembly = pdbInfoDB.getAssemblyById(0);
+            AssemblyDB unitCellAssembly = pdbInfoDB.getAssemblyById(0);
             Matrix4d ncsOp1 = findNcsOp(unitCellAssembly.getGraphNodes(), chainName1);
             Matrix4d ncsOp2 = findNcsOp(unitCellAssembly.getGraphNodes(), chainName2);
             if (ncsOp1 != null) {
@@ -277,12 +285,13 @@ public class CoordFilesAdaptor {
         return structure;
     }
 
-    private void addEvolutionaryScores(Chain c, PdbInfo pdbInfoDB) {
+    private void addEvolutionaryScores(Chain c, PdbInfoDB pdbInfoDB) {
 
-        ChainCluster chainClusterDB = getChainCluster(pdbInfoDB, c.getEntityInfo().getRepresentative().getName());
+        ChainClusterDB chainClusterDB = getChainCluster(pdbInfoDB, c.getEntityInfo().getRepresentative().getName());
 
         if (chainClusterDB == null) {
-            logger.warn("Could not find ChainCluster for job {} and representative chain {}", pdbInfoDB.getJobId(), c.getEntityInfo().getRepresentative().getName());
+            //logger.warn("Could not find ChainCluster for job {} and representative chain {}", pdbInfoDB.getJobId(), c.getEntityInfo().getRepresentative().getName());
+            logger.warn("Could not find ChainCluster for job {} and representative chain {}", "FIXME", c.getEntityInfo().getRepresentative().getName());
             return;
         }
 
@@ -291,7 +300,7 @@ public class CoordFilesAdaptor {
 
         for (Group g : c.getAtomGroups()) {
             int resSerial = c.getEntityInfo().getAlignedResIndex(g, c);
-            ResidueInfo res = getResidue(chainClusterDB, resSerial);
+            ResidueInfoDB res = getResidue(chainClusterDB, resSerial);
             double entropy;
             if (res != null) {
                 entropy = res.getEntropyScore();
@@ -335,8 +344,8 @@ public class CoordFilesAdaptor {
         }
     }
 
-    private ChainCluster getChainCluster(PdbInfo pdbInfo, String chainName) {
-        for (ChainCluster chainCluster : pdbInfo.getChainClusters()) {
+    private ChainClusterDB getChainCluster(PdbInfoDB pdbInfo, String chainName) {
+        for (ChainClusterDB chainCluster : pdbInfo.getChainClusters()) {
             if (chainCluster.getRepChain().equals(chainName)) {
                 return chainCluster;
             }
@@ -345,8 +354,8 @@ public class CoordFilesAdaptor {
         return null;
     }
 
-    private ResidueInfo getResidue(ChainCluster chainCluster, int resSerial) {
-        for (ResidueInfo residueInfo : chainCluster.getResidueInfos()) {
+    private ResidueInfoDB getResidue(ChainClusterDB chainCluster, int resSerial) {
+        for (ResidueInfoDB residueInfo : chainCluster.getResidueInfos()) {
             if (residueInfo.getResidueNumber() == resSerial) {
                 return residueInfo;
             }
@@ -374,8 +383,8 @@ public class CoordFilesAdaptor {
         return chainName;
     }
 
-    private Matrix4d findNcsOp(List<GraphNode> graphNodes, String chainName) {
-        for (GraphNode graphNode : graphNodes) {
+    private Matrix4d findNcsOp(List<GraphNodeDB> graphNodes, String chainName) {
+        for (GraphNodeDB graphNode : graphNodes) {
             String[] tokens = graphNode.getLabel().split("_");
             // the NCS op is in the matching chain name with opId=0
             if (!tokens[1].equals("0")) continue;

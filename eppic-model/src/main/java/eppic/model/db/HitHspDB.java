@@ -1,23 +1,15 @@
 package eppic.model.db;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import java.io.Serializable;
 
-@Entity
 @Table(name="HitHsp",
         indexes = @Index(name = "queryId_idx", columnList = "queryId", unique = false))
 public class HitHspDB implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int uid;
     // qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
     private String queryId;
     private String subjectId;
@@ -31,14 +23,6 @@ public class HitHspDB implements Serializable {
     private int subjectEnd;
     private double eValue;
     private int bitScore;
-
-    public int getUid() {
-        return uid;
-    }
-
-    public void setUid(int uid) {
-        this.uid = uid;
-    }
 
     public String getQueryId() {
         return queryId;

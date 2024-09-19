@@ -1,13 +1,19 @@
 package eppic;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eppic.assembly.*;
 import eppic.assembly.gui.InterfaceEdge3DSourced;
 import eppic.assembly.layout.LayoutUtils;
+import eppic.db.mongoutils.ConfigurableMapper;
 import eppic.model.db.*;
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.asa.GroupAsa;
@@ -71,6 +77,8 @@ public class DataModelAdaptor {
 	
 	private PdbInfoDB pdbInfo;
 
+	private List<InterfaceResidueFeaturesDB> interfFeatures;
+
 	private EppicParams params;
 	
 	private RunParametersDB runParameters;
@@ -87,11 +95,16 @@ public class DataModelAdaptor {
 	
 	public DataModelAdaptor() {
 		pdbInfo = new PdbInfoDB();
+		interfFeatures = new ArrayList<>();
 		interfId2Warnings = new HashMap<Integer, HashSet<String>>();
 	}
 	
 	public PdbInfoDB getPdbInfo() {
 		return pdbInfo;
+	}
+
+	public List<InterfaceResidueFeaturesDB> getInterfFeatures() {
+		return interfFeatures;
 	}
 
 	public void setChainOrigNames(Map<String, String> chainOrigNames) {
@@ -113,6 +126,13 @@ public class DataModelAdaptor {
 	public void setParams(EppicParams params) {
 		this.params = params;
 		pdbInfo.setPdbCode(params.getPdbCode());
+		if (params.getPdbCode() != null) {
+			pdbInfo.setEntryId(params.getPdbCode());
+		} else {
+			// else (file input from actual CLI) take it from base name (which is taken from filename, see logic of basename)
+			// this is useful for REST service to pass the "secret" user id
+			pdbInfo.setEntryId(params.getBaseName());
+		}
 		runParameters = new RunParametersDB();
 		runParameters.setMinNumSeqsCutoff(params.getMinNumSeqs());
 		runParameters.setHomSoftIdCutoff(params.getHomSoftIdCutoff());
@@ -135,8 +155,8 @@ public class DataModelAdaptor {
 	
 	public void setPdbMetadata(Structure pdb) {
 		pdbInfo.setTitle(pdb.getPDBHeader().getTitle());
-		// TODO here we used to have the release date but it doesn't seem to be in biojava, do we want it?
-		pdbInfo.setReleaseDate(pdb.getPDBHeader().getDepDate());
+		// note that for precomp workflow we reset the mod date in a separate call later
+		pdbInfo.setReleaseDate(pdb.getPDBHeader().getModDate());
 		PDBCrystallographicInfo pdbXtallographicInfo = pdb.getCrystallographicInfo();
 		SpaceGroup sg = (pdbXtallographicInfo==null?null:pdbXtallographicInfo.getSpaceGroup());
 		pdbInfo.setSpaceGroup(sg==null?null:sg.getShortSymbol());
@@ -173,6 +193,11 @@ public class DataModelAdaptor {
 			pdbInfo.setCellGamma(cc.getGamma());			
 		}
 
+	}
+
+	public void setPdbModDate(long modDate) {
+		// this sets the latest modification date (useful for incremental update logic)
+		pdbInfo.setReleaseDate(new Date(modDate));
 	}
 
 	public void setChainClustersData(Structure pdb) {
@@ -239,10 +264,7 @@ public class DataModelAdaptor {
 			residueInfoDBs.add(residueInfoDB);
 			
 			residueInfoDB.setChainCluster(chainClusterDB);			
-			
-			residueInfoDB.setPdbCode(pdbInfo.getPdbCode());
-			residueInfoDB.setRepChain(compound.getRepresentative().getName());
-			
+
 			// NOTE, here there can be 2 behaviours:
 			// 1) there is a SEQRES and getAlignedResIndex gives the actual SEQRES indices
 			// 2) there is no SEQRES and getAlignedResIndex gives the PDB residue number without the insertion codes:
@@ -401,8 +423,7 @@ public class DataModelAdaptor {
 					//contact.setNumHBonds(edge.getnHBonds()); 
 					
 					contact.setInterfaceId(interf.getId()); 
-					contact.setPdbCode(pdbInfo.getPdbCode());
-					
+
 					contacts.add(contact);
 					
 					// parent/child
@@ -552,15 +573,12 @@ public class DataModelAdaptor {
 		assembly.setInterfaceClusters(interfaceClusters);
 
 		// other data
-		assembly.setPdbCode(pdbInfo.getPdbCode());
-
 		assembly.setInterfaceClusterIds(validAssembly.toString());
 
 		List<AssemblyDescription> description = validAssembly.getDescription();
 		List<AssemblyContentDB> acDBs = new ArrayList<AssemblyContentDB>();
 		for (AssemblyDescription d:description) {
 			AssemblyContentDB acDB = new AssemblyContentDB();
-			acDB.setPdbCode(pdbInfo.getPdbCode());
 			acDB.setAssembly(assembly);
 			acDB.setMmSize(d.getSize());
 			acDB.setSymmetry(d.getSymmetry());
@@ -581,7 +599,6 @@ public class DataModelAdaptor {
 		as.setCallReason(validAssembly.getCallReason());
 		as.setScore(validAssembly.getScore());
 		as.setConfidence(validAssembly.getConfidence());
-		as.setPdbCode(pdbInfo.getPdbCode());
 		as.setAssembly(assembly);
 		assembly.addAssemblyScore(as);
 
@@ -621,8 +638,6 @@ public class DataModelAdaptor {
 			icDB.addAssembly(unitcellAssembly);
 		}
 		unitcellAssembly.setInterfaceClusters(interfaceClusters);
-
-		unitcellAssembly.setPdbCode(pdbInfo.getPdbCode());
 
 		// no description, content or scores for this case
 
@@ -946,8 +961,7 @@ public class DataModelAdaptor {
 		as.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 		as.setScore(SCORE_NOT_AVAILABLE);
 		as.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-		as.setPdbCode(pdbInfo.getPdbCode());
-		
+
 		if (matchingAssemblyDB!=null) {
 
 			as.setAssembly(matchingAssemblyDB);
@@ -998,8 +1012,6 @@ public class DataModelAdaptor {
 			assembly.setInterfaceClusters(interfaceClustersDB);
 			
 			// other data
-			assembly.setPdbCode(pdbInfo.getPdbCode());			
-
 			assembly.setInterfaceClusterIds(pdbAssembly.toString());
 						
 			// TODO fill the AssemblyContents
@@ -1035,7 +1047,6 @@ public class DataModelAdaptor {
 			asxtal.setCallReason(""); // empty for the moment, perhaps we could use it for authors/pisa
 			asxtal.setScore(SCORE_NOT_AVAILABLE);
 			asxtal.setConfidence(CONFIDENCE_NOT_AVAILABLE);
-			asxtal.setPdbCode(pdbInfo.getPdbCode());
 			asxtal.setAssembly(assembly);
 			
 			assembly.addAssemblyScore(asxtal);
@@ -1171,7 +1182,6 @@ public class DataModelAdaptor {
 			is.setCallName(call.getName());
 			is.setCallReason(gps.get(i).getCallReason());
 			is.setMethod(ScoringMethod.EPPIC_GEOMETRY);
-			is.setPdbCode(ii.getPdbCode());
 			is.setConfidence(gps.get(i).getConfidence());
 			is.setScore(gps.get(i).getScore());
 			is.setScore1(gps.get(i).getScore1());
@@ -1205,7 +1215,6 @@ public class DataModelAdaptor {
 			ics.setScore1(gcp.getScore1());
 			ics.setScore2(gcp.getScore2());
 			ics.setConfidence(gcp.getConfidence());
-			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
@@ -1370,8 +1379,7 @@ public class DataModelAdaptor {
 			isCS.setScore(ecsp.getScore());	
 			
 			isCS.setConfidence(ecsp.getConfidence());
-			isCS.setPdbCode(ii.getPdbCode());
-			
+
 			// 3) core-rim scores
 			EvolCoreRimPredictor ecrp = iec.getEvolCoreRimPredictor();
 
@@ -1399,9 +1407,6 @@ public class DataModelAdaptor {
 			isCR.setScore(ecrp.getScore());				
 
 			isCR.setConfidence(ecrp.getConfidence());
-			isCR.setPdbCode(ii.getPdbCode());
-
-			
 			
 		}
 
@@ -1418,7 +1423,6 @@ public class DataModelAdaptor {
 			ics.setScore1(ecrcp.getScore1());
 			ics.setScore2(ecrcp.getScore2());
 			ics.setConfidence(ecrcp.getConfidence());
-			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
@@ -1435,7 +1439,6 @@ public class DataModelAdaptor {
 			ics.setScore1(ecscp.getScore1());
 			ics.setScore2(ecscp.getScore2());
 			ics.setConfidence(ecscp.getConfidence());
-			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
@@ -1463,7 +1466,6 @@ public class DataModelAdaptor {
 			is.setConfidence(cps.get(i).getConfidence());
 			is.setInterfaceItem(ii);
 			is.setInterfaceId(ii.getInterfaceId());
-			is.setPdbCode(ii.getPdbCode());
 			is.setScore(cps.get(i).getScore());
 			is.setScore1(cps.get(i).getScore1());
 			is.setScore2(cps.get(i).getScore2());
@@ -1494,7 +1496,6 @@ public class DataModelAdaptor {
 			ics.setScore1(ccps.get(i).getScore1());
 			ics.setScore2(ccps.get(i).getScore2());
 			ics.setConfidence(ccps.get(i).getConfidence());
-			ics.setPdbCode(pdbInfo.getPdbCode());
 			ics.setClusterId(ic.getClusterId());
 
 			// setting relations child/parent
@@ -1503,9 +1504,30 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void writeSerializedModelFile(File file) throws EppicException {
+	public void writeSerializedModelFiles(File pdbInfoFile, File interfFeaturesFile, File zipFile) throws EppicException {
 		try {
-			Goodies.serialize(file,pdbInfo);
+			ConfigurableMapper.getMapper().writeValue(pdbInfoFile, pdbInfo);
+			ConfigurableMapper.getMapper().writeValue(interfFeaturesFile, interfFeatures);
+
+			List<File> srcFiles = Arrays.asList(pdbInfoFile, interfFeaturesFile);
+			FileOutputStream fos = new FileOutputStream(zipFile);
+			ZipOutputStream zipOut = new ZipOutputStream(fos);
+			for (File fileToZip : srcFiles) {
+				FileInputStream fis = new FileInputStream(fileToZip);
+				ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+				zipOut.putNextEntry(zipEntry);
+
+				byte[] bytes = new byte[1024];
+				int length;
+				while((length = fis.read(bytes)) >= 0) {
+					zipOut.write(bytes, 0, length);
+				}
+				fis.close();
+			}
+			zipOut.close();
+			fos.close();
+			srcFiles.forEach(File::delete);
+
 		} catch (IOException e) {
 			throw new EppicException(e, e.getMessage(), true);
 		}
@@ -1535,41 +1557,49 @@ public class DataModelAdaptor {
 				LOGGER.info("Not storing residue burials info for redundant NCS interface {}", interf.getId());
 				continue;
 			}
-			// we add the residue details
-			
-			List<ResidueBurialDB> iril = new ArrayList<ResidueBurialDB>();
-			ii.setResidueBurials(iril);
 
-			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.FIRST, noseqres);
-			addResidueBurialDetailsOfPartner(iril, interf, InterfaceEvolContext.SECOND, noseqres);
-
-			for(ResidueBurialDB iri : iril) {
-				iri.setInterfaceItem(ii);
-			}
+			interfFeatures.add(createInterfaceResidueFeatures(interf));
 
 		}
 	}
 	
-	private void addResidueBurialDetailsOfPartner(List<ResidueBurialDB> iril, StructureInterface interf, int molecId, boolean noseqres) {
+	private InterfaceResidueFeaturesDB createInterfaceResidueFeatures(StructureInterface interf) {
 
-		Chain chain = null;
-		if (molecId == InterfaceEvolContext.FIRST) 
-			chain =	interf.getParentChains().getFirst();
-		else if (molecId == InterfaceEvolContext.SECOND) 
-			chain =	interf.getParentChains().getSecond();
-		
+		InterfaceResidueFeaturesDB features = new InterfaceResidueFeaturesDB();
+
+		features.setInterfaceId(interf.getId());
+		features.setEntryId(pdbInfo.getEntryId());
+
+		List<ResidueBurialDB> resBurials1 = new ArrayList<>();
+		List<ResidueBurialDB> resBurials2 = new ArrayList<>();
+		features.setResBurials1(resBurials1);
+		features.setResBurials2(resBurials2);
+
+		addResBurials(InterfaceEvolContext.FIRST, resBurials1, interf);
+		addResBurials(InterfaceEvolContext.SECOND, resBurials2, interf);
+		return features;
+	}
+
+	private void addResBurials(int molecId, List<ResidueBurialDB> resBurials, StructureInterface interf) {
+		Chain chain;
+		if (molecId == InterfaceEvolContext.FIRST)
+			chain = interf.getParentChains().getFirst();
+		else if (molecId == InterfaceEvolContext.SECOND)
+			chain = interf.getParentChains().getSecond();
+		else
+			throw new IllegalArgumentException("Molecule id " +molecId+" is invalid");
+
 		String repChainId = chain.getEntityInfo().getRepresentative().getName();
 		ChainClusterDB chainCluster = pdbInfo.getChainCluster(repChainId);
-		
-		
+
 		for (Group group:chain.getAtomGroups()) {
 
 			if (group.isWater()) continue;
 
-			GroupAsa groupAsa = null;
-			if (molecId==InterfaceEvolContext.FIRST) 
+			GroupAsa groupAsa;
+			if (molecId == InterfaceEvolContext.FIRST)
 				groupAsa = interf.getFirstGroupAsa(group.getResidueNumber());
-			else if (molecId==InterfaceEvolContext.SECOND) 
+			else
 				groupAsa = interf.getSecondGroupAsa(group.getResidueNumber());
 
 			// if we have no groupAsa that means that this is a Residue for which we don't calculate ASA (most likely HETATM)
@@ -1582,7 +1612,7 @@ public class DataModelAdaptor {
 
 			// NOTE the regions are mutually exclusive (one and only one assignment per region)
 
-			// For the case of CORE_EVOL/CORE_GEOM we are assuming that CORE_EVOL is a superset of CORE_GEOM 
+			// For the case of CORE_EVOL/CORE_GEOM we are assuming that CORE_EVOL is a superset of CORE_GEOM
 			// (i.e. that caCutoffForRimCore<caCutoffForGeom)
 			// thus, as groups are exclusive, to get the actual full subset of CORE_EVOL one needs to get
 			// the union of CORE_EVOL and CORE_GEOM
@@ -1594,66 +1624,25 @@ public class DataModelAdaptor {
 				if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForRimCore()) {
 					assignment = ResidueBurialDB.RIM_EVOLUTIONARY;
 				} else if (groupAsa.getBsaToAsaRatio()<params.getCAcutoffForGeom()){
-					assignment = ResidueBurialDB.CORE_EVOLUTIONARY; 
+					assignment = ResidueBurialDB.CORE_EVOLUTIONARY;
 				} else {
 					assignment = ResidueBurialDB.CORE_GEOMETRY;
-				} 
+				}
 
 				// residues not in interface but still with more ASA than minimum required are called surface
 			} else if (groupAsa.getAsaU()>params.getMinAsaForSurface()) {
 				assignment = ResidueBurialDB.SURFACE;
 			}
 
-
 			ResidueBurialDB iri = new ResidueBurialDB();
+			resBurials.add(iri);
 
-			iril.add(iri);
-			
 			iri.setAsa(asa);
 			iri.setBsa(bsa);
 			iri.setRegion(assignment);
 
-			// side: false(0) for FIRST, true(1) for SECOND (used to be 1,2)
-			boolean side = false;
-			if (molecId==InterfaceEvolContext.SECOND) 
-				side = true;
-			
-			iri.setSide(side);
-
-			// relations
-			iri.setInterfaceItem(pdbInfo.getInterface(interf.getId()));
-			
-			// this is a difficult operation: we are in a single chain and we connect to the equivalent
-			// residue in the representative chain (the one we store in the residueInfos in chainCluster).
-			// Thus the issues with residue serials in SEQRES/no SEQRES case will hit here!
-			// See the comment in createChainCluster
 			int resser = chain.getEntityInfo().getAlignedResIndex(group, chain);
-			if (resser==-1) {
-				if (noseqres) 
-					LOGGER.warn("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
-				else 
-					LOGGER.info("Could not get a residue serial for group '{}' to connect ResidueBurial to ResidueInfo", group.toString());
-			} else {
-				
-				// Here getResidue(resser) matches the residue serials via the residue serials we added earlier 
-				// to ResidueInfo. Those were coming from getAlignedResIndex, thus they should match correctly
-
-				ResidueInfoDB residueInfo = chainCluster.getResidue(resser);
-
-				// TODO in no-SEQRES case if the residues are not consistently named across different chains of 
-				//      same entity, this will fail and return a null! e.g. 3ddo without seqres
-				//      The ideal solution to this would be to go through our UniProt alignments and get a proper 
-				//      mapping from there, but at this point we don't have an alignment yet... so it is complicated
-				
-				if (residueInfo==null && !noseqres) {
-					// we only warn if we have seqres and find a null, case noseqres==true emits only 1 warning above
-					LOGGER.warn("Could not find the ResidueInfo corresponding to ResidueBurial of group '{}', the mapped residue serial is {}.",
-							group.toString(), resser);
-				}
-						
-				
-				iri.setResidueInfo(residueInfo);
-			}
+			iri.setResSerial(resser);
 		}
 	}
 

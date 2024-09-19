@@ -1,9 +1,17 @@
 package eppic.rest.endpoints;
 
 import eppic.db.dao.DaoException;
-import eppic.model.dto.*;
+import eppic.model.db.AssemblyDB;
+import eppic.model.db.ChainClusterDB;
+import eppic.model.db.ContactDB;
+import eppic.model.db.FileTypeEnum;
+import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceDB;
+import eppic.model.db.PdbInfoDB;
 import eppic.model.dto.views.AssemblyDiagram;
 import eppic.model.dto.views.LatticeGraph;
+import eppic.model.dto.views.Residue;
+import eppic.rest.commons.AppConstants;
 import eppic.rest.commons.Utils;
 import eppic.rest.service.JobService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,364 +19,312 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.*;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 
-@Path("/job")
+@RestController
+@RequestMapping(AppConstants.ENDPOINTS_COMMON_PREFIX + "v${build.project_major_version}/job")
+@CrossOrigin
 public class JobResource {
 
-    @GET
-    @Path("/pdb/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    private static final Logger logger = LoggerFactory.getLogger(JobResource.class);
+
+    private final JobService jobService;
+
+    @Autowired
+    public JobResource(JobService jobService) {
+        this.jobService = jobService;
+    }
+
+    @GetMapping(value = "/pdb/{jobId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "PDB info service",
             description = "provides general information about PDB structures.")
     @Operation(
             summary = "Get PDB structure description by job id (either PDB id or alphanumerical user job id).",
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                    schema = @Schema(implementation = PdbInfo.class))),
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = PdbInfoDB.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
-    public Response getPdb(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId) throws DaoException {
+    public PdbInfoDB getPdb(
+            @PathVariable("jobId") String jobId) throws DaoException {
+        
+        PdbInfoDB pdbInfo = jobService.getResultData(jobId, false, false, false, false);
 
-
-        PdbInfo pdbInfo = JobService.getResultData(jobId, false, false, false, false);
-
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(pdbInfo);
-
-        return responseBuilder.build();
+        return pdbInfo;
     }
 
-    @GET
-    @Path("/interfaceClusters/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @GetMapping(value = "/interfaceClusters/{jobId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Interface cluster service",
             description = "provides information about an interface cluster (interface type or unique binding mode).")
     @Operation(
             summary = "Get interface cluster information by job id (either PDB id or alphanumerical user job id).")
-    public Response getInterfaceClusters(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId) throws DaoException {
+    public List<InterfaceClusterDB> getInterfaceClusters(
+            @PathVariable("jobId") String jobId) throws DaoException {
 
+        List<InterfaceClusterDB> ics = jobService.getInterfaceClusterData(jobId);
 
-        List<InterfaceCluster> ics = JobService.getInterfaceClusterData(jobId);
-        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<InterfaceCluster>> entity = new GenericEntity<List<InterfaceCluster>>(ics){};
-
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(entity);
-
-        return responseBuilder.build();
+        return ics;
     }
-
-    @GET
-    @Path("/interfaces/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    
+    @GetMapping(value = "/interfaces/{jobId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Interface service",
             description = "provides information about an interface.")
     @Operation(
             summary = "Get interface information by job id (either PDB id or alphanumerical user job id).")
-    public Response getInterfaces(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId) throws DaoException {
-
-
-        List<Interface> ics = JobService.getInterfaceData(jobId);
-        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Interface>> entity = new GenericEntity<List<Interface>>(ics){};
-
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(entity);
-
-        return responseBuilder.build();
+    public List<InterfaceDB> getInterfaces(
+            @PathVariable("jobId") String jobId) throws DaoException {
+        
+        List<InterfaceDB> ics = jobService.getInterfaceData(jobId);
+        
+        return ics;
     }
-
-    @GET
-    @Path("/sequences/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    
+    @GetMapping(value = "/sequences/{jobId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Sequences service",
             description = "provides sequence information (alignment to reference UniProt and sequence homologs) for all molecular entities of a structure.")
     @Operation(
             summary = "Get sequence information by job id (either PDB id or alphanumerical user job id).")
-    public Response getSequences(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId) throws DaoException {
-
-
-        List<ChainCluster> ics = JobService.getSequenceData(jobId);
-        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<ChainCluster>> entity = new GenericEntity<List<ChainCluster>>(ics){};
-
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(entity);
-
-        return responseBuilder.build();
+    public List<ChainClusterDB> getSequences(
+            @PathVariable("jobId") String jobId) throws DaoException {
+        
+        List<ChainClusterDB> ics = jobService.getSequenceData(jobId);
+        return ics;
     }
-
-    @GET
-    @Path("/interfaceResidues/{jobId}/{interfId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    
+    @GetMapping(value = "/interfaceResidues/{jobId}/{interfId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Interface residues service",
             description = "provides information about interface residues.")
     @Operation(
             summary = "Get interface residues information by job id (either PDB id or alphanumerical user job id) and EPPIC interface id.")
-    public Response getInterfaceResidues(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
-            @PathParam("interfId") String interfId) throws DaoException {
+    public List<Residue> getInterfaceResidues(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("interfId") String interfId) throws DaoException {
 
         // TODO validate interfId is int
 
-        List<Residue> ics = JobService.getResidueData(jobId, Integer.parseInt(interfId));
-        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Residue>> entity = new GenericEntity<List<Residue>>(ics){};
+        List<Residue> ics = jobService.getResidueData(jobId, Integer.parseInt(interfId));
 
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(entity);
-
-        return responseBuilder.build();
+        return ics;
     }
-
-    @GET
-    @Path("/assemblies/{jobId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    
+    @GetMapping(value = "/assemblies/{jobId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Assemblies service",
             description = "provides information about all assemblies of a structure.")
     @Operation(
             summary = "Get assemblies information by job id (either PDB id or alphanumerical user job id).")
-    public Response getAssemblies(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId) throws DaoException {
+    public List<AssemblyDB> getAssemblies(
+            @PathVariable("jobId") String jobId) throws DaoException {
+        
+        List<AssemblyDB> assemblies = jobService.getAssemblyDataByPdbAssemblyId(jobId);
 
-
-        List<Assembly> assemblies = JobService.getAssemblyDataByPdbAssemblyId(jobId);
-        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Assembly>> entity = new GenericEntity<List<Assembly>>(assemblies){};
-
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(entity);
-
-        return responseBuilder.build();
+        return assemblies;
     }
-
-    @GET
-    @Path("/contacts/{jobId}/{interfId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    
+    @GetMapping(value = "/contacts/{jobId}/{interfId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Contacts service",
             description = "provides information about contacts across an interface.")
     @Operation(
             summary = "Get interface contacts information by job id (either PDB id or alphanumerical user job id) and EPPIC interface id.")
-    public Response getContacts(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
-            @PathParam("interfId") String interfId) throws DaoException {
+    public List<ContactDB> getContacts(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("interfId") String interfId) throws DaoException {
 
         // TODO validate interfId is int
 
-        List<Contact> cs = JobService.getContactData(jobId, Integer.parseInt(interfId));
-        // https://stackoverflow.com/questions/6081546/jersey-can-produce-listt-but-cannot-response-oklistt-build
-        GenericEntity<List<Contact>> entity = new GenericEntity<List<Contact>>(cs){};
+        List<ContactDB> cs = jobService.getContactData(jobId, Integer.parseInt(interfId));
 
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(entity);
-
-        return responseBuilder.build();
+        return cs;
     }
-
-    @GET
-    @Path("/assemblyByPdbId/{pdbId}/{pdbAssemblyId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    
+    @GetMapping(value = "/assemblyByPdbId/{pdbId}/{pdbAssemblyId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Assembly by PDB id service",
             description = "provides information about an assembly.")
     @Operation(
             summary = "Get EPPIC assembly information by PDB id and PDB assembly id.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                    schema = @Schema(implementation = Assembly.class))),
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AssemblyDB.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
-    public Response getAssemblyByPdbId(
-            @Context UriInfo uriInfo,
-            @PathParam("pdbId") String jobId,
-            @PathParam("pdbAssemblyId") String pdbAssemblyId) throws DaoException {
+    public AssemblyDB getAssemblyByPdbId(
+            @PathVariable("pdbId") String jobId,
+            @PathVariable("pdbAssemblyId") String pdbAssemblyId) throws DaoException {
 
         // TODO validate pdbAssemblyId is int
 
-        Assembly assembly = JobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
-
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(assembly);
-
-        return responseBuilder.build();
+        AssemblyDB assembly = jobService.getAssemblyDataByPdbAssemblyId(jobId, Integer.parseInt(pdbAssemblyId));
+        
+        return assembly;
     }
 
-    @GET
-    @Path("/assembly/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @GetMapping(value = "/assembly/{jobId}/{assemblyId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Assembly service",
             description = "provides information about an assembly.")
     @Operation(
             summary = "Get assembly information by job id (either PDB id or alphanumerical user job id) and EPPIC assembly id.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
-                                    schema = @Schema(implementation = Assembly.class))),
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = AssemblyDB.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
-    public Response getAssembly(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
-            @PathParam("assemblyId") String assemblyId) throws DaoException {
+    public AssemblyDB getAssembly(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("assemblyId") String assemblyId) throws DaoException {
 
         // TODO validate assemblyId is int
 
-        Assembly assembly = JobService.getAssemblyData(jobId, Integer.parseInt(assemblyId));
-
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(assembly);
-
-        return responseBuilder.build();
+        AssemblyDB assembly = jobService.getAssemblyData(jobId, Integer.parseInt(assemblyId));
+        
+        return assembly;
     }
 
-    @GET
-    @Path("/latticeGraph/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @GetMapping(value = "/latticeGraph/{jobId}/{assemblyId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Lattice graph by assembly id service",
             description = "provides information about the lattice graph.")
     @Operation(
             summary = "Get lattice graph by job id (either PDB id or alphanumerical user job id) and EPPIC assembly id.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = LatticeGraph.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
-    public Response getLatticeGraph(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
-            @PathParam("assemblyId") String assemblyId) throws DaoException {
+    public LatticeGraph getLatticeGraph(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("assemblyId") String assemblyId) throws DaoException {
 
         // TODO validate assemblyId is int
 
-        LatticeGraph latticeGraph = JobService.getLatticeGraphData(jobId, Integer.parseInt(assemblyId));
+        LatticeGraph latticeGraph = jobService.getLatticeGraphData(jobId, Integer.parseInt(assemblyId));
 
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(latticeGraph);
-
-        return responseBuilder.build();
+        return latticeGraph;
     }
 
-    @GET
-    @Path("/latticeGraphByInterfaceIds/{jobId}/{interfaceIds}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @GetMapping(value = "/latticeGraphByInterfaceIds/{jobId}/{interfaceIds}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Lattice graph by interface ids service",
             description = "provides information about the lattice graph.")
     @Operation(
             summary = "Get lattice graph by job id (either PDB id or alphanumerical user job id) and EPPIC interface ids.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = LatticeGraph.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
-    public Response getLatticeGraphByInterfaceIdList(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
-            @PathParam("interfaceIds") String interfaceIdString) throws DaoException {
+    public LatticeGraph getLatticeGraphByInterfaceIdList(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("interfaceIds") String interfaceIdString) throws DaoException {
 
         // TODO convert interfaceIdsString to list
         SortedSet<Integer> interfaceIds = Utils.parseIdsString(interfaceIdString);
-        LatticeGraph latticeGraph = JobService.getLatticeGraphDataByInterfaceIds(jobId, interfaceIds);
+        LatticeGraph latticeGraph = jobService.getLatticeGraphDataByInterfaceIds(jobId, interfaceIds);
 
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(latticeGraph);
-
-        return responseBuilder.build();
+        return latticeGraph;
     }
 
-    @GET
-    @Path("/latticeGraphByInterfaceClusterIds/{jobId}/{interfaceClusterIds}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @GetMapping(value = "/latticeGraphByInterfaceClusterIds/{jobId}/{interfaceClusterIds}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Lattice graph by interface cluster ids service",
             description = "provides information about the lattice graph.")
     @Operation(
             summary = "Get lattice graph by job id (either PDB id or alphanumerical user job id) and EPPIC interface cluster ids.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = LatticeGraph.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
-    public Response getLatticeGraphByInterfaceClusterIdList(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
-            @PathParam("interfaceClusterIds") String interfaceClusterIdString) throws DaoException {
+    public LatticeGraph getLatticeGraphByInterfaceClusterIdList(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("interfaceClusterIds") String interfaceClusterIdString) throws DaoException {
 
         // TODO convert interfaceIdsString to list
         SortedSet<Integer> interfaceClusterIds = Utils.parseIdsString(interfaceClusterIdString);
-        LatticeGraph latticeGraph = JobService.getLatticeGraphDataByInterfaceClusterIds(jobId, interfaceClusterIds);
+        LatticeGraph latticeGraph = jobService.getLatticeGraphDataByInterfaceClusterIds(jobId, interfaceClusterIds);
 
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(latticeGraph);
-
-        return responseBuilder.build();
+        return latticeGraph;
     }
 
-    @GET
-    @Path("/assemblyDiagram/{jobId}/{assemblyId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @GetMapping(value = "/assemblyDiagram/{jobId}/{assemblyId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Assembly diagram by assembly id service",
             description = "provides information about the assembly diagram (2D graph).")
     @Operation(
             summary = "Get assembly diagram information by job id (either PDB id or alphanumerical user job id) and EPPIC assembly id.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "OK",
-                            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+                            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = AssemblyDiagram.class))),
                     @ApiResponse(responseCode = "404", description = "Not Found")})
-    public Response getAssemblyDiagram(
-            @Context UriInfo uriInfo,
-            @PathParam("jobId") String jobId,
-            @PathParam("assemblyId") String assemblyId) throws DaoException {
+    public AssemblyDiagram getAssemblyDiagram(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("assemblyId") String assemblyId) throws DaoException {
 
         // TODO validate assemblyId is int
 
-        AssemblyDiagram assemblyDiagram = JobService.getAssemblyDiagram(jobId, Integer.parseInt(assemblyId));
+        AssemblyDiagram assemblyDiagram = jobService.getAssemblyDiagram(jobId, Integer.parseInt(assemblyId));
 
-        Response.ResponseBuilder responseBuilder =  Response
-                .status(Response.Status.OK)
-                .type(MediaType.APPLICATION_JSON)
-                .entity(assemblyDiagram);
+        return assemblyDiagram;
+    }
 
-        return responseBuilder.build();
+    @GetMapping(value = "/interfaceCifFile/{jobId}/{interfId}", produces = "chemical/x-cif")
+    @Tag(name = "Interface coordinate file service", description = "Returns the CIF format coordinates of the interface")
+    public ResponseEntity<?> getInterfaceCoordinateFile(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("interfId") String interfId) throws DaoException, IOException {
+
+        String outputFileName = jobId + ".interface." + interfId + ".cif";
+        ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
+                .filename(outputFileName)
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDisposition(contentDisposition);
+
+        byte[] os = jobService.getCoordinateFile(jobId, interfId, null);
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(os);
+    }
+
+    @GetMapping(value = "/assemblyCifFile/{jobId}/{assemblyId}", produces = "chemical/x-cif")
+    @Tag(name = "Assembly coordinate file service", description = "Returns the CIF format coordinates of the assembly")
+    public ResponseEntity<?> getAssemblyCoordinateFile(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("assemblyId") String assemblyId) throws DaoException, IOException {
+
+        String outputFileName = jobId + ".assembly." + assemblyId + ".cif";
+        ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
+                .filename(outputFileName)
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDisposition(contentDisposition);
+
+        byte[] os = jobService.getCoordinateFile(jobId, null, assemblyId);
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(os);
+    }
+
+    @GetMapping(value = "/msaFastaFile/{jobId}/{repChainId}", produces = MediaType.TEXT_PLAIN_VALUE)
+    @Tag(name = "Alignment file service",
+            description = "returns the Multiple Sequence Alignment used to find evolutionary scores in FASTA format.")
+    public String getAlignmentFastaFile(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("repChainId") String repChainId) throws DaoException, IOException {
+        Map<String, String> sequences = jobService.getAlignment(jobId, repChainId);
+        return jobService.serializeToFasta(sequences);
+    }
+
+    @GetMapping(value = "/image/{jobId}/{type}/{id}", produces = MediaType.IMAGE_PNG_VALUE)
+    @Produces("image/png")
+    public byte[] getFullImage(
+            @PathVariable("jobId") String jobId,
+            @PathVariable("type") FileTypeEnum type,
+            @PathVariable("id") String id) throws DaoException, IOException {
+
+        return  jobService.getImageFile(jobId, type, id);
     }
 }

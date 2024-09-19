@@ -1,14 +1,13 @@
 package eppic.commons.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import org.biojava.nbio.core.sequence.io.util.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** 
  * Class: 		FileTypeGuesser
@@ -27,6 +26,8 @@ import org.biojava.nbio.core.sequence.io.util.IOUtils;
  * - CMView contact map files
  */
 public class FileTypeGuesser {
+
+	private static final Logger logger = LoggerFactory.getLogger(FileTypeGuesser.class);
 
 	/*------------------------------ constants ------------------------------*/
 	// file types
@@ -62,31 +63,33 @@ public class FileTypeGuesser {
 	};
 	
 	/*---------------------------- public methods ---------------------------*/
-	
+
+	public static int guessFileType(File file) throws IOException {
+		return guessFileType(IOUtils.openFile(file));
+	}
+
 	/**
-	 * Attempts to determine the type of the given file. If file type could be
+	 * Attempts to determine the type of the given input stream. If file type could be
 	 * identified, returns the file type constant, otherwise UNKNOWN_FILE_TYPE.
-	 * 
+	 *
 	 * File type constant can be:
-	 * PDB_FILE		 	PDB file with header
-	 * RAW_PDB_FILE 	File with PDB atom lines
-	 * CASP_TS_FILE 	CASP 3D prediction file
-	 * CASP_RR_FILE 	CASP contact prediction file
-	 * OWL_CM_FILE 		Contact map file
-	 * CIF_FILE 		mmCIF file from PDB	
-	 * 
-	 * @param file the file whose type to guess
-	 * @throws FileNotFoundException if file could not be found
+	 * PDB_FILE                     PDB file with header
+	 * RAW_PDB_FILE         File with PDB atom lines
+	 * CASP_TS_FILE         CASP 3D prediction file
+	 * CASP_RR_FILE         CASP contact prediction file
+	 * OWL_CM_FILE          Contact map file
+	 * CIF_FILE             mmCIF file from PDB
+	 *
+	 * @param is the input stream whose type to guess
 	 * @throws IOException if an error occured while reading the file
 	 * @return the determined file type or UNKNOWN_FILE_TYPE
 	 */
-	public static int guessFileType(File file) throws FileNotFoundException, IOException {
-		
-		BufferedReader in = new BufferedReader(new InputStreamReader(IOUtils.openFile(file)));
+	public static int guessFileType(InputStream is) throws IOException {
+		BufferedReader in = new BufferedReader(new InputStreamReader(handleGzip(is)));
 		String firstLine = in.readLine();
 		if(firstLine != null) {
 			// be lenient here and allow one empty line at the beginning
-			if(firstLine.trim().length() == 0) firstLine = in.readLine();
+			if(firstLine.trim().isEmpty()) firstLine = in.readLine();
 			for(int i=1; i <= FILE_SIGNATURES.length; i++) {
 				if(lineMatches(firstLine, FILE_SIGNATURES[i-1])) {
 					in.close();
@@ -97,7 +100,23 @@ public class FileTypeGuesser {
 		in.close();
 		return UNKNOWN_FILE;
 	}
-	
+
+	public static InputStream handleGzip(InputStream inputStream) throws IOException {
+		BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+		bufferedInputStream.mark(2);
+		int b0 = bufferedInputStream.read();
+		int b1 = bufferedInputStream.read();
+		bufferedInputStream.reset();
+
+		// apply GZIPInputStream decorator if gzipped content
+		if ((b1 << 8 | b0) == GZIPInputStream.GZIP_MAGIC) {
+			logger.debug("Reading gzip");
+			return new GZIPInputStream(bufferedInputStream);
+		}
+		logger.debug("Reading uncompressed");
+		return bufferedInputStream;
+	}
+
 	/**
 	 * Returns a string with the name of the given file type constant or null if no name is defined.
 	 * The file types are defined as public constants in this class.

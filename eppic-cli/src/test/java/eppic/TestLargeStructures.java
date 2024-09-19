@@ -80,8 +80,6 @@ public class TestLargeStructures {
 				assertEquals(2, idb.getChain1().length());
 				assertEquals(2, idb.getChain2().length());
 				
-				// checking the first residue burial
-				assertEquals(2, idb.getResidueBurials().get(0).getResidueInfo().getRepChain().length());
 			}
 		}
 

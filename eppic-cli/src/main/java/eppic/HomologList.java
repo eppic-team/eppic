@@ -21,8 +21,8 @@ import eppic.commons.blast.*;
 import eppic.commons.sequence.UniprotEntry;
 import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
-import eppic.db.dao.jpa.UniProtInfoDAOJpa;
-import eppic.model.dto.UniProtInfo;
+import eppic.db.dao.mongo.UniProtInfoDAOMongo;
+import eppic.model.db.UniProtInfoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -341,7 +341,7 @@ public class HomologList implements  Serializable {
 	 */
 	public void retrieveUniprotKBData() throws DaoException {
 
-		UniProtInfoDAO uniProtInfoDAO = new UniProtInfoDAOJpa();
+		UniProtInfoDAO uniProtInfoDAO = new UniProtInfoDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
 
 		List<String> uniIds = new ArrayList<>();
 		for (Homolog hom:subList) {
@@ -350,7 +350,7 @@ public class HomologList implements  Serializable {
 
 		List<UnirefEntry> unirefs = new ArrayList<>();
 		for (String uniId : uniIds) {
-			UniProtInfo uniProtInfo = uniProtInfoDAO.getUniProtInfo(uniId);
+			UniProtInfoDB uniProtInfo = uniProtInfoDAO.getUniProtInfo(uniId);
 			if (uniProtInfo!=null) {
 				UnirefEntry entry = new UnirefEntry();
 				entry.setUniprotId(uniId);

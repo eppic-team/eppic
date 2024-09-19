@@ -1,25 +1,13 @@
 package eppic.model.db;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import java.io.Serializable;
 
-@Entity
-@Table(name = "AssemblyScore")
 public class AssemblyScoreDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-
-	@Column(length = 15)
 	private String method;
 	private double score;
 	private double confidence;
@@ -27,19 +15,8 @@ public class AssemblyScoreDB implements Serializable {
 	private String callName;
 	private String callReason;
 
-	@Column(length = 4)
-	private String pdbCode;
-
-	@ManyToOne
+	@JsonBackReference(value = "assemblyScores-ref")
 	private AssemblyDB assembly;
-
-	public int getUid() {
-		return uid;
-	}
-
-	public void setUid(int uid) {
-		this.uid = uid;
-	}
 
 	public String getMethod() {
 		return method;
@@ -63,14 +40,6 @@ public class AssemblyScoreDB implements Serializable {
 
 	public void setConfidence(double confidence) {
 		this.confidence = confidence;
-	}
-
-	public String getPdbCode() {
-		return pdbCode;
-	}
-
-	public void setPdbCode(String pdbCode) {
-		this.pdbCode = pdbCode;
 	}
 
 	public AssemblyDB getAssembly() {

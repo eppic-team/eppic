@@ -7,17 +7,9 @@ import java.io.Serializable;
  * @author srebniak_a
  *
  */
-public class RunJobData implements Serializable 
-{
-	/**
-	 * 
-	 */
+public class RunJobData implements Serializable {
+
 	private static final long serialVersionUID = 1L;
-	
-	/**
-	 * Parameters which will be used for calculations.
-	 */
-	private InputParameters inputParameters;
 
 	/**
 	 * User email adress.
@@ -33,22 +25,6 @@ public class RunJobData implements Serializable
 	 * Identifier of the job if previously known(null when using pdb code, set when uploading the file)
 	 */
 	private String jobId;
-
-	/**
-	 * Retrieves parameters used for calculations.
-	 * @return parameters used for calculations
-	 */
-	public InputParameters getInputParameters() {
-		return inputParameters;
-	}
-
-	/**
-	 * Sets parameters used for calculations.
-	 * @param inputParameters parameters used for calculations
-	 */
-	public void setInputParameters(InputParameters inputParameters) {
-		this.inputParameters = inputParameters;
-	}
 
 	/**
 	 * Retrieves email address of the user.

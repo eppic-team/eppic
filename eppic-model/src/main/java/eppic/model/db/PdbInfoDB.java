@@ -1,42 +1,43 @@
 package eppic.model.db;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import javax.persistence.Index;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@Entity
-@Table(name = "PdbInfo")
+@Table(name = "PdbInfo", indexes = @Index(name = "entryId_idx", columnList = "entryId", unique = true))
 public class PdbInfoDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	// FIXME remove, needs review, still used in one place
 	private int uid;
 
-	@Column(length = 10000)
+	/**
+	 * A unique across db identifier for the entry: for precomputed PDB entries it will be the PDB id, for
+	 * user jobs from files it will be a randomly generated alphanumerical string.
+	 */
+	private String entryId;
+
+	/**
+	 * The upload date for user jobs, otherwise null
+	 */
+	private Date uploadDate;
+
 	private String title;
 	private Date releaseDate;
-	@Column(length = 10)
 	private String spaceGroup;
 	private double resolution;
 	private double rfreeValue;
-	@Column(length = 255)
 	private String expMethod;
 
-	@Column(length = 4)
 	private String pdbCode;
 	
 	// the stoichiometry of the pdb structure
@@ -84,29 +85,25 @@ public class PdbInfoDB implements Serializable {
 	 */
 	private int maxNumClashesAnyInterface;
 
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference(value = "runParameters-ref")
 	private RunParametersDB runParameters;
 
-	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference(value = "chainClusters-ref")
 	private List<ChainClusterDB> chainClusters;
 
-	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference(value = "interfaceClusters-ref")
 	private List<InterfaceClusterDB> interfaceClusters;
 
-	@OneToMany(mappedBy = "pdbInfo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference(value = "assemblies-ref")
 	private List<AssemblyDB> assemblies;
 
-	@OneToOne(fetch = FetchType.LAZY)
-	private JobDB job;
-	
 	public PdbInfoDB() {
 		chainClusters = new ArrayList<ChainClusterDB>();
 		interfaceClusters = new ArrayList<InterfaceClusterDB>();
 		assemblies = new ArrayList<AssemblyDB>();
 	}
 	
-	public PdbInfoDB(int uid,
-						JobDB job,
+	public PdbInfoDB(
 						String pdbCode,
 						String title,
 						String spaceGroup,
@@ -125,16 +122,14 @@ public class PdbInfoDB implements Serializable {
 						boolean nonStandardCoordFrameConvention,
 						boolean exhaustiveAssemblyEnumeration) {
 		
-		chainClusters = new ArrayList<ChainClusterDB>();
-		assemblies = new ArrayList<AssemblyDB>();
-		this.uid = uid;
+		chainClusters = new ArrayList<>();
+		assemblies = new ArrayList<>();
 		this.pdbCode = pdbCode;
 		this.title = title;
 		this.spaceGroup = spaceGroup;
 		this.expMethod = expMethod;
 		this.resolution = resolution;
 		this.runParameters = runParameters;
-		this.job = job;
 		this.rfreeValue = rfreeValue;
 		this.cellA = cellA;
 		this.cellB = cellB;
@@ -153,6 +148,7 @@ public class PdbInfoDB implements Serializable {
 	 * @param interfaceId
 	 * @return
 	 */
+	@JsonIgnore
 	public InterfaceDB getInterface (int interfaceId) {
 		for (InterfaceClusterDB ic:interfaceClusters) {
 			for (InterfaceDB ii:ic.getInterfaces()) {
@@ -163,12 +159,26 @@ public class PdbInfoDB implements Serializable {
 		}
 		return null;
 	}
+
+	/**
+	 * Returns the full list of interfaces
+	 * @return
+	 */
+	@JsonIgnore
+	public List<InterfaceDB> getInterfaces () {
+		List<InterfaceDB> ifaces = new ArrayList<>();
+		for (InterfaceClusterDB ic:interfaceClusters) {
+			ifaces.addAll(ic.getInterfaces());
+		}
+		return ifaces;
+	}
 	
 	/**
 	 * Returns the InterfaceClusterDB corresponding to the given clusterId or null if no such clusterId exists
 	 * @param clusterId
 	 * @return
 	 */
+	@JsonIgnore
 	public InterfaceClusterDB getInterfaceCluster(int clusterId) {
 		for (InterfaceClusterDB ic:interfaceClusters) {
 			if (ic.getClusterId()==clusterId) return ic;
@@ -177,17 +187,23 @@ public class PdbInfoDB implements Serializable {
 	}
 	
 	/**
-	 * Returns the corresponding ChainClusterDB given the representative chain id
-	 * @param repChainId
-	 * @return
+	 * Returns the corresponding ChainClusterDB given the chain id
+	 * Note that before v 3.4.0 this would work only for the representative chain id, but since 3.4.0
+	 * it works for any chain id.
+	 * @param chainId
+	 * @return the cluster object or null if chain id can't be found
 	 */
-	public ChainClusterDB getChainCluster(String repChainId) {
+	@JsonIgnore
+	public ChainClusterDB getChainCluster(String chainId) {
+		Map<String,ChainClusterDB> lookup = new HashMap<>();
 		for (ChainClusterDB cc:chainClusters) {
-			if (cc.getRepChain().equals(repChainId)) {
-				return cc;
+			lookup.put(cc.getRepChain(), cc);
+			// TODO review why we have a comma separated instead of a list
+			for (String memberChainId : cc.getMemberChains().split(",\\s*")) {
+				lookup.put(memberChainId, cc);
 			}
 		}
-		return null;
+		return lookup.get(chainId);
 	}
 	
 	public List<AssemblyDB> getAssemblies() {
@@ -201,7 +217,7 @@ public class PdbInfoDB implements Serializable {
 	 * @return a list of topologically valid assemblies
 	 * @since 3.1.0
 	 */
-	@Transient
+	@JsonIgnore
 	public List<AssemblyDB> getValidAssemblies() {
 		List<AssemblyDB> validAssemblies = new ArrayList<AssemblyDB>();
 		for (AssemblyDB assemblyDB : assemblies) {
@@ -285,12 +301,12 @@ public class PdbInfoDB implements Serializable {
 		return uid;
 	}
 
-	public void setJob(JobDB job) {
-		this.job = job;
+	public String getEntryId() {
+		return entryId;
 	}
 
-	public JobDB getJob() {
-		return job;
+	public void setEntryId(String entryId) {
+		this.entryId = entryId;
 	}
 
 	public double getResolution() {
@@ -426,6 +442,39 @@ public class PdbInfoDB implements Serializable {
 	public void setCrystalFormId(int crystalFormId) {
 		this.crystalFormId = crystalFormId;
 	}
-	
-	
+
+	public Date getUploadDate() {
+		return uploadDate;
+	}
+
+	public void setUploadDate(Date uploadDate) {
+		this.uploadDate = uploadDate;
+	}
+
+	@JsonIgnore
+	public AssemblyDB getAssemblyById(int assemblyID){
+		for(AssemblyDB a :assemblies){
+			if(assemblyID == a.getId())
+				return a;
+		}
+		return null;
+	}
+
+	/**
+	 * Return an assembly given a PDB assembly id.
+	 * @param pdbAssemblyId the PDB assembly id
+	 * @return the assembly, or null if not found
+	 */
+	@JsonIgnore
+	public AssemblyDB getAssemblyByPdbAssemblyId(int pdbAssemblyId) {
+		String strPdbId = "pdb" + pdbAssemblyId;
+		for (AssemblyDB assemblyDB : assemblies) {
+			for (AssemblyScoreDB asdb : assemblyDB.getAssemblyScores()) {
+				if (asdb.getMethod().equals(strPdbId) && asdb.getCallName().equals("bio")) {
+					return assemblyDB;
+				}
+			}
+		}
+		return null;
+	}
 }

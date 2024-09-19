@@ -68,7 +68,7 @@ EPPIC is a java program that should work in any Unix like system.
 It has only been tested in Linux but there is no reason why it should
 not work in MacOSX.
 
-You need Java 1.8 or newer. Most systems will have java already 
+You need Java 17 or newer. Most systems will have java already 
 installed. Otherwise get it by installing the OpenJDK package in 
 Linux or downloading java from http://java.com/en/download/index.jsp
 
@@ -144,6 +144,3 @@ EPPIC uses the following third-party libraries which are contained in the EPPIC 
 3.	**[java-getopt](http://www.urbanophile.com/arenn/hacking/download.html).**
 	License:  [LGPL](http://www.gnu.org/licenses/lgpl.html)
 	
-4.	**[UniProt JAPI](http://www.ebi.ac.uk/uniprot/remotingAPI/).**
-	License:  Apache License, version 2
-

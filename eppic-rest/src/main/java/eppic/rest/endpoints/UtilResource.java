@@ -1,14 +1,16 @@
 package eppic.rest.endpoints;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import eppic.rest.commons.AppConstants;
 import eppic.rest.service.UtilService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * Utilities via REST
@@ -16,35 +18,35 @@ import javax.ws.rs.core.Response;
  * @author Jose Duarte
  * @since 3.2.0
  */
-@Path("/util")
+@RestController
+@RequestMapping(AppConstants.ENDPOINTS_COMMON_PREFIX + "v${build.project_major_version}/util")
+@CrossOrigin
 public class UtilResource {
 
-    @GET
-    @Path("/alive")
+    private final UtilService utilService;
+
+    @Autowired
+    public UtilResource(UtilService utilService) {
+        this.utilService = utilService;
+    }
+
+    @GetMapping(value = "/alive", produces = MediaType.TEXT_PLAIN_VALUE)
     @Tag(name = "Alive service")
-    @Produces(MediaType.TEXT_PLAIN)
     public String alive() {
 
-
-        if (UtilService.isDbHealthy() && UtilService.isTempDiskHealthy()) {
+        if (utilService.isDbHealthy() && utilService.isTempDiskHealthy()) {
             return "true";
         } else {
-            return "false";
+            // this should achieve sending out a 500, so that we are k8s compliant
+            throw new IllegalStateException("Service is not healthy");
         }
     }
 
-    @GET
-    @Path("/info")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Info service")
-    public Response getInfo() {
+    public ObjectNode getInfo() {
 
-        ObjectNode jsonObj = UtilService.getInfo();
+        return utilService.getInfo();
 
-        return Response
-                .ok()
-                .entity(jsonObj.toString())
-                .type(MediaType.APPLICATION_JSON)
-                .build();
     }
 }

@@ -59,7 +59,10 @@ public class EppicParams {
 	public static final String     ENTROPIES_FILE_SUFFIX = ".entropies";
 	protected static final String  INTERFACES_FILE_SUFFIX = ".interfaces";
 	protected static final String  CONTACTS_FILE_SUFFIX = ".contacts";
-	protected static final String  SERIALIZED_MODEL_FILE_SUFFIX = ".webui.dat";
+	protected static final String  SERIALIZED_PDBINFO_FILE_SUFFIX = ".pdbinfo.json";
+	protected static final String  SERIALIZED_INTERF_FEATURES_FILE_SUFFIX = ".interf_features.json";
+
+	protected static final String  SERIALIZED_FILES_ZIP_SUFFIX = ".json.zip";
 	protected static final String  SCORES_FILE_SUFFIX = ".scores";
 	protected static final String  STEPS_LOG_FILE_SUFFIX = ".steps.log";
 	protected static final String  ASSEMBLIES_FILE_SUFFIX = ".assemblies";
@@ -508,7 +511,8 @@ public class EppicParams {
 		"  [-a <int>]   :  number of threads for blast, alignment and ASA calculation. \n" +
 		"                  Default: "+DEF_NUMTHREADS+"\n"+
 		"  [-b <string>]:  basename for output files. Default: as input PDB code or file \n" +
-		"                  name\n"+
+		"                  name. This will be the PdbInfo.entryId written out.\n" +
+		"                  Useful for web server to override entryId from job id\n" +
 		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
 		"                  dir \n" +
 		"  [-e <float>] :  the BSA/ASA cutoff for core assignment in geometry predictor.\n" +
@@ -551,15 +555,15 @@ public class EppicParams {
 		"                  This option will force the -p option\n" +
 		"  [-f]         :  if specified together with -p, coordinate output will also be produced in \n"+
 		"                  PDB (gzipped) format as well as mmCIF format\n"+
-		"  [-w]         :  if specified a serialized webui.dat file will be produced. Coordinate files are removed in \n" +
-        "                  this mode, so the -p option will have no effect.\n" +
+		"  [-w]         :  if specified a zip file containing 2 serialized json files with all data will be produced. \n" +
+		"                  Coordinate files are removed in this mode, so the -p option will have no effect.\n" +
 		"  [-B]         :  if specified no blasting will be performed at all: a) UniProt references are taken\n"+
 		"                  from SIFTS only, b) only sequence search cache is used.\n"+
 		"                  Useful for precomputation from scratch to avoid the dependency on\n"+
 		"                  blast index files.\n"+
-		"  [-G <file>]  :  config file for JPA db connection, needed to query the sequence search cache\n"+
+		"  [-G <file>]  :  config file for Mongo db connection, needed to query the sequence search cache\n"+
 		"                  and to get UniProt info (sequences, taxonomy) from local db\n"+
-		"  [-U]         :  use local UniProt info via JPA db connection. Requires a config file (-G).\n"+
+		"  [-U]         :  use local UniProt info via Mongo db connection. Requires a config file (-G).\n"+
 		"                  If not provided, default is to use UniProt REST API to retrieve UniProt info\n"+
 		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
 		"                  log written to std output\n" +
@@ -736,7 +740,7 @@ public class EppicParams {
 	public String getPdbCode() {
 		return pdbCode;
 	}
-	
+
 	/**
 	 * Sets the values of inFile and pdbCode from input string given in -i
 	 * - if inputStr matches a PDB code (i.e. regex \d\w\w\w) then inFile is null and input considered to be PDB code

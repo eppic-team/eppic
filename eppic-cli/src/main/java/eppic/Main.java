@@ -7,13 +7,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -30,7 +27,6 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceCluster;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
 import org.biojava.nbio.structure.io.FileParsingParameters;
-import org.biojava.nbio.structure.io.CifFileReader;
 import org.biojava.nbio.structure.io.PDBFileParser;
 import org.biojava.nbio.structure.chem.ChemCompGroupFactory;
 import org.biojava.nbio.structure.chem.DownloadChemCompProvider;
@@ -193,11 +189,15 @@ public class Main {
 		fileParsingParams.setParseBioAssembly(true);
 
 		pdb = null;
+		long modDate = 0;
 		try {
 			if (!params.isInputAFile()) {
 
 				try {
 					pdb = readStructureFromPdbCode(fileParsingParams);
+					if (params.getCifRepositoryTemplateUrl()!=null) {
+						modDate = getLastModDateFromUrl(params.getPdbCode().toLowerCase());
+					}
 
 				} catch(IOException e) {
 					throw new EppicException(e,"Couldn't get cif file from AtomCache for code "+params.getPdbCode()+". Error: "+e.getMessage(),true);
@@ -241,6 +241,12 @@ public class Main {
 		modelAdaptor.setParams(params);
 		modelAdaptor.setPdbMetadata(pdb);
 
+		if (!params.isInputAFile() && params.getCifRepositoryTemplateUrl()!=null && params.isGenerateModelSerializedFile()) {
+			// Only for weekly update pipeline: use mod date from URL. Because the holdings json file has literally the actual file timestamps. Which not always coincide
+			// with the last mod date written in mmCIF. So if we don't use the actual timestamps for the db then the incremental update logic would be wrong
+			modelAdaptor.setPdbModDate(modDate);
+		}
+
 		return System.currentTimeMillis() - start;
 	}
 
@@ -254,15 +260,6 @@ public class Main {
 			String url = getPathUrl(params.getCifRepositoryTemplateUrl(), pdbCode);
 			URL cifGzUrl = new URL(url);
 			pdb = CifStructureConverter.fromInputStream(new GZIPInputStream(cifGzUrl.openStream()), fileParsingParams);
-
-			// now we get the file and copy it to the output dir if in -w mode
-			if (params.isGenerateModelSerializedFile()) {
-				cifGzUrl = new URL(url);
-				ReadableByteChannel readableByteChannel = Channels.newChannel(cifGzUrl.openStream());
-				FileOutputStream fileOutputStream = new FileOutputStream(params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION));
-				fileOutputStream.getChannel()
-						.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-			}
 
 		} else {
 
@@ -290,14 +287,6 @@ public class Main {
 
 			pdb = StructureIO.getStructure(params.getPdbCode());
 
-			// now we get the file and copy it to the output dir if in -w mode
-			if (params.isGenerateModelSerializedFile()) {
-				CifFileReader reader = new CifFileReader(cache.getPath());
-				reader.setFetchBehavior(cache.getFetchBehavior());
-				reader.setObsoleteBehavior(cache.getObsoleteBehavior());
-				File file = reader.getLocalFile(params.getPdbCode());
-				Files.copy(file.toPath(), params.getOutputFile(EppicParams.MMCIF_FILE_EXTENSION).toPath(), StandardCopyOption.REPLACE_EXISTING);
-			}
 		}
 
 		return pdb;
@@ -311,6 +300,12 @@ public class Main {
 	 */
 	private static String getPathUrl(String filesFolderPath, String pdbCode) {
 		return filesFolderPath.replaceAll("\\{id}", pdbCode.toLowerCase()).replaceAll("\\{middle}", pdbCode.substring(1, 3).toLowerCase());
+	}
+
+	private long getLastModDateFromUrl(String pdbCode) throws IOException {
+		URL cifGzUrl = new URL(getPathUrl(params.getCifRepositoryTemplateUrl(), pdbCode));
+		HttpURLConnection httpCon = (HttpURLConnection) cifGzUrl.openConnection();
+		return httpCon.getLastModified();
 	}
 
 	public long doFindInterfaces() throws EppicException {
@@ -442,7 +437,20 @@ public class Main {
 		long start = System.currentTimeMillis();
 
 		params.getProgressLog().println("Calculating possible assemblies...");
-		validAssemblies = new CrystalAssemblies(pdb, interfaces, params.isForceContractedAssemblyEnumeration()); 
+
+		try {
+			validAssemblies = new CrystalAssemblies(pdb, interfaces, params.isForceContractedAssemblyEnumeration());
+		} catch (ConcurrentModificationException e) {
+			LOGGER.error("Caught ConcurrentModificationException while finding assemblies. This is a known bug in the contraction of heteromeric assemblies graphs");
+			if (params.isGenerateModelSerializedFile()) {
+				// TODO fix the bug in eppic.assembly.GraphContractor.contract(). This is a workaround so that the precomp workflow
+				//  doesn't report an error and can proceed
+				LOGGER.error("Will exit now with success, though no output files will be produced. This is so that the precomputation workflow can run in full. Note that this is a bug.");
+				System.exit(0);
+			} else {
+				throw e;
+			}
+		}
 
 		StringBuilder sb = new StringBuilder();
 		for (Assembly a: validAssemblies) {
@@ -524,20 +532,19 @@ public class Main {
 	public long doWriteTextOutputFiles() throws EppicException {
 
 		long start = System.currentTimeMillis();
-		
-		TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), params);
-		
-		// 0 write .A.aln file : always write it, with our without -w 
+
+		// we don't write text files if in -w
+		if (params.isGenerateModelSerializedFile()) return System.currentTimeMillis() - start;
+
+		TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), modelAdaptor.getInterfFeatures(), params);
+
+		// 0 write .A.aln file
 		try {
 			toW.writeAlnFiles();
 		} catch (IOException e) {
 			throw new EppicException(e, "Could not write the homologs alignment files: "+e.getMessage(), true);
 		}
 
-		// we don't write text files if in -w
-		if (params.isGenerateModelSerializedFile()) return System.currentTimeMillis() - start;
-
-		
 		// 1 interfaces info file and contacts info file
 		try {
 			// if no interfaces found (e.g. NMR) we don't want to write the file
@@ -789,7 +796,11 @@ public class Main {
 		if (params.isGenerateModelSerializedFile()) {
 			
 			modelAdaptor.setInterfaceWarnings(); // first we call this method to add all the cached warnings
-			modelAdaptor.writeSerializedModelFile(params.getOutputFile(EppicParams.SERIALIZED_MODEL_FILE_SUFFIX));
+			modelAdaptor.writeSerializedModelFiles(
+					params.getOutputFile(EppicParams.SERIALIZED_PDBINFO_FILE_SUFFIX),
+					params.getOutputFile(EppicParams.SERIALIZED_INTERF_FEATURES_FILE_SUFFIX),
+					params.getOutputFile(EppicParams.SERIALIZED_FILES_ZIP_SUFFIX)
+					);
 
 			// finally we write a signal file for the wui to know that job is finished
 			try {

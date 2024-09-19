@@ -9,7 +9,6 @@
 	<modules>
 		<module>eppic-model</module>
 		<module>eppic-cli</module>
-		<module>eppic-wui</module>
 		<module>eppic-dbtools</module>
 		<module>eppic-rest</module>
 		<module>eppic-util</module>
@@ -25,16 +24,12 @@
   </scm>
 
 	<properties>
-		<java.version>1.8</java.version>
-		<gwt.version>2.7.0</gwt.version>
+		<java.version>17</java.version>
 		<slf4j.version>1.7.22</slf4j.version>
 		<log4j.version>2.17.1</log4j.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<hibernate.version>5.4.4.Final</hibernate.version>
-		<hibernate.validator.version>5.4.2.Final</hibernate.validator.version>
-		<mysql.connector.version>5.1.45</mysql.connector.version>
 		<jgrapht.version>1.0.1</jgrapht.version>
-		<biojava.version>6.0.5</biojava.version>
+		<biojava.version>7.1.1</biojava.version>
 	</properties>
 
 	<build>

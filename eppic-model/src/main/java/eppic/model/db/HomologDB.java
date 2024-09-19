@@ -1,44 +1,25 @@
 package eppic.model.db;
 
-import eppic.model.adapters.HomologListener;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.io.Serializable;
 
-@Entity
-@Table(name = "Homolog")
-@EntityListeners(HomologListener.class)
 public class HomologDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-	
 	private String uniProtId;
 	private double seqId;
 	private double queryCoverage;
-	@Column(length = 255)
 	private String firstTaxon;
-	@Column(length = 255)
 	private String lastTaxon;
 	private int queryStart;
 	private int queryEnd;
 	private int subjectStart;
 	private int subjectEnd;
 
-	@Column(length = 40000, columnDefinition = "TEXT")
 	private String alignedSeq;
 
-	@ManyToOne
+	@JsonBackReference(value = "homologs-ref")
 	private ChainClusterDB chainCluster;
 	
 	public HomologDB() {
@@ -83,14 +64,6 @@ public class HomologDB implements Serializable {
 
 	public void setLastTaxon(String lastTaxon) {
 		this.lastTaxon = lastTaxon;
-	}
-
-	public int getUid() {
-		return uid;
-	}
-
-	public void setUid(int uid) {
-		this.uid = uid;
 	}
 
 	public ChainClusterDB getChainCluster() {

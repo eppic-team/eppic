@@ -12,12 +12,12 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.db.dao.UniProtMetadataDAO;
-import eppic.db.dao.jpa.HitHspDAOJpa;
-import eppic.db.dao.jpa.UniProtInfoDAOJpa;
-import eppic.db.dao.jpa.UniProtMetadataDAOJpa;
-import eppic.model.dto.HitHsp;
-import eppic.model.dto.UniProtInfo;
-import eppic.model.dto.UniProtMetadata;
+import eppic.db.dao.mongo.HitHspDAOMongo;
+import eppic.db.dao.mongo.UniProtInfoDAOMongo;
+import eppic.db.dao.mongo.UniProtMetadataDAOMongo;
+import eppic.model.db.HitHspDB;
+import eppic.model.db.UniProtInfoDB;
+import eppic.model.db.UniProtMetadataDB;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.structure.Atom;
 import org.biojava.nbio.structure.Chain;
@@ -246,8 +246,8 @@ public class ChainEvolContext implements Serializable {
 			// once we have the identifier we get the data from uniprot
 			try {
 				if (parent.isUseLocalUniprot()) {
-					UniProtInfoDAO dao = new UniProtInfoDAOJpa();
-					UniProtInfo uniProtInfo = dao.getUniProtInfo(queryUniprotId);
+					UniProtInfoDAO dao = new UniProtInfoDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
+					UniProtInfoDB uniProtInfo = dao.getUniProtInfo(queryUniprotId);
 					if (uniProtInfo == null) {
 						LOGGER.warn("No UniProt info could be found in local db for id {}. Will not be able to do evolutionary analysis for chain {}", queryUniprotId, sequenceId);
 						query = null;
@@ -906,17 +906,17 @@ public class ChainEvolContext implements Serializable {
 	 * @throws DaoException if something goes wrong when getting data from db
 	 * @since 3.2.0
 	 */
-	private static BlastHitList getCachedHspsForQuery(UnirefEntry query, Interval queryInterv) throws DaoException {
+	private BlastHitList getCachedHspsForQuery(UnirefEntry query, Interval queryInterv) throws DaoException {
 
 		String queryId = query.getUniId() + "_" + queryInterv.beg + "-" + queryInterv.end;
 
-		HitHspDAO dao = new HitHspDAOJpa();
+		HitHspDAO dao = new HitHspDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
 
-		List<HitHsp> hitHsps = dao.getHitHspsForQueryId(queryId);
+		List<HitHspDB> hitHsps = dao.getHitHspsForQueryId(queryId);
 
-		UniProtMetadataDAO uniDao = new UniProtMetadataDAOJpa();
+		UniProtMetadataDAO uniDao = new UniProtMetadataDAOMongo(MongoSettingsStore.getMongoSettings().getMongoDatabase());
 
-		UniProtMetadata uniProtMetadata = uniDao.getUniProtMetadata();
+		UniProtMetadataDB uniProtMetadata = uniDao.getUniProtMetadata();
 
 		if (hitHsps.isEmpty()) {
 			LOGGER.warn("Nothing found in sequence search cache for query {}", queryId);
@@ -925,7 +925,7 @@ public class ChainEvolContext implements Serializable {
 		BlastHitList hitList = new BlastHitList();
 
 		int i = 0;
-		for (HitHsp hsp : hitHsps) {
+		for (HitHspDB hsp : hitHsps) {
 
 			if (i==0) {
 				hitList.setDb(uniProtMetadata.getVersion());

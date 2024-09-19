@@ -1,33 +1,23 @@
 package eppic.model.db;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Entity
-@Table(name = "InterfaceCluster")
 public class InterfaceClusterDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	// TODO remove, can't now because it is used in ClusterCrystalForms: review
 	private int uid;
 	private int clusterId;
 
-	@Column(length = 4)
 	private String pdbCode;
 	
 	private double avgArea;
@@ -40,16 +30,18 @@ public class InterfaceClusterDB implements Serializable {
 	
 	private int globalInterfClusterId;
 
-	@ManyToMany(mappedBy = "interfaceClusters", cascade = CascadeType.ALL)
+	// note that many-to-many do not work in jackson (JsonManagedReference and JsonBackReference are for one-to-many)
+	//@JsonBackReference(value = "interfaceClusters-assembly-ref")
+	@JsonIgnore
 	private Set<AssemblyDB> assemblies;
 
-	@OneToMany(mappedBy = "interfaceCluster", cascade = CascadeType.ALL)
+	@JsonManagedReference(value = "interfaces-ref")
 	private List<InterfaceDB> interfaces;
 
-	@OneToMany(mappedBy = "interfaceCluster", cascade = CascadeType.ALL)
+	@JsonManagedReference(value = "interfaceClusterScores-ref")
 	private List<InterfaceClusterScoreDB> interfaceClusterScores;
 
-	@ManyToOne
+	@JsonBackReference(value = "interfaceClusters-ref")
 	private PdbInfoDB pdbInfo;
 	
 	public InterfaceClusterDB() {
@@ -64,6 +56,7 @@ public class InterfaceClusterDB implements Serializable {
 	 * @param method
 	 * @return
 	 */
+	@JsonIgnore
 	public InterfaceClusterScoreDB getInterfaceClusterScore(String method) {
 		
 		for (InterfaceClusterScoreDB ics:interfaceClusterScores) {

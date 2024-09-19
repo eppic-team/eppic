@@ -1,25 +1,14 @@
 package eppic.model.db;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import java.io.Serializable;
 
-@Entity
-@Table(name = "GraphEdge")
 public class GraphEdgeDB implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int uid;
-
-    @ManyToOne
+    @JsonBackReference(value = "graphEdges-ref")
     private AssemblyDB assembly;
 
     // by convention the interface id
@@ -28,7 +17,6 @@ public class GraphEdgeDB implements Serializable {
     private int interfaceId;
     private int interfaceClusterId;
 
-    @Column(length = 6)
     private String color;
 
     private boolean inGraph2d;
@@ -39,9 +27,7 @@ public class GraphEdgeDB implements Serializable {
 
     // instead of having references to the nodes (which in SQL would require an extra table for many-to-many relation)
     // we just store the labels (chainId_operatorId)
-    @Column(length = 10)
     private String node1Label;
-    @Column(length = 10)
     private String node2Label;
 
     // because edges can be between unit cell node and "unexisting" target node in next unit cell
@@ -54,14 +40,6 @@ public class GraphEdgeDB implements Serializable {
     private double endPos3dX;
     private double endPos3dY;
     private double endPos3dZ;
-
-    public int getUid() {
-        return uid;
-    }
-
-    public void setUid(int uid) {
-        this.uid = uid;
-    }
 
     public AssemblyDB getAssembly() {
         return assembly;

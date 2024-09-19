@@ -1,52 +1,33 @@
 package eppic.model.db;
 
-import eppic.model.adapters.InterfaceListener;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "Interface")
-@EntityListeners(InterfaceListener.class)
 public class InterfaceDB implements Serializable {
 	
 	
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-
-	@Column(length = 4)
 	private String pdbCode;
-	
+
 	private int interfaceId;
 	private int clusterId;
 	
 	private double area;
-	@Column(length = 4)
 	private String chain1;
-	@Column(length = 4)
 	private String chain2;
 
-	@Column(length = 25)
 	private String operator;
 	
 	/**
 	 * The types are the short names of org.biojava.bio.structure.xtal.TransformType enum
 	 */
-	@Column(length = 5)
 	private String operatorType;
 	
 	private boolean infinite;
@@ -75,24 +56,22 @@ public class InterfaceDB implements Serializable {
 	
 	private int globalInterfClusterId;
 
-	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
+	@JsonManagedReference(value = "interfaceWarnings-ref")
 	private List<InterfaceWarningDB> interfaceWarnings;
 
-	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
+	@JsonManagedReference(value = "interfaceScores-ref")
 	private List<InterfaceScoreDB> interfaceScores;
-	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
-	private List<ResidueBurialDB> residueBurials;
-	@OneToMany(mappedBy = "interfaceItem", cascade = CascadeType.ALL)
+
+	// note we don't serialize contacts (see getter and setter below) to avoid gigantic needs for db space
+	@JsonIgnore
 	private List<ContactDB> contacts;
 
-	@ManyToOne
+	@JsonBackReference(value = "interfaces-ref")
 	private InterfaceClusterDB interfaceCluster;
 
 	public InterfaceDB() {
-		interfaceScores = new ArrayList<InterfaceScoreDB>();
-		interfaceWarnings = new ArrayList<InterfaceWarningDB>();
-		residueBurials = new ArrayList<ResidueBurialDB>();
-
+		interfaceScores = new ArrayList<>();
+		interfaceWarnings = new ArrayList<>();
 	}
 	
 	/**
@@ -274,28 +253,16 @@ public class InterfaceDB implements Serializable {
 		return interfaceCluster;
 	}
 
-	public List<ResidueBurialDB> getResidueBurials() {
-		return residueBurials;
-	}
-
-	public void setResidueBurials(List<ResidueBurialDB> interfaceResidues) {
-		this.residueBurials = interfaceResidues;
-	}
-
+	// note we don't serialize because it takes gigantic amounts of space
+	@JsonIgnore
 	public List<ContactDB> getContacts() {
 		return contacts;
 	}
 
+	// with this setting, if the db happens to have the field it can be deserialized
+	@JsonProperty
 	public void setContacts(List<ContactDB> contacts) {
 		this.contacts = contacts;
-	}
-
-	public void setUid(int uid) {
-		this.uid = uid;
-	}
-
-	public int getUid() {
-		return uid;
 	}
 
 	/**

@@ -1,9 +1,9 @@
 package eppic.db.dao;
 
+import eppic.model.db.ResidueInfoDB;
+
 import java.util.List;
 
-import eppic.model.dto.Residue;
-import eppic.model.dto.ResiduesList;
 
 /**
  * DAO for InterfaceResidue item.
@@ -18,13 +18,6 @@ public interface ResidueDAO {
 	 * @return list of interface residue items for specified interface
 	 * @throws DaoException when can not retrieve list of residue items
 	 */
-	List<Residue> getResiduesForInterface(int interfaceUid) throws DaoException;
+	List<ResidueInfoDB> getResiduesForInterface(int interfaceUid) throws DaoException;
 	
-	/**
-	 * Retrieves list of interface residue items for all interfaces.
-	 * @param jobId identifier of the job
-	 * @return list of interface residue items for all interfaces
-	 * @throws DaoException when can not retrieve list of residue items
-	 */
-	ResiduesList getResiduesForAllInterfaces(String jobId) throws DaoException;
 }

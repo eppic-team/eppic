@@ -1,8 +1,0 @@
-.settings
-.gwt
-target/
-*.swp
-.classpath
-.project
-ewui.launch
-.Rhistory

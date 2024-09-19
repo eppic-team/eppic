@@ -1,10 +1,10 @@
 package eppic.db.dao;
 
-import eppic.model.dto.UniProtMetadata;
+import eppic.model.db.UniProtMetadataDB;
 
 public interface UniProtMetadataDAO {
 
     void insertUniProtMetadata(String uniRefType, String version) throws DaoException;
 
-    UniProtMetadata getUniProtMetadata() throws DaoException;
+    UniProtMetadataDB getUniProtMetadata() throws DaoException;
 }

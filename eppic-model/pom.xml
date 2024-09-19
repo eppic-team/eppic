@@ -15,12 +15,14 @@
 			<artifactId>hibernate-jpa-2.1-api</artifactId>
 			<version>1.0.2.Final</version>
 		</dependency>
+
+		<!-- Jackson dep, so that we can annotate the model classes -->
 		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-jpamodelgen</artifactId>
-			<version>${hibernate.version}</version>
-			<scope>provided</scope>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.12.2</version>
 		</dependency>
+
 
 		<!-- These 2 are needed for compiling under JRE 11 (these libs are not included anymore) -->
 		<dependency>
@@ -87,22 +89,6 @@
 				</executions>
 			</plugin>
 
-			<!-- the gwt plugin so that sources are understood by eppic-wui -->
-			<!-- see http://mojo.codehaus.org/gwt-maven-plugin/user-guide/multiproject.html -->
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>gwt-maven-plugin</artifactId>
-				<version>${gwt.version}</version>
-                
-				<executions>
-					<execution>
-						<goals>
-							<goal>resources</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 </project>

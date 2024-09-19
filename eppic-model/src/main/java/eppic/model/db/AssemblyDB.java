@@ -1,65 +1,44 @@
 package eppic.model.db;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Entity
-@Table(name = "Assembly")
 public class AssemblyDB implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int uid;
-
 	private int id;
-
-	@Column(length = 4)
-	private String pdbCode;
 
 	private boolean unitCellAssembly;
 
 	private boolean topologicallyValid;
 
-	@Column(length = 20000) // Entries like ribosomes can have very long list of interfaces here
 	private String interfaceClusterIds;
 
-	@ManyToOne
+	@JsonBackReference(value = "assemblies-ref")
 	private PdbInfoDB pdbInfo;
 
-	@ManyToMany()
-	@JoinTable(name = "InterfaceClusterAssembly",
-			joinColumns = @JoinColumn(name = "assembly_uid", referencedColumnName = "uid"),
-			inverseJoinColumns = @JoinColumn(name = "interfaceCluster_uid", referencedColumnName = "uid"))
+	// note that many-to-many do not work in jackson (JsonManagedReference and JsonBackReference are for one-to-many)
+	//@JsonManagedReference(value = "interfaceClusters-assembly-ref")
 	private Set<InterfaceClusterDB> interfaceClusters;
 
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
+	@JsonManagedReference(value = "assemblyScores-ref")
 	private List<AssemblyScoreDB> assemblyScores;
 
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL)
+	@JsonManagedReference(value = "assemblyContents-ref")
 	private List<AssemblyContentDB> assemblyContents;
 
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference(value = "graphNodes-ref")
 	private List<GraphNodeDB> graphNodes;
 
-	@OneToMany(mappedBy = "assembly", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference(value = "graphEdges-ref")
 	private List<GraphEdgeDB> graphEdges;
 
 	public AssemblyDB() {
@@ -71,22 +50,6 @@ public class AssemblyDB implements Serializable {
 		assemblyScores.add(assemblyScore);
 	}
 	
-	public String getPdbCode() {
-		return pdbCode;
-	}
-
-	public void setPdbCode(String pdbCode) {
-		this.pdbCode = pdbCode;
-	}
-
-	public int getUid() {
-		return uid;
-	}
-
-	public void setUid(int uid) {
-		this.uid = uid;
-	}
-
 	public int getId() {
 		return id;
 	}
@@ -165,5 +128,22 @@ public class AssemblyDB implements Serializable {
 
 	public void setGraphEdges(List<GraphEdgeDB> graphEdges) {
 		this.graphEdges = graphEdges;
+	}
+
+	/**
+	 * Return a comma separated list of all chain ids present in the assembly.
+	 * A single list is returned, whether assembly is disjoint or not.
+	 * @return
+	 */
+	@JsonIgnore
+	public String getChainIdsString() {
+
+		if (assemblyContents.size()==0) return null;
+		StringBuilder sb = new StringBuilder();
+		for (int i=0; i<assemblyContents.size();i++) {
+			if (i!=0) sb.append(",");
+			sb.append(assemblyContents.get(i).getChainIds());
+		}
+		return sb.toString();
 	}
 }

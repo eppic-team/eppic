@@ -3,22 +3,33 @@ package eppic.rest.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import eppic.db.dao.JobDAO;
-import eppic.db.dao.jpa.JobDAOJpa;
+import eppic.db.dao.mongo.JobDAOMongo;
 import eppic.rest.commons.AppConstants;
+import eppic.rest.commons.BuildProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+@Service
 public class UtilService {
 
     private static final Logger logger = LoggerFactory.getLogger(UtilService.class);
 
     private static final long DISK_SPACE_LEFT_FOR_WARNING = 10000 * 1000; // 10 MB
 
-    public static ObjectNode getInfo() {
+    private final BuildProperties buildProperties;
+
+    @Autowired
+    public UtilService(BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
+    }
+
+    public ObjectNode getInfo() {
         InetAddress ip;
         String hostname = "unknown";
         try {
@@ -32,15 +43,15 @@ public class UtilService {
         ObjectNode jsonObj = new ObjectMapper().createObjectNode();
 
         jsonObj.put("hostname", hostname);
-        jsonObj.put("buildHash", AppConstants.PROJECT_SHA);
-        jsonObj.put("applicationVersion", AppConstants.PROJECT_VERSION);
-        jsonObj.put("apiVersion", AppConstants.MAJOR_VERSION);
+        jsonObj.put("buildHash", buildProperties.getHash());
+        jsonObj.put("applicationVersion", buildProperties.getProjectVersion());
+        jsonObj.put("apiVersion", buildProperties.getProjectMajorVersion());
 
         return jsonObj;
     }
 
-    public static boolean isDbHealthy() {
-        JobDAO jobDAO = new JobDAOJpa();
+    public boolean isDbHealthy() {
+        JobDAO jobDAO = new JobDAOMongo();
         boolean isHealthy = !jobDAO.isJobsEmpty();
         if (!isHealthy) {
             logger.error("DB is either unreachable or empty");
@@ -48,7 +59,7 @@ public class UtilService {
         return isHealthy;
     }
 
-    public static boolean isTempDiskHealthy() {
+    public boolean isTempDiskHealthy() {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 
         long space = tmpDir.getUsableSpace();
