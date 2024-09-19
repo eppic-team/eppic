@@ -16,7 +16,7 @@ The software is released under the GNU General Public License (GPL).
 The software is divided into submodules: 
 * **[eppic-cli](eppic-cli/README.md):** the command line interface
 * **eppic-model:** Data model, used by all other modules.
-* **eppic-dbtools:** The DAO layer (with a JPA implementation). Also includes some tools for managing the database.
+* **eppic-dbtools:** The DAO layer (with a MongoDB implementation). Also includes some tools for managing the database.
 * **eppic-rest:** The REST API, new since 3.1.0.
 * **eppic-util:** Common utilities
 
