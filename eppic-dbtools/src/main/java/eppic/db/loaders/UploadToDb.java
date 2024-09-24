@@ -16,6 +16,7 @@ import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.NoResultException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -426,12 +427,15 @@ public class UploadToDb {
 			}
 			try {
 				long start = System.currentTimeMillis();
-				PdbInfoDB existingPdbInfo = dao.getPDBInfo(jobId);
-				if (existingPdbInfo != null) {
+				try {
+					// if this doesn't throw a NoResultException it means that it exists
+					dao.getPDBInfo(jobId);
 					logger.info("Existing PDBInfo document found for {}. Will remove all data for it before inserting a new one", jobId);
 					long delPdbInfo = dao.remove(jobId);
 					long delInterfRes = interfResDao.remove(jobId);
 					logger.info("Done deleting data for id {}. Deleted {} PDBInfo documents and {} InterfaceResidueFeature documents", jobId, delPdbInfo, delInterfRes);
+				} catch (NoResultException e) {
+					logger.info("No PDBInfo document exists for id {}. No need to delete data from db for this id.", jobId);
 				}
 				dao.insertPDBInfo(entryData.getPdbInfoDB());
 				interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
