@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ContactDAOMongo implements ContactDAO {
     @Override
-    public List<ContactDB> getContactsForInterface(int pdbInfoUid, int interfaceId) throws DaoException {
+    public List<ContactDB> getContactsForInterface(String entryId, int interfaceId) throws DaoException {
         return null;
     }
 }

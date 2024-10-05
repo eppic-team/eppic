@@ -14,12 +14,12 @@ public interface ContactDAO {
 
 	/**
 	 * Retrieves list of contacts for specified interface.
-	 * @param pdbInfoUid uid of pdbInfo
+	 * @param entryId uid of pdbInfo
 	 * @param interfaceId interface id
 	 * @return list of contacts for specified interface
 	 * @throws DaoException when can not retrieve list of contacts
 	 */
-	List<ContactDB> getContactsForInterface(int pdbInfoUid, int interfaceId) throws DaoException;
+	List<ContactDB> getContactsForInterface(String entryId, int interfaceId) throws DaoException;
 	
 //	/**
 //	 * Retrieves list of contacts for all interfaces.

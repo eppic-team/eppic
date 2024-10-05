@@ -307,7 +307,7 @@ public class JobService {
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
 
         ContactDAO contactDAO = new ContactDAOMongo();
-        List<ContactDB> list = contactDAO.getContactsForInterface(pdbInfo.getUid(), interfId);
+        List<ContactDB> list = contactDAO.getContactsForInterface(pdbInfo.getEntryId(), interfId);
 
         if (list==null) {
             throw new DaoException("Could not find contact data for entry "+entryId+" and interface id "+interfId);

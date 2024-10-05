@@ -129,12 +129,13 @@ public class JobResource {
 
         return assemblies;
     }
-    
+
     @GetMapping(value = "/contacts/{jobId}/{interfId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Tag(name = "Contacts service",
             description = "provides information about contacts across an interface.")
     @Operation(
-            summary = "Get interface contacts information by job id (either PDB id or alphanumerical user job id) and EPPIC interface id.")
+            summary = "Get interface contacts information by job id (either PDB id or alphanumerical user job id) and EPPIC interface id.",
+            hidden = true)
     public List<ContactDB> getContacts(
             @PathVariable("jobId") String jobId,
             @PathVariable("interfId") String interfId) throws DaoException {
