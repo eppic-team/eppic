@@ -82,6 +82,8 @@ public class SubmitService {
         emailData.setEmailSenderPassword(eppicRestProperties.getEmailPassword());
         emailData.setEmailSenderUserName(eppicRestProperties.getEmailUsername());
         emailData.setReplyToAddress(eppicRestProperties.getEmailReplytoAddress());
+        // TODO set sending method
+        //emailData.setSendingMethod(eppicRestProperties.); // TODO explicit property or rather infer from other properties, like oauth2 tokens present???
         EmailMessageData emailMessageData = new EmailMessageData();
         emailData.setEmailMessageData(emailMessageData);
         emailMessageData.setEmailJobSubmittedTitle(eppicRestProperties.getEmailJobSubmittedTitle());

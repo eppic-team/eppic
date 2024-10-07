@@ -7,9 +7,10 @@ import java.io.Serializable;
  * @author srebniak_a
  *
  */
-public class EmailData implements Serializable
-{
+public class EmailData implements Serializable {
 	private static final long serialVersionUID = 1L;
+
+	private SendingMethod sendingMethod;
 
 	/**
 	 * Recipient address.
@@ -137,6 +138,14 @@ public class EmailData implements Serializable
 
 	public void setEmailMessageData(EmailMessageData emailMessageData) {
 		this.emailMessageData = emailMessageData;
+	}
+
+	public void setSendingMethod(SendingMethod sendingMethod) {
+		this.sendingMethod = sendingMethod;
+	}
+
+	public SendingMethod getSendingMethod() {
+		return sendingMethod;
 	}
 
 	@Override
