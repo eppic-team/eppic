@@ -108,8 +108,6 @@ public class SubmitService {
         String email = validateEmail(userJobSubmission.getEmail());
         if (email != null) {
             emailData.setEmailRecipient(email);
-        } else {
-            emailData = null;
         }
 
         // 2 Create a submission id

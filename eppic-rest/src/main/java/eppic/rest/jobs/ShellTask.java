@@ -248,7 +248,7 @@ public class ShellTask implements Callable<Integer> {
     }
 
     private void notifyByEmailOnSubmit() {
-        if (emailData == null) {
+        if (emailData.getEmailRecipient() == null) {
             logger.info("No email will be sent because email was set to null");
             return;
         }
@@ -262,7 +262,7 @@ public class ShellTask implements Callable<Integer> {
     }
 
     private void notifyByEmailOnFinish(int exitStatus) {
-        if (emailData == null) {
+        if (emailData.getEmailRecipient() == null) {
             logger.info("No email will be sent because email was set to null");
             return;
         }
