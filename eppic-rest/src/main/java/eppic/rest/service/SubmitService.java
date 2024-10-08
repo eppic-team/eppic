@@ -106,9 +106,8 @@ public class SubmitService {
 
         // 1 validate
         String email = validateEmail(userJobSubmission.getEmail());
-        if (email != null) {
-            emailData.setEmailRecipient(email);
-        }
+        // if null we are intentionally setting null so that the email is always reset (or otherwise the email from prev submission would stay!)
+        emailData.setEmailRecipient(email);
 
         // 2 Create a submission id
         String submissionId = UUID.randomUUID().toString(); // perhaps strip hyphens?
