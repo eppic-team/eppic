@@ -17,6 +17,9 @@ public class PdbInfoDB implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	// FIXME remove, needs review, still used in one place
+	private int uid;
+
 	/**
 	 * A unique across db identifier for the entry: for precomputed PDB entries it will be the PDB id, for
 	 * user jobs from files it will be a randomly generated alphanumerical string.
@@ -288,6 +291,14 @@ public class PdbInfoDB implements Serializable {
 
 	public RunParametersDB getRunParameters() {
 		return runParameters;
+	}
+
+	public void setUid(int uid) {
+		this.uid = uid;
+	}
+
+	public int getUid() {
+		return uid;
 	}
 
 	public String getEntryId() {

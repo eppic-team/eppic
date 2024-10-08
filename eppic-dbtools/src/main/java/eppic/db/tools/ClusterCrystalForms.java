@@ -260,7 +260,7 @@ public class ClusterCrystalForms {
 				
 				System.out.print(member.getPdbInfo().getPdbCode()+" ");
 				
-				if (cfcPw !=null ) cfcPw.println( member.getPdbInfo().getEntryId()+"\t"+
+				if (cfcPw !=null ) cfcPw.println( member.getPdbInfo().getUid()+"\t"+
 												member.getPdbInfo().getPdbCode()+"\t"+
 												seqClusterId+"\t"+
 												cfCluster.getId()+"\t"+
