@@ -193,6 +193,8 @@ public class DataModelAdaptor {
 			pdbInfo.setCellGamma(cc.getGamma());			
 		}
 
+		pdbInfo.setPolyEntityIds(pdb.getEntityInfos().stream().map(EntityInfo::getMolId).toList());
+
 	}
 
 	public void setPdbModDate(long modDate) {
@@ -241,6 +243,8 @@ public class DataModelAdaptor {
 		ChainClusterDB chainClusterDB = new ChainClusterDB();
 		
 		chainClusterDB.setPdbCode(pdbInfo.getPdbCode());
+		chainClusterDB.setEntryId(pdbInfo.getEntryId());
+		chainClusterDB.setEntityId(compound.getMolId());
 		
 		chainClusterDB.setRepChain(compound.getRepresentative().getName());
 		chainClusterDB.setMemberChains(getMemberChainsString(compound, chainOrigNames));

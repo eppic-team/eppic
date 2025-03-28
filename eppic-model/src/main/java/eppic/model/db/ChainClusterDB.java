@@ -4,16 +4,18 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import javax.persistence.Index;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
 
-
+@Table(name = "Sequences", indexes = @Index(name = "entryId_idx", columnList = "entryId,entityId", unique = true))
 public class ChainClusterDB implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	// FIXME see how to remove, it is used somewhere
-	private int uid;
+	private String entryId;
+	private int entityId;
 
 	private String repChain;	 // the PDB chain code of representative chain
 	private String memberChains; // comma separated list of member PDB chain codes
@@ -66,8 +68,7 @@ public class ChainClusterDB implements Serializable {
 		
 	}
 	
-	public ChainClusterDB(int uid, String pdbCode, String repChain, String pdbAlignedSeq, String msaAlignedSeq, String refAlignedSeq) {
-		this.uid = uid;
+	public ChainClusterDB(String pdbCode, String repChain, String pdbAlignedSeq, String msaAlignedSeq, String refAlignedSeq) {
 		this.pdbCode = pdbCode;
 		this.repChain = repChain;
 		this.pdbAlignedSeq = pdbAlignedSeq;
@@ -83,6 +84,22 @@ public class ChainClusterDB implements Serializable {
 		}
 		return null;
 	}
+
+	public String getEntryId() {
+		return entryId;
+	}
+
+	public void setEntryId(String entryId) {
+		this.entryId = entryId;
+	}
+
+	public int getEntityId() {
+		return entityId;
+	}
+
+	public void setEntityId(int entityId) {
+		this.entityId = entityId;
+	}
 	
 	public void setPdbInfo(PdbInfoDB pdbInfo) {
 		this.pdbInfo = pdbInfo;
@@ -90,14 +107,6 @@ public class ChainClusterDB implements Serializable {
 
 	public PdbInfoDB getPdbInfo() {
 		return pdbInfo;
-	}
-
-	public void setUid(int uid) {
-		this.uid = uid;
-	}
-
-	public int getUid() {
-		return uid;
 	}
 
 	public String getRepChain() {

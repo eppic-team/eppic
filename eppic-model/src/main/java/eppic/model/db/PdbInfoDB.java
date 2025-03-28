@@ -97,10 +97,12 @@ public class PdbInfoDB implements Serializable {
 	@JsonManagedReference(value = "assemblies-ref")
 	private List<AssemblyDB> assemblies;
 
+	private List<Integer> polyEntityIds;
+
 	public PdbInfoDB() {
-		chainClusters = new ArrayList<ChainClusterDB>();
-		interfaceClusters = new ArrayList<InterfaceClusterDB>();
-		assemblies = new ArrayList<AssemblyDB>();
+		chainClusters = new ArrayList<>();
+		interfaceClusters = new ArrayList<>();
+		assemblies = new ArrayList<>();
 	}
 	
 	public PdbInfoDB(
@@ -477,4 +479,12 @@ public class PdbInfoDB implements Serializable {
 		}
 		return null;
 	}
+
+    public List<Integer> getPolyEntityIds() {
+        return polyEntityIds;
+    }
+
+    public void setPolyEntityIds(List<Integer> polyEntityIds) {
+        this.polyEntityIds = polyEntityIds;
+    }
 }

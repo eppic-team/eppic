@@ -97,7 +97,7 @@ public class JobService {
                                           boolean getSeqInfo) throws DaoException
     {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, getSeqInfo);
 
         if (pdbInfo == null) {
             throw new NoResultException("Could not find id '" + entryId + "' in database");
@@ -105,10 +105,6 @@ public class JobService {
 
         if (!getInterfaceInfo) {
             pdbInfo.setInterfaceClusters(null);
-        }
-
-        if(!getSeqInfo){
-            pdbInfo.setChainClusters(null);
         }
 
         if (!getAssemblyInfo) {
@@ -126,7 +122,7 @@ public class JobService {
      */
     public List<AssemblyDB> getAssemblyDataByPdbAssemblyId(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         return pdbInfo.getAssemblies();
     }
@@ -139,7 +135,7 @@ public class JobService {
      */
     public List<InterfaceClusterDB> getInterfaceClusterData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         return pdbInfo.getInterfaceClusters();
     }
@@ -152,7 +148,7 @@ public class JobService {
      */
     public List<InterfaceDB> getInterfaceData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         return pdbInfo.getInterfaces();
     }
@@ -165,7 +161,7 @@ public class JobService {
      */
     public List<ChainClusterDB> getSequenceData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, true);
 
         return pdbInfo.getChainClusters();
     }
@@ -233,7 +229,7 @@ public class JobService {
         List<ResidueBurialDB> burials2 = features.getResBurials2();
 
         // 2nd get entropy scores
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, true);
         InterfaceDB interf = pdbInfo.getInterface(interfId);
         ChainClusterDB chain1 = pdbInfo.getChainCluster(interf.getChain1());
         ChainClusterDB chain2 = pdbInfo.getChainCluster(interf.getChain2());
@@ -302,7 +298,7 @@ public class JobService {
      * @throws DaoException when can not retrieve result of the entry
      */
     public List<ContactDB> getContactData(String entryId, int interfId) throws DaoException {
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         ContactDAO contactDAO = new ContactDAOMongo();
         List<ContactDB> list = contactDAO.getContactsForInterface(pdbInfo.getEntryId(), interfId);
@@ -322,7 +318,7 @@ public class JobService {
      * @throws DaoException
      */
     public AssemblyDB getAssemblyDataByPdbAssemblyId(String entryId, int pdbAssemblyId) throws DaoException {
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         AssemblyDB assembly = pdbInfo.getAssemblyByPdbAssemblyId(pdbAssemblyId);
 
@@ -340,7 +336,7 @@ public class JobService {
      * @throws DaoException
      */
     public AssemblyDB getAssemblyData(String entryId, int assemblyId) throws DaoException {
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
 
@@ -358,7 +354,7 @@ public class JobService {
      * @throws DaoException
      */
     public LatticeGraph getLatticeGraphData(String entryId, int assemblyId) throws DaoException {
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
         AssemblyDB unitcellAssembly = pdbInfo.getAssemblyById(0);
@@ -379,7 +375,7 @@ public class JobService {
      * @throws DaoException
      */
     public LatticeGraph getLatticeGraphDataByInterfaceIds(String entryId, Set<Integer> interfaceIds) throws DaoException {
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         List<GraphEdgeDB> graphEdges = new ArrayList<>();
 
@@ -412,7 +408,7 @@ public class JobService {
      * @throws DaoException
      */
     public LatticeGraph getLatticeGraphDataByInterfaceClusterIds(String entryId, Set<Integer> interfaceClusterIds) throws DaoException {
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         List<GraphEdgeDB> graphEdges = new ArrayList<>();
 
@@ -443,7 +439,7 @@ public class JobService {
      * @throws DaoException
      */
     public AssemblyDiagram getAssemblyDiagram(String entryId, int assemblyId) throws DaoException {
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         AssemblyDB assembly = pdbInfo.getAssemblyById(assemblyId);
 
@@ -461,7 +457,7 @@ public class JobService {
         }
 
         // get data and produce file
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, true);
 
         InputStream is;
         if (!isUserJob(entryId)) {

@@ -429,7 +429,7 @@ public class UploadToDb {
 				long start = System.currentTimeMillis();
 				try {
 					// if this doesn't throw a NoResultException it means that it exists
-					dao.getPDBInfo(jobId);
+					dao.getPDBInfo(jobId, false);
 					logger.info("Existing PDBInfo document found for {}. Will remove all data for it before inserting a new one", jobId);
 					long delPdbInfo = dao.remove(jobId);
 					long delInterfRes = interfResDao.remove(jobId);

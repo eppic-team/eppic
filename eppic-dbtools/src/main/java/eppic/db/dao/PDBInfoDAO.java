@@ -14,10 +14,11 @@ public interface PDBInfoDAO
 	/**
 	 * Retrieves pdb info full object by job identifier.
 	 * @param entryId identifier of the job
+	 * @param withSequenceData whether to also get sequence data (anything under {@link PdbInfoDB#getChainClusters()}) or not
 	 * @return pdb info item
 	 * @throws DaoException when can not retrieve pdb info item for job
 	 */
-	PdbInfoDB getPDBInfo(String entryId) throws DaoException;
+	PdbInfoDB getPDBInfo(String entryId, boolean withSequenceData) throws DaoException;
 
 	/**
 	 * Persists pdb info object.
