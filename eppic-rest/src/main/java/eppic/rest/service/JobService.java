@@ -88,15 +88,13 @@ public class JobService {
      * @param getInterfaceInfo whether to retrieve interface info or not
      * @param getAssemblyInfo whether to retrieve assembly info or not
      * @param getSeqInfo whether to retrieve sequence info or not
-     * @param getResInfo whether to retrieve residue info or not
      * @return pdb info item
      * @throws DaoException when can not retrieve result of the entry
      */
     public PdbInfoDB getResultData(String entryId,
                                           boolean getInterfaceInfo,
                                           boolean getAssemblyInfo,
-                                          boolean getSeqInfo,
-                                          boolean getResInfo) throws DaoException
+                                          boolean getSeqInfo) throws DaoException
     {
 
         PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);

@@ -58,7 +58,7 @@ public class JobResource {
     public PdbInfoDB getPdb(
             @PathVariable("jobId") String jobId) throws DaoException {
         
-        PdbInfoDB pdbInfo = jobService.getResultData(jobId, false, false, false, false);
+        PdbInfoDB pdbInfo = jobService.getResultData(jobId, false, false, false);
 
         return pdbInfo;
     }
