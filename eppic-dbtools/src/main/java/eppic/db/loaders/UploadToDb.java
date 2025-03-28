@@ -10,6 +10,7 @@ import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.ConfigurableMapper;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
+import eppic.model.db.ChainClusterDB;
 import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
@@ -170,8 +171,10 @@ public class UploadToDb {
 			logger.info("FULL mode was selected. Will drop all data and recreate collections and indexes");
 			MongoUtils.dropCollection(mongoDb, PdbInfoDB.class);
 			MongoUtils.dropCollection(mongoDb, InterfaceResidueFeaturesDB.class);
+			MongoUtils.dropCollection(mongoDb, ChainClusterDB.class);
 			MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
 			MongoUtils.createIndices(mongoDb, InterfaceResidueFeaturesDB.class);
+			MongoUtils.createIndices(mongoDb, ChainClusterDB.class);
 		}
 
 		ExecutorService executorService = Executors.newFixedThreadPool(numWorkers);

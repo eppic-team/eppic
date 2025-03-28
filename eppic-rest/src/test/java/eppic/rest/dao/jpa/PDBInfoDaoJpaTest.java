@@ -39,7 +39,7 @@ public class PDBInfoDaoJpaTest {
     @Test
     public void testPDBInfoDaoMongoRead() throws DaoException {
 
-        String pdbId = "1smt";
+        String pdbId = "4hhb";
 
         PDBInfoDAO dao = new PDBInfoDAOMongo(MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri()));
         PdbInfoDB pdbInfoDB = dao.getPDBInfo(pdbId, true);
@@ -79,8 +79,8 @@ public class PDBInfoDaoJpaTest {
     //@Ignore
     @Test
     public void testPdbInfoDAOMongoWrite() throws DaoException {
-        String pdbId = "1smt";
-        EntryData entryData = UploadToDb.readSerializedFile(new File("/home/jose/eppic/jobs/1smt/", pdbId + UploadToDb.SERIALIZED_FILE_SUFFIX));
+        String pdbId = "4hhb";
+        EntryData entryData = UploadToDb.readSerializedFile(new File("/home/jose/eppic/jobs/" + pdbId, pdbId + UploadToDb.SERIALIZED_FILE_SUFFIX));
 
         PDBInfoDAO dao = new PDBInfoDAOMongo(MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri()));
         dao.insertPDBInfo(entryData.getPdbInfoDB());

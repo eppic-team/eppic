@@ -39,7 +39,7 @@ public class FindPdbIdsToLoad {
 
     private static final Logger logger = LoggerFactory.getLogger(FindPdbIdsToLoad.class);
 
-    private static final List<Class<?>> COLLECTIONS_TO_RESET = List.of(PdbInfoDB.class, InterfaceResidueFeaturesDB.class, HitHspDB.class, UniProtInfoDB.class, UniProtMetadataDB.class);
+    private static final List<Class<?>> COLLECTIONS_TO_RESET = List.of(PdbInfoDB.class, InterfaceResidueFeaturesDB.class, HitHspDB.class, UniProtInfoDB.class, UniProtMetadataDB.class, ChainClusterDB.class);
     private static final String DEFAULT_CIF_BASE_URL = "https://models.rcsb.org/";
 
     private static String dbName = null;
