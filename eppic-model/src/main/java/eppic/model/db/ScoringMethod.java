@@ -12,7 +12,6 @@ package eppic.model.db;
 public class ScoringMethod {
 
 	public static final String EPPIC_GEOMETRY 		= "eppic-gm";	// was "Geometry"
-	public static final String EPPIC_CORERIM 		= "eppic-cr";	// was "Entropy"
 	public static final String EPPIC_CORESURFACE 	= "eppic-cs";	// was "Z-scores"
 	public static final String EPPIC_FINAL 			= "eppic"; 
 	

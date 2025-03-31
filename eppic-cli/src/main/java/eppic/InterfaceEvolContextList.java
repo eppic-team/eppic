@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.predictors.CombinedClusterPredictor;
-import eppic.predictors.EvolCoreRimClusterPredictor;
-import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfaceClusterPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 
@@ -34,7 +32,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	private boolean usePdbResSer;
 	
-	private Map<Integer,EvolCoreRimClusterPredictor> ecrcPredictors;
 	private Map<Integer,EvolCoreSurfaceClusterPredictor> ecscPredictors;
 	private Map<Integer,CombinedClusterPredictor> ccPredictors;
 	
@@ -55,28 +52,23 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		//this.chainInterfList = interfaces;
 		this.cecs = cecs;
 
-		this.ecrcPredictors = new TreeMap<>();
 		this.ecscPredictors = new TreeMap<>();
 		this.ccPredictors = new TreeMap<>();
 		
 		
 		for (StructureInterface pi:interfaces) {
 			InterfaceEvolContext iec = new InterfaceEvolContext(pi, this);
-			iec.setEvolCoreRimPredictor(new EvolCoreRimPredictor(iec));
 			iec.setEvolCoreSurfacePredictor(new EvolCoreSurfacePredictor(iec));
 			this.add(iec);
 		}
 		
 		for (StructureInterfaceCluster ic:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
-			List<EvolCoreRimPredictor> ecrMembers = new ArrayList<>();
 			List<EvolCoreSurfacePredictor> ecsMembers = new ArrayList<>();
 			for (int i=0;i<interfaces.size();i++) {
 				if ( interfaces.get(i+1).getCluster().getId()==ic.getId()) {
-					ecrMembers.add(list.get(i).getEvolCoreRimPredictor());
 					ecsMembers.add(list.get(i).getEvolCoreSurfacePredictor());
 				}
 			}
-			ecrcPredictors.put(ic.getId(), new EvolCoreRimClusterPredictor(ecrMembers));
 			ecscPredictors.put(ic.getId(), new EvolCoreSurfaceClusterPredictor(ecsMembers));
 		}
 		
@@ -99,15 +91,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		return list.iterator();
 	}
 	
-	public void scoreCoreRim() {
-		for (int i=0;i<list.size();i++) {
-			list.get(i).getEvolCoreRimPredictor().computeScores();
-		}
-		for (EvolCoreRimClusterPredictor ecrcp:this.ecrcPredictors.values()) {
-			ecrcp.computeScores();; 
-		}
-	}
-	
 	public void scoreCoreSurface() {
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreSurfacePredictor().computeScores();
@@ -117,15 +100,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		}
 	}
 	
-	public void setCoreRimScoreCutoff(double coreRimScoreCutoff) {
-		for (int i=0;i<list.size();i++) {
-			list.get(i).getEvolCoreRimPredictor().setCallCutoff(coreRimScoreCutoff);	
-		}
-		for (EvolCoreRimClusterPredictor ecrcp:this.ecrcPredictors.values()) {
-			ecrcp.setCallCutoff(coreRimScoreCutoff); 
-		}
-	}
-
 	public void setCoreSurfScoreCutoff(double coreSurfScoreCutoff) {
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreSurfacePredictor().setCallCutoff(coreSurfScoreCutoff);
@@ -135,13 +109,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		}
 	}
 
-	public void setCoreRimPredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
-		
-		for (int i=0;i<list.size();i++) {
-			list.get(i).getEvolCoreRimPredictor().setBsaToAsaCutoff(bsaToAsaCutoff, minAsaForSurface);
-		}		
-	}
-	
 	public void setCoreSurfacePredBsaToAsaCutoff(double bsaToAsaCutoff, double minAsaForSurface) {
 		
 		for (int i=0;i<list.size();i++) {
@@ -154,10 +121,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		for (int i=0;i<list.size();i++) {
 			list.get(i).getEvolCoreSurfacePredictor().setCoreSurfaceScoreStrategy(coreSurfaceScoreStrategy);
 		}				
-	}
-	
-	public EvolCoreRimClusterPredictor getEvolCoreRimClusterPredictor(int clusterId) {
-		return this.ecrcPredictors.get(clusterId);
 	}
 	
 	public EvolCoreSurfaceClusterPredictor getEvolCoreSurfaceClusterPredictor(int clusterId) {

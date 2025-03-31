@@ -12,7 +12,6 @@ import org.biojava.nbio.structure.contact.StructureInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 
 public class InterfaceEvolContext implements Serializable {
@@ -29,7 +28,6 @@ public class InterfaceEvolContext implements Serializable {
 	
 	private final StructureInterface interf;
 
-	private EvolCoreRimPredictor evolCoreRimPredictor;
 	private EvolCoreSurfacePredictor evolCoreSurfacePredictor;
 	
 	public InterfaceEvolContext(StructureInterface interf, InterfaceEvolContextList parent) {
@@ -54,15 +52,7 @@ public class InterfaceEvolContext implements Serializable {
 		if (molecId==SECOND) return getSecondChainEvolContext();
 		return null;
 	}
-	
-	public EvolCoreRimPredictor getEvolCoreRimPredictor() {
-		return evolCoreRimPredictor;
-	}
-	
-	public void setEvolCoreRimPredictor(EvolCoreRimPredictor evolCoreRimPredictor) {
-		this.evolCoreRimPredictor = evolCoreRimPredictor;
-	}
-	
+
 	public EvolCoreSurfacePredictor getEvolCoreSurfacePredictor() {
 		return evolCoreSurfacePredictor;
 	}

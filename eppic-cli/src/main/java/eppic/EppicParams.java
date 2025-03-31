@@ -266,9 +266,7 @@ public class EppicParams {
 	private int minCoreSizeForBio;
 	
 	private int maxNumSeqs;
-	
-	private double coreRimScoreCutoff;
-	
+
 	private double coreSurfScoreCutoff;
 	
 	private boolean generateOutputCoordFiles;
@@ -377,7 +375,6 @@ public class EppicParams {
 		this.caCutoffForZscore = DEF_CA_CUTOFF_FOR_ZSCORE;
 		this.minCoreSizeForBio = DEF_MIN_CORE_SIZE_FOR_BIO;
 		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
-		this.coreRimScoreCutoff = DEF_CORERIM_SCORE_CUTOFF;
 		this.coreSurfScoreCutoff = DEF_CORESURF_SCORE_CUTOFF;
 		this.generateOutputCoordFiles = false;
 		this.generateDiagrams = false;
@@ -397,7 +394,7 @@ public class EppicParams {
 	public void parseCommandLine(String[] args, String programName, String help) {
 	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:G:Uuh?");
+		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:y:d:D:q:H:Opt:PlfwBL:g:G:Uuh?");
 		int c;
 		while ((c = g.getopt()) != -1) {
 			switch (c) {
@@ -428,9 +425,6 @@ public class EppicParams {
 				break;				
 			case 'm':
 				minCoreSizeForBio = Integer.parseInt(g.getOptarg());
-				break;
-			case 'x':
-				coreRimScoreCutoff = Double.parseDouble(g.getOptarg());
 				break;
 			case 'y':
 				coreSurfScoreCutoff = Double.parseDouble(g.getOptarg());
@@ -524,8 +518,6 @@ public class EppicParams {
 		"  [-m <int>]   :  geometry scoring cutoff for number of interface core residues, if \n" +
 		"                  below this value the geometry call will be XTAL, if equals or \n" +
 		"                  higher the geometry call is BIO. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
-		"  [-x <float>] :  core-rim score cutoff for calling BIO/XTAL. If below this score, \n" +
-		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_CORERIM_SCORE_CUTOFF)+"\n"+
 		"  [-y <float>] :  core-surface score cutoff to call BIO/XTAL. If below this score, \n" +
 		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_CORESURF_SCORE_CUTOFF)+"\n"+
 		"  [-d <float>] :  sequence identity soft cutoff, if enough homologs ("+DEF_MIN_NUM_SEQUENCES+") above this \n" +
@@ -859,14 +851,6 @@ public class EppicParams {
 
 	public void setnSpherePointsASAcalc(int nSpherePointsASAcalc) {
 		this.nSpherePointsASAcalc = nSpherePointsASAcalc;
-	}
-	
-	public double getCoreRimScoreCutoff() {
-		return coreRimScoreCutoff;
-	}
-
-	public void setCoreRimScoreCutoff(double entrCallCutoff) {
-		this.coreRimScoreCutoff = entrCallCutoff;
 	}
 	
 	public double getCoreSurfScoreCutoff(){

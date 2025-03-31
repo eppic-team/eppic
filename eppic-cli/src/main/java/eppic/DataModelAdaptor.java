@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eppic.assembly.*;
 import eppic.assembly.gui.InterfaceEdge3DSourced;
 import eppic.assembly.layout.LayoutUtils;
@@ -34,11 +33,8 @@ import org.slf4j.LoggerFactory;
 import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
 import eppic.commons.util.CallType;
-import eppic.commons.util.Goodies;
 import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
-import eppic.predictors.EvolCoreRimClusterPredictor;
-import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfaceClusterPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.GeometryClusterPredictor;
@@ -141,9 +137,7 @@ public class DataModelAdaptor {
 		runParameters.setMaxNumSeqsCutoff(params.getMaxNumSeqs());
 		runParameters.setAlphabet(params.getAlphabet().toString());
 		runParameters.setCaCutoffForGeom(params.getCAcutoffForGeom());
-		runParameters.setCaCutoffForCoreRim(params.getCAcutoffForRimCore());
 		runParameters.setCaCutoffForCoreSurface(params.getCAcutoffForZscore());
-		runParameters.setCrCallCutoff(params.getCoreRimScoreCutoff());
 		runParameters.setCsCallCutoff(params.getCoreSurfScoreCutoff());
 		runParameters.setGeomCallCutoff(params.getMinCoreSizeForBio());
 		runParameters.setPdbInfo(pdbInfo);
@@ -1380,58 +1374,14 @@ public class DataModelAdaptor {
 			
 			isCS.setConfidence(ecsp.getConfidence());
 
-			// 3) core-rim scores
-			EvolCoreRimPredictor ecrp = iec.getEvolCoreRimPredictor();
-
-			InterfaceScoreDB isCR = new InterfaceScoreDB();
-			isCR.setInterfaceItem(ii);
-			ii.addInterfaceScore(isCR);
-			isCR.setInterfaceId(iec.getInterface().getId());
-			isCR.setMethod(ScoringMethod.EPPIC_CORERIM);
-
-			call = ecrp.getCall();	
-			isCR.setCallName(call.getName());
-			isCR.setCallReason(ecrp.getCallReason());
-			
-			if(ecrp.getWarnings() != null) {
-				List<String> warnings = ecrp.getWarnings();
-				for(String warning: warnings) {
-					// we first add warning to the temp HashSets in order to eliminate duplicates, 
-					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
-				}
-			}
-
-			isCR.setScore1(ecrp.getScore1());
-			isCR.setScore2(ecrp.getScore2());
-			isCR.setScore(ecrp.getScore());				
-
-			isCR.setConfidence(ecrp.getConfidence());
-			
 		}
 
 		// 4) interface cluster scores
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
 
-			// method eppic-cr
-			EvolCoreRimClusterPredictor ecrcp = iecl.getEvolCoreRimClusterPredictor(ic.getClusterId());
-			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
-			ics.setMethod(ScoringMethod.EPPIC_CORERIM);
-			ics.setCallName(ecrcp.getCall().getName());
-			ics.setCallReason(ecrcp.getCallReason());
-			ics.setScore(ecrcp.getScore());
-			ics.setScore1(ecrcp.getScore1());
-			ics.setScore2(ecrcp.getScore2());
-			ics.setConfidence(ecrcp.getConfidence());
-			ics.setClusterId(ic.getClusterId());
-
-			// setting relations child/parent
-			ics.setInterfaceCluster(ic); 
-			ic.addInterfaceClusterScore(ics);
-			
 			// method eppic-cs
 			EvolCoreSurfaceClusterPredictor ecscp = iecl.getEvolCoreSurfaceClusterPredictor(ic.getClusterId());
-			ics = new InterfaceClusterScoreDB();
+			InterfaceClusterScoreDB ics = new InterfaceClusterScoreDB();
 			ics.setMethod(ScoringMethod.EPPIC_CORESURFACE);			
 			ics.setCallName(ecscp.getCall().getName());
 			ics.setCallReason(ecscp.getCallReason());

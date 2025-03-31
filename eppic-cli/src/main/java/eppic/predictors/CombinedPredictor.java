@@ -37,13 +37,12 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CombinedPredictor.class);
 	
 	private String callReason;
-	private List<String> warnings;
+	private final List<String> warnings;
 
-	private InterfaceEvolContext iec;
+	private final InterfaceEvolContext iec;
 	
-	private InterfaceTypePredictor gp;
-	private InterfaceTypePredictor ecrp;
-	private InterfaceTypePredictor ecsp;
+	private final InterfaceTypePredictor gp;
+	private final InterfaceTypePredictor ecsp;
 	
 	private CallType call;
 	
@@ -51,12 +50,11 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	private double confidence = 0.5;
 	
 	public CombinedPredictor(InterfaceEvolContext iec, 
-			GeometryPredictor gp, EvolCoreRimPredictor ecrp, EvolCoreSurfacePredictor ecsp) {
+			GeometryPredictor gp, EvolCoreSurfacePredictor ecsp) {
 		this.iec=iec;
 		this.gp=gp;
-		this.ecrp=ecrp;
 		this.ecsp=ecsp;
-		this.warnings = new ArrayList<String>();
+		this.warnings = new ArrayList<>();
 		
 	}
 	
@@ -136,8 +134,8 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		
 		// first we gather any possible wild-type disulfide bridges present
 		// This is more of a geom feature but as we need to check whether it's wild-type or artifactual it needs to be here
-		List<AtomContact> wildTypeDisulfides = new ArrayList<AtomContact>();
-		List<AtomContact> engineeredDisulfides = new ArrayList<AtomContact>();
+		List<AtomContact> wildTypeDisulfides = new ArrayList<>();
+		List<AtomContact> engineeredDisulfides = new ArrayList<>();
 		List<AtomContact> disulfides = getDisulfidePairs();
 		if (!disulfides.isEmpty()) {
 			// we can only check whether they are not engineered if we have query matches for both sides
@@ -194,24 +192,6 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		
 		}
 		
-	}
-	
-	@SuppressWarnings("unused")
-	private int[] countCalls() {
-		int[] counts = new int[3]; // biocalls, xtalcalls, nopredcalls
-		if (gp.getCall()==CallType.BIO) counts[0]++;
-		else if (gp.getCall()==CallType.CRYSTAL) counts[1]++;
-		else if (gp.getCall()==CallType.NO_PREDICTION) counts[2]++; // this can't happen in principle, there's always a geom prediction
-
-		if (ecrp.getCall()==CallType.BIO) counts[0]++;
-		else if (ecrp.getCall()==CallType.CRYSTAL) counts[1]++;
-		else if (ecrp.getCall()==CallType.NO_PREDICTION) counts[2]++;
-
-		if (ecsp.getCall()==CallType.BIO) counts[0]++;
-		else if (ecsp.getCall()==CallType.CRYSTAL) counts[1]++;
-		else if (ecsp.getCall()==CallType.NO_PREDICTION) counts[2]++;
-
-		return counts;
 	}
 	
 	/**

@@ -18,7 +18,6 @@ public class RunParametersDB implements Serializable {
 	
 	// core assignments cutoffs
 	private double caCutoffForGeom;
-	private double caCutoffForCoreRim;
 	private double caCutoffForCoreSurface;
 	
 	// call cutoffs
@@ -69,14 +68,6 @@ public class RunParametersDB implements Serializable {
 
 	public void setCaCutoffForGeom(double caCutoffForGeom) {
 		this.caCutoffForGeom = caCutoffForGeom;
-	}
-
-	public double getCaCutoffForCoreRim() {
-		return caCutoffForCoreRim;
-	}
-
-	public void setCaCutoffForCoreRim(double caCutoffForCoreRim) {
-		this.caCutoffForCoreRim = caCutoffForCoreRim;
 	}
 
 	public double getCaCutoffForCoreSurface() {

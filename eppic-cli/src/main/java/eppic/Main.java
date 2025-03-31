@@ -874,14 +874,9 @@ public class Main {
 		if (params.isDoEvolScoring()) {
 
 			// setting cut-offs
-			iecList.setCoreRimScoreCutoff(params.getCoreRimScoreCutoff());
 			iecList.setCoreSurfScoreCutoff(params.getCoreSurfScoreCutoff());
 			iecList.setMinNumSeqs(params.getMinNumSeqs());
 			
-			// core-rim
-			iecList.setCoreRimPredBsaToAsaCutoff(params.getCAcutoffForRimCore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
-			iecList.scoreCoreRim();
-
 			// core-surface
 			iecList.setCoreSurfacePredBsaToAsaCutoff(params.getCAcutoffForZscore(), params.getMinAsaForSurface()); // calls calcRimAndCores as well
 			iecList.scoreCoreSurface();
@@ -903,7 +898,7 @@ public class Main {
 		List<CombinedPredictor> cps = new ArrayList<>();
 		for (int i=0;i<iecList.size();i++) {
 			CombinedPredictor cp = 
-					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreRimPredictor(), iecList.get(i).getEvolCoreSurfacePredictor());
+					new CombinedPredictor(iecList.get(i), gps.get(i), iecList.get(i).getEvolCoreSurfacePredictor());
 			cp.computeScores();
 			cps.add(cp);
 		}

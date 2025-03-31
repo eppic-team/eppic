@@ -21,7 +21,6 @@ import eppic.InterfaceEvolContextList;
 import eppic.ScoringType;
 import eppic.commons.util.CallType;
 import eppic.predictors.CombinedPredictor;
-import eppic.predictors.EvolCoreRimPredictor;
 import eppic.predictors.EvolCoreSurfacePredictor;
 import eppic.predictors.GeometryPredictor;
 import eppic.predictors.InterfaceTypePredictor;
@@ -494,13 +493,6 @@ public class CalcStats {
 				StructureInterface interf = cil.get(id);
 				InterfaceEvolContext iec = iecList.get(id-1);
 
-				// evol core/rim scoring
-				for (int i=0;i<caCutoffsCR.length;i++) {
-					for (int k=0;k<corerimCallCutoffs.length;k++) {
-						doSingleEvolCRScoring(pdbCode, iec, interf, ScoringType.CORERIM, countersCR, i, k, dol, perInterfPred);
-					}
-				}
-				
 				// evol z-score scoring
 				for (int i=0;i<caCutoffsZ.length;i++) {
 					for (int k=0;k<zscoreCutoffs.length;k++) {						
@@ -560,47 +552,7 @@ public class CalcStats {
 		return list;
 	}
 	
-	private static void doSingleEvolCRScoring(String pdbCode, InterfaceEvolContext iec, StructureInterface interf, ScoringType scoType,   
-			PredCounter[][] counters, int i, int k, String dol, InterfacePrediction perInterfPred) {
-
-		
-		
-		EvolCoreRimPredictor ercp = new EvolCoreRimPredictor(iec);
-		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
-		
-		if (scoType==ScoringType.CORERIM) {
-			ercp.computeScores();
-		} 
-		
-		ercp.setCallCutoff(corerimCallCutoffs[k]);
-
-		CallType call = ercp.getCall();
-		if (call==CallType.BIO) counters[i][k].countBio(dol);
-		else if (call==CallType.CRYSTAL) counters[i][k].countXtal(dol);
-		
-		perInterfPred.setCrCall(call);
-		perInterfPred.setCrScore(ercp.getScore());
-		perInterfPred.setNumHomologs1(iec.getChainEvolContext(0).getNumHomologs());
-		perInterfPred.setNumHomologs2(iec.getChainEvolContext(1).getNumHomologs());
-		
-		
-		if (outFile!=null) {
-			if (call==CallType.BIO || call==CallType.CRYSTAL) {
-				String key = pdbCode;
-				if (crPredicted.containsKey(key)) {
-					crPredicted.get(key).add(interf.getId());
-				} else {
-					List<Integer> list = new ArrayList<Integer>();
-					list.add(interf.getId());
-					crPredicted.put(key,list);
-				}
-			}						
-		}
-		
-
-	}
-	
-	private static void doSingleEvolZScoring(String pdbCode, InterfaceEvolContext iec, StructureInterface interf, 
+	private static void doSingleEvolZScoring(String pdbCode, InterfaceEvolContext iec, StructureInterface interf,
 			PredCounter[][] counters, int i, int k, String dol, InterfacePrediction perInterfPred) {
 		
 		//interf.calcRimAndCore(caCutoffsZ[i]);
@@ -646,17 +598,12 @@ public class CalcStats {
 		gp.setMinCoreSizeForBio(DEFMINNUMBERCORERESFORBIO);
 		gp.computeScores();
 		
-		EvolCoreRimPredictor ercp = new EvolCoreRimPredictor(iec);
-		ercp.setBsaToAsaCutoff(caCutoffsCR[i], minAsaForSurface);
-		ercp.computeScores();
-		ercp.setCallCutoff(corerimCallCutoffs[k]);
-		
 		EvolCoreSurfacePredictor eizp = new EvolCoreSurfacePredictor(iec);
 		eizp.setBsaToAsaCutoff(caCutoffsZ[l], minAsaForSurface);
 		eizp.computeScores();
 		eizp.setCallCutoff(zscoreCutoffs[m]);
 		
-		InterfaceTypePredictor cp = new CombinedPredictor(iec, gp, ercp, eizp);
+		InterfaceTypePredictor cp = new CombinedPredictor(iec, gp, eizp);
 
 		cp.computeScores();
 		CallType call = cp.getCall();

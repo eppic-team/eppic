@@ -184,7 +184,6 @@ public class TextOutputWriter {
 		ps.printf("%7s\t%7s\t%7s\t%7s\t%7s\t%9s\t","cluster","id","chains","optype","topo","area");
 		
 		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-gm","sc2-gm","sc-gm","call-gm");
-		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-cr","sc2-cr","sc-cr","call-cr");
 		ps.printf("\t%7s\t%7s\t%7s\t%7s\t", "sc1-cs","sc2-cs","sc-cs","call-cs");
 		ps.printf("\t%7s\t%7s\t%7s",        "sc","conf","call");
 		
@@ -208,7 +207,6 @@ public class TextOutputWriter {
 				interfaceItem.getArea());
 		
 		InterfaceScoreDB interfaceScoreGm = interfaceItem.getInterfaceScore(ScoringMethod.EPPIC_GEOMETRY);
-		InterfaceScoreDB interfaceScoreCr = interfaceItem.getInterfaceScore(ScoringMethod.EPPIC_CORERIM);
 		InterfaceScoreDB interfaceScoreCs = interfaceItem.getInterfaceScore(ScoringMethod.EPPIC_CORESURFACE);
 		InterfaceScoreDB interfaceScoreFn = interfaceItem.getInterfaceScore(ScoringMethod.EPPIC_FINAL);
 		
@@ -219,17 +217,6 @@ public class TextOutputWriter {
 				interfaceScoreGm.getScore2(),
 				interfaceScoreGm.getScore(),
 				interfaceScoreGm.getCallName());
-		
-		// core-rim
-		if (interfaceScoreCr==null) {
-			ps.printf("\t%7s\t%7s\t%7s\t%7s\t","","","","");
-		} else {
-			ps.printf("\t%7.2f\t%7.2f\t%7.2f\t%7s\t",
-					interfaceScoreCr.getScore1(),
-					interfaceScoreCr.getScore2(),
-					interfaceScoreCr.getScore(),
-					interfaceScoreCr.getCallName());			
-		}
 		
 		// core-surface
 		if (interfaceScoreCs==null) {
@@ -269,7 +256,6 @@ public class TextOutputWriter {
 				interfaceCluster.getAvgArea());
 		
 		InterfaceClusterScoreDB interfaceScoreGm = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_GEOMETRY);
-		InterfaceClusterScoreDB interfaceScoreCr = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_CORERIM);
 		InterfaceClusterScoreDB interfaceScoreCs = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_CORESURFACE);
 		InterfaceClusterScoreDB interfaceScoreFn = interfaceCluster.getInterfaceClusterScore(ScoringMethod.EPPIC_FINAL);
 
@@ -283,17 +269,6 @@ public class TextOutputWriter {
 				interfaceScoreGm.getScore2(),
 				interfaceScoreGm.getScore(),
 				interfaceScoreGm.getCallName());
-		}
-		
-		// core-rim
-		if (interfaceScoreCr==null) {
-			ps.printf("\t%7s\t%7s\t%7s\t%7s\t","","","","");
-		} else {
-			ps.printf("\t%7.2f\t%7.2f\t%7.2f\t%7s\t",
-					interfaceScoreCr.getScore1(),
-					interfaceScoreCr.getScore2(),
-					interfaceScoreCr.getScore(),
-					interfaceScoreCr.getCallName());			
 		}
 		
 		// core-surface
