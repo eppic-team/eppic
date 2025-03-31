@@ -29,6 +29,8 @@ import static org.junit.Assert.*;
 @TestPropertySource(locations = "file:/home/jose/eppic/configs/eppic.rest-prodA.properties")
 public class PDBInfoDaoJpaTest {
 
+    private static final String PDB_ID = "4hhb";
+
     @Autowired
     private EppicRestProperties eppicRestProperties;
 
@@ -39,10 +41,8 @@ public class PDBInfoDaoJpaTest {
     @Test
     public void testPDBInfoDaoMongoRead() throws DaoException {
 
-        String pdbId = "4hhb";
-
         PDBInfoDAO dao = new PDBInfoDAOMongo(MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri()));
-        PdbInfoDB pdbInfoDB = dao.getPDBInfo(pdbId, true);
+        PdbInfoDB pdbInfoDB = dao.getPDBInfo(PDB_ID, true);
         assertNotNull(pdbInfoDB);
 
         assertNotNull(pdbInfoDB.getAssemblies());
@@ -58,7 +58,7 @@ public class PDBInfoDaoJpaTest {
 
         for (InterfaceClusterDB icdb : pdbInfoDB.getInterfaceClusters()) {
             assertTrue(icdb.getClusterId()>0);
-            assertEquals(pdbId, icdb.getPdbCode());
+            assertEquals(PDB_ID, icdb.getPdbCode());
             for (InterfaceDB idb : icdb.getInterfaces()) {
                 assertFalse(idb.getChain1().isEmpty());
                 assertFalse(idb.getChain2().isEmpty());
@@ -71,7 +71,7 @@ public class PDBInfoDaoJpaTest {
 
         for (ChainClusterDB ccdb : pdbInfoDB.getChainClusters()) {
             assertFalse(ccdb.getMemberChains().isEmpty());
-            //assertFalse(ccdb.getHomologs().isEmpty());
+            assertFalse(ccdb.getHomologs().isEmpty());
         }
 
     }
@@ -79,8 +79,7 @@ public class PDBInfoDaoJpaTest {
     //@Ignore
     @Test
     public void testPdbInfoDAOMongoWrite() throws DaoException {
-        String pdbId = "4hhb";
-        EntryData entryData = UploadToDb.readSerializedFile(new File("/home/jose/eppic/jobs/" + pdbId, pdbId + UploadToDb.SERIALIZED_FILE_SUFFIX));
+        EntryData entryData = UploadToDb.readSerializedFile(new File("/home/jose/eppic/jobs/" + PDB_ID, PDB_ID + UploadToDb.SERIALIZED_FILE_SUFFIX));
 
         PDBInfoDAO dao = new PDBInfoDAOMongo(MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri()));
         dao.insertPDBInfo(entryData.getPdbInfoDB());
