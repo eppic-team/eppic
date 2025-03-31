@@ -73,9 +73,9 @@ public class HomologList implements  Serializable {
 	
 	/*-------------------------- members --------------------------*/
 	
-	private UnirefEntry ref;						// the uniref entry (uniprot/uniparc) to which the homologs refer
-	private Interval refInterval;
-	private boolean isSubInterval;
+	private final UnirefEntry ref;						// the uniref entry (uniprot/uniparc) to which the homologs refer
+	private final Interval refInterval;
+	private final boolean isSubInterval;
 	private List<Homolog> list; 					// the list of homologs
 	private List<Homolog> subList;			 		// the filtered list of homologs after calling filterToMinIdAndCoverage
 	
@@ -146,7 +146,7 @@ public class HomologList implements  Serializable {
 		
 		this.uniprotVer = readUniprotVer(blastDbDir);
 
-		if (cachedHitList!=null && cachedHitList.size()>0) {
+		if (cachedHitList!=null && !cachedHitList.isEmpty()) {
 
 			LOGGER.info("Using sequence search results from cache.");
 
@@ -182,9 +182,9 @@ public class HomologList implements  Serializable {
 				inputSeqFile.deleteOnExit();
 			}
 
-			LOGGER.info("Run blast: "+blastRunner.getLastBlastCommand());
-			
-			LOGGER.info("Blasted against "+blastDbDir+"/"+blastDb);
+            LOGGER.info("Run blast: {}", blastRunner.getLastBlastCommand());
+
+            LOGGER.info("Blasted against {}/{}", blastDbDir, blastDb);
 
 			try {
 				// note that by setting second parameter to true we are ignoring the DTD url to avoid unnecessary network connections
@@ -192,12 +192,12 @@ public class HomologList implements  Serializable {
 				blastList = blastParser.getHits();
 			} catch (SAXException e) {
 				// if this happens it means that blast doesn't format correctly its XML, i.e. has a bug
-				LOGGER.error("Unexpected error: "+e.getMessage());
+                LOGGER.error("Unexpected error: {}", e.getMessage());
 				System.exit(1);
 			}
 		}
 
-		if (blastList.size()==0) {
+		if (blastList.isEmpty()) {
 			LOGGER.warn("The size of the sequence search hit list is 0 for {}.", this.ref.getUniId());
 		}
 
@@ -515,15 +515,13 @@ public class HomologList implements  Serializable {
 			String uniprotVerFromCacheDir = readUniprotVer(alnCacheFile.getParent());
 			String uniprotVerFromBlast = this.uniprotVer; // this can be either actually from blast db dir (if blast was run) or read from blast cache dir
 			if (!uniprotVerFromBlast.equals(uniprotVerFromCacheDir)) {
-				LOGGER.warn("Uniprot version used for blast "+
-						" ("+uniprotVerFromBlast+") does not match version in alignment cache dir "+
-						alnCacheFile.getParent()+" ("+uniprotVerFromCacheDir+")");
+                LOGGER.warn("Uniprot version used for blast  ({}) does not match version in alignment cache dir {} ({})", uniprotVerFromBlast, alnCacheFile.getParent(), uniprotVerFromCacheDir);
 			}
 			
 			alnFile = alnCacheFile;
-			
-			
-			LOGGER.warn("Reading alignment from cache file " + alnCacheFile);
+
+
+            LOGGER.warn("Reading alignment from cache file {}", alnCacheFile);
 			try {
 				this.aln = new MultipleSequenceAlignment(alnFile.getAbsolutePath(), MultipleSequenceAlignment.FASTAFORMAT);
 				
@@ -566,9 +564,9 @@ public class HomologList implements  Serializable {
 		if (alnCacheFile!=null && !alnCacheFile.exists()) { 
 			try {
 				writeAlignmentToFile(alnCacheFile);
-				LOGGER.info("Writing alignment cache file "+alnCacheFile);
+                LOGGER.info("Writing alignment cache file {}", alnCacheFile);
 			} catch(FileNotFoundException e) {
-				LOGGER.warn("Couldn't write alignment cache file "+alnCacheFile+". Error: "+e.getMessage());
+                LOGGER.warn("Couldn't write alignment cache file {}. Error: {}", alnCacheFile, e.getMessage());
 			}
 		}
 
@@ -591,11 +589,11 @@ public class HomologList implements  Serializable {
 		
 		ClustaloRunner cor = new ClustaloRunner(clustaloBin);
 		cor.buildCmdLine(homologSeqsFile, alnFile, nThreads);
-		LOGGER.info("Running clustalo command: " + cor.getCmdLine());
+        LOGGER.info("Running clustalo command: {}", cor.getCmdLine());
 		long start = System.nanoTime();		
 		cor.runClustalo();		
 		long end = System.nanoTime();
-		LOGGER.info("clustalo ran in "+((end-start)/1000000000L)+"s ("+nThreads+" threads)");
+        LOGGER.info("clustalo ran in {}s ({} threads)", (end - start) / 1000000000L, nThreads);
 		if (!DEBUG) { 
 			// note that if the run of tcoffee throws an exception, files are not marked for deletion
 			homologSeqsFile.deleteOnExit();
@@ -611,14 +609,14 @@ public class HomologList implements  Serializable {
 		
 		// first we check the size
 		if (this.aln.getNumberOfSequences()!=size) {
-			LOGGER.info("Number of sequences in alignment from cache file is "+this.aln.getNumberOfSequences()+" but the size of the computed filtered list of homologs is "+size);
+            LOGGER.info("Number of sequences in alignment from cache file is {} but the size of the computed filtered list of homologs is {}", this.aln.getNumberOfSequences(), size);
 			return false;
 		}
 		
 		// then the query tag is present
 		if (checkQuery) {
 			if (!this.aln.hasTag(this.ref.getUniId())) {
-				LOGGER.info("Query tag "+this.ref.getUniId()+" not present in alignment cache file");
+                LOGGER.info("Query tag {} not present in alignment cache file", this.ref.getUniId());
 				return false;
 			}
 		}		
@@ -629,7 +627,7 @@ public class HomologList implements  Serializable {
 			String tag = hom.getIdentifier();
 			
 			if (!this.aln.hasTag(tag)) {
-				LOGGER.info("Tag "+tag+" not present in alignment cached file");
+                LOGGER.info("Tag {} not present in alignment cached file", tag);
 				return false;
 			}
 
@@ -682,7 +680,7 @@ public class HomologList implements  Serializable {
 		while (it.hasNext()) {
 			Homolog hom = it.next();
 			if (!hom.getUnirefEntry().hasTaxons()) {
-				LOGGER.info("Removing homolog "+hom.getUniId()+" as no taxonomy info available for it");
+                LOGGER.info("Removing homolog {} as no taxonomy info available for it", hom.getUniId());
 				it.remove();
 				continue;
 			}
@@ -708,8 +706,8 @@ public class HomologList implements  Serializable {
 						String.format("%5.1f%%",hom.getQueryCoverage()*100.0)+" of the query.");				
 			}
 		}
-		
-		LOGGER.info(getSizeFullList()+" homologs after removing identicals to query");
+
+        LOGGER.info("{} homologs after removing identicals to query", getSizeFullList());
 	}
 	
 	/**
@@ -774,8 +772,8 @@ public class HomologList implements  Serializable {
 		}
 
 		subList.removeIf(hom -> membersToRemove.contains(hom.getIdentifier()));
-		
-		LOGGER.info("Size of homolog list after redundancy reduction: "+subList.size());
+
+        LOGGER.info("Size of homolog list after redundancy reduction: {}", subList.size());
 		
 		if (subList.size()>maxDesiredHomologs*2.00) {
 			LOGGER.info("Size of final homologs list ({}) is larger than 2x of the max number of sequences required ({})", subList.size(), maxDesiredHomologs);

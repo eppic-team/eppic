@@ -25,9 +25,9 @@ public class InterfaceEvolContext implements Serializable {
 	public static final int FIRST  = 0;
 	public static final int SECOND = 1;
 
-	private InterfaceEvolContextList parent;
+	private final InterfaceEvolContextList parent;
 	
-	private StructureInterface interf;
+	private final StructureInterface interf;
 
 	private EvolCoreRimPredictor evolCoreRimPredictor;
 	private EvolCoreSurfacePredictor evolCoreSurfacePredictor;
@@ -153,7 +153,7 @@ public class InterfaceEvolContext implements Serializable {
 				msg+= serial +
 					  "("+unreliableResidues.get(i).getPDBName()+")";
 				
-				if (i!=unreliableResidues.size()-1) msg+=", ";				
+				if (i!=unreliableResidues.size()-1) msg+=", ";
 			}
 			msg+=" ";
 		}
@@ -192,10 +192,10 @@ public class InterfaceEvolContext implements Serializable {
 		RandomDataImpl rd = new RandomDataImpl();
 		for (int i=0;i<numSamples;i++) {
 			Object[] sample = rd.nextSample(surfResidues, sampleSize);
-			List<Group> residues = new ArrayList<Group>(sample.length);
-			for (int j=0;j<sample.length;j++){
-				residues.add((Group)sample[j]);
-			}
+			List<Group> residues = new ArrayList<>(sample.length);
+            for (Object o : sample) {
+                residues.add((Group) o);
+            }
 			ChainEvolContext cec = this.parent.getChainEvolContext(getChainId(molecId));
 			dist[i] = cec.calcScoreForResidueSet(residues);
 		}		

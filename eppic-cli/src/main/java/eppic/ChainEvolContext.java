@@ -19,10 +19,7 @@ import eppic.model.db.HitHspDB;
 import eppic.model.db.UniProtInfoDB;
 import eppic.model.db.UniProtMetadataDB;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
-import org.biojava.nbio.structure.Atom;
-import org.biojava.nbio.structure.Chain;
-import org.biojava.nbio.structure.EntityInfo;
-import org.biojava.nbio.structure.Group;
+import org.biojava.nbio.structure.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -67,8 +64,8 @@ public class ChainEvolContext implements Serializable {
 	 * An identifier for the sequence, usually the chain id of the representative Chain
 	 * It must uniquely identify the ChainEvolContext in a ChainEvolContextList
 	 */
-	private String sequenceId;
-	private String sequence;
+	private final String sequenceId;
+	private final String sequence;
 	
 	private UnirefEntry query;							// the uniprot info (id,seq) corresponding to this chain's sequence
 	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
@@ -82,13 +79,13 @@ public class ChainEvolContext implements Serializable {
 		
 	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
 	
-	private List<String> queryWarnings;
+	private final List<String> queryWarnings;
 	
-	private ChainEvolContextList parent;
+	private final ChainEvolContextList parent;
 	
-	private boolean isProtein;
+	private final boolean isProtein;
 	
-	private EntityInfo entity;
+	private final EntityInfo entity;
 	
 
 	/**
@@ -103,7 +100,7 @@ public class ChainEvolContext implements Serializable {
 		this.sequenceId = sequenceName;
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
-		this.queryWarnings = new ArrayList<String>();
+		this.queryWarnings = new ArrayList<>();
 		this.isProtein = true;
 		this.entity = null;
 	}
@@ -120,7 +117,7 @@ public class ChainEvolContext implements Serializable {
 		this.sequenceId = chain.getName();
 		this.hasQueryMatch = false;
 		this.searchWithFullUniprot = true;
-		this.queryWarnings = new ArrayList<String>();
+		this.queryWarnings = new ArrayList<>();
 		
 		this.isProtein = chain.isProtein();
 		
@@ -192,13 +189,13 @@ public class ChainEvolContext implements Serializable {
 		Interval uniProtInterv = null;
 		
 		if (!params.isInputAFile() || params.isUsePdbCodeFromFile()) {
-			String pdbCode = parent.getPdb().getPDBCode().toLowerCase();
+			PdbId pdbId = parent.getPdb().getPdbId();
 			if (useSifts) {
-				if (pdbCode==null || !pdbCode.matches("\\d\\w\\w\\w")) {
+				if (pdbId == null) {
 					LOGGER.info("Could not read a PDB code in file.");
 					findMappingWithBlast = true;
 				} else {
-
+					String pdbCode = pdbId.getId().toLowerCase();
 					SiftsConnection siftsConn = parent.getSiftsConn(siftsLocation);
 					try {
 						siftsMappings = siftsConn.getMappings(pdbCode, sequenceId);
@@ -241,7 +238,7 @@ public class ChainEvolContext implements Serializable {
 		
 		if (hasQueryMatch) {
 
-			LOGGER.info("UniProt id for chain "+sequenceId+": "+queryUniprotId);
+            LOGGER.info("UniProt id for chain {}: {}", sequenceId, queryUniprotId);
 
 			// once we have the identifier we get the data from uniprot
 			try {
@@ -268,7 +265,7 @@ public class ChainEvolContext implements Serializable {
 				
 				if (query!=null && query.replaceNonStandardByX()) {
 					// TODO for jaligner we needed to replace 'O' by 'X', with Biojava and I'm not sure if this is needed anymore...
-					LOGGER.warn("Replacing 'O' by 'X' in UniProt reference "+query.getUniId());
+                    LOGGER.warn("Replacing 'O' by 'X' in UniProt reference {}", query.getUniId());
 				}
 
 				if (query != null) {
@@ -301,25 +298,25 @@ public class ChainEvolContext implements Serializable {
 
 			}  catch (NoMatchFoundException e) {
 				if (parent.isUseLocalUniprot()) {
-					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") in local database. Obsolete?");
+                    LOGGER.warn("Couldn't find UniProt id {} (reference for chain {}) in local database. Obsolete?", queryUniprotId, sequenceId);
 				} else {
-					LOGGER.warn("Couldn't find UniProt id "+queryUniprotId+" (reference for chain "+sequenceId+") through UniProt REST API. Obsolete?");
+                    LOGGER.warn("Couldn't find UniProt id {} (reference for chain {}) through UniProt REST API. Obsolete?", queryUniprotId, sequenceId);
 				}				
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
 			} catch (IOException e) {
-				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from UniProt REST API, error: "+e.getMessage());
+                LOGGER.warn("Could not retrieve the UniProt data for UniProt id {} from UniProt REST API, error: {}", queryUniprotId, e.getMessage());
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;								
 			} catch (DaoException e) {
-				LOGGER.warn("Could not retrieve the UniProt data for UniProt id "+queryUniprotId+" from local database, error: "+e.getMessage());
+                LOGGER.warn("Could not retrieve the UniProt data for UniProt id {} from local database, error: {}", queryUniprotId, e.getMessage());
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
 			} catch (CompoundNotFoundException e) {
-				LOGGER.warn("Some unknown compounds in PDB or UniProt protein sequences, error: "+e.getMessage());
+                LOGGER.warn("Some unknown compounds in PDB or UniProt protein sequences, error: {}", e.getMessage());
 				LOGGER.warn("Sequences: ");
 				LOGGER.warn("PDB: {}",sequence);
 				LOGGER.warn("UniProt ({}): {}",query.getUniId(), query.getSequence());
@@ -351,7 +348,7 @@ public class ChainEvolContext implements Serializable {
 		
 		//we do a sanity check on the SIFTS data: negative intervals are surely errors, we need to reject
 		if (siftsMapping.hasNegativeLength()) {
-			LOGGER.warn("Negative intervals present in SIFTS mapping for chain "+sequenceId+". Will not use the SIFTS mapping.");
+            LOGGER.warn("Negative intervals present in SIFTS mapping for chain {}. Will not use the SIFTS mapping.", sequenceId);
 			queryWarnings.add("Problem with SIFTS PDB to UniProt mapping: negative intervals present in mapping");
 			// We continue with a null query, i.e. no match, of course we could try to still find a mapping ourselves
 			// by calling findUniprotMapping if we return a null, but for the chimera case below there's also null returned
@@ -361,7 +358,7 @@ public class ChainEvolContext implements Serializable {
 		}
 		// second sanity check: negative or 0 coordinates are surely errors: reject
 		if (siftsMapping.hasNegatives()) {
-			LOGGER.warn("0 or negative coordinates present in SIFTS mapping for chain "+sequenceId+". Will not use the SIFTS mapping.");
+            LOGGER.warn("0 or negative coordinates present in SIFTS mapping for chain {}. Will not use the SIFTS mapping.", sequenceId);
 			queryWarnings.add("Problem with SIFTS PDB to UniProt mapping: 0 or negative coordinates present in mapping");
 			// We continue with a null query, i.e. no match, of course we could try to still find a mapping ourselves
 			// by calling findUniprotMapping if we return a null, but for the chimera case below there's also null returned
@@ -378,8 +375,8 @@ public class ChainEvolContext implements Serializable {
 			// since 3.2.0 we select the largest coverage segment instead of the largest total coverage over all
 			// segments of the same uniprot id
 			int largestCoverageUniprotIdSegmentIndex = siftsMapping.getLargestSegmentCoverageIndex();
-			
-			LOGGER.warn("More than one UniProt SIFTS mapping for chain "+sequenceId);
+
+            LOGGER.warn("More than one UniProt SIFTS mapping for chain {}", sequenceId);
 			StringBuilder msg = new StringBuilder("UniProt IDs are: ");
 			for (int i=0;i<siftsMapping.getUniprotIds().size();i++){
 				msg.append(siftsMapping.getUniprotIds().get(i))
@@ -396,12 +393,12 @@ public class ChainEvolContext implements Serializable {
 				chosenSiftsFeature = largestCoverageUniprotIdSegmentIndex;
 			} else {
 				LOGGER.warn("Chain {} is likely to be a chimeric chain. Won't do evolution analysis on this chain.", sequenceId);
-				String warning = "More than one UniProt id correspond to chain "+sequenceId+": ";
+				StringBuilder warning = new StringBuilder("More than one UniProt id correspond to chain " + sequenceId + ": ");
 				for (String uniId:siftsMapping.getUniqueUniprotIds()){
-					warning+=(uniId+" (total coverage "+siftsMapping.getUniProtLengthCoverage(uniId)+") ");
+					warning.append(uniId).append(" (total coverage ").append(siftsMapping.getUniProtLengthCoverage(uniId)).append(") ");
 				}
-				warning+=". This is most likely a chimeric chain";
-				queryWarnings.add(warning);
+				warning.append(". This is most likely a chimeric chain");
+				queryWarnings.add(warning.toString());
 
 				return null;
 			}
@@ -412,8 +409,7 @@ public class ChainEvolContext implements Serializable {
 			StringBuilder msg = new StringBuilder();
 			
 			// common logging for all deletion/insertion cases
-			LOGGER.warn("The SIFTS PDB-to-UniProt mapping of chain "+sequenceId+
-					" is composed of several segments of a single UniProt sequence ("+siftsMapping.getUniprotIds().get(0)+")");
+            LOGGER.warn("The SIFTS PDB-to-UniProt mapping of chain {} is composed of several segments of a single UniProt sequence ({})", sequenceId, siftsMapping.getUniprotIds().get(0));
 
 			for (int i=0 ; i<siftsMapping.getUniprotIds().size(); i++) {
 				Interval pdbInterv = siftsMapping.getCifIntervalSet().get(i);
@@ -426,8 +422,7 @@ public class ChainEvolContext implements Serializable {
 			}
 
 			// common logging for all deletion/insertion cases
-			LOGGER.warn("PDB chain "+sequenceId+" vs UniProt ("+
-					siftsMapping.getUniprotIds().get(0)+") segments:"+msg);
+            LOGGER.warn("PDB chain {} vs UniProt ({}) segments:{}", sequenceId, siftsMapping.getUniprotIds().get(0), msg);
 
 
 			// since 3.2.0 we reject any insertion/deletion
@@ -442,7 +437,7 @@ public class ChainEvolContext implements Serializable {
 
 		// c) 1 uniprot id and 1 mapping: vanilla case
 		} else {
-			LOGGER.info("Getting UniProt reference mapping for chain "+sequenceId+" from SIFTS");
+            LOGGER.info("Getting UniProt reference mapping for chain {} from SIFTS", sequenceId);
 			chosenSiftsFeature = 0; // only one index in SiftsFeature
 		}
 		
@@ -463,8 +458,8 @@ public class ChainEvolContext implements Serializable {
 		boolean useUniparc = params.isUseUniparc();			
 		
 		Interval queryInterv = pdbToUniProtMapper.getHomologsSearchInterval(searchMode);
-		
-		LOGGER.info("Homologs search mode: "+searchMode.getName());
+
+        LOGGER.info("Homologs search mode: {}", searchMode.getName());
 		if (searchMode==HomologsSearchMode.GLOBAL) {
 						
 			LOGGER.info("Using full UniProt sequence {} {}-{} for blast search (entity {})",
@@ -494,23 +489,22 @@ public class ChainEvolContext implements Serializable {
 		}
 
 		homologs.searchWithBlast(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, maxNumSeqs, cachedHitList, params.isNoBlast());
-		LOGGER.info(homologs.getSizeFullList()+" homologs found by blast (chain "+getRepresentativeChainCode()+")");
+        LOGGER.info("{} homologs found by blast (chain {})", homologs.getSizeFullList(), getRepresentativeChainCode());
 		
 		if (homologs.getSizeFullList()>0) {
-			BlastHit lastBlastHit = homologs.getLast().getBlastHsp().getParent();		
-			LOGGER.info("Last blast hit (lowest score hit): "+lastBlastHit.getSubjectId()+", identity of its best HSP: "+
-					String.format("%5.2f%%",lastBlastHit.getMaxScoringHsp().getPercentIdentity()) );
+			BlastHit lastBlastHit = homologs.getLast().getBlastHsp().getParent();
+            LOGGER.info("Last blast hit (lowest score hit): {}, identity of its best HSP: {}", lastBlastHit.getSubjectId(), String.format("%5.2f%%", lastBlastHit.getMaxScoringHsp().getPercentIdentity()));
 		}
 		 
 	}
 	
 	public void filterToSameDomainOfLife() {
 		if (query.hasTaxons()) {
-			LOGGER.info("Filtering to domain: "+query.getFirstTaxon());
+            LOGGER.info("Filtering to domain: {}", query.getFirstTaxon());
 			homologs.filterToSameDomainOfLife();
-			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after filtering to "+query.getFirstTaxon()+" (chain "+getRepresentativeChainCode()+")");
+            LOGGER.info("{} homologs after filtering to {} (chain {})", homologs.getSizeFilteredSubset(), query.getFirstTaxon(), getRepresentativeChainCode());
 		} else {
-			LOGGER.info("Taxons of chain "+getRepresentativeChainCode()+" are unknown, can't filter to same domain of life.");
+            LOGGER.info("Taxons of chain {} are unknown, can't filter to same domain of life.", getRepresentativeChainCode());
 		}
 	}
 	
@@ -536,9 +530,8 @@ public class ChainEvolContext implements Serializable {
 		// Otherwise in rare cases (e.g. 2os7 with hard cutoff of 0.4 in uniprot_2012_05, blast hit G5S5I8 is exactly at 40%)
 		// we would not include an entry in this procedure but it would be included in the applyIdentityCutoff method below (which would 
 		// then crash because there wouldn't be sequence data for it)
-		homologs.filterToMinIdAndCoverage(homHardIdCutoff-ROUNDING_MARGIN, queryCovCutoff);		
-		LOGGER.info(homologs.getSizeFilteredSubset()+" homologs within the hard identity cutoff "+String.format("%4.2f",homHardIdCutoff)
-				+" (chain "+getRepresentativeChainCode()+")");
+		homologs.filterToMinIdAndCoverage(homHardIdCutoff-ROUNDING_MARGIN, queryCovCutoff);
+        LOGGER.info("{} homologs within the hard identity cutoff {} (chain {})", homologs.getSizeFilteredSubset(), String.format("%4.2f", homHardIdCutoff), getRepresentativeChainCode());
 	}
 	
 	public void applyIdentityCutoff(EppicParams params) throws IOException, InterruptedException, BlastException {
@@ -558,11 +551,8 @@ public class ChainEvolContext implements Serializable {
 		while (currentIdCutoff>homHardIdCutoff-ROUNDING_MARGIN) { 
 						
 			homologs.filterToMinIdAndCoverage(currentIdCutoff, queryCovCutoff);
-						
-			LOGGER.info(homologs.getSizeFilteredSubset()+" homologs after applying "+
-					String.format("%4.2f",currentIdCutoff)+" identity cutoff and "+
-					String.format("%4.2f",queryCovCutoff)+" query coverage cutoff and before redundancy elimination"
-					+" (chain "+getRepresentativeChainCode()+")");
+
+            LOGGER.info("{} homologs after applying {} identity cutoff and {} query coverage cutoff and before redundancy elimination (chain {})", homologs.getSizeFilteredSubset(), String.format("%4.2f", currentIdCutoff), String.format("%4.2f", queryCovCutoff), getRepresentativeChainCode());
 			
 			homologs.reduceRedundancy(maxNumSeqs, params.getMmseqsBin(), params.getOutDir(), params.getNumThreads());
 
@@ -570,9 +560,7 @@ public class ChainEvolContext implements Serializable {
 			
 			if (homologs.getSizeFilteredSubset()>=minNumSeqs) break;
 
-			LOGGER.info("Tried "+String.format("%4.2f",currentIdCutoff)+" identity cutoff, only "+
-					homologs.getSizeFilteredSubset()+" non-redundant homologs found ("+minNumSeqs+" required)"
-					+" (chain "+getRepresentativeChainCode()+")");
+            LOGGER.info("Tried {} identity cutoff, only {} non-redundant homologs found ({} required) (chain {})", String.format("%4.2f", currentIdCutoff), homologs.getSizeFilteredSubset(), minNumSeqs, getRepresentativeChainCode());
 			
 			currentIdCutoff -= homIdStep;
 		}
@@ -651,9 +639,7 @@ public class ChainEvolContext implements Serializable {
 				double weight = 1.0;
 				totalScore += weight*(conservScores.get(queryPos-1));
 				totalWeight += weight;
-			} else {
-				// ignore it
-			}
+			} // else ignore it
 
 		}
 		return totalScore/totalWeight;
@@ -759,8 +745,7 @@ public class ChainEvolContext implements Serializable {
 				best = blastList.get(i);
 				if (isHitUniprot(best)) break;
 				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
-					LOGGER.warn("No UniProt match could be found for the query chain "+sequenceId+
-							": no blast hit was a UniProt match (total "+blastList.size()+" blast hits)");
+                    LOGGER.warn("No UniProt match could be found for the query chain {}: no blast hit was a UniProt match (total {} blast hits)", sequenceId, blastList.size());
 					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-UniProt matches (total "+blastList.size()+" blast hits).");
 					return null;
 				}
@@ -768,19 +753,16 @@ public class ChainEvolContext implements Serializable {
 			BlastHsp bestHsp = best.getMaxScoringHsp();
 			if ((bestHsp.getQueryPercentIdentity()/100.0)>pdb2uniprotIdThreshold && bestHsp.getQueryCoverage()>pdb2uniprotQcovThreshold) {
 				uniprotMapping = getDeflineAccession(best);
-				LOGGER.info("Blast found UniProt id "+uniprotMapping+" as best hit with "+
-						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
+                LOGGER.info("Blast found UniProt id {} as best hit with {}", uniprotMapping, String.format("%5.2f%% id and %4.2f coverage", bestHsp.getQueryPercentIdentity(), bestHsp.getQueryCoverage()));
 			} else {
-				LOGGER.warn("No UniProt match could be found with blast for the query chain "+sequenceId+" within cutoffs "+
-						String.format("%5.2f%% id and %4.2f coverage",pdb2uniprotIdThreshold,pdb2uniprotQcovThreshold));
-				LOGGER.warn("Best match was "+best.getSubjectId()+", with "+
-						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
-				LOGGER.info("Alignment of best UniProt match found by blast: \n"+bestHsp.getAlignment().getFastaString(null, true));
+                LOGGER.warn("No UniProt match could be found with blast for the query chain {} within cutoffs {}", sequenceId, String.format("%5.2f%% id and %4.2f coverage", pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold));
+                LOGGER.warn("Best match was {}, with {}", best.getSubjectId(), String.format("%5.2f%% id and %4.2f coverage", bestHsp.getQueryPercentIdentity(), bestHsp.getQueryCoverage()));
+                LOGGER.info("Alignment of best UniProt match found by blast: \n{}", bestHsp.getAlignment().getFastaString(null, true));
 				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+getDeflineAccession(best)+", with "+
 						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
 			}			
 		} else {
-			LOGGER.warn("No UniProt match could be found for the query chain "+sequenceId+". Blast returned no hits.");
+            LOGGER.warn("No UniProt match could be found for the query chain {}. Blast returned no hits.", sequenceId);
 			queryWarnings.add("Blast didn't find a UniProt match for the chain (no hits returned by blast)");
 		}
 
@@ -822,10 +804,10 @@ public class ChainEvolContext implements Serializable {
 			if (m2.matches()) {
 				String uniId = m2.group(1);
 				if (uniId.contains("-")) {
-					LOGGER.info("Blast hit "+uniId+" is a UniProt isoform id. Skipping it");
+                    LOGGER.info("Blast hit {} is a UniProt isoform id. Skipping it", uniId);
 					return false;
 				} else if (uniId.startsWith("UPI")) {
-					LOGGER.info("Blast hit "+uniId+" is a UniParc id. Skipping it");
+                    LOGGER.info("Blast hit {} is a UniParc id. Skipping it", uniId);
 					return false;
 				} else {
 					return true;

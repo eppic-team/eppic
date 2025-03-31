@@ -24,12 +24,12 @@ public class FullAlignment {
     /**
      * The alignment contains only the aligned region without the flanks
      */
-    private SequencePair<ProteinSequence,AminoAcidCompound> ali;
+    private final SequencePair<ProteinSequence,AminoAcidCompound> ali;
 
     private String firstSeq;
     private String secondSeq;
-    private Interval firstInterv;
-    private Interval secondInterv;
+    private final Interval firstInterv;
+    private final Interval secondInterv;
     private String firstSeqLeftFlank;
     private String firstSeqRightFlank;
 
