@@ -124,11 +124,11 @@ public class Main {
 	}
 
 	private void logBuildAndHost() {
-		LOGGER.info(EppicParams.PROGRAM_NAME+" version "+EppicParams.PROGRAM_VERSION);
+        LOGGER.info(EppicParams.PROGRAM_NAME + " version {}", EppicParams.PROGRAM_VERSION);
 		LOGGER.info("Build git SHA: {}", EppicParams.BUILD_GIT_SHA);
 
 		try {
-			LOGGER.info("Running in host "+InetAddress.getLocalHost().getHostName());
+            LOGGER.info("Running in host {}", InetAddress.getLocalHost().getHostName());
 		} catch (UnknownHostException e) {
 			LOGGER.warn("Could not determine host where we are running.");
 		}
@@ -152,7 +152,7 @@ public class Main {
 				System.exit(1);
 			}
 		} catch (IOException e) {
-			LOGGER.error("Error while reading from config file: " + e.getMessage());
+            LOGGER.error("Error while reading from config file: {}", e.getMessage());
 			System.exit(1);
 		} catch (EppicException e) {
 			LOGGER.error(e.getMessage());
@@ -343,7 +343,7 @@ public class Main {
 
 		int clustersSize = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).size();
 		int numInterfaces = interfaces.size();
-		LOGGER.info("Interface clustering done: "+numInterfaces+" interfaces - "+clustersSize+" clusters");
+        LOGGER.info("Interface clustering done: {} interfaces - {} clusters", numInterfaces, clustersSize);
 		StringBuilder msg = new StringBuilder("Interface clusters: ");
 		for (int i=0; i<clustersSize;i++) {
 			StructureInterfaceCluster cluster = interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF).get(i);
@@ -396,14 +396,15 @@ public class Main {
 		
 		if (hasInterfacesWithClashes) {
 		
-			String msg = "Clashes (atoms distance below "+EppicParams.CLASH_DISTANCE+") found in:";			
+			StringBuilder msg = new StringBuilder("Clashes (atoms distance below " + EppicParams.CLASH_DISTANCE + ") found in:");
 			i = 0;
 			for (StructureInterface interf:interfaces) {
 				if (numClashesPerInterface[i]>0) {		
-					msg+=("\nInterface "+interf.getId()+": "+interf.getMoleculeIds().getFirst()+"+"
-							+interf.getMoleculeIds().getSecond()+" ("+
-							SpaceGroup.getAlgebraicFromMatrix(interf.getTransforms().getSecond().getMatTransform())+
-							") Clashes: "+numClashesPerInterface[i]);
+					msg.append("\nInterface ").append(interf.getId())
+							.append(": ").append(interf.getMoleculeIds().getFirst()).append("+")
+							.append(interf.getMoleculeIds().getSecond()).append(" (")
+							.append(SpaceGroup.getAlgebraicFromMatrix(interf.getTransforms().getSecond().getMatTransform()))
+							.append(") Clashes: ").append(numClashesPerInterface[i]);
 				}
 				i++;
 			}
@@ -425,7 +426,7 @@ public class Main {
 				}
 								
 			} else { 
-				LOGGER.warn(msg);
+				LOGGER.warn(msg.toString());
 			}
 
 		}
@@ -651,7 +652,7 @@ public class Main {
 				if (params.isGenerateThumbnails()) {
 					pr.generateAssemblyPng(a, outputFile, params.getOutDir(),
 							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
-					LOGGER.info("Generated PyMOL files for assembly "+a.getId());
+                    LOGGER.info("Generated PyMOL files for assembly {}", a.getId());
 				}
 
 				if (params.isGenerateModelSerializedFile()) {
@@ -1062,8 +1063,7 @@ public class Main {
 			for (StackTraceElement el:e.getStackTrace()) {
 				stack.append("\tat ").append(el.toString()).append("\n");				
 			}
-			LOGGER.error("Unexpected error. Stack trace:\n"+e+"\n"+stack.toString()+
-					"\nPlease report a bug to "+EppicParams.CONTACT_EMAIL);
+            LOGGER.error("Unexpected error. Stack trace:\n{}\n{}\nPlease report a bug to " + EppicParams.CONTACT_EMAIL, e, stack.toString());
 			System.exit(1);
 		}
 

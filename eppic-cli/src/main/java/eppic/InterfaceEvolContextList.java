@@ -25,10 +25,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(InterfaceEvolContextList.class);
 	
-	private List<InterfaceEvolContext> list;
+	private final List<InterfaceEvolContext> list;
 	
 	//private StructureInterfaceList chainInterfList; 
-	private ChainEvolContextList cecs;
+	private final ChainEvolContextList cecs;
 		
 	private int minNumSeqs;
 	
@@ -50,14 +50,14 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		
 		this.minNumSeqs = cecs.getMinNumSeqs();
 		
-		this.list = new ArrayList<InterfaceEvolContext>();
+		this.list = new ArrayList<>();
 	
 		//this.chainInterfList = interfaces;
 		this.cecs = cecs;
 
-		this.ecrcPredictors = new TreeMap<Integer, EvolCoreRimClusterPredictor>();
-		this.ecscPredictors = new TreeMap<Integer, EvolCoreSurfaceClusterPredictor>();
-		this.ccPredictors = new TreeMap<Integer, CombinedClusterPredictor>();
+		this.ecrcPredictors = new TreeMap<>();
+		this.ecscPredictors = new TreeMap<>();
+		this.ccPredictors = new TreeMap<>();
 		
 		
 		for (StructureInterface pi:interfaces) {
@@ -68,8 +68,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 		}
 		
 		for (StructureInterfaceCluster ic:interfaces.getClusters(EppicParams.CLUSTERING_CONTACT_OVERLAP_SCORE_CUTOFF)) {
-			List<EvolCoreRimPredictor> ecrMembers = new ArrayList<EvolCoreRimPredictor>();
-			List<EvolCoreSurfacePredictor> ecsMembers = new ArrayList<EvolCoreSurfacePredictor>();
+			List<EvolCoreRimPredictor> ecrMembers = new ArrayList<>();
+			List<EvolCoreSurfacePredictor> ecsMembers = new ArrayList<>();
 			for (int i=0;i<interfaces.size();i++) {
 				if ( interfaces.get(i+1).getCluster().getId()==ic.getId()) {
 					ecrMembers.add(list.get(i).getEvolCoreRimPredictor());
@@ -175,8 +175,6 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	/**
 	 * Whether the output warnings and PDB files are to be written with
 	 * PDB residue serials or CIF (SEQRES) residue serials
-	 * @param usePdbResSer if true PDB residue serials are used, if false CIF
-	 * residue serials are used
 	 */
 	public boolean isUsePdbResSer() {
 		return usePdbResSer;

@@ -29,12 +29,12 @@ public class ChainEvolContextList implements Serializable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ChainEvolContextList.class);
 	
-	private Structure pdb;
+	private final Structure pdb;
 
 	/**
 	 * A map of sequence identifier (usually representative chain identifier) to its corresponding ChainEvolContext
 	 */
-	private TreeMap<String, ChainEvolContext> cecs; // one per representative chain
+	private final TreeMap<String, ChainEvolContext> cecs; // one per representative chain
 	
 	private String uniprotVer;
 	private int minNumSeqs;

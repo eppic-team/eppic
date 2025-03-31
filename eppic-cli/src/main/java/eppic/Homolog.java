@@ -26,7 +26,7 @@ public class Homolog implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private BlastHsp blastHsp;
-	private UnirefEntry unirefEntry;
+	private final UnirefEntry unirefEntry;
 	
 	/**
 	 * Constructs a new UniRef Homolog
