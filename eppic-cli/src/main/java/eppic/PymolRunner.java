@@ -19,9 +19,13 @@ import eppic.assembly.Assembly;
 import eppic.assembly.ChainVertex;
 import eppic.assembly.InterfaceEdge;
 import eppic.assembly.SubAssembly;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class PymolRunner {
+
+	private static final Logger logger = LoggerFactory.getLogger(PymolRunner.class);
 	
 	private static final String DEF_TN_STYLE = "ribbon";
 	private static final String DEF_TN_BG_COLOR = "white";
@@ -141,6 +145,8 @@ public class PymolRunner {
 		if (pymolScriptBuilder.length() > MAX_LENGTH_PYMOL_SCRIPT) {
 			throw new IOException("Can't create "+base+" png file. Script is longer than "+MAX_LENGTH_PYMOL_SCRIPT+" bytes, PyMOL can't handle that. Script length is " + pymolScriptBuilder.length() + " bytes.");
 		}
+
+		logger.info("Running Pymol command: {}", command);
 		
 		Process pymolProcess = new ProcessBuilder(command).start();
 		int exit = pymolProcess.waitFor();
@@ -237,7 +243,9 @@ public class PymolRunner {
 		command.add("-d");
 
 		command.add("@" + pmlFile.toString() + "; quit;");
-		
+
+		logger.info("Running Pymol command: {}", command);
+
 		Process pymolProcess = new ProcessBuilder(command).start();
 		// important: for large scripts with a lot of output the Process stderr/out streams don't play well with the
 		// pymol executable. This makes sure that the stdout/err is gobbled up and that Process doesn't hang forever
