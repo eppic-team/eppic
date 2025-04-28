@@ -1,9 +1,6 @@
 package eppic;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -149,9 +146,17 @@ public class PymolRunner {
 		logger.info("Running Pymol command: {}", command);
 		
 		Process pymolProcess = new ProcessBuilder(command).start();
+		StringWriter pymolStderr = new StringWriter();
+		StringWriter pymolStdout = new StringWriter();
+		BufferedReader pymolStderrReader = new BufferedReader(new InputStreamReader(pymolProcess.getErrorStream()));
+		BufferedReader pymolStdoutReader = new BufferedReader(new InputStreamReader(pymolProcess.getInputStream()));
+		String line;
+		while ((line = pymolStdoutReader.readLine()) != null) pymolStdout.write(line+"\n");
+		while ((line = pymolStderrReader.readLine()) != null) pymolStderr.write(line+"\n");
+
 		int exit = pymolProcess.waitFor();
 		if (exit!=0) {
-			throw new IOException("Pymol exited with error status "+exit);
+			throw new IOException("Pymol exited with error status "+exit +". Stdout is:\n"+pymolStdout.toString()+"\nStderr is:\n"+pymolStderr.toString());
 		}
 	}
 
