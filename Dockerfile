@@ -33,6 +33,10 @@ RUN tar -zxvf /opt/mmseqs-static-avx2.tar.gz -C $mmsdir --strip-components=1
 RUN ln -s $mmsdir/bin/mmseqs /usr/local/bin/mmseqs
 
 # JAVA from here
-ARG JAR_FILE=/usr/app/eppic-cli/target/uber-eppic-cli*.jar
-COPY --from=build $JAR_FILE /app/runner.jar
+# Build arg to choose which module
+ARG MODULE=eppic-cli
+ARG JAR_FILE=/usr/app/${MODULE}/target/*${MODULE}*.jar
+COPY --from=build ${JAR_FILE} /app/runner.jar
+
+EXPOSE 8080
 ENTRYPOINT exec java -jar /app/runner.jar
