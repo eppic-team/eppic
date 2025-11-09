@@ -40,3 +40,8 @@ COPY --from=build ${JAR_FILE} /app/runner.jar
 
 EXPOSE 8080
 ENTRYPOINT exec java -jar /app/runner.jar
+
+# Then build the 3 images with:
+#  docker build --build-arg MODULE=eppic-cli -t eppic-cli:latest .
+#  docker build --build-arg MODULE=eppic-dbtools -t eppic-dbtools:latest .
+#  docker build --build-arg MODULE=eppic-rest -t eppic-rest:latest .
