@@ -19,7 +19,7 @@ FROM eclipse-temurin:21-jre-jammy
 
 # OTHER DEPENDENCIES: pymol. graphviz, clustalo, mmseqs2, blast
 # Latest pymol in Ubuntu 22.04 and 24.04 is 2.5.x
-# i.e. for pymol 2.x to be installed this script requires a minimum of Ubuntu 22.04
+# i.e. for pymol 2.x to be installed this requires a minimum of Ubuntu 22.04
 RUN apt-get update && apt-get install -qqy pymol
 RUN apt-get -yqq install ncbi-blast+ clustalo graphviz
 ENV mmsdir=/opt/mmseqs2
