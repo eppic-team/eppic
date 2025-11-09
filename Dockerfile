@@ -39,7 +39,7 @@ ARG JAR_FILE=/usr/app/${MODULE}/target/*${MODULE}*.jar
 COPY --from=build ${JAR_FILE} /app/runner.jar
 
 EXPOSE 8080
-ENTRYPOINT exec java -jar /app/runner.jar
+ENTRYPOINT ["java", "-jar", "/app/runner.jar"]
 
 # Then build the 3 images with:
 #  docker build --build-arg MODULE=eppic-cli -t eppic-cli:latest .
