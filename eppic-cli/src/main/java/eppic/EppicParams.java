@@ -283,10 +283,7 @@ public class EppicParams {
 	private boolean noBlast;
 
 	private boolean useLocalUniProtInfo;
-	
-	private File progressLogFile;
-	private PrintStream progressLog;
-	
+
 	private File configFile;
 
 	private File dbConfigFile;
@@ -386,7 +383,6 @@ public class EppicParams {
 		this.generateModelSerializedFile = false;
 		this.noBlast = false;
 		this.useLocalUniProtInfo = false;
-		this.progressLog = System.out;
 		this.debug = false;
 		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
 		this.filterByDomain = false;
@@ -471,9 +467,6 @@ public class EppicParams {
 				break;
 			case 'B':
 				noBlast = true;
-				break;
-			case 'L':
-				progressLogFile = new File(g.getOptarg());
 				break;
 			case 'g':
 				configFile = new File(g.getOptarg());
@@ -565,8 +558,6 @@ public class EppicParams {
 		"                  and to get UniProt info (sequences, taxonomy) from local db\n"+
 		"  [-U]         :  use local UniProt info via Mongo db connection. Requires a config file (-G).\n"+
 		"                  If not provided, default is to use UniProt REST API to retrieve UniProt info\n"+
-		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
-		"                  log written to std output\n" +
 		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +
 		"                  config file in the user's home directory\n" +
 		"  [-u]         :  debug, if specified debug output will be also shown on standard\n" +
@@ -597,14 +588,6 @@ public class EppicParams {
 				}
 			}
 		}
-		
-		if (progressLogFile!=null) {
-			try {
-				progressLog = new PrintStream(progressLogFile);
-			} catch (FileNotFoundException e) {
-				throw new EppicException(e, "Specified log file can not be written to: "+e.getMessage(), true);
-			}
-		} 
 		
 		if (configFile!=null && !configFile.exists()) {
 			throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
@@ -929,14 +912,6 @@ public class EppicParams {
 		return useLocalUniProtInfo;
 	}
 
-	public PrintStream getProgressLog() {
-		return progressLog;
-	}
-	
-	public File getProgressLogFile() {
-		return progressLogFile;
-	}
-	
 	public File getConfigFile() {
 		return configFile;
 	}

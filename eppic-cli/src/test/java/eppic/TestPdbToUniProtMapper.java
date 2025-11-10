@@ -2,7 +2,16 @@ package eppic;
 
 import eppic.commons.sequence.UnirefEntry;
 import eppic.commons.util.Interval;
+import org.biojava.nbio.alignment.NeedlemanWunsch;
+import org.biojava.nbio.alignment.SimpleGapPenalty;
+import org.biojava.nbio.alignment.SmithWaterman;
+import org.biojava.nbio.alignment.template.GapPenalty;
+import org.biojava.nbio.core.alignment.matrices.SubstitutionMatrixHelper;
+import org.biojava.nbio.core.alignment.template.SequencePair;
+import org.biojava.nbio.core.alignment.template.SubstitutionMatrix;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
+import org.biojava.nbio.core.sequence.ProteinSequence;
+import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.biojava.nbio.structure.Group;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
@@ -143,4 +152,55 @@ public class TestPdbToUniProtMapper {
         assertFalse(pdbToUniProtMapper.getAlignment().hasGap(68, false));
         assertTrue(pdbToUniProtMapper.getAlignment().hasGap(1, true));
     }
+
+    @Test
+    public void testAln() throws Exception {
+        // and finally we align the 2 sequences (in case of mapping from SIFTS we rather do this than trusting the SIFTS alignment info)
+        SubstitutionMatrix<AminoAcidCompound> matrix = SubstitutionMatrixHelper.getIdentity();
+        // setting (20,1) to have a large enough difference so that behaviour is like eppic 2
+        GapPenalty penalty = new SimpleGapPenalty(4, 1);
+
+        testOneAln(penalty,  SubstitutionMatrixHelper.getBlosum50());
+        testOneAln(penalty,  SubstitutionMatrixHelper.getBlosum62());
+        testOneAln(penalty,  SubstitutionMatrixHelper.getIdentity());
+
+    }
+
+    private void testOneAln(GapPenalty penalty, SubstitutionMatrix<AminoAcidCompound> matrix) throws Exception {
+        // Sequence A:  M   A   T   K   A   T   A
+        // Sequence B:  M   A   T   R       T   A
+        //              |   |   |   |       |   |
+        ProteinSequence s1 = new ProteinSequence("MATKATA");
+        ProteinSequence s2 = new ProteinSequence("MATRTA");
+
+        NeedlemanWunsch<ProteinSequence,AminoAcidCompound> nw = new NeedlemanWunsch<>(s1,s2, penalty, matrix);
+
+        SequencePair<ProteinSequence,AminoAcidCompound> alignment = nw.getPair();
+
+        System.out.println(matrix.getName());
+        System.out.printf("Penalty: %d %d\n", penalty.getOpenPenalty(), penalty.getExtensionPenalty());
+        System.out.printf("%.2f\n", nw.getScore());
+        System.out.println(alignment);
+
+    }
+
+    @Test
+    public void testSwAln() throws Exception {
+        ProteinSequence s1 = new ProteinSequence("DYKDDDDAENLYFQGNIFEMLRIDEGLRLKIYKDTEGYYTIGIGHLLTKSPSLNAAKSELDKAIGRNTNGVITKDEAEKLFNQDVDAAVRGILRNAKLKPVYDSLDAVRRAALINMVFQMGETGVAGFTNSLRMLQQKRWDEAAVNLAKSRWYNQTPNRAKRVITTFRTGTWDAYAADEVWVVGMGIVMSLIVLAIVFGNVLVITAIAKFERLQTVTNYFITSLACADLVMGLAVVPFGAAHILTKTWTFGNFWCEFWTSIDVLCVTASIETLCVIAVDRYFAITSPFKYQSLLTKNKARVIILMVWIVSGLTSFLPIQMHWYRATHQEAINCYAEETCCDFFTNQAYAIASSIVSFYVPLVIMVFVYSRVFQEAKRQLQKIDKSEGRFHVQNLSQVEQDGRTGHGLRRSSKFCLKEHKALKTLGIIMGTFTLCWLPFFIVNIVHVIQDNLIRKEVYILLNWIGYVNSGFNPLIYCRSPDFRIAFQELLCLRRSSLKAYGNGYSSNGNTGEQSG");
+        ProteinSequence s2 = new ProteinSequence("MNIFEMLRIDERLRLKIYKDTEGYYTIGIGHLLTKSPSLNAAKSELDKAIGRNCNGVITKDEAEKLFNQDVDAAVRGILRNAKLKPVYDSLDAVRRCALINMVFQMGETGVAGFTNSLRMLQQKRWDEAAVNLAKSIWYNQTPNRAKRVITTFRTGTWDAYKNL");
+        SubstitutionMatrix<AminoAcidCompound> matrix = SubstitutionMatrixHelper.getBlosum62();
+        // setting (20,1) to have a large enough difference so that behaviour is like eppic 2
+        GapPenalty penalty = new SimpleGapPenalty(5, 1);
+
+        SmithWaterman<ProteinSequence,AminoAcidCompound> nw = new SmithWaterman<>(s1, s2, penalty, matrix);
+
+        SequencePair<ProteinSequence,AminoAcidCompound> alignment = nw.getPair();
+
+        System.out.println(matrix.getName());
+        System.out.printf("Penalty: %d %d\n", penalty.getOpenPenalty(), penalty.getExtensionPenalty());
+        System.out.printf("%.2f\n", nw.getScore());
+        System.out.println(alignment);
+
+    }
+
 }

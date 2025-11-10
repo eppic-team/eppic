@@ -123,11 +123,11 @@ public class DataModelAdaptor {
 	    return chainNcsOps;
     }
 	
-	public void setParams(EppicParams params) {
+	public void setParams(EppicParams params, String pdbCode) {
 		this.params = params;
-		pdbInfo.setPdbCode(params.getPdbCode());
-		if (params.getPdbCode() != null) {
-			pdbInfo.setEntryId(params.getPdbCode());
+		pdbInfo.setPdbCode(pdbCode);
+		if (pdbCode != null) {
+			pdbInfo.setEntryId(pdbCode);
 		} else {
 			// else (file input from actual CLI) take it from base name (which is taken from filename, see logic of basename)
 			// this is useful for REST service to pass the "secret" user id

@@ -40,14 +40,11 @@ public class TextOutputWriter {
 		LOGGER.debug("Is non-standard SG: {}", pdbInfo.isNonStandardSg());
 		LOGGER.debug("Is non-standard coord frame convention: {}", pdbInfo.isNonStandardCoordFrameConvention());
 	}
-
-	
 	
 	public void writeInterfacesInfoFile() throws IOException {
 		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.INTERFACES_FILE_SUFFIX));
 		ps.println("Interfaces for input structure "+(params.isInputAFile()?params.getInFile().getName():params.getPdbCode()));
 		ps.println("ASAs values calculated with "+params.getnSpherePointsASAcalc()+" sphere sampling points");
-		
 		
 		printInterfacesInfo(ps, params.isUsePdbResSer());
 		ps.close();

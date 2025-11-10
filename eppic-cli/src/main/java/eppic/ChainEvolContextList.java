@@ -194,13 +194,13 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void retrieveQueryData(EppicParams params) throws EppicException {
-		params.getProgressLog().println("Finding query's UniProt mappings through SIFTS or blasting");
-		params.getProgressLog().print("chains: ");
+		System.out.println("Finding query's UniProt mappings through SIFTS or blasting");
+		System.out.print("chains: ");
 		
 		openConnections(params);
 		
 		for (ChainEvolContext chainEvCont:cecs.values()) {
-			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
+			System.out.print(chainEvCont.getRepresentativeChainCode()+" ");
 			try {
 				chainEvCont.retrieveQueryData(params);
 
@@ -225,7 +225,7 @@ public class ChainEvolContextList implements Serializable {
 		
 		closeConnections();
 		
-		params.getProgressLog().println();
+		System.out.println();
 	}
 	
 	public void retrieveHomologs(EppicParams params) throws EppicException {
@@ -249,8 +249,8 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	private void blastForHomologs(EppicParams params) throws EppicException {
-		params.getProgressLog().println("Blasting for homologs");
-		params.getProgressLog().print("chains: ");
+		System.out.println("Blasting for homologs");
+		System.out.print("chains: ");
 
 		openConnections(params);
 
@@ -259,7 +259,7 @@ public class ChainEvolContextList implements Serializable {
 				// no query uniprot match, we do nothing with this sequence
 				continue;
 			}
-			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
+			System.out.print(chainEvCont.getRepresentativeChainCode()+" ");
 						
 			try {
 				chainEvCont.blastForHomologs(params);
@@ -276,12 +276,12 @@ public class ChainEvolContextList implements Serializable {
 
 		closeConnections();
 
-		params.getProgressLog().println();
+		System.out.println();
 	}
 	
 	private void retrieveHomologsData(EppicParams params) throws EppicException {
-		params.getProgressLog().println("Retrieving UniProtKB data");
-		params.getProgressLog().print("chains: ");
+		System.out.println("Retrieving UniProtKB data");
+		System.out.print("chains: ");
 		
 		openConnections(params);	
 		
@@ -291,7 +291,7 @@ public class ChainEvolContextList implements Serializable {
 				continue;
 			}
 			
-			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
+			System.out.print(chainEvCont.getRepresentativeChainCode()+" ");
 			
 			// we first apply the hard identity cutoff because that's the maximum list we can ever have after applying filters, i.e. that's all data we need
 			chainEvCont.applyHardIdentityCutoff(params.getHomHardIdCutoff(), params.getQueryCoverageCutoff());
@@ -314,7 +314,7 @@ public class ChainEvolContextList implements Serializable {
 		
 		closeConnections();
 		
-		params.getProgressLog().println();
+		System.out.println();
 	}
 	
 	private void applyIdentityCutoff(EppicParams params) throws EppicException {
@@ -370,15 +370,15 @@ public class ChainEvolContextList implements Serializable {
 	public void align(EppicParams params) throws EppicException {
 		
 		String alignProgram = "clustalo"; 
-		params.getProgressLog().println("Aligning protein sequences with "+ alignProgram);
-		params.getProgressLog().print("chains: ");
+		System.out.println("Aligning protein sequences with "+ alignProgram);
+		System.out.print("chains: ");
 		for (ChainEvolContext chainEvCont:cecs.values()) {
 			if (!chainEvCont.hasQueryMatch()) {
 				// no query uniprot match, we do nothing with this sequence
 				continue;
 			}
 			
-			params.getProgressLog().print(chainEvCont.getRepresentativeChainCode()+" ");
+			System.out.print(chainEvCont.getRepresentativeChainCode()+" ");
 			try {
 				chainEvCont.align(params);
 			} catch (IOException e) {
@@ -388,7 +388,7 @@ public class ChainEvolContextList implements Serializable {
 			} 
 
 		}
-		params.getProgressLog().println();
+		System.out.println();
 	}
 	
 	public void computeEntropies(EppicParams params) {
