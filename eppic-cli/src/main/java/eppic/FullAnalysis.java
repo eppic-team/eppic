@@ -533,7 +533,7 @@ public class FullAnalysis {
         // we don't write text files if in -w
         if (params.isGenerateModelSerializedFile()) return System.currentTimeMillis() - start;
 
-        TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), modelAdaptor.getInterfFeatures(), params);
+        TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), modelAdaptor.getInterfFeatures(), params, pdbCode, isInputAFile, inFile);
 
         // 0 write .A.aln file
         try {

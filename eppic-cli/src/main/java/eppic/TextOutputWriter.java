@@ -1,5 +1,6 @@
 package eppic;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -31,19 +32,25 @@ public class TextOutputWriter {
 	private final PdbInfoDB pdbInfo;
 	private final List<InterfaceResidueFeaturesDB> resFeatures;
 	private final EppicParams params;
+    private final String pdbCode;
+    private final boolean isInputAFile;
+    private final File inFile;
 	
-	public TextOutputWriter (PdbInfoDB pdbInfo, List<InterfaceResidueFeaturesDB> resFeatures, EppicParams params) {
+	public TextOutputWriter (PdbInfoDB pdbInfo, List<InterfaceResidueFeaturesDB> resFeatures, EppicParams params, String pdbCode, boolean isInputAFile, File inFile) {
 		this.pdbInfo = pdbInfo;
 		this.resFeatures = resFeatures;
 		this.params = params;
-		
+		this.pdbCode = pdbCode;
+		this.isInputAFile = isInputAFile;
+		this.inFile = inFile;
+
 		LOGGER.debug("Is non-standard SG: {}", pdbInfo.isNonStandardSg());
 		LOGGER.debug("Is non-standard coord frame convention: {}", pdbInfo.isNonStandardCoordFrameConvention());
 	}
 	
 	public void writeInterfacesInfoFile() throws IOException {
 		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.INTERFACES_FILE_SUFFIX));
-		ps.println("Interfaces for input structure "+(params.isInputAFile()?params.getInFile().getName():params.getPdbCode()));
+		ps.println("Interfaces for input structure "+(isInputAFile?inFile.getName():pdbCode));
 		ps.println("ASAs values calculated with "+params.getnSpherePointsASAcalc()+" sphere sampling points");
 		
 		printInterfacesInfo(ps, params.isUsePdbResSer());
@@ -469,7 +476,7 @@ public class TextOutputWriter {
 	
 	public void writeContactsInfoFile() throws IOException {
 		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.CONTACTS_FILE_SUFFIX));
-		ps.println("Contacts per interface for input structure "+(params.isInputAFile()?params.getInFile().getName():params.getPdbCode()));
+		ps.println("Contacts per interface for input structure "+(isInputAFile?inFile.getName():pdbCode));
 		ps.printf("Distance cut-off %5.2f\n",EppicParams.INTERFACE_DIST_CUTOFF);
 		
 		// NOTE the residue numbers for contacts are written ALWAYS with SEQRES residue serials 
@@ -507,7 +514,7 @@ public class TextOutputWriter {
 	
 	public void writeAssembliesFile() throws IOException {
 		PrintStream ps = new PrintStream(params.getOutputFile(EppicParams.ASSEMBLIES_FILE_SUFFIX));
-		ps.println("# Topologically valid assemblies in "+(params.isInputAFile()?params.getInFile().getName():params.getPdbCode()));		
+		ps.println("# Topologically valid assemblies in "+(isInputAFile?inFile.getName():pdbCode));
 		
 		ps.printf("%3s %20s %10s %15s %15s %10s %15s\n",
 				"id",
