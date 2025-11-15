@@ -42,9 +42,9 @@ public class TestHeteromericStructures {
 		Main m = new Main();
 		
 		// at the moment this fails with an ArrayOutOfBoundsException (see #148)
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 		
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 		
 		System.out.println("Number of assemblies: " + pdbInfo.getValidAssemblies().size());
 		

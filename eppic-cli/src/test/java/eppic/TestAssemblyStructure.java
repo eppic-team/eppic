@@ -55,10 +55,10 @@ public class TestAssemblyStructure {
 
         Main m = new Main();
 
-        m.run(params);
+        FullAnalysis fullAnalysis = m.run(params);
 
-        CrystalAssemblies validAssemblies = m.getCrystalAssemblies();
-        PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
+        CrystalAssemblies validAssemblies = fullAnalysis.getCrystalAssemblies();
+        PdbInfoDB pdbInfoDB = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 
         // Important: we need to parse a-new the structure so that we make sure it does not have NCS ops expanded,
         // if we take it from m.getStructure(), in there the NCS ops are already expanded
@@ -276,11 +276,11 @@ public class TestAssemblyStructure {
 
         Main m = new Main();
 
-        m.run(params);
-        Structure auStruct = m.getStructure();
+        FullAnalysis fullAnalysis = m.run(params);
+        Structure auStruct = fullAnalysis.getStructure();
 
-        CrystalAssemblies validAssemblies = m.getCrystalAssemblies();
-        PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
+        CrystalAssemblies validAssemblies = fullAnalysis.getCrystalAssemblies();
+        PdbInfoDB pdbInfoDB = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 
         Map<Integer, Structure> structFromFiles = writeAssemblyStructFiles(validAssemblies, pdbId, outDir);
 
@@ -374,11 +374,11 @@ public class TestAssemblyStructure {
 
         Main m = new Main();
 
-        m.run(params);
-        Structure auStruct = m.getStructure();
+        FullAnalysis fullAnalysis = m.run(params);
+        Structure auStruct = fullAnalysis.getStructure();
 
-        StructureInterfaceList interfaces = m.getInterfaces();
-        PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
+        StructureInterfaceList interfaces = fullAnalysis.getInterfaces();
+        PdbInfoDB pdbInfoDB = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 
         Map<Integer, Structure> structFromFiles = writeInterfaceStructFiles(interfaces, pdbId, outDir);
 

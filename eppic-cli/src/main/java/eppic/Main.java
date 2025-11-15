@@ -21,12 +21,9 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class Main {
-	
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-	
-	private static final int STEPS_TOTAL = 4;
-	
+
 	// fields
 	private EppicParams params;
 	
@@ -107,16 +104,16 @@ public class Main {
 	 * Run the full eppic analysis given a parameters object
 	 * @param params the parameters
 	 */
-	public void run(EppicParams params) {
+	public FullAnalysis run(EppicParams params) {
 		this.params = params;
-		run(false);
+		return run(false);
 	}
 	
 	/**
 	 * Run the full eppic analysis given the command line arguments (which are then converted into an {@link EppicParams} object)
 	 * @param args the CLI arguments
 	 */
-	public void run(String[] args) {
+	public FullAnalysis run(String[] args) {
 		
 		try {
 			params.parseCommandLine(args);
@@ -126,10 +123,10 @@ public class Main {
 			e.exitIfFatal(1);
 		}
 		
-		run(true);
+		return run(true);
 	}
 	
-	private void run(boolean loadConfigFile) {
+	private FullAnalysis run(boolean loadConfigFile) {
 
 		try {
 
@@ -142,6 +139,7 @@ public class Main {
 
             FullAnalysis fa = new FullAnalysis(params, params.getPdbCode(), params.isInputAFile(), params.getInFile());
             fa.run();
+            return fa;
 
 		} catch (EppicException e) {
 			LOGGER.error(e.getMessage());
@@ -157,7 +155,7 @@ public class Main {
             LOGGER.error("Unexpected error. Stack trace:\n{}\n{}\nPlease report a bug to " + EppicParams.CONTACT_EMAIL, e, stack.toString());
 			System.exit(1);
 		}
-
+        return null;
 	}
 
 }

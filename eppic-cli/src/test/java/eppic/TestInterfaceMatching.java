@@ -36,16 +36,16 @@ public class TestInterfaceMatching {
 		
 		Main m = new Main();
 		
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 		
-		Structure s = m.getStructure();
+		Structure s = fullAnalysis.getStructure();
 		
 		for (Chain c : s.getPolyChains()) {
 			System.out.println("Chain id "+c.getName() + ", chain asym id "+c.getId());
 		}
 		
 		
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 		
 		for (AssemblyDB assembly : pdbInfo.getValidAssemblies()) {
 			

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import eppic.FullAnalysis;
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -147,9 +148,9 @@ public class TestContractedAssemblyEnumeration {
 		
 		Main m = new Main();
 		
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 				
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 		
 		
 		for (AssemblyDB a : pdbInfo.getValidAssemblies()) {

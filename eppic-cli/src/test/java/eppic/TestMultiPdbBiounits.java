@@ -35,9 +35,9 @@ public class TestMultiPdbBiounits {
 		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
 		Main m = new Main();
 		
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 		
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 		
 		// assembly 7 is a tetramer and has a PDB biounit annotation (pdb1)
 		AssemblyDB assembly7 = pdbInfo.getValidAssemblies().get(6);
@@ -92,9 +92,9 @@ public class TestMultiPdbBiounits {
 		
 		Main m = new Main();
 		
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 		
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 		
 		// assembly 2 is a dimer and has several PDB biounits redundant annotation (pdb1, pdb2, pdb3)
 		AssemblyDB assembly2 = pdbInfo.getValidAssemblies().get(1);

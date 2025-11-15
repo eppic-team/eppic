@@ -37,9 +37,9 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		Main m = new Main();
 		
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 		
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 		
 		// 2 assemblies: the monomeric (2 disjoint monomers) and the heterodimeric
 		assertEquals(2, pdbInfo.getValidAssemblies().size());
@@ -82,9 +82,9 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		Main m = new Main();
 		
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 		
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 		
 		// 1 assembly: monomeric
 		assertEquals(1, pdbInfo.getValidAssemblies().size());
@@ -121,9 +121,9 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		Main m = new Main();
 		
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 		
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 		
 		// 2 assemblies: monomer and dimer
 		assertEquals(2, pdbInfo.getValidAssemblies().size());

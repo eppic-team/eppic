@@ -55,9 +55,9 @@ public class TestLargeStructures {
 		
 		Main m = new Main();
 		
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 		
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 
 		// the title should be set, this checks that DataModelAdaptor.setPdbMetadata worked
 		assertNotNull(pdbInfo.getTitle());
@@ -113,9 +113,9 @@ public class TestLargeStructures {
 
 		Main m = new Main();
 
-		m.run(params);
+		FullAnalysis fullAnalysis = m.run(params);
 
-		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
+		PdbInfoDB pdbInfo = fullAnalysis.getDataModelAdaptor().getPdbInfo();
 
 		assertTrue(pdbInfo.isNcsOpsPresent());
 
