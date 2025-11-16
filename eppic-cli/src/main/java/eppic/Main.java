@@ -44,6 +44,7 @@ import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
+import picocli.CommandLine;
 
 import javax.vecmath.Matrix4d;
 
@@ -54,15 +55,21 @@ import javax.vecmath.Matrix4d;
  * @author Jose Duarte
  *
  */
-public class Main {
-	
-	
+@CommandLine.Command(
+        name = EppicParams.PROGRAM_NAME,
+        mixinStandardHelpOptions = true, // adds -h, --help, -V, --version
+        description = "EPPIC: Evolutionary Protein-Protein Interface Classifier")
+public class Main implements Runnable {
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	
 	private static final int STEPS_TOTAL = 4;
 	
-	// fields
-	private EppicParams params;
+    // fields
+    @CommandLine.Mixin
+    private CliParams cliParams;
+
+    private EppicParams params;
 	
 	private Structure pdb;
 	private StructureInterfaceList interfaces;
@@ -72,10 +79,10 @@ public class Main {
 	private List<GeometryClusterPredictor> gcps;
 	
 	private CrystalAssemblies validAssemblies;
-	
+
 	private File stepsLogFile;
 	private int stepCount;
-	
+
 	private DataModelAdaptor modelAdaptor;
 		
 	public Main() {
@@ -932,7 +939,7 @@ public class Main {
 
 		return System.currentTimeMillis() - start;
 	}
-	
+
 	private void writeStep(String text) {
 		if (stepsLogFile==null) return;
 		try {
@@ -946,16 +953,31 @@ public class Main {
 			LOGGER.error("Couldn't write to steps log file "+stepsLogFile);
 		}
 	}
-	
-	/**
-	 * The main of EPPIC  
-	 */
-	public static void main(String[] args){
-		
-		Main eppicMain = new Main();
-		
-		eppicMain.run(args);
-	}
+
+    @Override
+    public void run() {
+        // Here picocli has already populated cliParams (and any other @Option fields)
+        try {
+            cliParams.checkCommandLineInput();
+        } catch (EppicException e) {
+            LOGGER.error(e.getMessage());
+            e.exitIfFatal(1);
+        }
+        // Convert cliParams -> EppicParams as needed
+        this.params = cliParams.toEppicParams(); // or however you build EppicParams
+        this.stepCount = 1;
+
+        // reuse your existing workflow
+        run(true);
+    }
+
+    /**
+     * The main of EPPIC
+     */
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new Main()).execute(args);
+        System.exit(exitCode);
+    }
 	
 	/**
 	 * Run the full eppic analysis given a parameters object
@@ -964,23 +986,6 @@ public class Main {
 	public void run(EppicParams params) {
 		this.params = params;
 		run(false);
-	}
-	
-	/**
-	 * Run the full eppic analysis given the command line arguments (which are then converted into an {@link EppicParams} object)
-	 * @param args the CLI arguments
-	 */
-	public void run(String[] args) {
-		
-		try {
-			params.parseCommandLine(args);
-			
-		} catch (EppicException e) {
-			LOGGER.error(e.getMessage());
-			e.exitIfFatal(1);
-		}
-		
-		run(true);
 	}
 	
 	private void run(boolean loadConfigFile) {

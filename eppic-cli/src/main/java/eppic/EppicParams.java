@@ -1,7 +1,6 @@
 package eppic;
 
 import eppic.commons.sequence.AAAlphabet;
-import gnu.getopt.Getopt;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -132,7 +131,7 @@ public class EppicParams {
 	public static final double    DEF_HOM_SOFT_ID_CUTOFF = 0.6;
 	public static final double    DEF_HOM_HARD_ID_CUTOFF = 0.5;
 
-	private static final int      DEF_NUMTHREADS = Runtime.getRuntime().availableProcessors();
+	protected static final int      DEF_NUMTHREADS = 1;
 	
 	private static final String   DEF_OUT_DIR = ".";
 	
@@ -146,7 +145,7 @@ public class EppicParams {
 	public static final double    DEF_CA_CUTOFF_FOR_RIMCORE = 0.80;
 	public static final double    DEF_CA_CUTOFF_FOR_ZSCORE = 0.80;
 
-	private static final int      DEF_MAX_NUM_SEQUENCES = 100;
+	protected static final int      DEF_MAX_NUM_SEQUENCES = 100;
 		
 	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.LOCAL;
 	
@@ -187,7 +186,7 @@ public class EppicParams {
 	// default cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	public static final int       DEF_MIN_NUM_SEQUENCES = 10;
-	private static final double	  DEF_HOM_ID_STEP = 0.05;
+	protected static final double	  DEF_HOM_ID_STEP = 0.05;
 	private static final double   DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL = 0.85;
 	
 	// default pdb2uniprot mapping blast thresholds
@@ -393,250 +392,7 @@ public class EppicParams {
 		this.forceContractedAssemblyEnumeration = false; // should only be set to true for testing
 		
 	}
-	
-	public void parseCommandLine(String[] args, String programName, String help) {
-	
 
-		Getopt g = new Getopt(programName, args, "i:sa:b:o:e:c:z:m:x:y:d:D:q:H:Opt:PlfwBL:g:G:Uuh?");
-		int c;
-		while ((c = g.getopt()) != -1) {
-			switch (c) {
-			case 'i':
-				inputStr = g.getOptarg();
-				setInput();
-				break;
-			case 's':
-				doEvolScoring = true;
-				break;
-			case 'a':
-				numThreads = Integer.parseInt(g.getOptarg());
-				break;
-			case 'b':
-				baseName = g.getOptarg();
-				break;				
-			case 'o':
-				outDir = new File(g.getOptarg());
-				break;			
-			case 'e':
-				caCutoffForGeom = Double.parseDouble(g.getOptarg());
-				break;
-			case 'c':
-				caCutoffForRimCore = Double.parseDouble(g.getOptarg());
-				break;				
-			case 'z':
-				caCutoffForZscore = Double.parseDouble(g.getOptarg());
-				break;				
-			case 'm':
-				minCoreSizeForBio = Integer.parseInt(g.getOptarg());
-				break;
-			case 'x':
-				coreRimScoreCutoff = Double.parseDouble(g.getOptarg());
-				break;
-			case 'y':
-				coreSurfScoreCutoff = Double.parseDouble(g.getOptarg());
-				break;				
-			case 'd':
-				homSoftIdCutoff = Double.parseDouble(g.getOptarg());
-				break;
-			case 'D':
-				homHardIdCutoff = Double.parseDouble(g.getOptarg());
-				break;
-			case 'q':
-				maxNumSeqs = Integer.parseInt(g.getOptarg());
-				break;
-			case 'H':
-				homologsSearchMode = HomologsSearchMode.getByName(g.getOptarg());
-				break;
-			case 'O':
-				filterByDomain = true;
-				break;
-			case 'p':
-				generateOutputCoordFiles = true;
-				break;
-			case 't':
-				tempCoordFilesDir = new File(g.getOptarg());
-				break;
-			case 'P':
-				generateDiagrams = true;
-				break;
-			case 'l':
-				generateOutputCoordFiles = true;
-				generateThumbnails = true;
-				break;
-			case 'f':
-				generatePdbFiles = true;
-				break;
-			case 'w':
-				generateModelSerializedFile = true;
-				break;
-			case 'B':
-				noBlast = true;
-				break;
-			case 'L':
-				progressLogFile = new File(g.getOptarg());
-				break;
-			case 'g':
-				configFile = new File(g.getOptarg());
-				break;
-			case 'G':
-				dbConfigFile = new File(g.getOptarg());
-				break;
-			case 'U':
-				useLocalUniProtInfo = true;
-				break;
-			case 'u':
-				debug = true;
-				break;
-			case 'h':
-				System.out.println(help);
-				System.exit(0);
-				break;
-			case '?':
-				System.err.println(help);
-				System.exit(1);
-				break; // getopt() already printed an error
-			}
-		}
-	}
-	
-	public void parseCommandLine(String[] args) throws EppicException {
-		
-		String help = 
-		PROGRAM_NAME+" ver. "+PROGRAM_VERSION+"\n" +
-		"Usage: \n" +
-		"   -i <string> :  input PDB code or PDB/mmCIF file\n" +
-		"  [-s]         :  calculate evolutionary entropy-based scores (core-rim and \n" +
-		"                  core-surface).\n" +
-		"                  If not specified, only geometric scoring is done.\n"+
-		"  [-a <int>]   :  number of threads for blast, alignment and ASA calculation. \n" +
-		"                  Default: "+DEF_NUMTHREADS+"\n"+
-		"  [-b <string>]:  basename for output files. Default: as input PDB code or file \n" +
-		"                  name. This will be the PdbInfo.entryId written out.\n" +
-		"                  Useful for web server to override entryId from job id\n" +
-		"  [-o <dir>]   :  output dir, where output files will be written. Default: current\n" +
-		"                  dir \n" +
-		"  [-e <float>] :  the BSA/ASA cutoff for core assignment in geometry predictor.\n" +
-		"                  Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_GEOM)+"\n" +
-		"  [-c <float>] :  the BSA/ASA cutoff for core assignment in core-rim evolutionary \n" +
-		"                  predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_RIMCORE)+"\n" +
-		"  [-z <float>] :  the BSA/ASA cutoff for core assignment in core-surface \n" +
-		"                  evolutionary predictor. Default: "+String.format("%4.2f",DEF_CA_CUTOFF_FOR_ZSCORE)+"\n" +
-		"  [-m <int>]   :  geometry scoring cutoff for number of interface core residues, if \n" +
-		"                  below this value the geometry call will be XTAL, if equals or \n" +
-		"                  higher the geometry call is BIO. Default "+DEF_MIN_CORE_SIZE_FOR_BIO+"\n" +
-		"  [-x <float>] :  core-rim score cutoff for calling BIO/XTAL. If below this score, \n" +
-		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_CORERIM_SCORE_CUTOFF)+"\n"+
-		"  [-y <float>] :  core-surface score cutoff to call BIO/XTAL. If below this score, \n" +
-		"                  interface is BIO, if above XTAL. Default: " + String.format("%4.2f",DEF_CORESURF_SCORE_CUTOFF)+"\n"+
-		"  [-d <float>] :  sequence identity soft cutoff, if enough homologs ("+DEF_MIN_NUM_SEQUENCES+") above this \n" +
-		"                  threshold the search for homologs stops, default: "+String.format("%3.1f",DEF_HOM_SOFT_ID_CUTOFF)+"\n"+
-		"  [-D <float>] :  sequence identity hard cutoff, if after applying the soft\n" +
-		"                  cutoff (see -d), not enough homologs ("+DEF_MIN_NUM_SEQUENCES+") are found\n" +
-		"                  then the threshold is lowered in "+String.format("%4.2f",DEF_HOM_ID_STEP)+" steps until this hard\n" +
-		"                  cutoff is reached. \n" +
-		"                  Default: "+String.format("%3.1f",DEF_HOM_HARD_ID_CUTOFF)+"\n"+
-		"  [-q <int>]   :  maximum number of sequences to keep for calculation of conservation \n" +
-		"                  scores. Default: "+DEF_MAX_NUM_SEQUENCES+"\n"+
-		"  [-H <string>]:  homologs search mode: either \"local\" (only UniProt region covered\n" +
-		"                  by PDB structure will be used to search homologs) or \"global\" \n" +
-		"                  (full UniProt entry will be used to search homologs).\n" +
-		"                  Default "+DEF_HOMOLOGS_SEARCH_MODE.getName() + "\n"+
-		"  [-O]         :  restrict homologs search to those within the same domain of \n" +
-		"                  life as query\n"+
-		"  [-p]         :  if specified coordinate files (gzipped mmCIF) for each interface and assembly will \n"+
-		"                  be generated\n"+
-		"  [-t <dir>]   :  a temporary directory where to write output gzipped mmCIF files (-p) for PyMOL files \n" +
-		"                  generation (-l). Useful in -w mode to specify a fast in memory storage for writing the temp\n" +
-		"                  cif.gz files\n" +
-		"                  Use -f as well to additionally generate PDB files (backwards compatibility)\n"+
-		"  [-P]         :  Generate assembly diagram images and thumbnails.\n"+
-		"  [-l]         :  if specified PyMOL files (thumbnail pngs) will be generated \n"+
-		"                  for each interface and for each assembly (requires PyMOL).\n"+
-		"                  This option will force the -p option\n" +
-		"  [-f]         :  if specified together with -p, coordinate output will also be produced in \n"+
-		"                  PDB (gzipped) format as well as mmCIF format\n"+
-		"  [-w]         :  if specified a zip file containing 2 serialized json files with all data will be produced. \n" +
-		"                  Coordinate files are removed in this mode, so the -p option will have no effect.\n" +
-		"  [-B]         :  if specified no blasting will be performed at all: a) UniProt references are taken\n"+
-		"                  from SIFTS only, b) only sequence search cache is used.\n"+
-		"                  Useful for precomputation from scratch to avoid the dependency on\n"+
-		"                  blast index files.\n"+
-		"  [-G <file>]  :  config file for Mongo db connection, needed to query the sequence search cache\n"+
-		"                  and to get UniProt info (sequences, taxonomy) from local db\n"+
-		"  [-U]         :  use local UniProt info via Mongo db connection. Requires a config file (-G).\n"+
-		"                  If not provided, default is to use UniProt REST API to retrieve UniProt info\n"+
-		"  [-L <file>]  :  a file where progress log will be written to. Default: progress\n" +
-		"                  log written to std output\n" +
-		"  [-g <file>]  :  an "+PROGRAM_NAME+" config file. This will override the existing \n" +
-		"                  config file in the user's home directory\n" +
-		"  [-u]         :  debug, if specified debug output will be also shown on standard\n" +
-		"                  output\n\n";
-		
-		parseCommandLine(args, PROGRAM_NAME, help);
-		checkCommandLineInput();
-
-	}
-
-	public void checkCommandLineInput() throws EppicException {
-		
-		if (inputStr==null) {
-			throw new EppicException(null, "Missing argument -i", true);
-		}
-		
-		if (inFile!=null && !inFile.exists()){
-			throw new EppicException(null, "Given file "+inFile+" does not exist!", true);
-		}
-		
-		if (baseName==null) {
-			baseName=pdbCode;
-			if (inFile!=null) {
-				if (inFile.getName().contains(".")) {
-					baseName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
-				} else {
-					baseName = inFile.getName();
-				}
-			}
-		}
-		
-		if (progressLogFile!=null) {
-			try {
-				progressLog = new PrintStream(progressLogFile);
-			} catch (FileNotFoundException e) {
-				throw new EppicException(e, "Specified log file can not be written to: "+e.getMessage(), true);
-			}
-		} 
-		
-		if (configFile!=null && !configFile.exists()) {
-			throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
-		}
-
-		if (dbConfigFile!=null && !dbConfigFile.exists()) {
-			throw new EppicException(null, "Specified config file "+dbConfigFile+" doesn't exist",true);
-		}
-
-		if (noBlast && dbConfigFile == null) {
-			throw new EppicException(null, "The no-blast mode (-B) requires using a db config file to query sequence search cache (-G)", true);
-		}
-	
-		if (homologsSearchMode==null) {
-			// invalid string passed as homologs search mode
-			throw new EppicException(null, "Invalid string specified as homologs search mode (-H).", true);
-		}
-		
-		if (homSoftIdCutoff<homHardIdCutoff) {
-			homHardIdCutoff = homSoftIdCutoff;
-		}
-
-		if (tempCoordFilesDir == null) {
-			// if no temp coords file dir specified (-t), then write them to outDir
-			tempCoordFilesDir = outDir;
-		}
-
-		if (useLocalUniProtInfo && dbConfigFile == null) {
-			throw new EppicException(null, "A db config file must be provided (-G) when using local UniProt info from db (-U)", true);
-		}
-	}
-	
 	public void checkConfigFileInput() throws EppicException {
 		
 		if (!isInputAFile()) {
