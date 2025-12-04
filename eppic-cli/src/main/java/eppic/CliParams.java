@@ -1,6 +1,5 @@
 package eppic;
 
-import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
 import java.io.File;
@@ -19,7 +18,8 @@ public class CliParams {
     @Option(
             names = "-s",
             description = "Calculate evolutionary entropy-based scores (core-rim and core-surface). " +
-                    "If not specified, only geometric scoring is done."
+                    "If not specified, only geometric scoring is done.",
+            defaultValue = "false"
     )
     private boolean doEvolScoring;
 
@@ -40,8 +40,6 @@ public class CliParams {
     )
     private double homHardIdCutoff = EppicParams.DEF_HOM_HARD_ID_CUTOFF;
 
-    private double homIdStep;
-
     @Option(
             names = "-b",
             paramLabel = "<string>",
@@ -53,7 +51,8 @@ public class CliParams {
     @Option(
             names = "-o",
             paramLabel = "<dir>",
-            description = "Output directory for result files. Default: current directory"
+            description = "Output directory for result files. Default: current directory",
+            defaultValue = EppicParams.DEF_OUT_DIR
     )
     private File outDir;
 
@@ -127,7 +126,7 @@ public class CliParams {
             names = "-p",
             description = "Generate coordinate files (gzipped mmCIF) for each interface and assembly."
     )
-    private boolean generateOutputCoordFiles;
+    private boolean generateOutputCoordFiles = false;
 
     @Option(
             names = "-t",
@@ -141,40 +140,40 @@ public class CliParams {
             names = "-l",
             description = "Generate PyMOL thumbnail PNGs for each interface and assembly. Implies -p."
     )
-    private boolean generateThumbnails;
+    private final boolean generateThumbnails = false;
 
     @Option(
             names = "-P",
             description = "Generate assembly diagram images and thumbnails."
     )
-    private boolean generateDiagrams;
+    private final boolean generateDiagrams = false;
 
     @Option(
             names = "-f",
             description = "When used with -p, also generate PDB (gzipped) coordinate files."
     )
-    private boolean generatePdbFiles;
+    private final boolean generatePdbFiles = false;
 
     @Option(
             names = "-w",
             description = "Produce a zip file containing serialized JSON with all data. " +
                     "Coordinate files are removed in this mode."
     )
-    private boolean generateModelSerializedFile;
+    private final boolean generateModelSerializedFile = false;
 
     @Option(
             names = "-B",
             description = "Disable BLAST: use SIFTS only and sequence search cache only. " +
                     "Useful for precomputation to avoid dependency on BLAST index files."
     )
-    private boolean noBlast;
+    private final boolean noBlast = false;
 
     @Option(
             names = "-U",
             description = "Use local UniProt info via MongoDB (requires -G). " +
                     "Otherwise UniProt REST API is used."
     )
-    private boolean useLocalUniProtInfo;
+    private final boolean useLocalUniProtInfo = false;
 
     @Option(
             names = "-g",
@@ -203,13 +202,13 @@ public class CliParams {
             description = "Homologs search mode: \"local\" (only UniProt region covered by PDB) " +
                     "or \"global\" (full UniProt entry). Default: ${DEFAULT-VALUE}"
     )
-    private HomologsSearchMode homologsSearchMode = HomologsSearchMode.LOCAL;
+    private final HomologsSearchMode homologsSearchMode = EppicParams.DEF_HOMOLOGS_SEARCH_MODE;
 
     @Option(
             names = "-O",
             description = "Restrict homolog search to same domain of life as query."
     )
-    private boolean filterByDomain;
+    private final boolean filterByDomain = false;
 
 
     public void checkCommandLineInput() throws EppicException {
@@ -273,8 +272,40 @@ public class CliParams {
     }
 
     public EppicParams toEppicParams() {
-        // TODO populate. Possibly also put here any non-validation thing from checkCommandLineInput()
-        return new EppicParams();
+        // TODO Possibly also put here any non-validation thing from checkCommandLineInput()
+        EppicParams eppicParams = new EppicParams();
+
+        // TODO deal with inputStr and with baseName (related to above checkCommandLineInput() TODOs)
+
+        eppicParams.setCoreRimScoreCutoff( coreRimScoreCutoff);
+        eppicParams.setCoreSurfScoreCutoff(coreSurfScoreCutoff);
+        eppicParams.setHomHardCutoff(homHardIdCutoff);
+        eppicParams.setHomSoftIdCutoff(homSoftIdCutoff);
+        eppicParams.setMaxNumSeqs(maxNumSeqs);
+        eppicParams.setHomologsSearchMode(homologsSearchMode);
+        eppicParams.setCAcutoffForGeom(caCutoffForGeom);
+        eppicParams.setCAcutoffForRimCore(caCutoffForRimCore);
+        eppicParams.setCAcutoffForZscore(caCutoffForZscore);
+        eppicParams.setMinCoreSizeForBio(minCoreSizeForBio);
+
+        eppicParams.setDoEvolScoring(doEvolScoring);
+        eppicParams.setNoBlast(noBlast);
+        eppicParams.setIsFilterByDomain(filterByDomain);
+        eppicParams.setUseLocalUniProtInfo(useLocalUniProtInfo);
+        eppicParams.setGenerateOutputCoordFiles(generateOutputCoordFiles);
+        eppicParams.setGenerateDiagrams(generateDiagrams);
+        eppicParams.setGenerateModelSerializedFile(generateModelSerializedFile);
+        eppicParams.setGenerateThumbnails(generateThumbnails);
+        eppicParams.setGeneratePdbFiles(generatePdbFiles);
+
+        eppicParams.setNumThreads(numThreads);
+        eppicParams.setOutDir(outDir);
+        eppicParams.setTempCoordFilesDir(tempCoordFilesDir);
+
+        eppicParams.setConfigFile(configFile);
+        eppicParams.setDbConfigFile(dbConfigFile);
+
+        return eppicParams;
     }
 
 }

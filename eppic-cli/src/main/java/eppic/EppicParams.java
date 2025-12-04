@@ -133,7 +133,7 @@ public class EppicParams {
 
 	protected static final int      DEF_NUMTHREADS = 1;
 	
-	private static final String   DEF_OUT_DIR = ".";
+	protected static final String   DEF_OUT_DIR = ".";
 	
 	// default cutoffs for the final bio/xtal call
 	public static final int       DEF_MIN_CORE_SIZE_FOR_BIO = 8;
@@ -363,32 +363,10 @@ public class EppicParams {
 		
 		this.inputStr = null;
 		this.pdbCode = null;
-		this.doEvolScoring = false;
-		this.homSoftIdCutoff = DEF_HOM_SOFT_ID_CUTOFF;
-		this.homHardIdCutoff = DEF_HOM_HARD_ID_CUTOFF;
 		this.homIdStep = DEF_HOM_ID_STEP;
 		this.baseName = null;
-		this.outDir = new File(DEF_OUT_DIR);
-		this.tempCoordFilesDir = null;
-		this.numThreads = DEF_NUMTHREADS;
-		this.caCutoffForGeom = DEF_CA_CUTOFF_FOR_GEOM;
-		this.caCutoffForRimCore = DEF_CA_CUTOFF_FOR_RIMCORE;
-		this.caCutoffForZscore = DEF_CA_CUTOFF_FOR_ZSCORE;
-		this.minCoreSizeForBio = DEF_MIN_CORE_SIZE_FOR_BIO;
-		this.maxNumSeqs = DEF_MAX_NUM_SEQUENCES;
-		this.coreRimScoreCutoff = DEF_CORERIM_SCORE_CUTOFF;
-		this.coreSurfScoreCutoff = DEF_CORESURF_SCORE_CUTOFF;
-		this.generateOutputCoordFiles = false;
-		this.generateDiagrams = false;
-		this.generatePdbFiles = false;
-		this.generateThumbnails = false;
-		this.generateModelSerializedFile = false;
-		this.noBlast = false;
-		this.useLocalUniProtInfo = false;
 		this.progressLog = System.out;
 		this.debug = false;
-		this.homologsSearchMode = DEF_HOMOLOGS_SEARCH_MODE;
-		this.filterByDomain = false;
 		this.forceContractedAssemblyEnumeration = false; // should only be set to true for testing
 		
 	}
@@ -522,7 +500,11 @@ public class EppicParams {
 	public boolean isDoEvolScoring() {
 		return doEvolScoring;
 	}
-	
+
+    public void setDoEvolScoring(boolean doEvolScoring) {
+        this.doEvolScoring = doEvolScoring;
+    }
+
 	public double getHomSoftIdCutoff() {
 		return homSoftIdCutoff;
 	}
@@ -580,14 +562,26 @@ public class EppicParams {
 	public double getCAcutoffForGeom() {
 		return caCutoffForGeom;
 	}
+
+    public void setCAcutoffForGeom(double caCutoffForGeom) {
+        this.caCutoffForGeom = caCutoffForGeom;
+    }
 	
 	public double getCAcutoffForRimCore(){
 		return caCutoffForRimCore;
 	}
+
+    public void setCAcutoffForRimCore(double caCutoffForRimCore) {
+        this.caCutoffForRimCore = caCutoffForRimCore;
+    }
 	
 	public double getCAcutoffForZscore() {
 		return caCutoffForZscore;
 	}
+
+    public void setCAcutoffForZscore(double caCutoffForZscore) {
+        this.caCutoffForZscore = caCutoffForZscore;
+    }
 	
 	public double getMinAsaForSurface() {
 		return minAsaForSurface;
@@ -600,6 +594,10 @@ public class EppicParams {
 	public int getMinCoreSizeForBio() {
 		return minCoreSizeForBio;
 	}
+
+    public void setMinCoreSizeForBio(int minCoreSizeForBio) {
+        this.minCoreSizeForBio = minCoreSizeForBio;
+    }
 	
 	public int getMaxNumSeqs() {
 		return maxNumSeqs;
@@ -656,6 +654,10 @@ public class EppicParams {
 	public boolean isGenerateThumbnails() {
 		return generateThumbnails;
 	}
+
+    public void setGenerateThumbnails(boolean generateThumbnails) {
+        this.generateThumbnails = generateThumbnails;
+    }
 	
 	public boolean isGenerateDiagrams() {
 		return generateDiagrams;
@@ -668,6 +670,10 @@ public class EppicParams {
 	public boolean isGeneratePdbFiles() {
 		return generatePdbFiles;
 	}
+
+    public void setGeneratePdbFiles(boolean generatePdbFiles) {
+        this.generatePdbFiles = generatePdbFiles;
+    }
 	
 	public boolean isGenerateModelSerializedFile() {
 		return generateModelSerializedFile;
@@ -681,9 +687,17 @@ public class EppicParams {
 		return noBlast;
 	}
 
+    public void setNoBlast(boolean noBlast) {
+        this.noBlast = noBlast;
+    }
+
 	public boolean isUseLocalUniProtInfo() {
 		return useLocalUniProtInfo;
 	}
+
+    public void setUseLocalUniProtInfo(boolean useLocalUniProtInfo) {
+        this.useLocalUniProtInfo = useLocalUniProtInfo;
+    }
 
 	public PrintStream getProgressLog() {
 		return progressLog;
@@ -697,9 +711,17 @@ public class EppicParams {
 		return configFile;
 	}
 
+    public void setConfigFile(File configFile) {
+        this.configFile = configFile;
+    }
+
 	public File getDbConfigFile() {
 		return dbConfigFile;
 	}
+
+    public void setDbConfigFile(File dbConfigFile) {
+        this.dbConfigFile = dbConfigFile;
+    }
 	
 	public boolean getDebug() {
 		return debug;
