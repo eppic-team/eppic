@@ -140,40 +140,40 @@ public class CliParams {
             names = "-l",
             description = "Generate PyMOL thumbnail PNGs for each interface and assembly. Implies -p."
     )
-    private final boolean generateThumbnails = false;
+    private boolean generateThumbnails = false;
 
     @Option(
             names = "-P",
             description = "Generate assembly diagram images and thumbnails."
     )
-    private final boolean generateDiagrams = false;
+    private boolean generateDiagrams = false;
 
     @Option(
             names = "-f",
             description = "When used with -p, also generate PDB (gzipped) coordinate files."
     )
-    private final boolean generatePdbFiles = false;
+    private boolean generatePdbFiles = false;
 
     @Option(
             names = "-w",
             description = "Produce a zip file containing serialized JSON with all data. " +
                     "Coordinate files are removed in this mode."
     )
-    private final boolean generateModelSerializedFile = false;
+    private boolean generateModelSerializedFile = false;
 
     @Option(
             names = "-B",
             description = "Disable BLAST: use SIFTS only and sequence search cache only. " +
                     "Useful for precomputation to avoid dependency on BLAST index files."
     )
-    private final boolean noBlast = false;
+    private boolean noBlast = false;
 
     @Option(
             names = "-U",
             description = "Use local UniProt info via MongoDB (requires -G). " +
                     "Otherwise UniProt REST API is used."
     )
-    private final boolean useLocalUniProtInfo = false;
+    private boolean useLocalUniProtInfo = false;
 
     @Option(
             names = "-g",
@@ -202,13 +202,13 @@ public class CliParams {
             description = "Homologs search mode: \"local\" (only UniProt region covered by PDB) " +
                     "or \"global\" (full UniProt entry). Default: ${DEFAULT-VALUE}"
     )
-    private final HomologsSearchMode homologsSearchMode = EppicParams.DEF_HOMOLOGS_SEARCH_MODE;
+    private HomologsSearchMode homologsSearchMode = EppicParams.DEF_HOMOLOGS_SEARCH_MODE;
 
     @Option(
             names = "-O",
             description = "Restrict homolog search to same domain of life as query."
     )
-    private final boolean filterByDomain = false;
+    private boolean filterByDomain = false;
 
 
     public void checkCommandLineInput() throws EppicException {
