@@ -131,9 +131,9 @@ public class EppicParams {
 	public static final double    DEF_HOM_SOFT_ID_CUTOFF = 0.6;
 	public static final double    DEF_HOM_HARD_ID_CUTOFF = 0.5;
 
-	protected static final int      DEF_NUMTHREADS = 1;
+	public static final int      DEF_NUMTHREADS = 1;
 	
-	protected static final String   DEF_OUT_DIR = ".";
+	public static final String   DEF_OUT_DIR = ".";
 	
 	// default cutoffs for the final bio/xtal call
 	public static final int       DEF_MIN_CORE_SIZE_FOR_BIO = 8;
@@ -145,9 +145,9 @@ public class EppicParams {
 	public static final double    DEF_CA_CUTOFF_FOR_RIMCORE = 0.80;
 	public static final double    DEF_CA_CUTOFF_FOR_ZSCORE = 0.80;
 
-	protected static final int      DEF_MAX_NUM_SEQUENCES = 100;
+	public static final int      DEF_MAX_NUM_SEQUENCES = 100;
 		
-	protected static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.LOCAL;
+	public static final HomologsSearchMode DEF_HOMOLOGS_SEARCH_MODE = HomologsSearchMode.LOCAL;
 	
 	// DEFAULTS FOR CONFIG FILE ASSIGNABLE CONSTANTS
 	// default fetch behavior is FETCH_IF_OUTDATED so that it is as close as possible to an rsync
@@ -186,7 +186,7 @@ public class EppicParams {
 	// default cutoffs
 	private static final double   DEF_QUERY_COVERAGE_CUTOFF = 0.85;
 	public static final int       DEF_MIN_NUM_SEQUENCES = 10;
-	protected static final double	  DEF_HOM_ID_STEP = 0.05;
+	public static final double	  DEF_HOM_ID_STEP = 0.05;
 	private static final double   DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL = 0.85;
 	
 	// default pdb2uniprot mapping blast thresholds

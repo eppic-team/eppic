@@ -1,10 +1,13 @@
-package eppic;
+package eppic.cli;
 
+import eppic.EppicException;
+import eppic.EppicParams;
+import eppic.HomologsSearchMode;
 import picocli.CommandLine.Option;
 
 import java.io.File;
 
-public class CliParams {
+public class CommonCliParams {
 
     // the parameters
     @Option(
@@ -26,7 +29,7 @@ public class CliParams {
     @Option(
             names = "-d",
             paramLabel = "<float>",
-            description = "Sequence identity soft cutoff; if enough homologs ("+EppicParams.DEF_MIN_NUM_SEQUENCES+") above this threshold " +
+            description = "Sequence identity soft cutoff; if enough homologs ("+ EppicParams.DEF_MIN_NUM_SEQUENCES+") above this threshold " +
                     "the search for homologs stops. Default: ${DEFAULT-VALUE}"
     )
     private double homSoftIdCutoff = EppicParams.DEF_HOM_SOFT_ID_CUTOFF;
