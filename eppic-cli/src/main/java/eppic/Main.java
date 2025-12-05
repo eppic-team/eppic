@@ -17,6 +17,7 @@ import java.util.zip.GZIPOutputStream;
 
 import eppic.assembly.*;
 import eppic.cli.CommonCliParams;
+import eppic.cli.SingleInputCliParams;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import org.apache.logging.log4j.LogManager;
@@ -69,6 +70,8 @@ public class Main implements Runnable {
     // fields
     @CommandLine.Mixin
     private CommonCliParams commonCliParams;
+    @CommandLine.Mixin
+    private SingleInputCliParams singleInputCliParams;
 
     private EppicParams params;
 	
@@ -960,7 +963,7 @@ public class Main implements Runnable {
         // Here picocli has already populated cliParams (and any other @Option fields)
         // Convert cliParams -> EppicParams as needed
         try {
-            this.params = commonCliParams.toEppicParams();
+            this.params = commonCliParams.toEppicParams(singleInputCliParams.inputStr, singleInputCliParams.baseName);
         } catch (EppicException e) {
             LOGGER.error(e.getMessage());
             e.exitIfFatal(1);

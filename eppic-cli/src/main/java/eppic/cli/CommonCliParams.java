@@ -10,13 +10,6 @@ import java.io.File;
 public class CommonCliParams {
 
     // the parameters
-    @Option(
-            names = "-i",
-            required = true,
-            paramLabel = "<string>",
-            description = "Input PDB code or PDB/mmCIF file"
-    )
-    private String inputStr;
 
     @Option(
             names = "-s",
@@ -42,14 +35,6 @@ public class CommonCliParams {
                     "Default: ${DEFAULT-VALUE}"
     )
     private double homHardIdCutoff = EppicParams.DEF_HOM_HARD_ID_CUTOFF;
-
-    @Option(
-            names = "-b",
-            paramLabel = "<string>",
-            description = "Basename for output files. Default: input PDB code or file name. " +
-                    "Useful for web server to override entryId from job id."
-    )
-    private String baseName;
 
     @Option(
             names = "-o",
@@ -245,7 +230,7 @@ public class CommonCliParams {
         }
     }
 
-    public EppicParams toEppicParams() throws EppicException {
+    public EppicParams toEppicParams(String inputStr, String baseName) throws EppicException {
         checkCommandLineInput();
 
         EppicParams eppicParams = new EppicParams();
