@@ -957,17 +957,15 @@ public class Main implements Runnable {
     @Override
     public void run() {
         // Here picocli has already populated cliParams (and any other @Option fields)
+        // Convert cliParams -> EppicParams as needed
         try {
-            cliParams.checkCommandLineInput();
+            this.params = cliParams.toEppicParams();
         } catch (EppicException e) {
             LOGGER.error(e.getMessage());
             e.exitIfFatal(1);
         }
-        // Convert cliParams -> EppicParams as needed
-        this.params = cliParams.toEppicParams(); // or however you build EppicParams
         this.stepCount = 1;
 
-        // reuse your existing workflow
         run(true);
     }
 

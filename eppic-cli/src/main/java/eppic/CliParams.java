@@ -189,12 +189,6 @@ public class CliParams {
     )
     private File dbConfigFile;
 
-    @Option(
-            names = "-u",
-            description = "Debug mode: increase log verbosity."
-    )
-    private boolean debug;
-
     // We parse the raw string from the CLI and convert it to HomologsSearchMode after parsing.
     @Option(
             names = "-H",
@@ -211,30 +205,7 @@ public class CliParams {
     private boolean filterByDomain = false;
 
 
-    public void checkCommandLineInput() throws EppicException {
-
-        // TODO handle -i somewhere ....
-        // Set input based on -i argument (pdb code vs file path)
-        if (inputStr != null) {
-            // TODO
-            // setInput();
-        }
-
-//        if (inFile!=null && !inFile.exists()){
-//            throw new EppicException(null, "Given file "+inFile+" does not exist!", true);
-//        }
-//
-//        if (baseName==null) {
-//            baseName=pdbCode;
-//            if (inFile!=null) {
-//                if (inFile.getName().contains(".")) {
-//                    baseName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
-//                } else {
-//                    baseName = inFile.getName();
-//                }
-//            }
-//        }
-
+    private void checkCommandLineInput() throws EppicException {
         if (configFile!=null && !configFile.exists()) {
             throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
         }
@@ -271,11 +242,19 @@ public class CliParams {
         }
     }
 
-    public EppicParams toEppicParams() {
-        // TODO Possibly also put here any non-validation thing from checkCommandLineInput()
+    public EppicParams toEppicParams() throws EppicException {
+        checkCommandLineInput();
+
         EppicParams eppicParams = new EppicParams();
 
-        // TODO deal with inputStr and with baseName (related to above checkCommandLineInput() TODOs)
+        eppicParams.setInput(inputStr);
+        if (eppicParams.isInputAFile()) {
+            if (!eppicParams.getInFile().exists()) {
+                throw new EppicException(null, "Input file "+eppicParams.getInFile()+" does not exist!", true);
+            }
+        }
+        // important: must be set after inputStr
+        eppicParams.setBaseName(baseName);
 
         eppicParams.setCoreRimScoreCutoff( coreRimScoreCutoff);
         eppicParams.setCoreSurfScoreCutoff(coreSurfScoreCutoff);

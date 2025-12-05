@@ -248,7 +248,6 @@ public class EppicParams {
 	// FIELDS
 	
 	// the parameters
-	private String inputStr;
 	private String pdbCode;
 	private boolean doEvolScoring;
 	private double homSoftIdCutoff;
@@ -360,15 +359,12 @@ public class EppicParams {
 	}
 	
 	private void setDefaults() {
-		
-		this.inputStr = null;
 		this.pdbCode = null;
 		this.homIdStep = DEF_HOM_ID_STEP;
 		this.baseName = null;
 		this.progressLog = System.out;
 		this.debug = false;
 		this.forceContractedAssemblyEnumeration = false; // should only be set to true for testing
-		
 	}
 
 	public void checkConfigFileInput() throws EppicException {
@@ -480,7 +476,7 @@ public class EppicParams {
 	 * - if inputStr matches a PDB code (i.e. regex \d\w\w\w) then inFile is null and input considered to be PDB code
 	 * - if inputStr does not match a PDB code then inFile gets initialised to inputStr and pdbCode remains null
 	 */
-	public void setInput() {
+	public void setInput(String inputStr) {
 
 		Matcher m = PDBCODE_PATTERN.matcher(inputStr);
 		if (m.matches()) {
@@ -490,11 +486,6 @@ public class EppicParams {
 			this.inFile = new File(inputStr);
 			this.pdbCode = null;
 		}
-		
-	}
-	
-	public void setInputStr(String inputStr) {
-		this.inputStr = inputStr;
 	}
 	
 	public boolean isDoEvolScoring() {
@@ -530,7 +521,19 @@ public class EppicParams {
 	}
 	
 	public void setBaseName(String baseName) {
-		this.baseName = baseName;
+        if (baseName == null) {
+            if (isInputAFile()) {
+                if (inFile.getName().contains(".")) {
+                    this.baseName = inFile.getName().substring(0, inFile.getName().lastIndexOf('.'));
+                } else {
+                    this.baseName = inFile.getName();
+                }
+            } else {
+                this.baseName = pdbCode;
+            }
+        } else {
+            this.baseName = baseName;
+        }
 	}
 	
 	public File getOutDir() {
