@@ -60,7 +60,7 @@ import javax.vecmath.Matrix4d;
 @CommandLine.Command(
         name = EppicParams.PROGRAM_NAME,
         mixinStandardHelpOptions = true, // adds -h, --help, -V, --version
-        description = "EPPIC: Evolutionary Protein-Protein Interface Classifier")
+        description = "EPPIC: Evolutionary Protein-Protein Interface Classifier. Single input executable.")
 public class Main implements Runnable {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);

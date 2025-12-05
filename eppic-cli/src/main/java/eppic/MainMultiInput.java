@@ -6,6 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+@CommandLine.Command(
+        name = EppicParams.PROGRAM_NAME_MULTI,
+        mixinStandardHelpOptions = true, // adds -h, --help, -V, --version
+        description = "EPPIC: Evolutionary Protein-Protein Interface Classifier. Multiple inputs executable")
 public class MainMultiInput implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MainMultiInput.class);
