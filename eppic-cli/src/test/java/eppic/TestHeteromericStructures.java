@@ -42,7 +42,7 @@ public class TestHeteromericStructures {
 		Main m = new Main();
 		
 		// at the moment this fails with an ArrayOutOfBoundsException (see #148)
-		m.run(params);
+		m.run(params, false);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		

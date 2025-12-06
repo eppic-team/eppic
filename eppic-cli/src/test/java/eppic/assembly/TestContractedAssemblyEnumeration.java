@@ -147,7 +147,7 @@ public class TestContractedAssemblyEnumeration {
 		
 		Main m = new Main();
 		
-		m.run(params);
+		m.run(params, false);
 				
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		

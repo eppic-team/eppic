@@ -34,7 +34,7 @@ public class MainMultiInput implements Runnable {
             Main main = new Main();
             try {
                 EppicParams eppicParams = commonCliParams.toEppicParams(input, null);
-                main.run(eppicParams);
+                main.run(eppicParams, true);
             } catch (Exception e) {
                 LOGGER.error("Failed processing input [ {} ], due to error: {}", input, e.getMessage());
                 failedInputs.add(input);

@@ -35,7 +35,7 @@ public class TestMultiPdbBiounits {
 		EppicParams params = Utils.generateEppicParams(pdbId, outDir);
 		Main m = new Main();
 		
-		m.run(params);
+		m.run(params, false);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
@@ -92,7 +92,7 @@ public class TestMultiPdbBiounits {
 		
 		Main m = new Main();
 		
-		m.run(params);
+		m.run(params, false);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		

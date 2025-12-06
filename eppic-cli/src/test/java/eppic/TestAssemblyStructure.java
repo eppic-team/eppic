@@ -55,7 +55,7 @@ public class TestAssemblyStructure {
 
         Main m = new Main();
 
-        m.run(params);
+        m.run(params, false);
 
         CrystalAssemblies validAssemblies = m.getCrystalAssemblies();
         PdbInfoDB pdbInfoDB = m.getDataModelAdaptor().getPdbInfo();
@@ -276,7 +276,7 @@ public class TestAssemblyStructure {
 
         Main m = new Main();
 
-        m.run(params);
+        m.run(params, false);
         Structure auStruct = m.getStructure();
 
         CrystalAssemblies validAssemblies = m.getCrystalAssemblies();
@@ -374,7 +374,7 @@ public class TestAssemblyStructure {
 
         Main m = new Main();
 
-        m.run(params);
+        m.run(params, false);
         Structure auStruct = m.getStructure();
 
         StructureInterfaceList interfaces = m.getInterfaces();

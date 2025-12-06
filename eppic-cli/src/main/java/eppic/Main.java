@@ -984,10 +984,11 @@ public class Main implements Runnable {
 	/**
 	 * Run the full eppic analysis given a parameters object
 	 * @param params the parameters
+     * @param loadConfigFile whether to load the config file
 	 */
-	public void run(EppicParams params) {
+	public void run(EppicParams params, boolean loadConfigFile) {
 		this.params = params;
-		run(false);
+		run(loadConfigFile);
 	}
 	
 	private void run(boolean loadConfigFile) {

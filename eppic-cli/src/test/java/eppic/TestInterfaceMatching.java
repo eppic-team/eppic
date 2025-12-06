@@ -36,7 +36,7 @@ public class TestInterfaceMatching {
 		
 		Main m = new Main();
 		
-		m.run(params);
+		m.run(params, false);
 		
 		Structure s = m.getStructure();
 		

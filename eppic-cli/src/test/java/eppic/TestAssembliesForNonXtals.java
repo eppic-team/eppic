@@ -37,7 +37,7 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		Main m = new Main();
 		
-		m.run(params);
+		m.run(params, false);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
@@ -82,7 +82,7 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		Main m = new Main();
 		
-		m.run(params);
+		m.run(params, false);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		
@@ -121,7 +121,7 @@ private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 		
 		Main m = new Main();
 		
-		m.run(params);
+		m.run(params, false);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 		

@@ -55,7 +55,7 @@ public class TestLargeStructures {
 		
 		Main m = new Main();
 		
-		m.run(params);
+		m.run(params, false);
 		
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 
@@ -113,7 +113,7 @@ public class TestLargeStructures {
 
 		Main m = new Main();
 
-		m.run(params);
+		m.run(params, false);
 
 		PdbInfoDB pdbInfo = m.getDataModelAdaptor().getPdbInfo();
 
