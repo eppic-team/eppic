@@ -14,4 +14,11 @@ public class MultiInputCliParams {
             description = "Input PDB codes or PDB/mmCIF files, comma separated"
     )
     public List<String> inputs;
+
+    @CommandLine.Option(
+            names = "-tfr",
+            paramLabel = "<float>",
+            description = "Tolerated failure rate for each input. The program will exit with error state if the failure rate exceeds this value. Default: 0 tolerance, i.e. a single failed input leads to error state"
+    )
+    public double toleratedFailureRate = 0.0;
 }

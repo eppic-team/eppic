@@ -6,6 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @CommandLine.Command(
         name = EppicParams.PROGRAM_NAME_MULTI,
         mixinStandardHelpOptions = true, // adds -h, --help, -V, --version
@@ -26,20 +29,23 @@ public class MainMultiInput implements Runnable {
 
     @Override
     public void run() {
+        List<String> failedInputs = new ArrayList<>();
         multiInputCliParams.inputs.forEach(input -> {
             Main main = new Main();
-            EppicParams eppicParams = null;
             try {
-                eppicParams = commonCliParams.toEppicParams(input, null);
-            } catch (EppicException e) {
-                LOGGER.error("Skipping input [ {} ], due to parameters parsing error: {}", input, e.getMessage());
-                return;
-            }
-            try {
+                EppicParams eppicParams = commonCliParams.toEppicParams(input, null);
                 main.run(eppicParams);
             } catch (Exception e) {
                 LOGGER.error("Failed processing input [ {} ], due to error: {}", input, e.getMessage());
+                failedInputs.add(input);
             }
         });
+
+        if (failedInputs.size() > multiInputCliParams.toleratedFailureRate * multiInputCliParams.inputs.size()) {
+            LOGGER.error("There were {} failed inputs, which is above the failure rate {}. Exiting with error state. Failed inputs: {}", failedInputs.size(), multiInputCliParams.toleratedFailureRate, failedInputs);
+            throw new RuntimeException("Failed inputs: "+failedInputs);
+        } else {
+            LOGGER.warn("There were {} failed inputs, which is below the failure rate {}. Exiting with success state. Failed inputs: {}", failedInputs.size(), multiInputCliParams.toleratedFailureRate, failedInputs);
+        }
     }
 }
