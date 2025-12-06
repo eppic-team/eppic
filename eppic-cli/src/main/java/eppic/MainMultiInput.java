@@ -44,8 +44,10 @@ public class MainMultiInput implements Runnable {
         if (failedInputs.size() > multiInputCliParams.toleratedFailureRate * multiInputCliParams.inputs.size()) {
             LOGGER.error("There were {} failed inputs, which is above the failure rate {}. Exiting with error state. Failed inputs: {}", failedInputs.size(), multiInputCliParams.toleratedFailureRate, failedInputs);
             throw new RuntimeException("Failed inputs: "+failedInputs);
-        } else {
+        } else if (!failedInputs.isEmpty()) {
             LOGGER.warn("There were {} failed inputs, which is below the failure rate {}. Exiting with success state. Failed inputs: {}", failedInputs.size(), multiInputCliParams.toleratedFailureRate, failedInputs);
+        } else {
+            LOGGER.info("All inputs processed successfully.");
         }
     }
 }
