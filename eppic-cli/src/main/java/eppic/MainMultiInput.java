@@ -28,11 +28,17 @@ public class MainMultiInput implements Runnable {
     public void run() {
         multiInputCliParams.inputs.forEach(input -> {
             Main main = new Main();
+            EppicParams eppicParams = null;
             try {
-                EppicParams eppicParams = commonCliParams.toEppicParams(input, null);
-                main.run(eppicParams);
+                eppicParams = commonCliParams.toEppicParams(input, null);
             } catch (EppicException e) {
                 LOGGER.error("Skipping input [ {} ], due to parameters parsing error: {}", input, e.getMessage());
+                return;
+            }
+            try {
+                main.run(eppicParams);
+            } catch (Exception e) {
+                LOGGER.error("Failed processing input [ {} ], due to error: {}", input, e.getMessage());
             }
         });
     }

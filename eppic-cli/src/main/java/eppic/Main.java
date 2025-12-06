@@ -1059,19 +1059,17 @@ public class Main implements Runnable {
 					findEvolContextTime, evolScoringTime, combinedScoringTime, assemblyScoringTime,
 					writeTextOutputFilesTime, writeCoordFilesTime, writeAssemblyDiagramsTime, writeFinalFilesTime);
 
-		} catch (EppicException e) {
-			LOGGER.error(e.getMessage());
-			e.exitIfFatal(1);
-		} 
-		
-		catch (Exception e) {
-
-			StringBuilder stack = new StringBuilder();
-			for (StackTraceElement el:e.getStackTrace()) {
-				stack.append("\tat ").append(el.toString()).append("\n");				
-			}
-            LOGGER.error("Unexpected error. Stack trace:\n{}\n{}\nPlease report a bug to " + EppicParams.CONTACT_EMAIL, e, stack.toString());
-			System.exit(1);
+		} catch (Exception e) {
+            if (e instanceof EppicException) {
+                LOGGER.error(e.getMessage());
+            } else {
+                StringBuilder stack = new StringBuilder();
+                for (StackTraceElement el : e.getStackTrace())
+                    stack.append("\tat ").append(el.toString()).append("\n");
+                LOGGER.error("Unexpected error. Stack trace:\n{}\n{}\nPlease report a bug to " + EppicParams.CONTACT_EMAIL, e, stack.toString());
+            }
+            // especially important for MainMultiInput to handle problems per entry run
+            throw new RuntimeException(e);
 		}
 
 	}
