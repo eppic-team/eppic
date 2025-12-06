@@ -747,7 +747,8 @@ public class EppicParams {
 		this.filterByDomain = filterByDomain;
 	}
 
-	public void readConfigFile(File file) throws FileNotFoundException, IOException { 
+	public void readConfigFile(File file) throws IOException {
+        LOGGER.info("Reading config file {}", file);
 		Properties p = new Properties();
 		p.load(new FileInputStream(file));
 
