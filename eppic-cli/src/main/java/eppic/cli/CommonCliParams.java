@@ -68,7 +68,7 @@ public class CommonCliParams {
             description = "Output directory for result files. Default: current directory",
             defaultValue = EppicParams.DEF_OUT_DIR
     )
-    private File outDir;
+    public File outDir;
 
     @Option(
             names = "-a",

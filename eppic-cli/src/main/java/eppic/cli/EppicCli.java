@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class EppicCli implements Runnable {
             LOGGER.error("Problem in CLI parameters: {}", e.getMessage());
             System.exit(1);
         }
+        boolean useSubdirPerInput = commonCliParams.inputs.size() > 1;
 
         List<String> failedInputs = new ArrayList<>();
         for (String input : commonCliParams.inputs) {
@@ -42,6 +44,9 @@ public class EppicCli implements Runnable {
             try {
                 // note that basename is only allowed when size of inputs is 1. Thus for size>1 basename is always null
                 setInput(eppicParams, input, commonCliParams.baseName);
+                if (useSubdirPerInput) {
+                    eppicParams.setOutDir(new File(commonCliParams.outDir, input));
+                }
                 main.run(eppicParams, true);
             } catch (Exception e) {
                 LOGGER.error("Failed processing input [ {} ], due to error: {}", input, e.getMessage());
