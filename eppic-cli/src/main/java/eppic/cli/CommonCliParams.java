@@ -23,16 +23,16 @@ public class CommonCliParams {
     public List<String> inputs;
 
     @CommandLine.Option(
-            names = "-tfr",
+            names = {"-r", "--tolFailureRate"},
             paramLabel = "<float>",
-            description = "Tolerated failure rate for each input. The program will exit with error state if the failure rate exceeds this value. Default: 0 tolerance, i.e. a single failed input leads to error state"
+            description = "Tolerated failure rate: the program will exit with error state if the failure rate exceeds this value. Default: 0 tolerance, i.e. a single failed input leads to error state"
     )
     public double toleratedFailureRate = 0.0;
 
     @CommandLine.Option(
             names = "-b",
             paramLabel = "<string>",
-            description = "Basename for output files. Default: input PDB code or file name. " +
+            description = "Basename for output files. Can only be specified with 1 input. Default: input PDB code or file name. " +
                     "Useful for web server to override entryId from job id."
     )
     public String baseName;
