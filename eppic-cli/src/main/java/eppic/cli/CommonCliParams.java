@@ -3,13 +3,39 @@ package eppic.cli;
 import eppic.EppicException;
 import eppic.EppicParams;
 import eppic.HomologsSearchMode;
+import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
 import java.io.File;
+import java.util.List;
 
 public class CommonCliParams {
 
     // the parameters
+
+    @CommandLine.Option(
+            names = "-i",
+            required = true,
+            paramLabel = "<string>",
+            split = ",",
+            description = "Input PDB codes or PDB/mmCIF files, comma separated"
+    )
+    public List<String> inputs;
+
+    @CommandLine.Option(
+            names = "-tfr",
+            paramLabel = "<float>",
+            description = "Tolerated failure rate for each input. The program will exit with error state if the failure rate exceeds this value. Default: 0 tolerance, i.e. a single failed input leads to error state"
+    )
+    public double toleratedFailureRate = 0.0;
+
+    @CommandLine.Option(
+            names = "-b",
+            paramLabel = "<string>",
+            description = "Basename for output files. Default: input PDB code or file name. " +
+                    "Useful for web server to override entryId from job id."
+    )
+    public String baseName;
 
     @Option(
             names = "-s",
@@ -194,6 +220,11 @@ public class CommonCliParams {
 
 
     private void checkCommandLineInput() throws EppicException {
+
+        if (inputs.size()>1 && baseName!=null){
+            throw new EppicException(null, "Basename cannot be specified when multiple inputs are given.", true);
+        }
+
         if (configFile!=null && !configFile.exists()) {
             throw new EppicException(null, "Specified config file "+configFile+" doesn't exist",true);
         }
@@ -230,19 +261,10 @@ public class CommonCliParams {
         }
     }
 
-    public EppicParams toEppicParams(String inputStr, String baseName) throws EppicException {
+    public EppicParams toEppicParams() throws EppicException {
         checkCommandLineInput();
 
         EppicParams eppicParams = new EppicParams();
-
-        eppicParams.setInput(inputStr);
-        if (eppicParams.isInputAFile()) {
-            if (!eppicParams.getInFile().exists()) {
-                throw new EppicException(null, "Input file "+eppicParams.getInFile()+" does not exist!", true);
-            }
-        }
-        // important: must be set after inputStr
-        eppicParams.setBaseName(baseName);
 
         eppicParams.setCoreRimScoreCutoff( coreRimScoreCutoff);
         eppicParams.setCoreSurfScoreCutoff(coreSurfScoreCutoff);

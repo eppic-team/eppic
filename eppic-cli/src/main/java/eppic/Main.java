@@ -16,8 +16,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import eppic.assembly.*;
-import eppic.cli.CommonCliParams;
-import eppic.cli.SingleInputCliParams;
 import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import org.apache.logging.log4j.LogManager;
@@ -46,33 +44,20 @@ import eppic.predictors.CombinedClusterPredictor;
 import eppic.predictors.CombinedPredictor;
 import eppic.predictors.GeometryClusterPredictor;
 import eppic.predictors.GeometryPredictor;
-import picocli.CommandLine;
 
 import javax.vecmath.Matrix4d;
 
 /**
- * The eppic main class to execute the CLI workflow.
- * 
- * 
- * @author Jose Duarte
+ * The eppic full analysis workflow.
  *
+ * @author Jose Duarte
  */
-@CommandLine.Command(
-        name = EppicParams.PROGRAM_NAME,
-        mixinStandardHelpOptions = true, // adds -h, --help, -V, --version
-        description = "EPPIC: Evolutionary Protein-Protein Interface Classifier. Single input executable.")
-public class Main implements Runnable {
+public class Main {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 	
 	private static final int STEPS_TOTAL = 4;
 	
-    // fields
-    @CommandLine.Mixin
-    private CommonCliParams commonCliParams;
-    @CommandLine.Mixin
-    private SingleInputCliParams singleInputCliParams;
-
     private EppicParams params;
 	
 	private Structure pdb;
@@ -958,29 +943,6 @@ public class Main implements Runnable {
 		}
 	}
 
-    @Override
-    public void run() {
-        // Here picocli has already populated cliParams (and any other @Option fields)
-        // Convert cliParams -> EppicParams as needed
-        try {
-            this.params = commonCliParams.toEppicParams(singleInputCliParams.inputStr, singleInputCliParams.baseName);
-        } catch (EppicException e) {
-            LOGGER.error(e.getMessage());
-            e.exitIfFatal(1);
-        }
-        this.stepCount = 1;
-
-        run(true);
-    }
-
-    /**
-     * The main of EPPIC
-     */
-    public static void main(String[] args) {
-        int exitCode = new CommandLine(new Main()).execute(args);
-        System.exit(exitCode);
-    }
-	
 	/**
 	 * Run the full eppic analysis given a parameters object
 	 * @param params the parameters
