@@ -157,7 +157,7 @@ public class UploadToDb {
 			dbName = propsReader.getDbNameUserJobs();
 
 		logger.info("Will use db name {}", dbName);
-		MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
+		MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri, MongoUtils.MONGO_USER_ENV_VAR, MongoUtils.MONGO_PASSWORD_ENV_VAR);
 
 		dao = new PDBInfoDAOMongo(mongoDb);
 		interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);

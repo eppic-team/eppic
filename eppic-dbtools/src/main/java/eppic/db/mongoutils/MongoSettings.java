@@ -9,7 +9,7 @@ public class MongoSettings {
 
     public MongoSettings(String dbName, String connUri) {
         this.dbName = dbName;
-        mongoDatabase = MongoUtils.getMongoDatabase(dbName, connUri);
+        mongoDatabase = MongoUtils.getMongoDatabase(dbName, connUri, MongoUtils.MONGO_USER_ENV_VAR, MongoUtils.MONGO_PASSWORD_ENV_VAR);
     }
 
     public MongoDatabase getMongoDatabase() {

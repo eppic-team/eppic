@@ -71,8 +71,8 @@ public class JobService {
 
     private void initDaos() {
 
-        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri());
-        MongoDatabase mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs());
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri(), MongoUtils.MONGO_USER_ENV_VAR, MongoUtils.MONGO_PASSWORD_ENV_VAR);
+        MongoDatabase mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs(), MongoUtils.MONGO_USERJOBS_USER_ENV_VAR, MongoUtils.MONGO_USERJOBS_PASSWORD_ENV_VAR);
 
         pdbInfoDAO = new PDBInfoDAOMongo(mongoDb);
         featuresDAO = new InterfaceResidueFeaturesDAOMongo(mongoDb);

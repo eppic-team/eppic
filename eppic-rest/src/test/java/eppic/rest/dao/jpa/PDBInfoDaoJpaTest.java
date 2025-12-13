@@ -11,6 +11,7 @@ import eppic.model.db.InterfaceClusterDB;
 import eppic.model.db.InterfaceDB;
 import eppic.model.db.PdbInfoDB;
 import eppic.rest.commons.EppicRestProperties;
+import eppic.rest.service.JobService;
 import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -29,7 +30,7 @@ public class PDBInfoDaoJpaTest {
 
         // TODO this needs to be injected. For now the test is broken
         EppicRestProperties eppicRestProperties = new EppicRestProperties();
-        PDBInfoDAO dao = new PDBInfoDAOMongo(MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri()));
+        PDBInfoDAO dao = new PDBInfoDAOMongo(MongoUtils.getMongoDatabase(eppicRestProperties.getDbName(), eppicRestProperties.getMongoUri(), MongoUtils.MONGO_USER_ENV_VAR, MongoUtils.MONGO_PASSWORD_ENV_VAR));
         PdbInfoDB pdbInfoDB = dao.getPDBInfo(pdbId);
         assertNotNull(pdbInfoDB);
 

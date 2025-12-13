@@ -150,7 +150,7 @@ public class FindPdbIdsToLoad {
             dbName = propsReader.getDbName();
         }
 
-        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri, MongoUtils.MONGO_USER_ENV_VAR, MongoUtils.MONGO_PASSWORD_ENV_VAR);
 
         if (full) {
             // remove content and create collections and index

@@ -93,7 +93,7 @@ public class FindIfNewUniProt {
             dbName = propsReader.getDbName();
         }
 
-        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri);
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri, MongoUtils.MONGO_USER_ENV_VAR, MongoUtils.MONGO_PASSWORD_ENV_VAR);
 
         String dbVersion = null;
 

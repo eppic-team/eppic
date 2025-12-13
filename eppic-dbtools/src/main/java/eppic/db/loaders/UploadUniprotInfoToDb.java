@@ -111,7 +111,7 @@ public class UploadUniprotInfoToDb {
         DbPropertiesReader propsReader = new DbPropertiesReader(configFile);
         String connUri = propsReader.getMongoUri();
 
-        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(propsReader.getDbName(), connUri);
+        MongoDatabase mongoDb = MongoUtils.getMongoDatabase(propsReader.getDbName(), connUri, MongoUtils.MONGO_USER_ENV_VAR, MongoUtils.MONGO_PASSWORD_ENV_VAR);
 
         if (full) {
             logger.info("FULL mode: dropping collection and recreating index");

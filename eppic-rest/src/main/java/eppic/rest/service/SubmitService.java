@@ -94,7 +94,7 @@ public class SubmitService {
 
         logger.info("Initialised email data: {}", emailData);
 
-        mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs());
+        mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs(), MongoUtils.MONGO_USERJOBS_USER_ENV_VAR, MongoUtils.MONGO_USERJOBS_PASSWORD_ENV_VAR);
     }
 
     /**

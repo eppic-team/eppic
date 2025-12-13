@@ -16,10 +16,13 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Indexes.ascending;
@@ -28,6 +31,12 @@ import static com.mongodb.client.model.Projections.excludeId;
 public class MongoUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoUtils.class);
+
+    public static final String MONGO_USER_ENV_VAR = "MONGO_USER";
+    public static final String MONGO_PASSWORD_ENV_VAR = "MONGO_PWD";
+    public static final String MONGO_USERJOBS_USER_ENV_VAR = "MONGO_USERJOBS_USER";
+    public static final String MONGO_USERJOBS_PASSWORD_ENV_VAR = "MONGO_USERJOBS_PWD";
+
 
     /**
      * Writes a single {@link Object} to a {@param collectionName} collection in the given {@param mongoDatabase}.
@@ -81,7 +90,25 @@ public class MongoUtils {
      * @param connUriStr the Mongo connection URI
      * @return {@link com.mongodb.client.MongoDatabase} database
      */
-    public static MongoDatabase getMongoDatabase(String dbName, String connUriStr) {
+    public static MongoDatabase getMongoDatabase(String dbName, String connUriStr, String mongoUserEnv, String mongoPasswordEnv) {
+
+        int numPlaceHolders = (int) Pattern.compile("%s").matcher(connUriStr).results().count();
+        if (numPlaceHolders != 2) {
+            logger.error("Mongo connection URI string [ {} ] does not contain exactly 2 placeholders. " +
+                    "Please check dw.db.connection.uri property", connUriStr);
+            throw new IllegalArgumentException("Mongo connection URI string does not contain exactly 2 placeholders");
+        }
+
+        String mongoUser = System.getenv(mongoUserEnv);
+        String mongoPassword = System.getenv(mongoPasswordEnv);
+        if (mongoUser == null || mongoUser.isBlank() || mongoPassword == null || mongoPassword.isBlank()) {
+            logger.error("Mongo user or password is not defined. Please set environment variable {} and {}", mongoUserEnv, mongoPasswordEnv);
+            throw new IllegalArgumentException(String.format("Mongo user or password is not defined. Please set environment variable %s and %s", mongoUserEnv, mongoPasswordEnv));
+        }
+        // whatever goes into the Mongo URI must be url encoded so that the URI is valid. Otherwise chars with a special URL semantic (which can typically appear in passwords) would break the URI
+        mongoUser = URLEncoder.encode(mongoUser, StandardCharsets.UTF_8);
+        mongoPassword = URLEncoder.encode(mongoPassword, StandardCharsets.UTF_8);
+        connUriStr = String.format(connUriStr, mongoUser, mongoPassword);
 
         MongoClient mongoClient;
         try {
