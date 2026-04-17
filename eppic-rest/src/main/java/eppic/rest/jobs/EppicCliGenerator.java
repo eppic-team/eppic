@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import eppic.rest.commons.AppConstants;
-
 /**
  * EPPIC command generator.
  * @author AS
@@ -41,7 +39,6 @@ public class EppicCliGenerator {
 				"-b", entryId,
 				"-o", destinationDirectoryName,
 				"-a", String.valueOf(nrOfThreadsForSubmission),
-				"-L", destinationDirectoryName + File.separator + AppConstants.PROGRESS_LOG_FILE_NAME,
 				"-l", // for thumbnails and mmcif files
 				"-P", // for json files, assembly diagram thumbnails (requires dot)
 				"-w", // for serialized output files
