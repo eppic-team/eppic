@@ -37,6 +37,8 @@ RUN ln -s $mmsdir/bin/mmseqs /usr/local/bin/mmseqs
 ARG MODULE=eppic-cli
 ARG JAR_FILE=/usr/app/${MODULE}/target/*${MODULE}*.jar
 COPY --from=build ${JAR_FILE} /app/runner.jar
+# Always include eppic-cli.jar (for use in the eppic-rest image for user jobs processing)
+COPY --from=build /usr/app/eppic-cli/target/*eppic-cli*.jar /app/eppic-cli.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/runner.jar"]
@@ -45,3 +47,5 @@ ENTRYPOINT ["java", "-jar", "/app/runner.jar"]
 #  docker build --build-arg MODULE=eppic-cli -t eppic-cli:latest .
 #  docker build --build-arg MODULE=eppic-dbtools -t eppic-dbtools:latest .
 #  docker build --build-arg MODULE=eppic-rest -t eppic-rest:latest .
+# In the eppic-rest image, the CLI can be run with:
+#  docker run --entrypoint java eppic-rest:latest -jar /app/eppic-cli.jar <args>
