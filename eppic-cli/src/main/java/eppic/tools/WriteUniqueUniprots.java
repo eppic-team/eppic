@@ -139,18 +139,43 @@ public class WriteUniqueUniprots {
 			logger.info("Mappings correspond to ALL current PDB ids as present in SIFTS file {}", scFilePath);
 		}
 
+		List<String> allUniprotIds = new ArrayList<>(uniqueMap.keySet());
+		int batchSize = UniProtConnection.getMaxAccessionsPerRequest();
+		logger.info("Will retrieve the {} UniProt ids from the REST API in batches of {}",
+				allUniprotIds.size(), batchSize);
+
 		int counter = 0;
-		for (String uniprotid : uniqueMap.keySet()) {
+		for (int batchStart = 0; batchStart < allUniprotIds.size(); batchStart += batchSize) {
 
 			if ( (countNotFound + countCantRetrieve) > 0.10 * uniqueMap.size()) {
 				// let's abort as soon as we see many errors, so that we get alerted as early as possible
 				logger.error("More than 10% of ids could not be found or retrieved. Aborting after processing {} UniProt ids.", counter);
 				System.exit(1);
 			}
-			counter++;
 
+			List<String> batch = allUniprotIds.subList(batchStart,
+					Math.min(batchStart + batchSize, allUniprotIds.size()));
+
+			Map<String, UnirefEntry> batchEntries;
 			try {
-				UnirefEntry uniEntry = wuni.uc.getUnirefEntryWithRetry(uniprotid);
+				batchEntries = wuni.uc.getUnirefEntriesWithRetry(batch);
+			} catch (IOException e) {
+				logger.warn("IOException while retrieving a batch of {} UniProt ids from UniProt REST API. Error: {}",
+						batch.size(), e.getMessage());
+				countCantRetrieve += batch.size();
+				counter += batch.size();
+				continue;
+			}
+
+			for (String uniprotid : batch) {
+				counter++;
+
+				UnirefEntry uniEntry = batchEntries.get(uniprotid);
+				if (uniEntry == null) {
+					logger.warn("Could not find {} from UniProt REST API. Skipping", uniprotid);
+					countNotFound++;
+					continue;
+				}
 				String uniSeq = uniEntry.getSequence();
 				for (Interval interv : uniqueMap.get(uniprotid)) {
 					//Create fasta files
@@ -194,13 +219,9 @@ public class WriteUniqueUniprots {
 					}
 
 				}
-			} catch (NoMatchFoundException er) {
-				logger.warn("Could not find {} from UniProt REST API. Skipping", uniprotid);
-				countNotFound++;
-			} catch (IOException e) {
-				logger.warn("IOException while retrieving UniProt {} from UniProt REST API. Error: {}", uniprotid, e.getMessage());
-				countCantRetrieve++;
 			}
+
+			logger.info("Processed {} of {} UniProt ids", counter, allUniprotIds.size());
 		}
 
 		if (singleFastaFile) {
