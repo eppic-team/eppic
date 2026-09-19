@@ -30,6 +30,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jgrapht.version>1.0.1</jgrapht.version>
 		<biojava.version>7.3.0</biojava.version>
+		<!-- keep in sync with the jackson-databind that biojava brings in -->
+		<jackson.version>2.18.9</jackson.version>
 	</properties>
 
 	<build>
@@ -52,6 +54,19 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Align all Jackson artifacts to one version: mixing versions leads to NoClassDefFoundError at runtime -->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<repositories>
 		<repository>
