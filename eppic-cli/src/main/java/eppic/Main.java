@@ -94,6 +94,30 @@ public class Main {
 	}
 
 		
+	/**
+	 * Creates the output directory and, if coordinate files are to be written, the temporary
+	 * coordinate files directory, in case they don't exist yet.
+	 * @throws EppicException if a directory can't be created or exists but is not a directory
+	 */
+	private void createOutputDirs() throws EppicException {
+
+		createDirIfNeeded(params.getOutDir(), "Output");
+
+		// note that the temp coord files dir is the output dir itself, unless -t was specified
+		if (params.isGenerateOutputCoordFiles()) {
+			createDirIfNeeded(params.getTempCoordFilesDir(), "Temporary coordinate files");
+		}
+	}
+
+	private void createDirIfNeeded(File dir, String dirDescription) throws EppicException {
+		if (!dir.exists() && !dir.mkdirs()) {
+			throw new EppicException(null, dirDescription+" directory "+dir+" could not be created", true);
+		}
+		if (!dir.isDirectory()) {
+			throw new EppicException(null, dirDescription+" directory "+dir+" exists but is not a directory", true);
+		}
+	}
+
 	public void setUpLogging() {
 		
 		// the log4j2 log file configuration at runtime, note that elsewhere we use the slf4j interface only
@@ -962,6 +986,9 @@ public class Main {
 		findEvolContextTime = evolScoringTime = combinedScoringTime = 0;
 
 		try {
+
+			// output dirs must exist before anything is written to them, including the log file (which is in outDir)
+			createOutputDirs();
 
 			// this has to come after getting the command line args, since it reads the location and name of log file from those
 			setUpLogging();

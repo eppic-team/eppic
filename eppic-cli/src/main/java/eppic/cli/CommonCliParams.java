@@ -251,11 +251,6 @@ public class CommonCliParams {
             generateOutputCoordFiles = true;
         }
 
-        if (tempCoordFilesDir == null) {
-            // if no temp coords file dir specified (-t), then write them to outDir
-            tempCoordFilesDir = outDir;
-        }
-
         if (useLocalUniProtInfo && dbConfigFile == null) {
             throw new EppicException(null, "A db config file must be provided (-G) when using local UniProt info from db (-U)", true);
         }
@@ -289,6 +284,8 @@ public class CommonCliParams {
 
         eppicParams.setNumThreads(numThreads);
         eppicParams.setOutDir(outDir);
+        // note: if null (-t not specified), the coord files go to the output dir, which for multiple
+        // inputs is the per-input subdir. See EppicParams.getTempCoordFilesDir()
         eppicParams.setTempCoordFilesDir(tempCoordFilesDir);
 
         eppicParams.setConfigFile(configFile);

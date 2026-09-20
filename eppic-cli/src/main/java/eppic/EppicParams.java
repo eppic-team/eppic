@@ -645,7 +645,16 @@ public class EppicParams {
 		this.generateOutputCoordFiles = generateOutputCoordFiles;
 	}
 
+	/**
+	 * The dir where coordinate files are written to. If no temp coordinate files dir was set (-t option),
+	 * this is the output dir. Note that it must be resolved dynamically and not at CLI parsing time, since
+	 * the output dir can change from input to input when several inputs are given.
+	 * @return the temp coordinate files dir if set, otherwise the output dir
+	 */
 	public File getTempCoordFilesDir() {
+		if (tempCoordFilesDir == null) {
+			return outDir;
+		}
 		return tempCoordFilesDir;
 	}
 
