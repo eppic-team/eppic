@@ -39,7 +39,12 @@ public class EppicCli implements Runnable {
         boolean useSubdirPerInput = commonCliParams.inputs.size() > 1;
 
         List<String> failedInputs = new ArrayList<>();
+        int totalInputs = commonCliParams.inputs.size();
+        LOGGER.info("Will process a total of {} inputs", totalInputs);
+        int inputIdx = 0;
         for (String input : commonCliParams.inputs) {
+            inputIdx++;
+            LOGGER.info("Starting to process input [ {} ], entry {} of {} total entries", input, inputIdx, totalInputs);
             Main main = new Main();
             try {
                 // note that basename is only allowed when size of inputs is 1. Thus for size>1 basename is always null
@@ -54,13 +59,13 @@ public class EppicCli implements Runnable {
             }
         }
 
-        if (failedInputs.size() > commonCliParams.toleratedFailureRate * commonCliParams.inputs.size()) {
+        if (failedInputs.size() > commonCliParams.toleratedFailureRate * totalInputs) {
             LOGGER.error("There were {} failed inputs, which is above the failure rate {}. Exiting with error state. Failed inputs: {}", failedInputs.size(), commonCliParams.toleratedFailureRate, failedInputs);
             throw new RuntimeException("Failed inputs: "+failedInputs);
         } else if (!failedInputs.isEmpty()) {
             LOGGER.warn("There were {} failed inputs, which is below the failure rate {}. Exiting with success state. Failed inputs: {}", failedInputs.size(), commonCliParams.toleratedFailureRate, failedInputs);
         } else {
-            LOGGER.info("All inputs processed successfully.");
+            LOGGER.info("All {} inputs processed successfully.", totalInputs);
         }
     }
 
