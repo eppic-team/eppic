@@ -42,9 +42,11 @@ public class EppicCli implements Runnable {
         int totalInputs = commonCliParams.inputs.size();
         LOGGER.info("Will process a total of {} inputs", totalInputs);
         int inputIdx = 0;
+        long startAll = System.currentTimeMillis();
         for (String input : commonCliParams.inputs) {
             inputIdx++;
             LOGGER.info("Starting to process input [ {} ], entry {} of {} total entries", input, inputIdx, totalInputs);
+            long startInput = System.currentTimeMillis();
             Main main = new Main();
             try {
                 // note that basename is only allowed when size of inputs is 1. Thus for size>1 basename is always null
@@ -53,11 +55,13 @@ public class EppicCli implements Runnable {
                     eppicParams.setOutDir(new File(commonCliParams.outDir, input));
                 }
                 main.run(eppicParams, true);
+                LOGGER.info("Finished processing input [ {} ], entry {} of {} total entries, in {} s", input, inputIdx, totalInputs, getElapsedSeconds(startInput));
             } catch (Exception e) {
-                LOGGER.error("Failed processing input [ {} ], due to error: {}", input, e.getMessage());
+                LOGGER.error("Failed processing input [ {} ], entry {} of {} total entries, after {} s, due to error: {}", input, inputIdx, totalInputs, getElapsedSeconds(startInput), e.getMessage());
                 failedInputs.add(input);
             }
         }
+        LOGGER.info("Processed all {} inputs in {} s", totalInputs, getElapsedSeconds(startAll));
 
         if (failedInputs.size() > commonCliParams.toleratedFailureRate * totalInputs) {
             LOGGER.error("There were {} failed inputs, which is above the failure rate {}. Exiting with error state. Failed inputs: {}", failedInputs.size(), commonCliParams.toleratedFailureRate, failedInputs);
@@ -67,6 +71,10 @@ public class EppicCli implements Runnable {
         } else {
             LOGGER.info("All {} inputs processed successfully.", totalInputs);
         }
+    }
+
+    private long getElapsedSeconds(long startTime) {
+        return (System.currentTimeMillis() - startTime) / 1000L;
     }
 
     private void setInput(EppicParams eppicParams, String inputStr, String baseName) throws EppicException{
