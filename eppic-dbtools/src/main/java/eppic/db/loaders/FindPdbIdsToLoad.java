@@ -192,7 +192,7 @@ public class FindPdbIdsToLoad {
                         .filter(e -> e.getValue() != UpdateType.MISSING || isValidEntry(e.getKey()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         ).get();
-        filteredCandidates.entrySet().removeIf(e -> e.getValue() == UpdateType.MISSING && !isValidEntry(e.getKey()));
+        myPool.shutdown();
         numMissing = filteredCandidates.values().stream().filter(v -> v == UpdateType.MISSING).count();
         logger.info("From the missing set, only {} need adding. The rest are invalid (non crystallograpic or not containing protein)", numMissing);
 
