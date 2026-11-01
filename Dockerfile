@@ -21,6 +21,8 @@ FROM eclipse-temurin:21-jre-jammy
 # Latest pymol in Ubuntu 22.04 and 24.04 is 2.5.x
 # i.e. for pymol 2.x to be installed this requires a minimum of Ubuntu 22.04
 RUN apt-get update && apt-get install -qqy pymol
+# PIL is used from PyMOL's python to write the thumbnails as palette pngs (see PymolRunner)
+RUN apt-get -yqq install python3-pil
 RUN apt-get -yqq install ncbi-blast+ clustalo graphviz
 ENV mmsdir=/opt/mmseqs2
 RUN mkdir -p $mmsdir

@@ -29,15 +29,15 @@ public class PymolRunner {
 	private static final int[] DEF_TN_HEIGHTS = {EppicParams.THUMBNAILS_SIZE};
 	private static final int[] DEF_TN_WIDTHS = {EppicParams.THUMBNAILS_SIZE};
 
+	/**
+	 * Number of colors of the palette png thumbnails, see {@link #appendPalettePng(StringBuilder, File)}
+	 */
+	private static final int PNG_PALETTE_COLORS = 256;
+
 	private static final double MIN_INTERF_AREA_TO_DISPLAY = 400;
 	
 	private static final String[] DEF_CHAIN_COLORS_ASU_ALLINTERFACES = 
 		{"green", "tv_green", "chartreuse", "splitpea", "smudge", "palegreen", "limegreen", "lime", "limon", "forest"};
-	
-	/**
-	 * Pymol can't handle very long scripts, it breaks at about 32KB, see https://github.com/eppic-team/eppic/issues/210
-	 */
-	private static final int MAX_LENGTH_PYMOL_SCRIPT = 32600;
 
 	
 	private File pymolExec;
@@ -80,84 +80,53 @@ public class PymolRunner {
 		String color1 = MolViewersHelper.getHexChainColor(chain1, false);
 		String color2 = MolViewersHelper.getHexChainColor(chain2, false);
 		
-		List<String> command = new ArrayList<String>();
-		command.add(pymolExec.getAbsolutePath());
-		command.add("-q");
-		command.add("-c");
-
 		StringBuilder pymolScriptBuilder = new StringBuilder();
-		
-		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+";");
-				
-		pymolScriptBuilder.append("orient;");
-		
-		pymolScriptBuilder.append("remove solvent;");
-		
+
+		pymolScriptBuilder.append("load "+mmcifFile.getAbsolutePath()+"\n");
+
+		pymolScriptBuilder.append("orient\n");
+
+		pymolScriptBuilder.append("remove solvent\n");
+
 		// and now creating the png thumbnail
-		pymolScriptBuilder.append("bg "+DEF_TN_BG_COLOR+";");
-		
-		pymolScriptBuilder.append("as "+DEF_TN_STYLE+";");
-		
+		pymolScriptBuilder.append("bg "+DEF_TN_BG_COLOR+"\n");
+
+		pymolScriptBuilder.append("as "+DEF_TN_STYLE+"\n");
+
 		if(DEF_TN_STYLE.equalsIgnoreCase("ribbon")) {
-			pymolScriptBuilder.append("set ribbon_radius, 2;");
-			pymolScriptBuilder.append("set dash_length, 100;");
-			pymolScriptBuilder.append("set dash_radius, 2;");
-			pymolScriptBuilder.append("set ray_trace_gain, 0;");
-			pymolScriptBuilder.append("set ray_trace_disco_factor, 1;");
+			pymolScriptBuilder.append("set ribbon_radius, 2\n");
+			pymolScriptBuilder.append("set dash_length, 100\n");
+			pymolScriptBuilder.append("set dash_radius, 2\n");
+			pymolScriptBuilder.append("set ray_trace_gain, 0\n");
+			pymolScriptBuilder.append("set ray_trace_disco_factor, 1\n");
 		}
-		
+
 		// TODO do we need to check something before issuing the cofactors command???
 		//if (interf.hasCofactors()) {
-		pymolScriptBuilder.append("show sticks, org;");
+		pymolScriptBuilder.append("show sticks, org\n");
 		//}
-		
-		pymolScriptBuilder.append("color "+color1+", "+molecName+" and chain "+chain1+";");
-		pymolScriptBuilder.append("color "+color2+", "+molecName+" and chain "+chain2+";");
-		
-		pymolScriptBuilder.append("set ray_opaque_background, off;");
-		
+
+		pymolScriptBuilder.append("color "+color1+", "+molecName+" and chain "+chain1+"\n");
+		pymolScriptBuilder.append("color "+color2+", "+molecName+" and chain "+chain2+"\n");
+
+		pymolScriptBuilder.append("set ray_opaque_background, off\n");
+
 		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
 			if(DEF_TN_HEIGHTS[i]>=200 && DEF_TN_WIDTHS[i]>=200) {
-				pymolScriptBuilder.append("set ray_trace_mode, 3;");
+				pymolScriptBuilder.append("set ray_trace_mode, 3\n");
 			} else {
-				pymolScriptBuilder.append("set ray_trace_mode, 0;");
+				pymolScriptBuilder.append("set ray_trace_mode, 0\n");
 			}
 
-			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[i]+","+DEF_TN_WIDTHS[i] + ";");
+			pymolScriptBuilder.append("viewport "+DEF_TN_HEIGHTS[i]+","+DEF_TN_WIDTHS[i] + "\n");
 
-			pymolScriptBuilder.append("ray;");
-			
-			pymolScriptBuilder.append("png "+pngFiles[i].getAbsolutePath() + ";");
+			pymolScriptBuilder.append("ray\n");
+
+			appendPalettePng(pymolScriptBuilder, pngFiles[i]);
 		}
 
-		pymolScriptBuilder.append("quit;");
-		
-		command.add("-d");
-
-		command.add(pymolScriptBuilder.toString());
-
-		// pymol breaks at about 32KB, see https://github.com/eppic-team/eppic/issues/210
-		// It is unlikely that for the interface case, this will happen, but keeping it here in case.
-		// For assemblies case it does happen a lot, there we switched to using a pml file.
-		if (pymolScriptBuilder.length() > MAX_LENGTH_PYMOL_SCRIPT) {
-			throw new IOException("Can't create "+base+" png file. Script is longer than "+MAX_LENGTH_PYMOL_SCRIPT+" bytes, PyMOL can't handle that. Script length is " + pymolScriptBuilder.length() + " bytes.");
-		}
-
-		logger.info("Running Pymol command: {}", command);
-		
-		Process pymolProcess = new ProcessBuilder(command).start();
-		StringWriter pymolStderr = new StringWriter();
-		StringWriter pymolStdout = new StringWriter();
-		BufferedReader pymolStderrReader = new BufferedReader(new InputStreamReader(pymolProcess.getErrorStream()));
-		BufferedReader pymolStdoutReader = new BufferedReader(new InputStreamReader(pymolProcess.getInputStream()));
-		String line;
-		while ((line = pymolStdoutReader.readLine()) != null) pymolStdout.write(line+"\n");
-		while ((line = pymolStderrReader.readLine()) != null) pymolStderr.write(line+"\n");
-
-		int exit = pymolProcess.waitFor();
-		if (exit!=0) {
-			throw new IOException("Pymol exited with error status "+exit +". Stdout is:\n"+pymolStdout.toString()+"\nStderr is:\n"+pymolStderr.toString());
-		}
+		// the python block needed for the palette png can't go in a single line ';'-separated -d script, so we use a pml file
+		runPymolScript(pymolScriptBuilder, "eppicInterfacePng", pngFiles);
 	}
 
 	public void generateAssemblyPng(Assembly a, File mmcifFile, File outDir, String base) throws IOException, InterruptedException {
@@ -184,11 +153,6 @@ public class PymolRunner {
 				colors.add(MolViewersHelper.getHexChainColor(chain,false));
 			}
 		}
-
-		List<String> command = new ArrayList<String>();
-		command.add(pymolExec.getAbsolutePath());
-		command.add("-q");
-		command.add("-c");
 
 		StringBuilder pymolScriptBuilder = new StringBuilder();
 
@@ -231,10 +195,53 @@ public class PymolRunner {
 
 			pymolScriptBuilder.append("ray\n");
 
-			pymolScriptBuilder.append("png "+pngFiles[j].getAbsolutePath() + "\n");
+			appendPalettePng(pymolScriptBuilder, pngFiles[j]);
 		}
 
-		File pmlFile = File.createTempFile("eppicAssemblyPng", ".pml");
+		runPymolScript(pymolScriptBuilder, "eppicAssemblyPng", pngFiles);
+	}
+
+	/**
+	 * Appends to the pml script the commands to write the current (already ray traced) image to given png file
+	 * as an 8-bit palette png (256 colors, alpha kept). This is ~50% smaller than the 32-bit RGBA png that
+	 * PyMOL's png command writes, with no visible difference in thumbnails. The image is taken in memory with
+	 * cmd.png(None) and quantized with PIL in PyMOL's own python, so no full-size png is ever written.
+	 * Requires PIL in PyMOL's python (python3-pil in Ubuntu). Note PIL 9.0 (Ubuntu 22.04) does not have Image.Quantize
+	 * @param pymolScriptBuilder
+	 * @param pngFile
+	 */
+	private static void appendPalettePng(StringBuilder pymolScriptBuilder, File pngFile) {
+		pymolScriptBuilder.append("python\n");
+		pymolScriptBuilder.append("import io\n");
+		pymolScriptBuilder.append("from PIL import Image\n");
+		pymolScriptBuilder.append("Image.open(io.BytesIO(cmd.png(None))).convert('RGBA')" +
+				".quantize(" + PNG_PALETTE_COLORS + ", method=Image.FASTOCTREE)" +
+				".save(r'" + pngFile.getAbsolutePath() + "', optimize=True)\n");
+		pymolScriptBuilder.append("python end\n");
+	}
+
+	/**
+	 * Writes the script to a temp pml file and runs it with PyMOL, checking that all expected output files were written
+	 * (errors in python blocks don't make PyMOL exit with error status)
+	 * @param pymolScriptBuilder
+	 * @param pmlPrefix
+	 * @param expectedFiles
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	private void runPymolScript(StringBuilder pymolScriptBuilder, String pmlPrefix, File[] expectedFiles) throws IOException, InterruptedException {
+
+		List<String> command = new ArrayList<String>();
+		command.add(pymolExec.getAbsolutePath());
+		command.add("-q");
+		command.add("-c");
+
+		for (File f : expectedFiles) {
+			// so that a stale file from a previous run is not taken as output
+			f.delete();
+		}
+
+		File pmlFile = File.createTempFile(pmlPrefix, ".pml");
 		pmlFile.deleteOnExit();
 
 		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuilder.
@@ -242,8 +249,9 @@ public class PymolRunner {
 		//     Because of that we write to pml file and then load the pmls with pymol "@" command
 		// See issue https://github.com/eppic-team/eppic/issues/210
 
-		PrintStream pml = new PrintStream(pmlFile);
-		pml.println(pymolScriptBuilder.toString());
+		try (PrintStream pml = new PrintStream(pmlFile)) {
+			pml.println(pymolScriptBuilder.toString());
+		}
 
 		command.add("-d");
 
@@ -262,8 +270,13 @@ public class PymolRunner {
 		if (exit!=0) {
 			throw new IOException("Pymol exited with error status "+exit);
 		}
+		for (File f : expectedFiles) {
+			if (!f.exists()) {
+				throw new IOException("Pymol did not write " + f + ". Is PIL (python3-pil) available to PyMOL's python?");
+			}
+		}
 	}
-	
+
 	public void generateInterfacesPse(File asuPdbFile, Set<String> chains, 
 			File pmlFile, File pseFile, File[] interfacePdbFiles, 
 			StructureInterfaceList interfaces) 
