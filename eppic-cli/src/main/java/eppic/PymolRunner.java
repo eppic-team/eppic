@@ -242,7 +242,6 @@ public class PymolRunner {
 		}
 
 		File pmlFile = File.createTempFile(pmlPrefix, ".pml");
-		pmlFile.deleteOnExit();
 
 		// NOTE we used to pass all commands in one string after -d (with the pymolScriptBuilder StringBuilder.
 		//      but that can cause problems for very long scripts (e.g. viral capsid).
@@ -275,6 +274,11 @@ public class PymolRunner {
 				throw new IOException("Pymol did not write " + f + ". Is PIL (python3-pil) available to PyMOL's python?");
 			}
 		}
+
+		// on success only: the pml of a run that failed is what one needs to reproduce it. This
+		// runs once per interface and per assembly, so with many inputs in one jvm leaving the
+		// files to deleteOnExit piles them up for the whole lifetime of the process
+		pmlFile.delete();
 	}
 
 	public void generateInterfacesPse(File asuPdbFile, Set<String> chains, 

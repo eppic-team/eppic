@@ -558,6 +558,12 @@ public class HomologList implements  Serializable {
 			} catch (FileFormatException|AlignmentConstructionException e) {
 				throw new IOException(e);
 			}
+
+			// in this branch alnFile is always the temp file the alignment program wrote (the
+			// cache file only gets here with alnFromCache true), and it has been read into aln now
+			if (!DEBUG) {
+				alnFile.delete();
+			}
 		}
 		
 
@@ -596,9 +602,9 @@ public class HomologList implements  Serializable {
 		long end = System.nanoTime();
         LOGGER.info("clustalo ran in {}s ({} threads)", (end - start) / 1000000000L, nThreads);
 		if (!DEBUG) { 
-			// note that if the run of tcoffee throws an exception, files are not marked for deletion
-			homologSeqsFile.deleteOnExit();
-			alnFile.deleteOnExit();
+			// note that if the run of clustalo throws an exception, the files stay behind.
+			// alnFile is the return value, so it is the caller that removes it once it is read
+			homologSeqsFile.delete();
 		}
 		return alnFile;
 	}
@@ -765,8 +771,8 @@ public class HomologList implements  Serializable {
 		}
 
 		if (!DEBUG) {
-			// note that if mmseqs throws an exception then this is not reached and thus files not removed on exit
-			inputSeqFile.deleteOnExit();
+			// note that if mmseqs throws an exception then this is not reached and the file stays behind
+			inputSeqFile.delete();
 		}
 
 		LOGGER.info("Redundancy elimination at {}% identity resulted in {} clusters", CLUSTERING_ID, clusters.size());
