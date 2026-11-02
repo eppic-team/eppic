@@ -276,6 +276,8 @@ public class EppicParams {
 	private boolean generatePdbFiles;
 	
 	private boolean generateModelSerializedFile;
+
+	private boolean uploadToDb;
 	
 	private boolean noBlast;
 
@@ -692,6 +694,24 @@ public class EppicParams {
 
 	public void setGenerateModelSerializedFile(boolean generateModelSerializedFile) {
 		this.generateModelSerializedFile = generateModelSerializedFile;
+	}
+
+	public boolean isUploadToDb() {
+		return uploadToDb;
+	}
+
+	public void setUploadToDb(boolean uploadToDb) {
+		this.uploadToDb = uploadToDb;
+	}
+
+	/**
+	 * Whether the full data model is the output of the run, either serialized to a zip file
+	 * (-w) or uploaded to the db (-M). Either way the text output files and the coordinate
+	 * files are not needed: everything in them can be regenerated from the model on the fly.
+	 * @return true if the data model is the output of the run
+	 */
+	public boolean isModelTheOutput() {
+		return generateModelSerializedFile || uploadToDb;
 	}
 	
 	public boolean isNoBlast() {

@@ -554,8 +554,8 @@ public class Main {
 
 		long start = System.currentTimeMillis();
 
-		// we don't write text files if in -w
-		if (params.isGenerateModelSerializedFile()) return System.currentTimeMillis() - start;
+		// we don't write text files if the model itself is the output (-w or -M)
+		if (params.isModelTheOutput()) return System.currentTimeMillis() - start;
 
 		TextOutputWriter toW = new TextOutputWriter(modelAdaptor.getPdbInfo(), modelAdaptor.getInterfFeatures(), params);
 
@@ -645,7 +645,7 @@ public class Main {
 					LOGGER.info("Generated PyMOL files for interface "+interf.getId());
 				}
 
-				if (params.isGenerateModelSerializedFile()) {
+				if (params.isModelTheOutput()) {
 					// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
 					outputFile.delete();
 				}
@@ -675,7 +675,7 @@ public class Main {
                     LOGGER.info("Generated PyMOL files for assembly {}", a.getId());
 				}
 
-				if (params.isGenerateModelSerializedFile()) {
+				if (params.isModelTheOutput()) {
 					// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
 					outputFile.delete();
 				}
@@ -814,9 +814,13 @@ public class Main {
 
 		long start = System.currentTimeMillis();
 		
+		if (params.isModelTheOutput()) {
+			// this has to come before either output, it adds all the cached warnings
+			modelAdaptor.setInterfaceWarnings();
+		}
+
 		if (params.isGenerateModelSerializedFile()) {
-			
-			modelAdaptor.setInterfaceWarnings(); // first we call this method to add all the cached warnings
+
 			modelAdaptor.writeSerializedModelFiles(
 					params.getOutputFile(EppicParams.SERIALIZED_PDBINFO_FILE_SUFFIX),
 					params.getOutputFile(EppicParams.SERIALIZED_INTERF_FEATURES_FILE_SUFFIX),
@@ -830,6 +834,14 @@ public class Main {
 			} catch (IOException e) {
 				throw new EppicException(e, "Couldn't write the finished file", true);
 			}
+		}
+
+		if (params.isUploadToDb()) {
+			// no finished file here: the db record is what says the entry is done. The
+			// uploader is created per entry, but the mongo client behind it is a jvm-wide
+			// singleton, so this does not open a connection per entry
+			new DbUploader(params.getDbConfigFile())
+					.upload(modelAdaptor.getPdbInfo(), modelAdaptor.getInterfFeatures());
 		}
 
 		return System.currentTimeMillis() - start;
@@ -1036,7 +1048,8 @@ public class Main {
 			// 9 write assembly diagrams (only if in -P)
 			writeAssemblyDiagramsTime = doWriteAssemblyDiagrams();
 			
-			// 10 writing out the model serialized file and "finish" file for web ui (only if in -w)
+			// 10 writing out the model: the serialized file and "finish" file for web ui (-w),
+			//    and/or the db record (-M)
 			writeFinalFilesTime = doWriteFinalFiles();
 
 			long end = System.currentTimeMillis();

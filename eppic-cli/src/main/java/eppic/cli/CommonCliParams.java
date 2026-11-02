@@ -176,6 +176,15 @@ public class CommonCliParams {
     private boolean generateModelSerializedFile = false;
 
     @Option(
+            names = {"-M", "--upload-to-db"},
+            description = "Upload the results of each input straight to MongoDB (requires -G), " +
+                    "instead of serializing them to a zip file for a separate loading step (-w). " +
+                    "Nothing but the images is written to the output dir: no serialized files and " +
+                    "no finished file. Can be combined with -w to get both outputs."
+    )
+    private boolean uploadToDb = false;
+
+    @Option(
             names = "-B",
             description = "Disable BLAST: use SIFTS only and sequence search cache only. " +
                     "Useful for precomputation to avoid dependency on BLAST index files."
@@ -254,6 +263,10 @@ public class CommonCliParams {
         if (useLocalUniProtInfo && dbConfigFile == null) {
             throw new EppicException(null, "A db config file must be provided (-G) when using local UniProt info from db (-U)", true);
         }
+
+        if (uploadToDb && dbConfigFile == null) {
+            throw new EppicException(null, "A db config file must be provided (-G) when uploading results to db (-M)", true);
+        }
     }
 
     public EppicParams toEppicParams() throws EppicException {
@@ -279,6 +292,7 @@ public class CommonCliParams {
         eppicParams.setGenerateOutputCoordFiles(generateOutputCoordFiles);
         eppicParams.setGenerateDiagrams(generateDiagrams);
         eppicParams.setGenerateModelSerializedFile(generateModelSerializedFile);
+        eppicParams.setUploadToDb(uploadToDb);
         eppicParams.setGenerateThumbnails(generateThumbnails);
         eppicParams.setGeneratePdbFiles(generatePdbFiles);
 
