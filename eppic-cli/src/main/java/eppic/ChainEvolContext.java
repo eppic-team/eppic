@@ -554,7 +554,7 @@ public class ChainEvolContext implements Serializable {
 
             LOGGER.info("{} homologs after applying {} identity cutoff and {} query coverage cutoff and before redundancy elimination (chain {})", homologs.getSizeFilteredSubset(), String.format("%4.2f", currentIdCutoff), String.format("%4.2f", queryCovCutoff), getRepresentativeChainCode());
 			
-			homologs.reduceRedundancy(maxNumSeqs, params.getMmseqsBin(), params.getOutDir(), params.getNumThreads());
+			homologs.reduceRedundancy(maxNumSeqs, params.getMmseqsBin(), params.getTempCoordFilesDir(), params.getNumThreads());
 
 			this.idCutoff = currentIdCutoff;
 			

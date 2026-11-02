@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -719,13 +720,16 @@ public class HomologList implements  Serializable {
 	 * cluster members discarded.
 	 * @param maxDesiredHomologs the maximum number of desired homologs
 	 * @param mmseqsBin the mmseqs2 executable
-	 * @param outDir dir where mmseqs2 will write its output to
+	 * @param scratchDir dir under which mmseqs2 writes its output and temp files. Everything it
+	 * writes there is removed again before this method returns, so it is best pointed at local
+	 * storage with the -t option: on a shared filesystem the many small file creations and
+	 * deletions that mmseqs2 does end up dominating the runtime of this method.
 	 * @param numThreads the number of threads for mmseqs
 	 * @throws IOException 
 	 * @throws BlastException 
 	 * @throws InterruptedException 
 	 */
-	public void reduceRedundancy(int maxDesiredHomologs, File mmseqsBin, File outDir, int numThreads)
+	public void reduceRedundancy(int maxDesiredHomologs, File mmseqsBin, File scratchDir, int numThreads)
 			throws IOException, InterruptedException, BlastException {
 
 		if (getSizeFilteredSubset()<=1) {
@@ -742,10 +746,23 @@ public class HomologList implements  Serializable {
 		// mmseqs by default does 504 hits per query. Thus 504 is the max possible number of sequences to cluster
 		// and max number of possible sequences if nothing is clustered
 
+		// a dir of its own per call: the scratch dir is shared by all chains and all inputs of the
+		// run, and a call that throws leaves its files behind (see MmseqsRunner), which would make
+		// mmseqs2 try to resume from them on the next call
+		// the scratch dir itself is only created up front when -p is given (see Main), so don't
+		// rely on that here
+		Files.createDirectories(scratchDir.toPath());
+		File clusteringDir = Files.createTempDirectory(scratchDir.toPath(), CLUSTERING_BASENAME).toFile();
+
 		long start = System.currentTimeMillis();
-		List<List<String>> clusters = MmseqsRunner.runMmseqsEasyCluster(mmseqsBin, inputSeqFile, new File(outDir, "seqClustering"), CLUSTERING_ID, CLUSTERING_COVERAGE, numThreads);
+		List<List<String>> clusters = MmseqsRunner.runMmseqsEasyCluster(mmseqsBin, inputSeqFile, new File(clusteringDir, "seqClustering"), CLUSTERING_ID, CLUSTERING_COVERAGE, numThreads);
 		long end = System.currentTimeMillis();
 		LOGGER.info("Ran mmseqs2 sequence clustering for redundancy reduction in {}s", ((end-start)/1000));
+
+		// MmseqsRunner removes the files it wrote in there, this takes care of the dir itself
+		if (!clusteringDir.delete()) {
+			LOGGER.warn("Could not remove mmseqs2 clustering dir {}", clusteringDir);
+		}
 
 		if (!DEBUG) {
 			// note that if mmseqs throws an exception then this is not reached and thus files not removed on exit
