@@ -176,6 +176,18 @@ public class CommonCliParams {
     private boolean generateModelSerializedFile = false;
 
     @Option(
+            names = {"-T", "--divided-out"},
+            paramLabel = "<dir>",
+            description = "Move each finished input's output dir into a PDB divided layout tree " +
+                    "under this root, i.e. to <root>/<2 middle chars of id>/<id>. An input that " +
+                    "fails is left where it was, so it can never overwrite a previous result. " +
+                    "With -M the move happens before the db insert, so an entry in the db always " +
+                    "has its files in place. Note that with a single input the output dir is -o " +
+                    "itself, and it is -o that gets moved."
+    )
+    private File dividedOutDir;
+
+    @Option(
             names = {"-M", "--upload-to-db"},
             description = "Upload the results of each input straight to MongoDB (requires -G), " +
                     "instead of serializing them to a zip file for a separate loading step (-w). " +
@@ -293,6 +305,7 @@ public class CommonCliParams {
         eppicParams.setGenerateDiagrams(generateDiagrams);
         eppicParams.setGenerateModelSerializedFile(generateModelSerializedFile);
         eppicParams.setUploadToDb(uploadToDb);
+        eppicParams.setDividedOutDir(dividedOutDir);
         eppicParams.setGenerateThumbnails(generateThumbnails);
         eppicParams.setGeneratePdbFiles(generatePdbFiles);
 

@@ -11,7 +11,10 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -836,6 +839,12 @@ public class Main {
 			}
 		}
 
+		// before the db insert, so that an entry that is in the db always has its files
+		// where the service expects to find them
+		if (params.getDividedOutDir() != null) {
+			placeInDividedTree();
+		}
+
 		if (params.isUploadToDb()) {
 			// no finished file here: the db record is what says the entry is done. The
 			// uploader is created per entry, but the mongo client behind it is a jvm-wide
@@ -847,6 +856,62 @@ public class Main {
 		return System.currentTimeMillis() - start;
 	}
 	
+	/**
+	 * Moves this entry's output dir into the PDB divided layout under the root given in -T,
+	 * i.e. to &lt;root&gt;/&lt;2 middle chars of the id&gt;/&lt;id&gt;.
+	 *
+	 * <p>Called at the very end of a successful entry, once everything has been written to
+	 * the output dir. An entry that throws never gets here: its half written dir stays where
+	 * it was, which is what keeps a failed run from replacing good results of a previous one.
+	 *
+	 * @throws EppicException if the id is too short to have a hash, or the move fails
+	 */
+	private void placeInDividedTree() throws EppicException {
+
+		String entryId = modelAdaptor.getPdbInfo().getEntryId();
+		if (entryId.length() < 3) {
+			throw new EppicException(null, "Can't place entry " + entryId + " in a divided tree: "
+					+ "its id is too short to have a 2 character hash", true);
+		}
+
+		Path src = params.getOutDir().toPath();
+		Path dest = params.getDividedOutDir().toPath()
+				.resolve(entryId.substring(1, 3))
+				.resolve(entryId);
+
+		try {
+			Files.createDirectories(dest.getParent());
+			// a rename can't replace a non-empty dir, so a recomputed entry's previous
+			// results have to be removed first
+			if (Files.exists(dest)) {
+				LOGGER.info("Removing existing data for {} at {}", entryId, dest);
+				deleteRecursively(dest);
+			}
+			// the tree is on the same filesystem as the output dir in any sane setup, so
+			// this is a rename and not a copy
+			Files.move(src, dest);
+		} catch (IOException e) {
+			throw new EppicException(e, "Could not move output dir " + src + " to " + dest
+					+ ": " + e.getMessage(), true);
+		}
+
+		LOGGER.info("Moved output of {} to {}", entryId, dest);
+		// so that anything looking at the output dir after this finds the entry where it is now
+		params.setOutDir(dest.toFile());
+	}
+
+	private static void deleteRecursively(Path dir) throws IOException {
+		// the walk has to be materialised before anything is deleted, and reverse order
+		// puts a dir's contents before the dir itself
+		List<Path> paths;
+		try (Stream<Path> walk = Files.walk(dir)) {
+			paths = walk.sorted(Comparator.reverseOrder()).toList();
+		}
+		for (Path path : paths) {
+			Files.delete(path);
+		}
+	}
+
 	private void findUniqueChains() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Unique sequences: ");

@@ -278,6 +278,8 @@ public class EppicParams {
 	private boolean generateModelSerializedFile;
 
 	private boolean uploadToDb;
+
+	private File dividedOutDir;
 	
 	private boolean noBlast;
 
@@ -702,6 +704,14 @@ public class EppicParams {
 
 	public void setUploadToDb(boolean uploadToDb) {
 		this.uploadToDb = uploadToDb;
+	}
+
+	public File getDividedOutDir() {
+		return dividedOutDir;
+	}
+
+	public void setDividedOutDir(File dividedOutDir) {
+		this.dividedOutDir = dividedOutDir;
 	}
 
 	/**
