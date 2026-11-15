@@ -19,8 +19,11 @@ import javax.persistence.Table;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -36,6 +39,11 @@ public class MongoUtils {
     public static final String MONGO_PASSWORD_ENV_VAR = "MONGO_PWD";
     public static final String MONGO_USERJOBS_USER_ENV_VAR = "MONGO_USERJOBS_USER";
     public static final String MONGO_USERJOBS_PASSWORD_ENV_VAR = "MONGO_USERJOBS_PWD";
+
+    /**
+     * The client of every db given out by {@link #getMongoDatabase(String, String, String, String)}
+     */
+    private static final Map<MongoDatabase, MongoClient> CLIENTS = Collections.synchronizedMap(new IdentityHashMap<>());
 
 
     /**
@@ -121,7 +129,18 @@ public class MongoUtils {
         if (dbName == null)
             throw new IllegalArgumentException("dbName must not be null");
 
-        return mongoClient.getDatabase(dbName);
+        MongoDatabase mongoDb = mongoClient.getDatabase(dbName);
+        CLIENTS.put(mongoDb, mongoClient);
+        return mongoDb;
+    }
+
+    /**
+     * Gets the client that the given db was obtained from, which is needed for transactions
+     * @param mongoDb a db
+     * @return the client, or null if the db was not obtained from {@link #getMongoDatabase(String, String, String, String)}
+     */
+    public static MongoClient getMongoClient(MongoDatabase mongoDb) {
+        return CLIENTS.get(mongoDb);
     }
 
     public static void dropCollection(MongoDatabase mongoDb, Class<?> modelClass) {

@@ -3,10 +3,8 @@ package eppic.db.loaders;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.dao.DaoException;
-import eppic.db.dao.InterfaceResidueFeaturesDAO;
-import eppic.db.dao.PDBInfoDAO;
-import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
-import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.dao.EntryDAO;
+import eppic.db.dao.mongo.EntryDAOMongo;
 import eppic.db.mongoutils.ConfigurableMapper;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
@@ -17,7 +15,6 @@ import gnu.getopt.Getopt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.NoResultException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -56,9 +53,7 @@ public class UploadToDb {
 	private static File choosefromFile = null;
 	private static int numWorkers = 1;
 
-	private static PDBInfoDAO dao;
-
-	private static InterfaceResidueFeaturesDAO interfResDao;
+	private static EntryDAO dao;
 
 	public static void main(String[] args) throws ExecutionException, InterruptedException, IOException {
 
@@ -160,8 +155,7 @@ public class UploadToDb {
 		logger.info("Will use db name {}", dbName);
 		MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri, MongoUtils.MONGO_USER_ENV_VAR, MongoUtils.MONGO_PASSWORD_ENV_VAR);
 
-		dao = new PDBInfoDAOMongo(mongoDb);
-		interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
+		dao = new EntryDAOMongo(mongoDb);
 
 		if (full) {
 			// remove content and create collections and index
@@ -430,18 +424,8 @@ public class UploadToDb {
 			}
 			try {
 				long start = System.currentTimeMillis();
-				try {
-					// if this doesn't throw a NoResultException it means that it exists
-					dao.getPDBInfo(jobId);
-					logger.info("Existing PDBInfo document found for {}. Will remove all data for it before inserting a new one", jobId);
-					long delPdbInfo = dao.remove(jobId);
-					long delInterfRes = interfResDao.remove(jobId);
-					logger.info("Done deleting data for id {}. Deleted {} PDBInfo documents and {} InterfaceResidueFeature documents", jobId, delPdbInfo, delInterfRes);
-				} catch (NoResultException e) {
-					logger.info("No PDBInfo document exists for id {}. No need to delete data from db for this id.", jobId);
-				}
-				dao.insertPDBInfo(entryData.getPdbInfoDB());
-				interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
+				// this replaces whatever the db has for the entry
+				dao.write(entryData.getPdbInfoDB(), entryData.getInterfResFeaturesDB());
 				long end = System.currentTimeMillis();
 				logger.info("Done inserting {}. Time: {}ms", jobId, (end - start));
 				stats.countUploaded++;
@@ -459,8 +443,10 @@ public class UploadToDb {
 
 	private static void persistBatch(Stats stats, List<JobDir> jobDirs, int endIndexOfBatch) {
 		logger.info("Processing batch with end index {} (size {})", endIndexOfBatch, jobDirs.size());
-		List<PdbInfoDB> pdbInfoBatch = new ArrayList<>();
-		List<InterfaceResidueFeaturesDB> currentInterfResFeatBatch = new ArrayList<>();
+		// The entries are inserted in sub-batches, so that not all the data of the batch are in
+		// memory at once: the interface residue features are most of the data of an entry
+		List<EntryData> currentSubBatch = new ArrayList<>();
+		int numInterfResFeat = 0;
 		try {
 			for (int i = 0; i < jobDirs.size(); i++) {
 				if (jobDirs.get(i).serializedFile != null) {
@@ -470,8 +456,8 @@ public class UploadToDb {
 						logger.error("Could not deserialize job {}. Skipping", jobDirs.get(i).dir.getName());
 						continue;
 					}
-					pdbInfoBatch.add(entryData.getPdbInfoDB());
-					currentInterfResFeatBatch.addAll(entryData.getInterfResFeaturesDB());
+					currentSubBatch.add(entryData);
+					numInterfResFeat += entryData.getInterfResFeaturesDB().size();
 
 				} else {
 					// TODO error jobs
@@ -479,25 +465,15 @@ public class UploadToDb {
 					stats.countErrorJob++;
 				}
 
-				if (currentInterfResFeatBatch.size() >= batchSize) {
+				if (numInterfResFeat >= batchSize || (i == jobDirs.size() - 1 && !currentSubBatch.isEmpty())) {
 					long start = System.currentTimeMillis();
-					interfResDao.insertInterfResFeatures(currentInterfResFeatBatch);
+					dao.insertAll(currentSubBatch);
 					long end = System.currentTimeMillis();
-					logger.info("Done inserting InterfaceResidueFeaturesDB sub-batch with end index {} (size {}), corresponding to batch with end index {}. Time: {}ms", i, currentInterfResFeatBatch.size(), endIndexOfBatch, (end - start));
-					currentInterfResFeatBatch = new ArrayList<>();
+					logger.info("Done inserting sub-batch with end index {} ({} entries, {} InterfaceResidueFeaturesDB), corresponding to batch with end index {}. Time: {}ms", i, currentSubBatch.size(), numInterfResFeat, endIndexOfBatch, (end - start));
+					stats.countUploaded += currentSubBatch.size();
+					currentSubBatch = new ArrayList<>();
+					numInterfResFeat = 0;
 				}
-			}
-			long start = System.currentTimeMillis();
-			dao.insertPDBInfos(pdbInfoBatch);
-			long end = System.currentTimeMillis();
-			logger.info("Done inserting PdbInfoDB batch with end index {} (size {}). Time: {}ms", endIndexOfBatch, batchSize, (end - start));
-			stats.countUploaded += pdbInfoBatch.size();
-			// insert last batch of interf res features
-			if (!currentInterfResFeatBatch.isEmpty()) {
-				start = System.currentTimeMillis();
-				interfResDao.insertInterfResFeatures(currentInterfResFeatBatch);
-				end = System.currentTimeMillis();
-				logger.info("Done inserting InterfaceResidueFeaturesDB sub-batch with end index {} (size {}), corresponding to batch with end index {}. Time: {}ms", jobDirs.size() - 1, currentInterfResFeatBatch.size(), endIndexOfBatch, (end - start));
 			}
 		} catch (DaoException e) {
 			List<String> ids = jobDirs.stream().map(j->j.dir.getName()).toList();

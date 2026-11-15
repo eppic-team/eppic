@@ -3,11 +3,9 @@ package eppic.rest.jobs;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.dao.BlobsDao;
 import eppic.db.dao.DaoException;
-import eppic.db.dao.InterfaceResidueFeaturesDAO;
-import eppic.db.dao.PDBInfoDAO;
+import eppic.db.dao.EntryDAO;
 import eppic.db.dao.mongo.BlobsDAOMongo;
-import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
-import eppic.db.dao.mongo.PDBInfoDAOMongo;
+import eppic.db.dao.mongo.EntryDAOMongo;
 import eppic.db.loaders.EntryData;
 import eppic.db.loaders.UploadToDb;
 import eppic.model.db.BlobIdentifierDB;
@@ -204,8 +202,7 @@ public class ShellTask implements Callable<Integer> {
             logger.info("No writing to DB will be performed because MongoDB was set to null");
             return;
         }
-        PDBInfoDAO dao = new PDBInfoDAOMongo(mongoDb);
-        InterfaceResidueFeaturesDAO interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
+        EntryDAO dao = new EntryDAOMongo(mongoDb);
         EntryData entryData = UploadToDb.readSerializedFile(new File(jobDirectory, submissionId + UploadToDb.SERIALIZED_FILE_SUFFIX));
         if (entryData == null) {
             throw new IOException("Could not read serialized file");
@@ -215,8 +212,7 @@ public class ShellTask implements Callable<Integer> {
         // important write the upload date so that we can track age of jobs
         entryData.getPdbInfoDB().setUploadDate(new Date());
 
-        dao.insertPDBInfo(entryData.getPdbInfoDB());
-        interfResDao.insertInterfResFeatures(entryData.getInterfResFeaturesDB());
+        dao.write(entryData.getPdbInfoDB(), entryData.getInterfResFeaturesDB());
 
         // write input file and images as blobs to db
         BlobsDao blobsDao = new BlobsDAOMongo(mongoDb);

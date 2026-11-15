@@ -2,13 +2,11 @@ package eppic.db.dao;
 
 import eppic.model.db.InterfaceResidueFeaturesDB;
 
-import java.util.List;
 
+/**
+ * DAO for reading InterfaceResidueFeaturesDB. For writing see {@link EntryDAO}.
+ */
 public interface InterfaceResidueFeaturesDAO {
 
-    void insertInterfResFeatures(List<InterfaceResidueFeaturesDB> list) throws DaoException;
-
     InterfaceResidueFeaturesDB getInterfResFeatures(String entryId, int interfId) throws DaoException;
-
-    long remove(String entryId) throws DaoException;
 }

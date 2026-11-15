@@ -6,6 +6,8 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.dao.DaoException;
+import eppic.db.dao.EntryDAO;
+import eppic.db.dao.InterfaceResidueFeaturesDAO;
 import eppic.db.dao.PDBInfoDAO;
 import eppic.db.loaders.EntryData;
 import eppic.db.loaders.UploadToDb;
@@ -16,6 +18,7 @@ import eppic.model.db.AssemblyScoreDB;
 import eppic.model.db.GraphEdgeDB;
 import eppic.model.db.GraphNodeDB;
 import eppic.model.db.InterfaceClusterDB;
+import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
 import org.bson.Document;
 import org.junit.After;
@@ -33,21 +36,23 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 /**
- * Tests of how entries are laid out in the db, against a real MongoDB. They run only if the
+ * Tests of how entries are written to the db and read from it, against a real MongoDB. They run only if the
  * environment variable {@value #MONGO_URI_ENV_VAR} is set to the URI of a MongoDB that can be
  * written to, e.g. mongodb://localhost:27017. They work in a db of their own, which they drop.
  * <p>
  * If {@value #SERIALIZED_DIR_ENV_VAR} is set too, to a directory with serialized files as written
  * by the eppic cli with -w (it is searched recursively), then those entries are tested as well.
  */
-public class TestPDBInfoDAOMongo {
+public class TestEntryDAOMongo {
 
     static final String MONGO_URI_ENV_VAR = "EPPIC_TEST_MONGO_URI";
     static final String SERIALIZED_DIR_ENV_VAR = "EPPIC_TEST_SERIALIZED_DIR";
 
     private MongoClient mongoClient;
     private MongoDatabase mongoDb;
+    private EntryDAO entryDao;
     private PDBInfoDAO dao;
+    private InterfaceResidueFeaturesDAO featuresDao;
 
     @Before
     public void setUp() {
@@ -55,7 +60,9 @@ public class TestPDBInfoDAOMongo {
         assumeTrue("Needs a MongoDB, with its URI in env variable " + MONGO_URI_ENV_VAR, uri != null && !uri.isBlank());
         mongoClient = MongoClients.create(uri);
         mongoDb = mongoClient.getDatabase("eppic_test_" + System.nanoTime());
+        entryDao = new EntryDAOMongo(mongoClient, mongoDb);
         dao = new PDBInfoDAOMongo(mongoDb);
+        featuresDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
     }
 
     @After
@@ -69,13 +76,17 @@ public class TestPDBInfoDAOMongo {
     @Test
     public void testAssembliesAreSeparateDocuments() throws DaoException {
         PdbInfoDB pdbInfo = createEntry("1abc", 4);
-        dao.insertPDBInfo(pdbInfo);
+        entryDao.write(pdbInfo, createFeatures("1abc", 3));
 
         Document pdbInfoDoc = mongoDb.getCollection("PdbInfo").find(new Document("entryId", "1abc")).first();
         assertNotNull(pdbInfoDoc);
         assertFalse(pdbInfoDoc.containsKey("assemblies"));
         assertEquals(4, mongoDb.getCollection("Assembly").countDocuments(new Document("entryId", "1abc")));
+        assertEquals(3, mongoDb.getCollection("InterfaceResidueFeatures").countDocuments(new Document("entryId", "1abc")));
+        assertTrue(MongoUtils.hasExpectedIndices(mongoDb, PdbInfoDB.class));
         assertTrue(MongoUtils.hasExpectedIndices(mongoDb, AssemblyDB.class));
+        assertTrue(MongoUtils.hasExpectedIndices(mongoDb, InterfaceResidueFeaturesDB.class));
+        assertEquals(2, featuresDao.getInterfResFeatures("1abc", 2).getInterfaceId());
 
         assertSameEntry(pdbInfo, dao.getPDBInfo("1abc"));
     }
@@ -85,14 +96,20 @@ public class TestPDBInfoDAOMongo {
         PdbInfoDB first = createEntry("1abc", 4);
         PdbInfoDB second = createEntry("2abc", 2);
         PdbInfoDB noAssemblies = createEntry("3abc", 0);
-        dao.insertPDBInfos(List.of(first, second, noAssemblies));
+        entryDao.insertAll(List.of(
+                new EntryData(first, createFeatures("1abc", 3)),
+                new EntryData(second, createFeatures("2abc", 1)),
+                new EntryData(noAssemblies, createFeatures("3abc", 0))));
 
         assertSameEntry(first, dao.getPDBInfo("1abc"));
         assertSameEntry(second, dao.getPDBInfo("2abc"));
         assertTrue(dao.getPDBInfo("3abc").getAssemblies().isEmpty());
 
-        assertEquals(1, dao.remove("1abc"));
+        assertTrue(entryDao.remove("1abc"));
+        assertFalse(entryDao.remove("1abc"));
         assertEquals(0, mongoDb.getCollection("Assembly").countDocuments(new Document("entryId", "1abc")));
+        assertEquals(0, mongoDb.getCollection("InterfaceResidueFeatures").countDocuments(new Document("entryId", "1abc")));
+        assertEquals(1, mongoDb.getCollection("InterfaceResidueFeatures").countDocuments());
         try {
             dao.getPDBInfo("1abc");
             fail("The entry should be gone");
@@ -121,23 +138,95 @@ public class TestPDBInfoDAOMongo {
 
         assertSameEntry(pdbInfo, dao.getPDBInfo("1abc"));
 
-        assertEquals(1, dao.remove("1abc"));
+        // and are replaced by entries with the assemblies in their collection
+        PdbInfoDB replacement = createEntry("1abc", 2);
+        entryDao.write(replacement, createFeatures("1abc", 1));
+        assertFalse(mongoDb.getCollection("PdbInfo").find().first().containsKey("assemblies"));
+        assertSameEntry(replacement, dao.getPDBInfo("1abc"));
+
+        assertTrue(entryDao.remove("1abc"));
         assertEquals(0, mongoDb.getCollection("PdbInfo").countDocuments());
     }
 
     @Test
-    public void testInsertingExistingEntryFails() throws DaoException {
-        MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
+    public void testWriteReplacesEntry() throws DaoException {
+        entryDao.write(createEntry("1abc", 4), createFeatures("1abc", 3));
+        entryDao.write(createEntry("2abc", 2), createFeatures("2abc", 2));
+        PdbInfoDB replacement = createEntry("1abc", 2);
+        replacement.setTitle("The replacement");
+        entryDao.write(replacement, createFeatures("1abc", 1));
+
+        assertEquals(2, mongoDb.getCollection("PdbInfo").countDocuments());
+        assertEquals(2, mongoDb.getCollection("Assembly").countDocuments(new Document("entryId", "1abc")));
+        assertEquals(1, mongoDb.getCollection("InterfaceResidueFeatures").countDocuments(new Document("entryId", "1abc")));
+        assertEquals("The replacement", dao.getPDBInfo("1abc").getTitle());
+        assertSameEntry(replacement, dao.getPDBInfo("1abc"));
+        assertEquals(2, dao.getPDBInfo("2abc").getAssemblies().size());
+    }
+
+    /**
+     * With transactions a write that fails leaves the entry that was in the db
+     */
+    @Test
+    public void testFailedWriteInTransaction() throws DaoException {
+        Document hello = mongoDb.runCommand(new Document("hello", 1));
+        assumeTrue("Needs a MongoDB with transactions", hello.containsKey("setName") || "isdbgrid".equals(hello.get("msg")));
+
         PdbInfoDB pdbInfo = createEntry("1abc", 4);
-        dao.insertPDBInfo(pdbInfo);
+        entryDao.write(pdbInfo, createFeatures("1abc", 3));
         try {
-            dao.insertPDBInfo(createEntry("1abc", 2));
+            entryDao.write(createEntry("1abc", 2), createFeaturesWithDuplicate("1abc"));
+            fail("Writing 2 InterfaceResidueFeaturesDB for the same interface should fail");
+        } catch (DaoException e) {
+            // expected
+        }
+        assertSameEntry(pdbInfo, dao.getPDBInfo("1abc"));
+        assertEquals(4, mongoDb.getCollection("Assembly").countDocuments());
+        assertEquals(3, mongoDb.getCollection("InterfaceResidueFeatures").countDocuments());
+    }
+
+    /**
+     * Without transactions a write that fails leaves nothing of the entry
+     */
+    @Test
+    public void testFailedWriteWithoutTransaction() throws DaoException {
+        EntryDAO noTransactionsDao = new EntryDAOMongo(null, mongoDb);
+        noTransactionsDao.write(createEntry("1abc", 4), createFeatures("1abc", 3));
+        noTransactionsDao.write(createEntry("2abc", 4), createFeatures("2abc", 3));
+        try {
+            noTransactionsDao.write(createEntry("1abc", 2), createFeaturesWithDuplicate("1abc"));
+            fail("Writing 2 InterfaceResidueFeaturesDB for the same interface should fail");
+        } catch (DaoException e) {
+            // expected
+        }
+        try {
+            dao.getPDBInfo("1abc");
+            fail("The entry should be gone");
+        } catch (NoResultException e) {
+            // expected
+        }
+        assertEquals(4, mongoDb.getCollection("Assembly").countDocuments());
+        assertEquals(3, mongoDb.getCollection("InterfaceResidueFeatures").countDocuments());
+        assertEquals(4, dao.getPDBInfo("2abc").getAssemblies().size());
+
+        // and the entry can then be written
+        noTransactionsDao.write(createEntry("1abc", 2), createFeatures("1abc", 2));
+        assertEquals(2, dao.getPDBInfo("1abc").getAssemblies().size());
+    }
+
+    @Test
+    public void testInsertingExistingEntryFails() throws DaoException {
+        PdbInfoDB pdbInfo = createEntry("1abc", 4);
+        entryDao.insertAll(List.of(new EntryData(pdbInfo, createFeatures("1abc", 3))));
+        try {
+            entryDao.insertAll(List.of(new EntryData(createEntry("1abc", 2), createFeatures("1abc", 1))));
             fail("Inserting an entry that exists should fail");
         } catch (DaoException e) {
             // expected
         }
         // and what was there is untouched
         assertSameEntry(pdbInfo, dao.getPDBInfo("1abc"));
+        assertEquals(3, mongoDb.getCollection("InterfaceResidueFeatures").countDocuments());
     }
 
     @Test
@@ -151,7 +240,9 @@ public class TestPDBInfoDAOMongo {
             EntryData entryData = UploadToDb.readSerializedFile(file);
             assertNotNull(entryData);
             PdbInfoDB pdbInfo = entryData.getPdbInfoDB();
-            dao.insertPDBInfo(pdbInfo);
+            entryDao.write(pdbInfo, entryData.getInterfResFeaturesDB());
+            assertEquals(entryData.getInterfResFeaturesDB().size(),
+                    mongoDb.getCollection("InterfaceResidueFeatures").countDocuments(new Document("entryId", pdbInfo.getEntryId())));
             assertEquals(pdbInfo.getAssemblies().size(),
                     mongoDb.getCollection("Assembly").countDocuments(new Document("entryId", pdbInfo.getEntryId())));
             // What must come back is what a single document with everything would give. That is
@@ -264,5 +355,25 @@ public class TestPDBInfoDAOMongo {
             pdbInfo.addAssembly(assembly);
         }
         return pdbInfo;
+    }
+
+    private static List<InterfaceResidueFeaturesDB> createFeatures(String entryId, int numInterfaces) {
+        List<InterfaceResidueFeaturesDB> features = new ArrayList<>();
+        for (int interfaceId = 1; interfaceId <= numInterfaces; interfaceId++) {
+            InterfaceResidueFeaturesDB feature = new InterfaceResidueFeaturesDB();
+            feature.setEntryId(entryId);
+            feature.setInterfaceId(interfaceId);
+            features.add(feature);
+        }
+        return features;
+    }
+
+    /**
+     * Features that can't be written, because of the unique index on entry id and interface id
+     */
+    private static List<InterfaceResidueFeaturesDB> createFeaturesWithDuplicate(String entryId) {
+        List<InterfaceResidueFeaturesDB> features = createFeatures(entryId, 2);
+        features.get(1).setInterfaceId(1);
+        return features;
     }
 }

@@ -3,15 +3,14 @@ package eppic.db.loaders;
 import com.mongodb.client.MongoDatabase;
 import eppic.db.dao.BlobsDao;
 import eppic.db.dao.DaoException;
-import eppic.db.dao.InterfaceResidueFeaturesDAO;
+import eppic.db.dao.EntryDAO;
 import eppic.db.dao.PDBInfoDAO;
 import eppic.db.dao.mongo.BlobsDAOMongo;
-import eppic.db.dao.mongo.InterfaceResidueFeaturesDAOMongo;
+import eppic.db.dao.mongo.EntryDAOMongo;
 import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.BlobDB;
-import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
 import org.slf4j.Logger;
@@ -33,7 +32,7 @@ public class RemoveUserJobs {
 	private static File configFile = null;
 
 	private static PDBInfoDAO dao;
-	private static InterfaceResidueFeaturesDAO interfResDao;
+	private static EntryDAO entryDao;
 	private static BlobsDao blobsDao;
 
 	public static void main(String[] args) throws IOException, DaoException {
@@ -82,7 +81,7 @@ public class RemoveUserJobs {
 		MongoDatabase mongoDb = MongoUtils.getMongoDatabase(dbName, connUri, MongoUtils.MONGO_USERJOBS_USER_ENV_VAR, MongoUtils.MONGO_USERJOBS_PASSWORD_ENV_VAR);
 
 		dao = new PDBInfoDAOMongo(mongoDb);
-		interfResDao = new InterfaceResidueFeaturesDAOMongo(mongoDb);
+		entryDao = new EntryDAOMongo(mongoDb);
 		blobsDao = new BlobsDAOMongo(mongoDb);
 
 		// 1st: double check that indices for blobs exist. If not, create them
@@ -118,13 +117,12 @@ public class RemoveUserJobs {
 		logger.info("User jobs older than {} days: {}. Will proceed to remove them", numDays, idsToRemove.size());
 
 		for (String id : idsToRemove) {
-			long removed = dao.remove(id);
-			if (removed!=1) {
-				logger.warn("Was expecting to remove 1 PdbInfo object, but actually removed {}", removed);
+			boolean removed = entryDao.remove(id);
+			if (!removed) {
+				logger.warn("Was expecting to remove entry {}, but it was not in db", id);
 			}
-			long removedInterf = interfResDao.remove(id);
 			long removedBlob = blobsDao.remove(id);
-			logger.info("Removed all data for id {}. {} PdbInfo object, {} InterfaceResidueFeature objects, {} Blob objects", id, removed, removedInterf, removedBlob);
+			logger.info("Removed all data for id {}, with {} Blob objects", id, removedBlob);
 		}
 
 		long countAllPdbInfos = list.size() - idsToRemove.size();
