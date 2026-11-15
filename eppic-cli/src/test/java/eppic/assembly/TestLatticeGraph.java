@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eppic.EppicParams;
+import eppic.NcsOpsUtils;
 
 public class TestLatticeGraph {
 
@@ -502,6 +503,9 @@ public class TestLatticeGraph {
 		logger.info("Calculating interfaces for "+s.getIdentifier().toString());
 
 		CrystalBuilder cb;
+
+		// same as in Main: ncs ops that are redundant with crystallographic symmetry must be ignored
+		NcsOpsUtils.removeCrystallographicNcsOps(s);
 
 		// we need to expand the ncs ops to be able to test properly entries with ncs ops
 		if (s.getCrystallographicInfo().getNcsOperators()!=null) {

@@ -259,6 +259,9 @@ public class Main {
 		}
 		
 		
+		// NCS operators that are redundant with crystallographic symmetry would result in overlapping chains when expanded
+		NcsOpsUtils.removeCrystallographicNcsOps(pdb);
+
 		// for the webui
 		modelAdaptor = new DataModelAdaptor();
 		modelAdaptor.setParams(params);
