@@ -89,6 +89,10 @@ public class TestEntryDAOMongo {
         assertEquals(2, featuresDao.getInterfResFeatures("1abc", 2).getInterfaceId());
 
         assertSameEntry(pdbInfo, dao.getPDBInfo("1abc"));
+
+        PdbInfoDB noAssemblies = dao.getPDBInfo("1abc", false);
+        assertTrue(noAssemblies.getAssemblies().isEmpty());
+        assertEquals(3, noAssemblies.getInterfaceClusters().size());
     }
 
     @Test
@@ -137,6 +141,7 @@ public class TestEntryDAOMongo {
         assertEquals(0, mongoDb.getCollection("Assembly").countDocuments());
 
         assertSameEntry(pdbInfo, dao.getPDBInfo("1abc"));
+        assertTrue(dao.getPDBInfo("1abc", false).getAssemblies().isEmpty());
 
         // and are replaced by entries with the assemblies in their collection
         PdbInfoDB replacement = createEntry("1abc", 2);

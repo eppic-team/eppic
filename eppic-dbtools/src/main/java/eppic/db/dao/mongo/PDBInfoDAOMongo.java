@@ -12,7 +12,6 @@ import org.bson.Document;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.mongodb.client.model.Projections.excludeId;
@@ -40,13 +39,22 @@ public class PDBInfoDAOMongo implements PDBInfoDAO {
 
     @Override
     public PdbInfoDB getPDBInfo(String entryId) throws DaoException {
+        return getPDBInfo(entryId, true);
+    }
+
+    @Override
+    public PdbInfoDB getPDBInfo(String entryId, boolean withAssemblies) throws DaoException {
         PdbInfoDB pdbInfoDB;
         try {
-            pdbInfoDB = MongoUtils.findOne(mongoDb, collectionName,
-                    Collections.singletonList(ENTRY_ID_FIELD),
-                    Collections.singletonList(entryId),
+            // the assemblies are excluded for the entries that have them in their PdbInfo document
+            Document projection = new Document("_id", 0);
+            if (!withAssemblies) {
+                projection.append(ASSEMBLIES_FIELD, 0);
+            }
+            pdbInfoDB = ConfigurableMapper.getMapper().convertValue(
+                    mongoDb.getCollection(collectionName).find(new Document(ENTRY_ID_FIELD, entryId)).projection(projection).first(),
                     PdbInfoDB.class);
-            if (pdbInfoDB != null) {
+            if (pdbInfoDB != null && withAssemblies) {
                 readAssemblies(pdbInfoDB);
             }
         } catch (Exception e) {

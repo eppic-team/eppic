@@ -97,7 +97,7 @@ public class JobService {
                                           boolean getSeqInfo) throws DaoException
     {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, getAssemblyInfo);
 
         if (pdbInfo == null) {
             throw new NoResultException("Could not find id '" + entryId + "' in database");
@@ -139,7 +139,7 @@ public class JobService {
      */
     public List<InterfaceClusterDB> getInterfaceClusterData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         return pdbInfo.getInterfaceClusters();
     }
@@ -152,7 +152,7 @@ public class JobService {
      */
     public List<InterfaceDB> getInterfaceData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         return pdbInfo.getInterfaces();
     }
@@ -165,7 +165,7 @@ public class JobService {
      */
     public List<ChainClusterDB> getSequenceData(String entryId) throws DaoException {
 
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         return pdbInfo.getChainClusters();
     }
@@ -233,7 +233,7 @@ public class JobService {
         List<ResidueBurialDB> burials2 = features.getResBurials2();
 
         // 2nd get entropy scores
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
         InterfaceDB interf = pdbInfo.getInterface(interfId);
         ChainClusterDB chain1 = pdbInfo.getChainCluster(interf.getChain1());
         ChainClusterDB chain2 = pdbInfo.getChainCluster(interf.getChain2());
@@ -302,7 +302,7 @@ public class JobService {
      * @throws DaoException when can not retrieve result of the entry
      */
     public List<ContactDB> getContactData(String entryId, int interfId) throws DaoException {
-        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId);
+        PdbInfoDB pdbInfo = getPdbInfoDAO(entryId).getPDBInfo(entryId, false);
 
         ContactDAO contactDAO = new ContactDAOMongo();
         List<ContactDB> list = contactDAO.getContactsForInterface(pdbInfo.getEntryId(), interfId);

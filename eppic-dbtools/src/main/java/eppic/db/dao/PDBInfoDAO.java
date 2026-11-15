@@ -20,6 +20,16 @@ public interface PDBInfoDAO
 	PdbInfoDB getPDBInfo(String entryId) throws DaoException;
 
 	/**
+	 * Retrieves pdb info object by job identifier, optionally without its assemblies. The
+	 * assemblies are most of the data of an entry, so this is for what does not need them.
+	 * @param entryId identifier of the job
+	 * @param withAssemblies if false the pdb info item has no assemblies
+	 * @return pdb info item
+	 * @throws DaoException when can not retrieve pdb info item for job
+	 */
+	PdbInfoDB getPDBInfo(String entryId, boolean withAssemblies) throws DaoException;
+
+	/**
 	 * Get all objects in PdbInfo, without their assemblies
 	 * @return list of PdbInfoDB objects
 	 */
