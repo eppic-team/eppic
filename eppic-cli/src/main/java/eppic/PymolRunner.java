@@ -2,6 +2,7 @@ package eppic;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -40,10 +41,34 @@ public class PymolRunner {
 		{"green", "tv_green", "chartreuse", "splitpea", "smudge", "palegreen", "limegreen", "lime", "limon", "forest"};
 
 	
+	/**
+	 * Default for the maximum number of images queued with {@link #queueInterfacePng} and {@link #queueAssemblyPng}
+	 * before they are rendered. Each queued image keeps its input coordinate file around until then, so this bounds
+	 * the temp disk used, as well as how much is redone if PyMOL fails.
+	 */
+	public static final int DEF_MAX_QUEUED_IMAGES = 50;
+
 	private File pymolExec;
-	
+
+	private final int maxQueuedImages;
+
+	// the images queued so far: their pml scripts one after the other, rendered by a single PyMOL process in flush()
+	private final StringBuilder queuedScript = new StringBuilder();
+	private final List<File> queuedPngFiles = new ArrayList<>();
+	private final List<File> queuedInputsToDelete = new ArrayList<>();
+	private int numQueuedImages = 0;
+
 	public PymolRunner(File pymolExec) {
+		this(pymolExec, DEF_MAX_QUEUED_IMAGES);
+	}
+
+	/**
+	 * @param pymolExec the PyMOL executable
+	 * @param maxQueuedImages the maximum number of queued images, after which queueing one more renders them all
+	 */
+	public PymolRunner(File pymolExec, int maxQueuedImages) {
 		this.pymolExec = pymolExec;
+		this.maxQueuedImages = maxQueuedImages;
 	}
 	
 	/**
@@ -61,13 +86,28 @@ public class PymolRunner {
 	 */
 	public void generateInterfacePng(StructureInterface interf, File mmcifFile, File outDir, String base)
 	throws IOException, InterruptedException {
-		
+		queueInterfacePng(interf, mmcifFile, outDir, base, false);
+		flush();
+	}
+
+	/**
+	 * Queues the png thumbnail of given interface, as {@link #generateInterfacePng} would write it, to be rendered
+	 * together with the other queued images by a single PyMOL process, at the latest on {@link #flush()}.
+	 * Starting PyMOL is a large part of the time it takes to render a thumbnail.
+	 * @param interf the interface
+	 * @param mmcifFile the input cif or cif.gz file, which must stay in place until the image is rendered
+	 * @param outDir the output dir for png files
+	 * @param base the basename of the output files
+	 * @param deleteInput whether to delete mmcifFile once the image is rendered
+	 * @throws IOException if rendering the queued images fails
+	 * @throws InterruptedException
+	 */
+	public void queueInterfacePng(StructureInterface interf, File mmcifFile, File outDir, String base, boolean deleteInput)
+	throws IOException, InterruptedException {
+
 		String molecName = getPymolMolecName(mmcifFile);
 
-		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
-		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
-			pngFiles[i] = new File(outDir,base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
-		}
+		File[] pngFiles = getPngFiles(outDir, base);
 		
 		String chain1 = interf.getMoleculeIds().getFirst();
 		String chain2 = interf.getMoleculeIds().getSecond();
@@ -125,18 +165,31 @@ public class PymolRunner {
 			appendPalettePng(pymolScriptBuilder, pngFiles[i]);
 		}
 
-		// the python block needed for the palette png can't go in a single line ';'-separated -d script, so we use a pml file
-		runPymolScript(pymolScriptBuilder, "eppicInterfacePng", pngFiles);
+		queue(pymolScriptBuilder, pngFiles, deleteInput ? mmcifFile : null);
 	}
 
 	public void generateAssemblyPng(Assembly a, File mmcifFile, File outDir, String base) throws IOException, InterruptedException {
+		queueAssemblyPng(a, mmcifFile, outDir, base, false);
+		flush();
+	}
+
+	/**
+	 * Queues the png thumbnail of given assembly, as {@link #generateAssemblyPng} would write it, to be rendered
+	 * together with the other queued images by a single PyMOL process, at the latest on {@link #flush()}.
+	 * @param a the assembly
+	 * @param mmcifFile the input cif or cif.gz file, which must stay in place until the image is rendered
+	 * @param outDir the output dir for png files
+	 * @param base the basename of the output files
+	 * @param deleteInput whether to delete mmcifFile once the image is rendered
+	 * @throws IOException if rendering the queued images fails
+	 * @throws InterruptedException
+	 */
+	public void queueAssemblyPng(Assembly a, File mmcifFile, File outDir, String base, boolean deleteInput)
+	throws IOException, InterruptedException {
 
 		String molecName = getPymolMolecName(mmcifFile);
 
-		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
-		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
-			pngFiles[i] = new File(outDir,base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
-		}
+		File[] pngFiles = getPngFiles(outDir, base);
 
 		List<String> chains = new ArrayList<String>();
 		List<String> colors = new ArrayList<String>();
@@ -198,7 +251,60 @@ public class PymolRunner {
 			appendPalettePng(pymolScriptBuilder, pngFiles[j]);
 		}
 
-		runPymolScript(pymolScriptBuilder, "eppicAssemblyPng", pngFiles);
+		queue(pymolScriptBuilder, pngFiles, deleteInput ? mmcifFile : null);
+	}
+
+	private static File[] getPngFiles(File outDir, String base) {
+		File[] pngFiles = new File[DEF_TN_HEIGHTS.length];
+		for (int i=0;i<DEF_TN_HEIGHTS.length;i++) {
+			pngFiles[i] = new File(outDir,base+"."+DEF_TN_WIDTHS[i]+"x"+DEF_TN_HEIGHTS[i]+".png");
+		}
+		return pngFiles;
+	}
+
+	private void queue(StringBuilder imageScript, File[] pngFiles, File inputToDelete) throws IOException, InterruptedException {
+		// each image starts from a clean PyMOL session, as it did when every image had a process of its own:
+		// this removes the previous image's object and resets the settings it changed
+		queuedScript.append("reinitialize\n");
+		queuedScript.append(imageScript);
+		queuedScript.append("\n");
+		queuedPngFiles.addAll(Arrays.asList(pngFiles));
+		if (inputToDelete != null) {
+			queuedInputsToDelete.add(inputToDelete);
+		}
+		numQueuedImages++;
+		if (numQueuedImages >= maxQueuedImages) {
+			flush();
+		}
+	}
+
+	/**
+	 * Renders all queued images with a single PyMOL process, then deletes the input files that were queued for deletion.
+	 * Does nothing if no images are queued. If rendering fails, the queue is emptied anyway, and the input files and
+	 * the pml script are left in place, to be able to reproduce it.
+	 * @throws IOException if PyMOL fails or does not write all the expected png files
+	 * @throws InterruptedException
+	 */
+	public void flush() throws IOException, InterruptedException {
+		if (numQueuedImages == 0) return;
+
+		int numImages = numQueuedImages;
+		StringBuilder script = new StringBuilder(queuedScript);
+		File[] pngFiles = queuedPngFiles.toArray(new File[0]);
+		List<File> inputsToDelete = new ArrayList<>(queuedInputsToDelete);
+		queuedScript.setLength(0);
+		queuedPngFiles.clear();
+		queuedInputsToDelete.clear();
+		numQueuedImages = 0;
+
+		long start = System.currentTimeMillis();
+		// the python block needed for the palette png can't go in a single line ';'-separated -d script, so we use a pml file
+		runPymolScript(script, "eppicPngs", pngFiles);
+		logger.info("Generated {} PyMOL thumbnails with one PyMOL process in {} ms", numImages, System.currentTimeMillis() - start);
+
+		for (File f : inputsToDelete) {
+			f.delete();
+		}
 	}
 
 	/**
@@ -276,7 +382,7 @@ public class PymolRunner {
 		}
 
 		// on success only: the pml of a run that failed is what one needs to reproduce it. This
-		// runs once per interface and per assembly, so with many inputs in one jvm leaving the
+		// runs once per batch of images, so with many inputs in one jvm leaving the
 		// files to deleteOnExit piles them up for the whole lifetime of the process
 		pmlFile.delete();
 	}

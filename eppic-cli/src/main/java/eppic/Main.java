@@ -618,7 +618,12 @@ public class Main {
 
 		try {
 
+			// the thumbnails are queued and rendered in batches, each with a single PyMOL process, since
+			// starting PyMOL is a large part of the time it takes to render one
 			PymolRunner pr = new PymolRunner(params.getPymolExe());
+			// since 3.1.0 we don't need to keep the precomputed coordinate files, because we can generate on the fly.
+			// With thumbnails, PyMOL deletes them once it has rendered them, since they are its input
+			boolean deleteCoordFiles = params.isModelTheOutput();
 
 			// since 3.1.0 there's no need to write the evol scores out to files
 			
@@ -636,13 +641,10 @@ public class Main {
 				ps.close();
 
 				if (params.isGenerateThumbnails()) {
-					pr.generateInterfacePng(interf, outputFile, params.getOutDir(),
-							params.getBaseName() + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId());
-					LOGGER.info("Generated PyMOL files for interface "+interf.getId());
-				}
-
-				if (params.isModelTheOutput()) {
-					// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
+					pr.queueInterfacePng(interf, outputFile, params.getOutDir(),
+							params.getBaseName() + EppicParams.INTERFACES_COORD_FILES_SUFFIX + "." + interf.getId(),
+							deleteCoordFiles);
+				} else if (deleteCoordFiles) {
 					outputFile.delete();
 				}
 
@@ -666,13 +668,10 @@ public class Main {
 				a.writeToMmCifFile(outputFile);
 
 				if (params.isGenerateThumbnails()) {
-					pr.generateAssemblyPng(a, outputFile, params.getOutDir(),
-							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId());
-                    LOGGER.info("Generated PyMOL files for assembly {}", a.getId());
-				}
-
-				if (params.isModelTheOutput()) {
-					// since 3.1.0 we don't need to keep the precomputed files, because we can generate on the fly
+					pr.queueAssemblyPng(a, outputFile, params.getOutDir(),
+							params.getBaseName()+EppicParams.ASSEMBLIES_COORD_FILES_SUFFIX+"."+a.getId(),
+							deleteCoordFiles);
+				} else if (deleteCoordFiles) {
 					outputFile.delete();
 				}
 
@@ -682,6 +681,9 @@ public class Main {
 				}
 
 			}
+
+			// renders whatever is still queued
+			pr.flush();
 			
 		} catch (IOException e) {
 			throw new EppicException(e, "Couldn't write interface coordinate files or PyMOL png files. " + e.getMessage(), true);
