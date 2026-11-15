@@ -240,24 +240,32 @@ public class GraphUtils {
 	 * @return the largest heteromeric interface cluster id, or -1 if none found
 	 */
 	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getLargestHeteroInterfaceCluster(UndirectedGraph<V, E> g) {
-		SortedSet<Integer> clusterIds = getDistinctHeteromericInterfaceClusterIds(g);
+		return getLargestHeteroInterfaceCluster(g, Collections.emptySet());
+	}
 
-		if (clusterIds.isEmpty()) return -1;
-		
-		int interfClusterId = -1;
-		Iterator<Integer> it = clusterIds.iterator();
-		while (it.hasNext()) {
-			interfClusterId = it.next();
+	/**
+	 * Get the interface cluster id corresponding to the largest interface cluster present in given graph,
+	 * skipping those interface clusters that are not isomorphic throughout graph with respect to its endpoint entities
+	 * and those in the given excluded set.
+	 * @param g
+	 * @param excluded interface cluster ids that must not be selected
+	 * @return the largest heteromeric interface cluster id, or -1 if none found
+	 */
+	public static <V extends ChainVertexInterface,E extends InterfaceEdgeInterface> int getLargestHeteroInterfaceCluster(UndirectedGraph<V, E> g, Set<Integer> excluded) {
+
+		for (int interfClusterId : getDistinctHeteromericInterfaceClusterIds(g)) {
+			if (excluded.contains(interfClusterId)) {
+				continue;
+			}
 			if (!isInterfClusterIsomorphicForEntities(g, interfClusterId)) {
 				logger.info("Interface cluster id {} is not isomorphic with respect to the 2 entities it connects. "
 						+ "Won't select it for contraction", interfClusterId );
 				continue;
-			} else {
-				break;
 			}
+			return interfClusterId;
 		}
-		
-		return interfClusterId;
+
+		return -1;
 	}
 	
 	/**

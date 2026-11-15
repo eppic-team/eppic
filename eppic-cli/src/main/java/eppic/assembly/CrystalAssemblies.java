@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.biojava.nbio.structure.*;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -330,62 +329,27 @@ public class CrystalAssemblies implements Iterable<Assembly> {
 		all.add(new Assembly(this, new PowerSet(numInterfaceClusters)));
 		
 		for (Assembly a : allFromContracted) {
-			
-			// 0. Initialise a list of interface cluster ids that we are going to engage in the full graph
-			Set<Integer> interfClusterIdsToEngage = new HashSet<>();
-			
-			// 1. Add the edges in this assembly's contracted graph. Those are also valid edges in the full graph, we can simply add them directly			
-			for (InterfaceEdge e : a.getAssemblyGraph().getSubgraph().edgeSet()) {
-				interfClusterIdsToEngage.add(e.getClusterId());
-			}
-			
-			// 2. Now simply add the contracted edges
-			Set<Integer> contractedInterfClusterIds = graphContractor.getContractedInterfClusterIds();
-			interfClusterIdsToEngage.addAll(contractedInterfClusterIds);
-			
+
+			// 1. The interface clusters engaged in this assembly, in terms of the contracted graph
+			Set<Integer> engagedInContracted = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
+
+			// 2. Convert to interface clusters of the full graph: the contracted ones (always engaged), those
+			// that are induced by them (they join chains within a contracted vertex) and the engaged ones
+			// together with all those that are equivalent to them in the contracted graph
+			Set<Integer> interfClusterIdsToEngage = graphContractor.getOriginalInterfClusterIds(engagedInContracted);
+
 			// 3. Create the new assembly with interfClusterIdsToEngage
 			Assembly aInFull = generateAssembly(interfClusterIdsToEngage);
-			
-			// 4. Finally we check if there's any induced interfaces that should be added, 
-			// this is because GraphContractor.getContractedInterfClusterIds() does not keep track of interfaces that disappear indirectly during the contraction.
-			// It only tracks the main heteromeric interfaces that we contract.
-			PowerSet ps = aInFull.getEngagedSet();
-			List<PowerSet> children = ps.getChildren(null);
-			Set<Integer> inducedInterfClusterIds = new TreeSet<>();
-			for (PowerSet child : children) {
-				// if engaging an interface doesn't change the stoichiometry, then the interface is induced							
-				Assembly childAssembly = new Assembly(this, child);
-				
-				// note: here we use the same check as in Assembly.calcScore() TODO is this the best way to do it? or should we check the stoichiometry?
-				if ( (childAssembly.getAssemblyGraph().getSubAssemblies().size() == 
-						aInFull.getAssemblyGraph().getSubAssemblies().size()) &&
-						childAssembly.isValid() ) { // it also needs to be a valid assembly
-					
-					// alright, it looks like the newly engaged interface doesn't change the assembly, i.e. it is induced
-					int index = ps.getDiff(child);
-					if (index==-1) {
-						logger.error("Something wrong when trying to find induced interfaces of assembly {} (after contraction. This must be a bug)", aInFull);
-						throw new RuntimeException("Something wrong when trying to find induced interfaces after contraction. This must be a bug");
-					}
-					int interfClusterId = index +1;
-					
-					inducedInterfClusterIds.add(interfClusterId); 
-				}
+
+			// 4. The contraction preserves cycles and their translations, so that this should be valid. Still the
+			// equivalence of interface clusters is only approximate in cases with NCS, thus we check
+			if (!aInFull.isValid()) {
+				logger.warn("Assembly {} found by contracted enumeration (interface clusters {} in contracted graph) is not valid in full graph. Discarding it",
+						aInFull, engagedInContracted);
+				continue;
 			}
-			if (inducedInterfClusterIds.size()>0) {
-				interfClusterIdsToEngage.addAll(inducedInterfClusterIds);
-				aInFull = generateAssembly(interfClusterIdsToEngage);
-			}
-			
+
 			all.add(aInFull);
-			
-			
-			// TODO in some cases we might lose some induced interfaces in making the new assemblies here,
-			//      e.g. in 4nwp the tetrahedral assembly is {1,2,3,8} but we actually get {1,2,3} from this procedure, losing 
-			//      induced interface 8 (see test case in TestContractedAssemblyEnumeration)
-			
-			// another example: 5j11, after contraction we should get {1,2,3} but we only get {1,2}, interface 3 is induced
-			// see test case in TestContractedAssemblyEnumeration
 		}
 
 	}

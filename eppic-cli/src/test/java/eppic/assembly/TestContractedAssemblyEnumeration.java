@@ -4,11 +4,16 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.biojava.nbio.structure.Structure;
 import org.biojava.nbio.structure.StructureException;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
+import org.jgrapht.UndirectedGraph;
 import org.junit.Test;
 
 import eppic.EppicParams;
@@ -64,9 +69,9 @@ public class TestContractedAssemblyEnumeration {
 			
 			System.out.println("assembly "+a.toString() + " -- " + getDescription(a));
 			
-			// in the assembly reconstruction from the contracted graph to the full graph (see CrystalAssemblies.convertToFullGraph() ), 
-			// we lose interface 8 (an induced interface). That's why the assembly here is 1,2,3
-			if (a.toString().equals("{1,2,3}")) {
+			// interface cluster 8 joins the same contracted vertices as interface cluster 1: it must be 
+			// recovered in the reconstruction from the contracted graph to the full graph (see CrystalAssemblies.convertToFullGraph() ) 
+			if (a.toString().equals("{1,2,3,8}")) {
 				gotTetrahedralAssembly = true;
 				assertEquals("T", a.getDescription().iterator().next().getSymmetry());
 			}
@@ -264,9 +269,13 @@ public class TestContractedAssemblyEnumeration {
 			
 		}
 		
-		// we've got 2 assemblies 
-		assertEquals(2, crystalAssembliesC.getAllAssemblies().size());
-		assertEquals(2, crystalAssembliesC.getUniqueAssemblies().size());
+		// at the very least we've got 2 assemblies: the trivial one and the one with only the contracted interfaces engaged
+		assertTrue(crystalAssembliesC.getUniqueAssemblies().size() >= 2);
+		
+		// all of them must be valid in the full graph
+		for (Assembly a : crystalAssembliesC.getAllAssemblies()) {
+			assertTrue(a.isValid());
+		}
 		
 		assertEquals("C1", crystalAssembliesC.getUniqueAssemblies().get(0).getDescription().iterator().next().getSymmetry());
 		assertEquals("C1", crystalAssembliesC.getUniqueAssemblies().get(1).getDescription().iterator().next().getSymmetry());	
@@ -274,5 +283,119 @@ public class TestContractedAssemblyEnumeration {
 		assertEquals(5, crystalAssembliesC.getUniqueAssemblies().get(1).getDescription().iterator().next().getSize());
 		
 
+	}
+	
+	/**
+	 * Haemoglobin: the alpha2-beta2 tetramer is a dimer of alpha-beta heterodimers. After contracting the 
+	 * largest heteromeric interface, the tetramer must be found as a C2 dimer of contracted vertices.
+	 */
+	@Test
+	public void test4hhb() throws Exception {
+		Structure s = TestLatticeGraph.getStructure("4hhb");
+		
+		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
+		
+		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, false);
+		CrystalAssemblies crystalAssembliesC = new CrystalAssemblies(s, interfaces, true);
+
+		checkContractedAgainstFull(crystalAssemblies, crystalAssembliesC);
+		
+		boolean gotTetramer = false;
+		for (Assembly a : crystalAssembliesC.getUniqueAssemblies()) {
+			System.out.println("assembly "+a.toString() + " -- " + getDescription(a));
+			AssemblyDescription ad = a.getDescription().iterator().next();
+			if (ad.getSize() == 4) {
+				gotTetramer = true;
+				assertEquals("C2", ad.getSymmetry());
+				assertEquals("A(2) B(2)", ad.getStoichiometry());
+			}
+		}
+		assertTrue("The alpha2-beta2 tetramer should have been present", gotTetramer);
+	}
+	
+	/**
+	 * 2pcc used to fail with a ConcurrentModificationException in graph contraction.
+	 */
+	@Test
+	public void test2pcc() throws Exception {
+		Structure s = TestLatticeGraph.getStructure("2pcc");
+		
+		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
+		
+		CrystalAssemblies crystalAssemblies = new CrystalAssemblies(s, interfaces, false);
+		CrystalAssemblies crystalAssembliesC = new CrystalAssemblies(s, interfaces, true);
+		
+		checkContractedAgainstFull(crystalAssemblies, crystalAssembliesC);
+	}
+	
+	/**
+	 * The contraction must not modify the graph that is contracted.
+	 */
+	@Test
+	public void testContractionDoesNotModifyGraph() throws Exception {
+		Structure s = TestLatticeGraph.getStructure("5J11");
+		
+		StructureInterfaceList interfaces = TestLatticeGraph.getAllInterfaces(s);
+		
+		LatticeGraph<ChainVertex, InterfaceEdge> lg = new LatticeGraph<>(s, interfaces, ChainVertex.class, InterfaceEdge.class);
+		lg.removeDuplicateEdges();
+		UndirectedGraph<ChainVertex, InterfaceEdge> g = lg.getGraph();
+		
+		Map<InterfaceEdge, String> before = new HashMap<>();
+		for (InterfaceEdge e : g.edgeSet()) {
+			before.put(e, edgeToString(g, e));
+		}
+		
+		GraphContractor<ChainVertex, InterfaceEdge> contractor = new GraphContractor<>(g);
+		UndirectedGraph<ChainVertex, InterfaceEdge> cg = contractor.contract(InterfaceEdge.class);
+		
+		assertTrue(cg.vertexSet().size() < g.vertexSet().size());
+		assertTrue(GraphUtils.getDistinctHeteromericInterfaceClusterIds(cg).isEmpty());
+		
+		assertEquals(before.size(), g.edgeSet().size());
+		for (InterfaceEdge e : g.edgeSet()) {
+			assertEquals(before.get(e), edgeToString(g, e));
+		}
+		
+		// no edges are shared between the 2 graphs
+		for (InterfaceEdge e : cg.edgeSet()) {
+			assertFalse(before.containsKey(e));
+		}
+	}
+	
+	private static String edgeToString(UndirectedGraph<ChainVertex, InterfaceEdge> g, InterfaceEdge e) {
+		return g.getEdgeSource(e) + " " + g.getEdgeTarget(e) + " " + e.getXtalTrans() + " " + 
+				e.getInterfaceId() + " " + e.getClusterId() + " " + e.isInfinite() + " " + e.isIsologous();
+	}
+	
+	/**
+	 * Checks that the assemblies found by contracted enumeration are valid in the full graph, and that 
+	 * all assemblies found by full enumeration that contain the interface clusters engaged in every non-trivial 
+	 * assembly of the contracted enumeration are also found by it.
+	 */
+	private static void checkContractedAgainstFull(CrystalAssemblies full, CrystalAssemblies contracted) {
+		
+		assertTrue(full.isExhaustiveEnumeration());
+		assertFalse(contracted.isExhaustiveEnumeration());
+		
+		Set<Integer> alwaysEngaged = null;
+		Set<String> fromContracted = new HashSet<>();
+		for (Assembly a : contracted.getAllAssemblies()) {
+			assertTrue("Assembly " + a + " should be valid in full graph", a.isValid());
+			fromContracted.add(a.toString());
+			Set<Integer> ids = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
+			if (ids.isEmpty()) continue;
+			if (alwaysEngaged == null) alwaysEngaged = new HashSet<>(ids);
+			else alwaysEngaged.retainAll(ids);
+		}
+		assertNotNull(alwaysEngaged);
+		assertFalse(alwaysEngaged.isEmpty());
+		
+		for (Assembly a : full.getUniqueAssemblies()) {
+			Set<Integer> ids = GraphUtils.getDistinctInterfaceClusters(a.getAssemblyGraph().getSubgraph());
+			if (ids.containsAll(alwaysEngaged)) {
+				assertTrue("Assembly " + a + " should have been found by contracted enumeration", fromContracted.contains(a.toString()));
+			}
+		}
 	}
 }
