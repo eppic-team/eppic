@@ -442,7 +442,9 @@ public class Main {
 				// New from 3.0.4 : when generating data for WUI, we won't stop when too many clashes.
 				// Like this, too many clashes don't look like an error for the precalculation pipeline and for user jobs.
 				// For WUI, a warning on top (plus warnings per interface) should replace the effect of this.
-				if (!params.isGenerateModelSerializedFile()) {
+				// That goes for any model output, i.e. also for the db upload (-M), which the
+				// precalculation workflow uses instead of the serialized file (-w).
+				if (!params.isModelTheOutput()) {
 					throw new EppicException(null, excptionMsg, true);	
 				} else {
 					LOGGER.warn(excptionMsg);
