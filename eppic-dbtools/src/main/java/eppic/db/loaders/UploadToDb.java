@@ -10,6 +10,7 @@ import eppic.db.dao.mongo.PDBInfoDAOMongo;
 import eppic.db.mongoutils.ConfigurableMapper;
 import eppic.db.mongoutils.DbPropertiesReader;
 import eppic.db.mongoutils.MongoUtils;
+import eppic.model.db.AssemblyDB;
 import eppic.model.db.InterfaceResidueFeaturesDB;
 import eppic.model.db.PdbInfoDB;
 import gnu.getopt.Getopt;
@@ -169,8 +170,10 @@ public class UploadToDb {
 			// without lookups) and that requires an empty db
 			logger.info("FULL mode was selected. Will drop all data and recreate collections and indexes");
 			MongoUtils.dropCollection(mongoDb, PdbInfoDB.class);
+			MongoUtils.dropCollection(mongoDb, AssemblyDB.class);
 			MongoUtils.dropCollection(mongoDb, InterfaceResidueFeaturesDB.class);
 			MongoUtils.createIndices(mongoDb, PdbInfoDB.class);
+			MongoUtils.createIndices(mongoDb, AssemblyDB.class);
 			MongoUtils.createIndices(mongoDb, InterfaceResidueFeaturesDB.class);
 		}
 

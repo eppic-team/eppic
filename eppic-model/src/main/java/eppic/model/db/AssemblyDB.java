@@ -4,12 +4,27 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import javax.persistence.Index;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * An assembly of an entry. In the data model it hangs from {@link PdbInfoDB#getAssemblies()}, but
+ * in the db every assembly is a document of its own in a separate collection, since the assemblies
+ * (their graph nodes and edges) are most of the size of an entry and all together in a single
+ * document they can go over the document size limit.
+ * <p>
+ * The 2 fields of the index are not fields of this class: they exist only in the db documents and
+ * are handled by the DAO. They are the id of the entry and the position of the assembly in
+ * {@link PdbInfoDB#getAssemblies()}. The position is needed because {@link #getId()} is not unique
+ * within an entry (all topologically invalid assemblies have id -1) and the list is not sorted by id.
+ */
+@Table(name = "Assembly",
+		indexes = @Index(name = "entryId-position_idx", columnList = "entryId,position", unique = true))
 public class AssemblyDB implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
