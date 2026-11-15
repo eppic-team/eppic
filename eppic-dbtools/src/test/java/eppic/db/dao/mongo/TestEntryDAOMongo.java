@@ -153,6 +153,28 @@ public class TestEntryDAOMongo {
         assertEquals(0, mongoDb.getCollection("PdbInfo").countDocuments());
     }
 
+    /**
+     * The id of an assembly is its identifier within the entry
+     */
+    @Test
+    public void testAssemblyIdsMustBeUnique() throws DaoException {
+        PdbInfoDB pdbInfo = createEntry("1abc", 5);
+        entryDao.write(pdbInfo, createFeatures("1abc", 1));
+        assertSameEntry(pdbInfo, dao.getPDBInfo("1abc"));
+        assertEquals(1, mongoDb.getCollection("Assembly").countDocuments(new Document("entryId", "1abc").append("id", -2)));
+
+        PdbInfoDB repeatedIds = createEntry("2abc", 5);
+        repeatedIds.getAssemblies().get(4).setId(-1);
+        try {
+            entryDao.write(repeatedIds, createFeatures("2abc", 1));
+            fail("Writing 2 assemblies with the same id should fail");
+        } catch (DaoException e) {
+            // expected
+        }
+        assertEquals(0, mongoDb.getCollection("Assembly").countDocuments(new Document("entryId", "2abc")));
+        assertEquals(0, mongoDb.getCollection("PdbInfo").countDocuments(new Document("entryId", "2abc")));
+    }
+
     @Test
     public void testWriteReplacesEntry() throws DaoException {
         entryDao.write(createEntry("1abc", 4), createFeatures("1abc", 3));
@@ -302,11 +324,11 @@ public class TestEntryDAOMongo {
     }
 
     /**
-     * An entry with the given number of assemblies, with the ids that the eppic cli gives them:
-     * not sorted and, for the topologically invalid ones, repeated.
+     * An entry with the given number of assemblies, with ids as the eppic cli gives them: the
+     * valid ones, then the unit cell (0), then the topologically invalid ones (negative).
      */
     private static PdbInfoDB createEntry(String entryId, int numAssemblies) {
-        int[] ids = {1, 2, 0, -1, -1};
+        int[] ids = {1, 2, 0, -1, -2};
         PdbInfoDB pdbInfo = new PdbInfoDB();
         pdbInfo.setEntryId(entryId);
         pdbInfo.setTitle("Entry " + entryId);

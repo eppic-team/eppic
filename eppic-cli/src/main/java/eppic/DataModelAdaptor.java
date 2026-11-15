@@ -65,7 +65,9 @@ public class DataModelAdaptor {
 	public static final String PDB_BIOUNIT_METHOD_PREFIX = "pdb";
 
 	/**
-	 * The assembly id for non-topologically valid assemblies. The value was 0 before v 3.1.0
+	 * The assembly id for the first non-topologically valid assembly of an entry. Any further
+	 * ones get the next negative ids (-2, -3, ...), so that assembly ids are unique within an entry.
+	 * The value was 0 before v 3.1.0, and all of them had this id before v 3.4.2
 	 */
 	public static final int INVALID_ASSEMBLY_ID = -1;
 
@@ -913,6 +915,19 @@ public class DataModelAdaptor {
 	}
 	
 	/**
+	 * Gets the id for a new non-topologically valid assembly: {@value INVALID_ASSEMBLY_ID} for
+	 * the first one of the entry and the next negative number for every one after it.
+	 * @return the id
+	 */
+	private int getNextInvalidAssemblyId() {
+		int lowestId = INVALID_ASSEMBLY_ID + 1;
+		for (AssemblyDB assembly : pdbInfo.getAssemblies()) {
+			lowestId = Math.min(lowestId, assembly.getId());
+		}
+		return lowestId - 1;
+	}
+
+	/**
 	 * Populate the data model with 1 PDB biounit annotation.
 	 * @param bioAssemblyNumber
 	 * @param bioAssembly
@@ -993,7 +1008,7 @@ public class DataModelAdaptor {
 			
 			AssemblyDB assembly = new AssemblyDB();
 			
-			assembly.setId(INVALID_ASSEMBLY_ID);
+			assembly.setId(getNextInvalidAssemblyId());
 			
 			assembly.setTopologicallyValid(false);
 

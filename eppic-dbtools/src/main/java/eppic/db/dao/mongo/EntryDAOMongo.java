@@ -25,7 +25,8 @@ import java.util.Map;
  * Writes entries to the db. An entry is these documents:
  * <ul>
  * <li>one in the PdbInfo collection, the {@link PdbInfoDB} without its assemblies</li>
- * <li>one per assembly in the Assembly collection (see {@link AssemblyDB})</li>
+ * <li>one per assembly in the Assembly collection (see {@link AssemblyDB}), identified by
+ * the entry id and the assembly id</li>
  * <li>one per interface in the InterfaceResidueFeatures collection</li>
  * </ul>
  * The PdbInfo document is what makes an entry exist: it is what readers look for first. So it
@@ -48,8 +49,9 @@ public class EntryDAOMongo implements EntryDAO {
      */
     static final String ASSEMBLIES_FIELD = "assemblies";
     /**
-     * The position of the assembly in the list of assemblies of its entry. It exists only in the
-     * assembly documents, together with the entry id.
+     * The position of the assembly in the list of assemblies of its entry, which exists only in
+     * the assembly documents. It is not what identifies an assembly, that is its id: it is there
+     * so that the assemblies are read in the order in which they were written.
      */
     static final String ASSEMBLY_POSITION_FIELD = "position";
 
