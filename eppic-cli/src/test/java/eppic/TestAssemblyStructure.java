@@ -40,6 +40,8 @@ public class TestAssemblyStructure {
         testAssemblyLayoutForPdbId("4ht5");
         testAssemblyLayoutForPdbId("5wjc");
         testAssemblyLayoutForPdbId("1auy");
+        // an assembly with a C1 rotation group for which biojava gives a principal axis index out of range
+        testAssemblyLayoutForPdbId("4osm");
 
     }
 
