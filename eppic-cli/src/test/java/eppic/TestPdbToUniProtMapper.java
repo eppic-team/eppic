@@ -92,6 +92,50 @@ public class TestPdbToUniProtMapper {
         assertEquals("LYS", pdbToUniProtMapper.getPdbGroupFromUniProtIndex(3, "A").getPDBName());
     }
 
+    /**
+     * SIFTS intervals for a different version of the UniProt sequence than the one we have, e.g. the
+     * UniProt sequence got shorter after the SIFTS file was produced. That used to throw a
+     * StringIndexOutOfBoundsException (9qva, 4btf and others with UniProt 2026_04). It now has to
+     * fall back to aligning the full sequences.
+     */
+    @Test
+    public void test1smtMappingIntervalsOutOfBounds() throws IOException, StructureException, CompoundNotFoundException {
+
+        Structure s =  StructureIO.getStructure("1smt");
+        UnirefEntry ref = new UnirefEntry();
+        ref.setId("P30340");
+        ref.setSequence(
+                "MTKPVLQDGETVVCQGTHAAIASELQAIAPEVAQSLAEFFAVLADPNRLRLLSLLARSEL" +
+                "CVGDLAQAIGVSESAVSHQLRSLRNLRLVSYRKQGRHVYYQLQDHHIVALYQNALDHLQE" +
+                "CR");
+        ref.setUniprotId("P30340");
+        ref.setNcbiTaxId(1140);
+
+        Interval[][] badIntervals = {
+                // UniProt interval past the end of the UniProt sequence (122)
+                {new Interval(1, 125), new Interval(1, 122)},
+                // PDB interval past the end of the PDB sequence (122)
+                {new Interval(1, 122), new Interval(1, 125)},
+                // inverted interval
+                {new Interval(122, 1), new Interval(1, 122)},
+        };
+
+        for (Interval[] intervs : badIntervals) {
+            PdbToUniProtMapper pdbToUniProtMapper = new PdbToUniProtMapper(s.getEntityInfos().get(0));
+            pdbToUniProtMapper.setUniProtReference(ref, intervs[0], intervs[1]);
+
+            // same as with no intervals
+            Interval intervalPdb = pdbToUniProtMapper.getMatchingIntervalPdbCoords();
+            Interval intervalUniProt = pdbToUniProtMapper.getMatchingIntervalUniProtCoords();
+            assertEquals(1, intervalPdb.beg);
+            assertEquals(122, intervalPdb.end);
+            assertEquals(1, intervalUniProt.beg);
+            assertEquals(122, intervalUniProt.end);
+            assertEquals(122, pdbToUniProtMapper.getAlignment().getLength());
+            assertNull(pdbToUniProtMapper.checkAlignments());
+        }
+    }
+
     @Test
     public void test4a71Mapping() throws IOException, StructureException, CompoundNotFoundException {
 

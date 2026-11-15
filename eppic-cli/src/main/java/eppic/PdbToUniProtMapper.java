@@ -105,6 +105,19 @@ public class PdbToUniProtMapper implements Serializable {
 
 		this.uniProtReference = uniref;
 
+		if ((uniProtInterv != null || pdbInterv != null) && !intervalsFitSequences(uniProtInterv, pdbInterv)) {
+			// the SIFTS mapping refers to a different version of the UniProt (or PDB) sequence than the
+			// one we have, e.g. the UniProt sequence was updated after the SIFTS file was produced. The
+			// intervals can't be trusted then, so we align the full sequences as if there was no SIFTS
+			// mapping. checkAlignments() still discards the reference if they don't align well enough
+			LOGGER.warn("SIFTS intervals (UniProt {}, PDB {}) don't fit the sequences of UniProt reference {} (length {}) "
+					+ "and entity {}. The SIFTS mapping is probably for a different sequence version. "
+					+ "Will align the full sequences instead",
+					uniProtInterv, pdbInterv, uniref.getUniId(), uniref.getLength(), entity.getMolId());
+			uniProtInterv = null;
+			pdbInterv = null;
+		}
+
 		initAlignments(uniProtInterv, pdbInterv);
 
 		initMatchingInterval(uniProtInterv, pdbInterv);
@@ -151,6 +164,29 @@ public class PdbToUniProtMapper implements Serializable {
 		}
 	}
 	
+	/**
+	 * Checks that the given intervals (1-based, inclusive) are within the UniProt reference sequence and
+	 * all PDB sequences respectively. A null interval is not checked.
+	 * @param uniProtInterv the interval in UniProt reference coordinates, or null
+	 * @param pdbInterv the interval in PDB sequence coordinates, or null
+	 * @return true if both intervals fit their sequences
+	 */
+	private boolean intervalsFitSequences(Interval uniProtInterv, Interval pdbInterv) {
+		if (uniProtInterv != null && !fits(uniProtInterv, uniProtReference.getSequence().length())) {
+			return false;
+		}
+		if (pdbInterv != null) {
+			for (String seq : sequences.values()) {
+				if (!fits(pdbInterv, seq.length())) return false;
+			}
+		}
+		return true;
+	}
+
+	private static boolean fits(Interval interv, int seqLength) {
+		return interv.beg >= 1 && interv.beg <= interv.end && interv.end <= seqLength;
+	}
+
 	private void initAlignments(Interval uniProtInterv, Interval pdbInterv) throws CompoundNotFoundException {
 		
 		this.alignments = new TreeMap<>();
