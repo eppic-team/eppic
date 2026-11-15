@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import eppic.model.db.InterfaceResidueFeaturesDB;
 import org.slf4j.Logger;
@@ -115,7 +116,7 @@ public class TextOutputWriter {
 				LOGGER.warn("Got resser==-1 for residue burial object. Will skip");
 				continue;
 			}
-			ResidueInfoDB residueInfo = pdbInfo.getChainCluster(pdbChainCode).getResidue(resser);
+			ResidueInfoDB residueInfo = getChainCluster(pdbChainCode).getResidue(resser);
 			int resNum = 0;
 			String pdbResNum = "0";
 			String resType = "XXX";
@@ -139,6 +140,24 @@ public class TextOutputWriter {
 
 	}
 	
+	/**
+	 * Gets the chain cluster for the given chain id. In entries with NCS operators (mostly viral capsids) 
+	 * the chain ids of interface partners have a suffix identifying the NCS operator (e.g. A12n), 
+	 * whilst chain clusters only know about the original chain ids.
+	 * @param pdbChainCode
+	 * @return
+	 */
+	private ChainClusterDB getChainCluster(String pdbChainCode) {
+		ChainClusterDB chainCluster = pdbInfo.getChainCluster(pdbChainCode);
+		if (chainCluster == null && pdbInfo.isNcsOpsPresent()) {
+			Matcher m = CoordFilesAdaptor.ncsOpsChainNameRegex.matcher(pdbChainCode);
+			if (m.matches()) {
+				chainCluster = pdbInfo.getChainCluster(m.group(1));
+			}
+		}
+		return chainCluster;
+	}
+	
 	private String getResString(List<ResidueBurialDB> residues, String pdbChainCode, boolean usePdbResSer) {
 		String str = "";
 		for (int i=0;i<residues.size();i++) {
@@ -147,7 +166,7 @@ public class TextOutputWriter {
 				LOGGER.warn("Got resser==-1 for residue burial object. Will skip");
 				continue;
 			}
-			ResidueInfoDB residueInfo = pdbInfo.getChainCluster(pdbChainCode).getResidue(resser);
+			ResidueInfoDB residueInfo = getChainCluster(pdbChainCode).getResidue(resser);
 			String serial = "0";
 			if (residueInfo!=null) {
 				if (usePdbResSer) {

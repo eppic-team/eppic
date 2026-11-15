@@ -70,12 +70,19 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 					axis = new AxisAngle4d();
 				}
 			} else {
-				// in some cases like 4osm, 4oto (possibly because of helical symmetry) the higher order index is not present in pointgroup.getRotation(index)
-				if (pointgroup.getHigherOrderRotationAxis() >= pointgroup.getOrder()) {
-					logger.warn("Point group order is less than higher order rotation axis. Something is wrong, possibly because of helical symmetry.");
+				// We orient along the principal axis (the one with highest order).
+				// Note that RotationGroup.getHigherOrderRotationAxis() is not an index but the count of axes with order above 2
+				// that are not along the principal axis: it can't be used to get a rotation.
+				int principalAxisIndex = pointgroup.getPrincipalAxisIndex();
+				if (principalAxisIndex >= pointgroup.getOrder()) {
+					// in some cases like 4osm, 4oto the rotation group contains only the identity (C1)
+					// but the principal axis index still refers to a discarded larger group
+					logger.info("Principal axis index {} is not within the {} rotations of point group {}. Setting axis to default "
+							+ "for Connected Component containing {}", 
+							principalAxisIndex, pointgroup.getOrder(), pointgroup.getPointGroup(), connected.iterator().next());
 					axis = new AxisAngle4d();
 				} else {
-					Rotation rotation = pointgroup.getRotation(pointgroup.getHigherOrderRotationAxis());
+					Rotation rotation = pointgroup.getRotation(principalAxisIndex);
 					axis = rotation.getAxisAngle();
 				}
 			}
