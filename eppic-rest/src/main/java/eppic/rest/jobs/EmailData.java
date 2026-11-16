@@ -44,6 +44,24 @@ public class EmailData implements Serializable
 	private EmailMessageData emailMessageData;
 
 	/**
+	 * Returns a copy of this email data with the given recipient. This object is not modified, so that
+	 * it can hold the settings common to all jobs whilst every job gets its own recipient.
+	 * @param emailRecipient the recipient address, null for no recipient
+	 * @return a new object with the same settings as this one and the given recipient
+	 */
+	public EmailData forRecipient(String emailRecipient) {
+		EmailData copy = new EmailData();
+		copy.emailRecipient = emailRecipient;
+		copy.emailSenderUserName = emailSenderUserName;
+		copy.emailSenderPassword = emailSenderPassword;
+		copy.port = port;
+		copy.host = host;
+		copy.replyToAddress = replyToAddress;
+		copy.emailMessageData = emailMessageData;
+		return copy;
+	}
+
+	/**
 	 * Retrieves SMTP port.
 	 * @return SMTP port
 	 */

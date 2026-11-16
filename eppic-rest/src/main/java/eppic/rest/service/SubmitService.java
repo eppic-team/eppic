@@ -52,6 +52,9 @@ public class SubmitService {
     private String eppicJarPath;
     private File cliConfigFile;
 
+    /**
+     * The email settings common to all jobs, without a recipient
+     */
     private EmailData emailData;
 
     private MongoDatabase mongoDbUserJobs;
@@ -106,8 +109,8 @@ public class SubmitService {
 
         // 1 validate
         String email = validateEmail(userJobSubmission.getEmail());
-        // if null we are intentionally setting null so that the email is always reset (or otherwise the email from prev submission would stay!)
-        emailData.setEmailRecipient(email);
+        // every job gets its own email data: the jobs run asynchronously and send their emails after later submissions have come in
+        EmailData jobEmailData = emailData.forRecipient(email);
 
         // 2 Create a submission id
         String submissionId = UUID.randomUUID().toString(); // perhaps strip hyphens?
@@ -139,7 +142,7 @@ public class SubmitService {
 
         // 4 submit CLI job async: at end of job persist to db and send notification email
         List<String> cmd = EppicCliGenerator.generateCommand(javaVMExec, eppicJarPath, file, submissionId, outDir.getAbsolutePath(), numThreadsEppicProcess, memForEppicProcess, cliConfigFile, userJobSubmission.isSkipEvolAnalysis());
-        jobManager.startJob(submissionId, cmd, outDir, DEFAULT_NUM_THREADS_PER_JOB, mongoDbUserJobs, emailData);
+        jobManager.startJob(submissionId, cmd, outDir, DEFAULT_NUM_THREADS_PER_JOB, mongoDbUserJobs, jobEmailData);
 
         // 5 return generated id
         return new SubmissionStatus(submissionId, StatusOfJob.WAITING);
