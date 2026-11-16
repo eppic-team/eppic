@@ -1,14 +1,5 @@
 package eppic.commons.sequence;
 
-import eppic.commons.sequence.SequenceClusterer.LocalAlignment;
-import org.biojava.nbio.alignment.Alignments;
-import org.biojava.nbio.alignment.Alignments.PairwiseSequenceAlignerType;
-import org.biojava.nbio.alignment.SimpleGapPenalty;
-import org.biojava.nbio.alignment.template.PairwiseSequenceAligner;
-import org.biojava.nbio.core.alignment.matrices.SubstitutionMatrixHelper;
-import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
-import org.biojava.nbio.core.sequence.ProteinSequence;
-import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -18,93 +9,9 @@ import java.util.Random;
 
 import static org.junit.Assert.*;
 
-/**
- * The class tested is in eppic-util: the test is here because in the tests of that module
- * the BioJava sequence classes, which this needs to check the alignments, can't be loaded.
- */
 public class TestSequenceClusterer {
 
 	private static final String AMINO_ACIDS = "ACDEFGHIKLMNPQRSTVWY";
-
-	/**
-	 * The alignment must be an optimal one: checked against the Smith-Waterman of BioJava
-	 */
-	@Test
-	public void testAlignmentAgainstBiojava() throws CompoundNotFoundException {
-		Random random = new Random(12345);
-		List<String> seqs = new ArrayList<>();
-		for (int family = 0; family < 4; family++) {
-			String parent = randomSequence(random, 60 + 40 * family);
-			seqs.add(parent);
-			// members from very close to very far, with substitutions, insertions and deletions
-			for (double rate : new double[] {0.02, 0.05, 0.1, 0.2, 0.4}) {
-				seqs.add(mutate(random, parent, rate));
-			}
-		}
-		// and a sequence with letters other than the 20 standard amino acids
-		seqs.add(seqs.get(0).substring(0, 20) + "XBZU" + seqs.get(0).substring(24));
-
-		int numPairs = 0;
-		for (int i = 0; i < seqs.size(); i++) {
-			for (int j = i + 1; j < seqs.size(); j++) {
-				String seq1 = seqs.get(i);
-				String seq2 = seqs.get(j);
-				LocalAlignment aln = SequenceClusterer.align(seq1, seq2);
-
-				PairwiseSequenceAligner<ProteinSequence, AminoAcidCompound> aligner = Alignments.getPairwiseAligner(
-						new ProteinSequence(seq1.replaceAll("[^" + AMINO_ACIDS + "]", "X")),
-						new ProteinSequence(seq2.replaceAll("[^" + AMINO_ACIDS + "]", "X")),
-						PairwiseSequenceAlignerType.LOCAL, new SimpleGapPenalty(11, 1), SubstitutionMatrixHelper.getBlosum62());
-				assertEquals("Score of alignment of sequences " + i + " and " + j, (int) aligner.getScore(), aln.score());
-
-				// and it must be consistent
-				if (aln.score() > 0) {
-					int aligned1 = aln.end1() - aln.start1() + 1;
-					int aligned2 = aln.end2() - aln.start2() + 1;
-					assertTrue(aln.start1() >= 0 && aln.end1() < seq1.length() && aligned1 > 0);
-					assertTrue(aln.start2() >= 0 && aln.end2() < seq2.length() && aligned2 > 0);
-					assertTrue(aln.length() >= Math.max(aligned1, aligned2));
-					assertTrue(aln.length() <= aligned1 + aligned2);
-					assertTrue(aln.numIdenticals() <= Math.min(aligned1, aligned2));
-					// a local alignment starts and ends with identical or similar residues
-					assertTrue(aln.numIdenticals() > 0);
-				}
-				numPairs++;
-			}
-		}
-		assertEquals(25 * 24 / 2, numPairs);
-	}
-
-	@Test
-	public void testAlignmentValues() {
-		String seq = "MTKPVLQDGETVVCQGTHAAWYRSFNE";
-		LocalAlignment aln = SequenceClusterer.align(seq, seq);
-		assertEquals(new LocalAlignment(aln.score(), seq.length(), seq.length(), 0, seq.length() - 1, 0, seq.length() - 1), aln);
-		assertEquals(1.0, aln.getIdentity(), 0.000001);
-
-		// the second one within the first, with other residues around
-		aln = SequenceClusterer.align("GGGGG" + seq + "GGG", seq);
-		assertEquals(seq.length(), aln.numIdenticals());
-		assertEquals(seq.length(), aln.length());
-		assertEquals(5, aln.start1());
-		assertEquals(5 + seq.length() - 1, aln.end1());
-		assertEquals(0, aln.start2());
-		assertEquals(seq.length() - 1, aln.end2());
-
-		// a deletion of 2 residues in the middle of the second: 2 gap positions in the alignment
-		aln = SequenceClusterer.align(seq, seq.substring(0, 13) + seq.substring(15));
-		assertEquals(seq.length() - 2, aln.numIdenticals());
-		assertEquals(seq.length(), aln.length());
-		assertEquals(0, aln.start1());
-		assertEquals(seq.length() - 1, aln.end1());
-		assertEquals(0, aln.start2());
-		assertEquals(seq.length() - 3, aln.end2());
-
-		// nothing in common, and nothing at all
-		assertEquals(0, SequenceClusterer.align("GGGGGGGG", "WWWWWWWW").length());
-		assertEquals(0, SequenceClusterer.align("", seq).length());
-		assertEquals(0.0, SequenceClusterer.align("", seq).getIdentity(), 0.000001);
-	}
 
 	/**
 	 * The same case as in the mmseqs2 test
@@ -132,6 +39,24 @@ public class TestSequenceClusterer {
 
 		assertEquals(2, new SequenceClusterer(0.9, 0.9).cluster(ids, seqs, 1).size());
 		assertEquals(1, new SequenceClusterer(0.9, 0.7).cluster(ids, seqs, 1).size());
+	}
+
+	/**
+	 * Letters other than the 20 standard amino acids are taken as X, and sequences with nothing in
+	 * common or with nothing at all are clusters of their own
+	 */
+	@Test
+	public void testUnusualSequences() {
+		String seq = "MTKPVLQDGETVVCQGTHAAWYRSFNEMTKPVLQDGETVVCQGTHAAWYRSFNE";
+		String unusual = seq.substring(0, 20) + "UBZXOJ*" + seq.substring(27);
+		List<String> ids = List.of("unusual", "lower", "x", "standard", "unrelated", "empty");
+		List<String> seqs = List.of(unusual, unusual.toLowerCase(), seq.substring(0, 20) + "XXXXXXX" + seq.substring(27), seq,
+				"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG", "");
+
+		assertEquals(List.of(List.of("unusual", "lower", "x"), List.of("standard"), List.of("unrelated"), List.of("empty")),
+				new SequenceClusterer(0.95, 0.9).cluster(ids, seqs, 1));
+		assertEquals(List.of(List.of("unusual", "lower", "x", "standard"), List.of("unrelated"), List.of("empty")),
+				new SequenceClusterer(0.85, 0.9).cluster(ids, seqs, 1));
 	}
 
 	/**
