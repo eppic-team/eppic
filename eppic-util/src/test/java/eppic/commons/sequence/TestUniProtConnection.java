@@ -32,10 +32,10 @@ public class TestUniProtConnection {
 
 	@Test
 	public void testGetUniref() throws NoMatchFoundException, IOException {
-		String upid = "A0A8C0T962";
+		String upid = "P69905";
 		UniProtConnection upc = new UniProtConnection();
 		UnirefEntry entry = upc.getUnirefEntry(upid);
-		assertEquals(443, entry.getSeq().getLength());
+		assertEquals(142, entry.getSeq().getLength());
 		assertEquals(upid, entry.getUniId());
 	}
 
