@@ -70,11 +70,12 @@ public class HomologList implements  Serializable {
 	/**
 	 * The most work that clustering the homologs can be for doing it here, with
 	 * {@link SequenceClusterer}, instead of with mmseqs2: see {@link SequenceClusterer#estimateCost(List, double, double)}.
-	 * This much is some 2s for a thread at worst, and usually a lot less, whilst mmseqs2 needs
-	 * several seconds whatever the number of sequences. As a guide, it is about 80 homologs for
-	 * a protein of 300 residues, and about 40 for one of 600.
+	 * This much is some 10s for a thread at worst, and usually a lot less, whilst mmseqs2 needs
+	 * several seconds whatever the number of sequences. As a guide, it is about 180 homologs for
+	 * a protein of 300 residues, and about 90 for one of 600. In a sample of 1000 homolog lists
+	 * two thirds were under it at the 60% identity cutoff.
 	 */
-	private static final long       MAX_COST_FOR_CLUSTERING_HERE = 300_000_000L;
+	private static final long       MAX_COST_FOR_CLUSTERING_HERE = 1_500_000_000L;
 	
 	
 	private static final boolean 	DEBUG = false;
