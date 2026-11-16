@@ -33,6 +33,7 @@ import eppic.commons.sequence.AlignmentConstructionException;
 import eppic.commons.sequence.ClustaloRunner;
 import eppic.commons.sequence.FileFormatException;
 import eppic.commons.sequence.MultipleSequenceAlignment;
+import eppic.commons.sequence.SequenceClusterer;
 import eppic.commons.sequence.NoMatchFoundException;
 import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.UniProtConnection;
@@ -66,6 +67,14 @@ public class HomologList implements  Serializable {
 	
 	public static final int         CLUSTERING_ID = 90;
 	private static final double     CLUSTERING_COVERAGE = 0.99;
+	/**
+	 * The most work that clustering the homologs can be for doing it here, with
+	 * {@link SequenceClusterer}, instead of with mmseqs2: see {@link SequenceClusterer#estimateCost(List, double, double)}.
+	 * This much is some 2s for a thread at worst, and usually a lot less, whilst mmseqs2 needs
+	 * several seconds whatever the number of sequences. As a guide, it is about 80 homologs for
+	 * a protein of 300 residues, and about 40 for one of 600.
+	 */
+	private static final long       MAX_COST_FOR_CLUSTERING_HERE = 300_000_000L;
 	
 	
 	private static final boolean 	DEBUG = false;
@@ -90,6 +99,10 @@ public class HomologList implements  Serializable {
 	private List<Double> entropies;					// entropies for each uniprot reference sequence position
 	
 	private boolean useUniparc;
+
+	// clusters the homologs when they are few. It is kept because it remembers the pairs of
+	// homologs that it has compared, and the homologs are clustered once per identity cutoff tried
+	private final SequenceClusterer sequenceClusterer = new SequenceClusterer(CLUSTERING_ID / 100.0, CLUSTERING_COVERAGE);
 	
 	
 	public HomologList(UnirefEntry ref) {
@@ -724,6 +737,10 @@ public class HomologList implements  Serializable {
 	 * Note that the sequences used for clustering are the HSP matching regions only.
 	 * One representative is chosen from each cluster and the other
 	 * cluster members discarded.
+	 * The clustering is done with mmseqs2, except if the homologs are few: then it is done
+	 * here with {@link SequenceClusterer}, which for few sequences is a lot faster and gives
+	 * essentially the same clusters. In that case the representative of a cluster is the one
+	 * of its members that is first in the list, i.e. the closest to the query.
 	 * @param maxDesiredHomologs the maximum number of desired homologs
 	 * @param mmseqsBin the mmseqs2 executable
 	 * @param scratchDir dir under which mmseqs2 writes its output and temp files. Everything it
@@ -745,34 +762,28 @@ public class HomologList implements  Serializable {
 		
 		LOGGER.info("Proceeding to perform redundancy reduction for homologs of {} by clustering of sequences", ref.getUniId());
 				
-		File inputSeqFile = File.createTempFile(CLUSTERING_BASENAME,FASTA_SUFFIX);
-
-		writeToFasta(inputSeqFile, false);
-
-		// mmseqs by default does 504 hits per query. Thus 504 is the max possible number of sequences to cluster
-		// and max number of possible sequences if nothing is clustered
-
-		// a dir of its own per call: the scratch dir is shared by all chains and all inputs of the
-		// run, and a call that throws leaves its files behind (see MmseqsRunner), which would make
-		// mmseqs2 try to resume from them on the next call
-		// the scratch dir itself is only created up front when -p is given (see Main), so don't
-		// rely on that here
-		Files.createDirectories(scratchDir.toPath());
-		File clusteringDir = Files.createTempDirectory(scratchDir.toPath(), CLUSTERING_BASENAME).toFile();
-
-		long start = System.currentTimeMillis();
-		List<List<String>> clusters = MmseqsRunner.runMmseqsEasyCluster(mmseqsBin, inputSeqFile, new File(clusteringDir, "seqClustering"), CLUSTERING_ID, CLUSTERING_COVERAGE, numThreads);
-		long end = System.currentTimeMillis();
-		LOGGER.info("Ran mmseqs2 sequence clustering for redundancy reduction in {}s", ((end-start)/1000));
-
-		// MmseqsRunner removes the files it wrote in there, this takes care of the dir itself
-		if (!clusteringDir.delete()) {
-			LOGGER.warn("Could not remove mmseqs2 clustering dir {}", clusteringDir);
+		// the sequences to cluster are the HSP matching regions only, as in writeToFasta
+		List<String> ids = new ArrayList<>();
+		List<String> seqs = new ArrayList<>();
+		for (Homolog hom : subList) {
+			ids.add(hom.getIdentifier());
+			seqs.add(hom.getUnirefEntry().getSeq().getInterval(
+					new Interval(hom.getBlastHsp().getSubjectStart(), hom.getBlastHsp().getSubjectEnd())).getSeq());
 		}
 
-		if (!DEBUG) {
-			// note that if mmseqs throws an exception then this is not reached and the file stays behind
-			inputSeqFile.delete();
+		// With few homologs they are clustered here, comparing all to all. With many that would
+		// take too long and it is done with mmseqs2, which takes several seconds just to start
+		// but then scales well.
+		List<List<String>> clusters;
+		long cost = SequenceClusterer.estimateCost(seqs, CLUSTERING_ID / 100.0, CLUSTERING_COVERAGE);
+		if (cost <= MAX_COST_FOR_CLUSTERING_HERE) {
+			long start = System.currentTimeMillis();
+			clusters = sequenceClusterer.cluster(ids, seqs, numThreads);
+			long end = System.currentTimeMillis();
+			LOGGER.info("Clustered {} sequences for redundancy reduction by all to all alignment in {}ms", seqs.size(), end - start);
+		} else {
+			LOGGER.info("Too many sequences to cluster by all to all alignment ({} sequences, estimated cost {}): will use mmseqs2", seqs.size(), cost);
+			clusters = clusterWithMmseqs(mmseqsBin, scratchDir, numThreads);
 		}
 
 		LOGGER.info("Redundancy elimination at {}% identity resulted in {} clusters", CLUSTERING_ID, clusters.size());
@@ -804,6 +815,46 @@ public class HomologList implements  Serializable {
 
 	}
 	
+	/**
+	 * Clusters the sequences of the filtered subset of homologs with mmseqs2
+	 * @return the clusters, each a list of homolog identifiers of which the first is the representative
+	 */
+	private List<List<String>> clusterWithMmseqs(File mmseqsBin, File scratchDir, int numThreads)
+			throws IOException, InterruptedException, BlastException {
+
+		File inputSeqFile = File.createTempFile(CLUSTERING_BASENAME,FASTA_SUFFIX);
+
+		writeToFasta(inputSeqFile, false);
+
+		// mmseqs by default does 504 hits per query. Thus 504 is the max possible number of sequences to cluster
+		// and max number of possible sequences if nothing is clustered
+
+		// a dir of its own per call: the scratch dir is shared by all chains and all inputs of the
+		// run, and a call that throws leaves its files behind (see MmseqsRunner), which would make
+		// mmseqs2 try to resume from them on the next call
+		// the scratch dir itself is only created up front when -p is given (see Main), so don't
+		// rely on that here
+		Files.createDirectories(scratchDir.toPath());
+		File clusteringDir = Files.createTempDirectory(scratchDir.toPath(), CLUSTERING_BASENAME).toFile();
+
+		long start = System.currentTimeMillis();
+		List<List<String>> clusters = MmseqsRunner.runMmseqsEasyCluster(mmseqsBin, inputSeqFile, new File(clusteringDir, "seqClustering"), CLUSTERING_ID, CLUSTERING_COVERAGE, numThreads);
+		long end = System.currentTimeMillis();
+		LOGGER.info("Ran mmseqs2 sequence clustering for redundancy reduction in {}s", ((end-start)/1000));
+
+		// MmseqsRunner removes the files it wrote in there, this takes care of the dir itself
+		if (!clusteringDir.delete()) {
+			LOGGER.warn("Could not remove mmseqs2 clustering dir {}", clusteringDir);
+		}
+
+		if (!DEBUG) {
+			// note that if mmseqs throws an exception then this is not reached and the file stays behind
+			inputSeqFile.delete();
+		}
+
+		return clusters;
+	}
+
 	/**
 	 * Returns the number of homologs in the unfiltered list (not filtered)
 	 * @return
