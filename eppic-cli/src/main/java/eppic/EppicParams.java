@@ -33,7 +33,7 @@ public class EppicParams {
 		BUILD_GIT_SHA = "NA";
 		try {
 			Properties p = new Properties();
-			InputStream is = EppicParams.class.getClass().getResourceAsStream("/about.properties");
+			InputStream is = EppicParams.class.getResourceAsStream("/about.properties");
 			if (is!=null) {
 				p.load(is);
 				PROGRAM_VERSION = p.getProperty("project.version");
