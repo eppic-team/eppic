@@ -22,9 +22,19 @@ public class EmailData implements Serializable
 	private String emailSenderUserName;
 
 	/**
-	 * Sender password.
+	 * OAuth2 client id of the Google app used to send emails.
 	 */
-	private String emailSenderPassword;
+	private String oauth2ClientId;
+
+	/**
+	 * OAuth2 client secret of the Google app used to send emails.
+	 */
+	private String oauth2ClientSecret;
+
+	/**
+	 * OAuth2 refresh token for the sender account, used to obtain access tokens.
+	 */
+	private String oauth2RefreshToken;
 
 	/**
 	 * SMTP port.
@@ -53,7 +63,9 @@ public class EmailData implements Serializable
 		EmailData copy = new EmailData();
 		copy.emailRecipient = emailRecipient;
 		copy.emailSenderUserName = emailSenderUserName;
-		copy.emailSenderPassword = emailSenderPassword;
+		copy.oauth2ClientId = oauth2ClientId;
+		copy.oauth2ClientSecret = oauth2ClientSecret;
+		copy.oauth2RefreshToken = oauth2RefreshToken;
 		copy.port = port;
 		copy.host = host;
 		copy.replyToAddress = replyToAddress;
@@ -125,20 +137,28 @@ public class EmailData implements Serializable
 		this.emailSenderUserName = emailSender;
 	}
 
-	/**
-	 * Retrieves password used for smtp authentication
-	 * @return password used to send emails
-	 */
-	public String getEmailSenderPassword() {
-		return emailSenderPassword;
+	public String getOauth2ClientId() {
+		return oauth2ClientId;
 	}
 
-	/**
-	 * Sets password used for smtp authentication
-	 * @param emailSenderPassword password used to send emails
-	 */
-	public void setEmailSenderPassword(String emailSenderPassword) {
-		this.emailSenderPassword = emailSenderPassword;
+	public void setOauth2ClientId(String oauth2ClientId) {
+		this.oauth2ClientId = oauth2ClientId;
+	}
+
+	public String getOauth2ClientSecret() {
+		return oauth2ClientSecret;
+	}
+
+	public void setOauth2ClientSecret(String oauth2ClientSecret) {
+		this.oauth2ClientSecret = oauth2ClientSecret;
+	}
+
+	public String getOauth2RefreshToken() {
+		return oauth2RefreshToken;
+	}
+
+	public void setOauth2RefreshToken(String oauth2RefreshToken) {
+		this.oauth2RefreshToken = oauth2RefreshToken;
 	}
 
 	public String getReplyToAddress() {
@@ -162,11 +182,17 @@ public class EmailData implements Serializable
 		return "EmailData{" +
 				"emailRecipient='" + emailRecipient + '\'' +
 				", emailSenderUserName='" + emailSenderUserName + '\'' +
-				", emailSenderPassword='" + (emailSenderPassword==null?"null":"*****") + '\'' +
+				", oauth2ClientId='" + oauth2ClientId + '\'' +
+				", oauth2ClientSecret='" + mask(oauth2ClientSecret) + '\'' +
+				", oauth2RefreshToken='" + mask(oauth2RefreshToken) + '\'' +
 				", port='" + port + '\'' +
 				", host='" + host + '\'' +
 				", replyToAddress='" + replyToAddress + '\'' +
 				", emailMessageData=" + emailMessageData +
 				'}';
+	}
+
+	private static String mask(String secret) {
+		return secret == null || secret.isEmpty() ? "<not set>" : "*****";
 	}
 }

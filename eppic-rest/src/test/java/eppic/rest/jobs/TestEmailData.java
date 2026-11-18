@@ -12,7 +12,9 @@ public class TestEmailData {
         common.setHost("smtp.example.org");
         common.setPort("465");
         common.setEmailSenderUserName("sender");
-        common.setEmailSenderPassword("secret");
+        common.setOauth2ClientId("client-id");
+        common.setOauth2ClientSecret("client-secret");
+        common.setOauth2RefreshToken("refresh-token");
         common.setReplyToAddress("noreply@example.org");
         EmailMessageData messageData = new EmailMessageData();
         common.setEmailMessageData(messageData);
@@ -31,7 +33,9 @@ public class TestEmailData {
             assertEquals("smtp.example.org", copy.getHost());
             assertEquals("465", copy.getPort());
             assertEquals("sender", copy.getEmailSenderUserName());
-            assertEquals("secret", copy.getEmailSenderPassword());
+            assertEquals("client-id", copy.getOauth2ClientId());
+            assertEquals("client-secret", copy.getOauth2ClientSecret());
+            assertEquals("refresh-token", copy.getOauth2RefreshToken());
             assertEquals("noreply@example.org", copy.getReplyToAddress());
             assertSame(messageData, copy.getEmailMessageData());
         }

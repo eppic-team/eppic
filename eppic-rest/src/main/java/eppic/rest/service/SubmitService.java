@@ -82,7 +82,9 @@ public class SubmitService {
         emailData = new EmailData();
         emailData.setHost(eppicRestProperties.getEmailHost());
         emailData.setPort(String.valueOf(eppicRestProperties.getEmailPort()));
-        emailData.setEmailSenderPassword(eppicRestProperties.getEmailPassword());
+        emailData.setOauth2ClientId(eppicRestProperties.getEmailOauth2ClientId());
+        emailData.setOauth2ClientSecret(eppicRestProperties.getEmailOauth2ClientSecret());
+        emailData.setOauth2RefreshToken(eppicRestProperties.getEmailOauth2RefreshToken());
         emailData.setEmailSenderUserName(eppicRestProperties.getEmailUsername());
         emailData.setReplyToAddress(eppicRestProperties.getEmailReplytoAddress());
         EmailMessageData emailMessageData = new EmailMessageData();

@@ -1,14 +1,12 @@
 package eppic.rest.jobs;
 
+import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.Executors;
 
 import jakarta.mail.Address;
-import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
 import jakarta.mail.Message.RecipientType;
 import jakarta.mail.MessagingException;
-import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
@@ -18,7 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is used to send emails.
+ * This class is used to send emails, via Gmail's SMTP server authenticating with OAuth2 (XOAUTH2).
+ * The same setup as nodemailer's gmail service with OAuth2 credentials.
  * @author srebniak_a
  *
  */
@@ -39,47 +38,60 @@ public class EmailSender
 	 */
 	public void send(String subject, String bodyText) throws MessagingException {
 
-		Properties properties = new Properties();
-		properties.put("mail.smtp.host", emailData.getHost());
-		properties.put("mail.smtp.port", emailData.getPort());
-		// this seems to be needed for google's smtp server - JD 2017-09-01
-		// https://stackoverflow.com/questions/67556270/javax-net-ssl-sslhandshakeexception-no-appropriate-protocol-protocol-is-disabl
-		properties.put("mail.smtp.auth", "true");
-		properties.put("mail.smtp.socketFactory.port", emailData.getPort());
-		properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-		properties.put("mail.smtp.socketFactory.fallback", "false");
-		properties.put("mail.smtp.starttls.enable", "true");
-		properties.put("mail.smtp.starttls.required", "true");
-		properties.put("mail.smtp.ssl.protocols", "TLSv1.2");
+		String accessToken;
+		try {
+			accessToken = GoogleOAuth2TokenProvider.getInstance(
+					emailData.getOauth2ClientId(),
+					emailData.getOauth2ClientSecret(),
+					emailData.getOauth2RefreshToken())
+					.getAccessToken();
+		} catch (IOException e) {
+			throw new MessagingException("Could not get OAuth2 access token for sending email: " + e.getMessage(), e);
+		}
 
+		Session session = Session.getInstance(getSmtpProperties(emailData));
 
-		Session session = Session.getDefaultInstance(properties, new Authenticator() {
-			// this seems to be needed for google's smtp server - JD 2017-09-01
-			@Override
-			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(emailData.getEmailSenderUserName(), emailData.getEmailSenderPassword());
-			}
-		});
 		Message simpleMessage = new MimeMessage(session);
 
 		InternetAddress toAddress = new InternetAddress(emailData.getEmailRecipient());
 		Address[] replyTos = {new InternetAddress(emailData.getReplyToAddress())};
 
+		// the sender must be the authenticated account, otherwise gmail rewrites it
+		simpleMessage.setFrom(new InternetAddress(emailData.getEmailSenderUserName()));
 		simpleMessage.setReplyTo(replyTos);
 		simpleMessage.setRecipient(RecipientType.TO, toAddress);
 		simpleMessage.setSubject(subject);
 		simpleMessage.setText(bodyText);
 		simpleMessage.saveChanges();
 
-		Transport transport = session.getTransport("smtp");
-		// apparently the password is not needed here, don't know why -JD 2017-09-01
-		transport.connect(properties.getProperty("mail.smtp.host"),
-				emailData.getEmailSenderUserName(), "");
-		transport.sendMessage(simpleMessage,
-				simpleMessage.getAllRecipients());
-		transport.close();
+		try (Transport transport = session.getTransport("smtp")) {
+			// with XOAUTH2 the access token goes in place of the password
+			transport.connect(emailData.getHost(), Integer.parseInt(emailData.getPort()),
+					emailData.getEmailSenderUserName(), accessToken);
+			transport.sendMessage(simpleMessage, simpleMessage.getAllRecipients());
+		}
 
 		logger.info("Successfully sent email for recipient {} with subject '{}'", emailData.getEmailRecipient(), subject);
+	}
+
+	static Properties getSmtpProperties(EmailData emailData) {
+		Properties properties = new Properties();
+		properties.put("mail.smtp.host", emailData.getHost());
+		properties.put("mail.smtp.port", emailData.getPort());
+		properties.put("mail.smtp.auth", "true");
+		properties.put("mail.smtp.auth.mechanisms", "XOAUTH2");
+		// port 465 is implicit TLS (SMTPS), 587 is plain connection upgraded with STARTTLS
+		if ("465".equals(emailData.getPort())) {
+			properties.put("mail.smtp.ssl.enable", "true");
+		} else {
+			properties.put("mail.smtp.starttls.enable", "true");
+			properties.put("mail.smtp.starttls.required", "true");
+		}
+		properties.put("mail.smtp.ssl.checkserveridentity", "true");
+		properties.put("mail.smtp.connectiontimeout", "30000");
+		properties.put("mail.smtp.timeout", "30000");
+		properties.put("mail.smtp.writetimeout", "30000");
+		return properties;
 	}
 
 	public void sendSubmittedEmail(String submissionId) throws MessagingException {
@@ -98,19 +110,5 @@ public class EmailSender
 		send(
 				emailData.getEmailMessageData().getEmailJobErrorTitle(submissionId),
 				emailData.getEmailMessageData().getEmailJobErrorMessage(submissionId));
-	}
-
-	/**
-	 * Sends email in an independent thread so that the server doesn't get blocked
-	 * if something goes wrong in the sending.
-	 */
-	public void sendInSeparateThread(String subject, String bodyText) {
-		Executors.newSingleThreadExecutor().execute(() -> {
-			try {
-				send(subject, bodyText);
-			} catch (MessagingException e) {
-				logger.error("Could not send email for recipient {}. Email title was: {}. Error: {}", emailData.getEmailRecipient(), subject, e.getMessage());
-			}
-		});
 	}
 }
