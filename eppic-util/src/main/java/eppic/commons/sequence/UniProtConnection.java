@@ -40,21 +40,48 @@ public class UniProtConnection {
 	private static final int MAX_NUM_RETRIES = 5;
 
 	/**
-	 * Maximum number of accessions that can be asked for in a single request to the
-	 * Proteins API. This is the limit the API itself imposes on the accession parameter.
+	 * Maximum number of accessions asked for in a single batch request. The API takes
+	 * more, but it pages its answer at 500, and smaller batches keep the cost of a
+	 * failed batch (see {@link #getUnirefEntriesWithRetry(List)}) low.
 	 */
 	private static final int MAX_ACCESSIONS_PER_REQUEST = 100;
 
-	private static final String UNIPROT_ENDPOINT = "https://www.ebi.ac.uk/proteins/api/proteins/";
-	/**
-	 * The same resource as {@link #UNIPROT_ENDPOINT}, in its search form, which takes a
-	 * comma separated list of accessions and answers with an array of entries.
-	 */
-	private static final String UNIPROT_BATCH_ENDPOINT = "https://www.ebi.ac.uk/proteins/api/proteins";
-	private static final String UNIPARC_ENDPOINT = "https://www.ebi.ac.uk/proteins/api/uniparc/upi/";
+	private static final String REST_BASE = "https://rest.uniprot.org";
 
-	private static final String UNIPROT_WEB_API_ENDPOINT = "https://www.uniprot.org/uniprot/";
-	
+	/**
+	 * A single UniProtKB entry: https://rest.uniprot.org/uniprotkb/P12345
+	 */
+	private static final String UNIPROT_ENDPOINT = REST_BASE + "/uniprotkb/";
+
+	/**
+	 * Several UniProtKB entries in one request:
+	 * https://rest.uniprot.org/uniprotkb/accessions?accessions=P12345,P67890
+	 * It answers with {"results": [...]}, leaving out the accessions it does not know
+	 * about or that are inactive (deleted, merged, demerged).
+	 */
+	private static final String UNIPROT_BATCH_ENDPOINT = REST_BASE + "/uniprotkb/accessions";
+
+	/**
+	 * Only what we read in {@link #parseEntry(JsonNode)}. organism_name brings the whole
+	 * organism object, which has taxonId and lineage (as a list of names, from the most
+	 * general to the most specific). Without it the full entry (references, comments,
+	 * features...) is sent, many times bigger.
+	 */
+	private static final String UNIPROT_FIELDS = "accession,organism_name,sequence";
+
+	private static final String UNIPARC_ENDPOINT = REST_BASE + "/uniparc/";
+
+	private static final String UNIPARC_FIELDS = "upi,sequence";
+
+	/**
+	 * Any small entry will do: we only read the release from the response headers.
+	 */
+	private static final String VERSION_URL = UNIPROT_ENDPOINT + "P12345?fields=accession";
+
+	private static final String RELEASE_HEADER = "X-UniProt-Release";
+
+	private static final String INACTIVE_ENTRY_TYPE = "Inactive";
+
 	/*--------------------------- member variables --------------------------*/
 	private final Client client;
 	private final ObjectMapper objectMapper;
@@ -86,12 +113,15 @@ public class UniProtConnection {
 	 */
 	public UniprotEntry getEntry(String uniProtId) throws NoMatchFoundException, IOException {
 
-		// Proteins API: https://www.ebi.ac.uk/proteins/api/proteins/A0A0G2ZPK8
-
-		String request = UNIPROT_ENDPOINT + uniProtId;
+		String request = UNIPROT_ENDPOINT + uniProtId + "?fields=" + UNIPROT_FIELDS;
 		Response response = getServiceResponse(request);
 
 		JsonNode node = objectMapper.readValue(response.readEntity(String.class), JsonNode.class);
+		// unlike the Proteins API, which answered 404, inactive entries (deleted, merged,
+		// demerged) come back as a stub with no sequence
+		if (INACTIVE_ENTRY_TYPE.equals(node.path("entryType").asText())) {
+			throw new NoMatchFoundException("UniProt entry " + uniProtId + " is inactive: " + node.path("inactiveReason"));
+		}
 		UniprotEntry entry = parseEntry(node);
 		if (!entry.getUniId().equals(uniProtId)) {
 			throw new IOException("Returned id ("+entry.getUniId()+") is different from request id ("+uniProtId+") for request " + request);
@@ -101,30 +131,31 @@ public class UniProtConnection {
 	}
 
 	/**
-	 * Parse one entry of the Proteins API JSON representation, be it the whole response
-	 * of a single accession request or one element of a batch request's array.
+	 * Parse one entry of the UniProt REST API JSON representation, be it the whole
+	 * response of a single accession request or one element of a batch request's results.
 	 * @param node the JSON node of a single entry
 	 * @return the parsed entry
+	 * @throws IOException if the node lacks any of the fields we need
 	 */
-	private UniprotEntry parseEntry(JsonNode node) {
-		JsonNode accession = node.get("accession");
-		String uniId = accession.asText();
+	private UniprotEntry parseEntry(JsonNode node) throws IOException {
+		JsonNode accession = node.get("primaryAccession");
 		JsonNode organism = node.get("organism");
-		JsonNode taxonomy = organism.get("taxonomy");
-		JsonNode seqOuterNode = node.get("sequence");
-		JsonNode seqInnerNode = seqOuterNode.get("sequence");
-		String seq = seqInnerNode.asText();
+		JsonNode seqNode = node.path("sequence").get("value");
+		if (accession == null || organism == null || organism.get("taxonId") == null || seqNode == null) {
+			throw new IOException("Unexpected UniProt entry JSON, missing accession, organism or sequence: " +
+					node.toString().substring(0, Math.min(200, node.toString().length())));
+		}
+		String uniId = accession.asText();
 		Sequence seqObj = new Sequence();
-		seqObj.setSeq(seq);
+		seqObj.setSeq(seqNode.asText());
 		seqObj.setName(uniId);
 		seqObj.setType(true);
 		UniprotEntry entry = new UniprotEntry(uniId);
 		entry.setUniprotSeq(seqObj);
-		entry.setTaxId(taxonomy.asInt());
-		JsonNode lineage = organism.get("lineage");
+		entry.setTaxId(organism.get("taxonId").asInt());
 		List<String> taxons = new ArrayList<>();
 		entry.setTaxons(taxons);
-		for (JsonNode oneLineage : lineage) {
+		for (JsonNode oneLineage : organism.path("lineage")) {
 			taxons.add(oneLineage.asText());
 		}
 
@@ -132,19 +163,17 @@ public class UniProtConnection {
 	}
 
 	/**
-	 * Retrieve several entries in a single request to the Proteins API.
+	 * Retrieve several entries in a single request to the UniProt REST API.
 	 * <p>
-	 * Accessions that the API does not know about are simply absent from the returned
-	 * map: unlike the single accession request, a batch request does not answer 404 for
-	 * them (unless none of them is found at all, which is handled here as an empty map).
+	 * Accessions that the API does not know about, or that are inactive, are simply
+	 * absent from the returned map.
 	 * @param uniProtIds the UniProt ids, at most {@value #MAX_ACCESSIONS_PER_REQUEST}
 	 * @return the entries found, keyed by accession
-	 * @throws IOException if problems getting the entries
+	 * @throws IOException if problems getting the entries. A malformed accession fails
+	 * the whole batch with a 400
 	 * @throws IllegalArgumentException if more than {@value #MAX_ACCESSIONS_PER_REQUEST} ids are given
 	 */
 	public Map<String, UniprotEntry> getEntries(List<String> uniProtIds) throws IOException {
-
-		// Proteins API: https://www.ebi.ac.uk/proteins/api/proteins?accession=P12345,P67890
 
 		if (uniProtIds.size() > MAX_ACCESSIONS_PER_REQUEST) {
 			throw new IllegalArgumentException("Can't request more than " + MAX_ACCESSIONS_PER_REQUEST +
@@ -157,21 +186,23 @@ public class UniProtConnection {
 		}
 
 		String request = UNIPROT_BATCH_ENDPOINT + "?size=" + MAX_ACCESSIONS_PER_REQUEST +
-				"&accession=" + String.join(",", uniProtIds);
+				"&fields=" + UNIPROT_FIELDS +
+				"&accessions=" + String.join(",", uniProtIds);
 		Response response;
 		try {
 			response = getServiceResponse(request);
 		} catch (NoMatchFoundException e) {
-			// none of the accessions in this batch is known to the API
-			LOGGER.warn("None of the {} accessions of the batch was found by the Proteins API", uniProtIds.size());
+			// not expected (unknown accessions are left out of a 200), but harmless
+			LOGGER.warn("None of the {} accessions of the batch was found by the UniProt REST API", uniProtIds.size());
 			return entries;
 		}
 
 		JsonNode node = objectMapper.readValue(response.readEntity(String.class), JsonNode.class);
-		if (!node.isArray()) {
-			throw new IOException("Expected an array in the response of request " + request);
+		JsonNode results = node.get("results");
+		if (results == null || !results.isArray()) {
+			throw new IOException("Expected a results array in the response of request " + request);
 		}
-		for (JsonNode entryNode : node) {
+		for (JsonNode entryNode : results) {
 			UniprotEntry entry = parseEntry(entryNode);
 			entries.put(entry.getUniId(), entry);
 		}
@@ -188,20 +219,20 @@ public class UniProtConnection {
 	 */
 	public UniprotEntry getUniparcEntry(String uniparcId) throws NoMatchFoundException, IOException {
 
-		// Proteins API: https://www.ebi.ac.uk/proteins/api/uniparc/upi/UPI00000217E5
-
-		String request = UNIPARC_ENDPOINT + uniparcId;
+		String request = UNIPARC_ENDPOINT + uniparcId + "?fields=" + UNIPARC_FIELDS;
 		Response response = getServiceResponse(request);
 
 		JsonNode node = objectMapper.readValue(response.readEntity(String.class), JsonNode.class);
-		JsonNode accession = node.get("accession");
-		String uniId = accession.asText();
+		String uniId = node.path("uniParcId").asText();
 
 		if (!uniId.equals(uniparcId)) {
 			throw new IOException("Returned id ("+uniId+") is different from request id ("+uniparcId+") for request " + request);
 		}
 
-		JsonNode seqNode = node.get("sequence").get("content");
+		JsonNode seqNode = node.path("sequence").get("value");
+		if (seqNode == null) {
+			throw new IOException("No sequence in the response of request " + request);
+		}
 		UniprotEntry entry = new UniprotEntry(uniparcId);
 		entry.setUniprotSeq(new Sequence(uniparcId, seqNode.asText()));
 
@@ -252,9 +283,15 @@ public class UniProtConnection {
 	 * <p>
 	 * Ids that the API does not know about are absent from the returned map rather than
 	 * signalled with an exception: with a batch there is no single answer to give.
+	 * <p>
+	 * If the batch request keeps failing (or fails with a client error, e.g. a 400 for a
+	 * malformed accession, which is not retried), the ids are requested one by one, once
+	 * each, so that a single id the API chokes on does not take the other 99 down with
+	 * it. Ids that fail on their own are left out of the returned map and logged.
 	 * @param uniProtIds the UniProt ids, at most {@link #getMaxAccessionsPerRequest()}
 	 * @return the entries found, keyed by UniProt id
-	 * @throws IOException if all {@value #MAX_NUM_RETRIES} retries fail
+	 * @throws IOException if the batch fails and so does every single id request, i.e.
+	 * the API is down rather than choking on some ids
 	 */
 	public Map<String, UnirefEntry> getUnirefEntriesWithRetry(List<String> uniProtIds) throws IOException {
 		for (int i=1; i<=MAX_NUM_RETRIES; i++) {
@@ -265,7 +302,7 @@ public class UniProtConnection {
 				} catch (InterruptedException e1) {
 					LOGGER.error("Got InterruptedException while retrying to retrieve a batch of {} ids. Will not retry more", uniProtIds.size());
 					Thread.currentThread().interrupt();
-					break;
+					throw new IOException("Interrupted while retrieving a batch of " + uniProtIds.size() + " ids", e1);
 				}
 			}
 			try {
@@ -275,14 +312,51 @@ public class UniProtConnection {
 					unirefEntries.put(e.getKey(), toUnirefEntry(e.getValue(), e.getKey()));
 				}
 				return unirefEntries;
+			} catch (ClientErrorException e) {
+				LOGGER.warn("Client error while retrieving a batch of {} ids, not retrying it. Error: {}",
+						uniProtIds.size(), e.getMessage());
+				break;
 			} catch (IOException e) {
 				LOGGER.warn("Got IOException while retrieving a batch of {} ids on attempt {}. Error: {}",
 						uniProtIds.size(), i, e.getMessage());
 			}
 		}
 
-		throw new IOException("Could not retrieve a batch of " + uniProtIds.size() +
-				" ids from UniProt REST API after " + MAX_NUM_RETRIES + " attempts. Giving up");
+		LOGGER.warn("Could not retrieve a batch of {} ids. Will request them one by one", uniProtIds.size());
+		return getUnirefEntriesOneByOne(uniProtIds);
+	}
+
+	/**
+	 * The fallback of {@link #getUnirefEntriesWithRetry(List)}: one request per id, a
+	 * single attempt each.
+	 * @param uniProtIds the UniProt ids
+	 * @return the entries found, keyed by UniProt id
+	 * @throws IOException if every id failed with an IOException
+	 */
+	private Map<String, UnirefEntry> getUnirefEntriesOneByOne(List<String> uniProtIds) throws IOException {
+		Map<String, UnirefEntry> unirefEntries = new LinkedHashMap<>();
+		List<String> failed = new ArrayList<>();
+		IOException lastError = null;
+		for (String uniProtId : uniProtIds) {
+			try {
+				unirefEntries.put(uniProtId, getUnirefEntry(uniProtId));
+			} catch (NoMatchFoundException e) {
+				// unknown or inactive: absent from the map, like in the batch answer
+				LOGGER.debug("{} not found: {}", uniProtId, e.getMessage());
+			} catch (IOException e) {
+				failed.add(uniProtId);
+				lastError = e;
+			}
+		}
+		if (!failed.isEmpty() && failed.size() == uniProtIds.size()) {
+			throw new IOException("Could not retrieve any of the " + uniProtIds.size() +
+					" ids of the batch, neither as a batch nor one by one. Last error: " + lastError.getMessage(), lastError);
+		}
+		if (!failed.isEmpty()) {
+			LOGGER.warn("Could not retrieve {} of the {} ids of the batch, one by one either: {}. Last error: {}",
+					failed.size(), uniProtIds.size(), failed, lastError.getMessage());
+		}
+		return unirefEntries;
 	}
 
 	/**
@@ -306,8 +380,11 @@ public class UniProtConnection {
 			}
 			try {
 				return getUnirefEntry(uniProtId);
+			} catch (ClientErrorException e) {
+				LOGGER.warn("Client error while retrieving {}, not retrying it. Error: {}", uniProtId, e.getMessage());
+				break;
 			} catch (IOException e) {
-				LOGGER.warn("Got IOException while retrieving {} on attempt {}.", uniProtId, i);
+				LOGGER.warn("Got IOException while retrieving {} on attempt {}. Error: {}", uniProtId, i, e.getMessage());
 
 			}
 		}
@@ -364,20 +441,23 @@ public class UniProtConnection {
 	 * @throws IOException
 	 */
 	public String getVersion() throws IOException {
-		String url = UNIPROT_WEB_API_ENDPOINT + "P12345.fasta";
-
 		Response response;
 		try {
-			response = client.target(url)
+			response = client.target(VERSION_URL)
 					.request(MediaType.APPLICATION_JSON)
 					.head();
 		} catch (ProcessingException e) {
-			throw new IOException("Could not connect to " + url + ": " + e.getMessage(), e);
+			throw new IOException("Could not connect to " + VERSION_URL + ": " + e.getMessage(), e);
 		}
 		if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-			throw new IOException("Could not get UniProt version from headers of url request: " + url);
+			throw new IOException("Could not get UniProt version from headers of url request: " + VERSION_URL +
+					". Response status was " + response.getStatus());
 		}
-		return response.getHeaderString("X-UniProt-Release");
+		String version = response.getHeaderString(RELEASE_HEADER);
+		if (version == null) {
+			throw new IOException("No " + RELEASE_HEADER + " header in the response of " + VERSION_URL);
+		}
+		return version;
 
 	}
 	
@@ -400,13 +480,32 @@ public class UniProtConnection {
 			// lets the retry loops and the callers' error counting see them at all.
 			throw new IOException("Could not connect to " + uri + ": " + e.getMessage(), e);
 		}
-		if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-			throw new NoMatchFoundException("Response status for " + uri + " was " + response.getStatus());
+		int status = response.getStatus();
+		if (status == Response.Status.NOT_FOUND.getStatusCode()) {
+			throw new NoMatchFoundException("Response status for " + uri + " was " + status);
 		}
-		if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-			throw new IOException("Response status for " + uri + " was " + response.getStatus());
+		if (status >= 400 && status < 500 && status != TOO_MANY_REQUESTS) {
+			// e.g. a 400 for a malformed accession: asking again won't change the answer
+			throw new ClientErrorException("Response status for " + uri + " was " + status +
+					": " + response.readEntity(String.class));
+		}
+		if (status != Response.Status.OK.getStatusCode()) {
+			throw new IOException("Response status for " + uri + " was " + status);
 		}
 		return response;
+	}
+
+	private static final int TOO_MANY_REQUESTS = 429;
+
+	/**
+	 * A 4xx answer other than 404 and 429: the request itself is wrong, so it is not
+	 * worth retrying.
+	 */
+	private static class ClientErrorException extends IOException {
+		private static final long serialVersionUID = 1L;
+		ClientErrorException(String message) {
+			super(message);
+		}
 	}
 
 }
