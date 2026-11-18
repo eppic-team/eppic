@@ -1,11 +1,16 @@
 package eppic.commons.sequence;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,9 +40,29 @@ public class UniProtConnection {
 	private static final int RETRY_INTERVAL = 10;
 
 	/**
-	 * Maximum number of retries
+	 * Maximum number of attempts for a request that fails with an error (other than
+	 * being rate limited)
 	 */
 	private static final int MAX_NUM_RETRIES = 5;
+
+	/**
+	 * Maximum number of times a single request waits and tries again after being rate
+	 * limited (429). Waits double from {@value #RETRY_INTERVAL} s up to
+	 * {@value #MAX_BACKOFF} s, unless the API says how long in Retry-After: about 20
+	 * minutes in all before giving up.
+	 */
+	private static final int MAX_NUM_RATE_LIMITED_RETRIES = 8;
+
+	/**
+	 * Longest wait (in seconds) after a 429, also capping the API's own Retry-After
+	 */
+	private static final int MAX_BACKOFF = 300;
+
+	/**
+	 * Minimum time between the start of two requests, so that a tight loop of fast
+	 * requests (e.g. the one by one fallback) does not run into the rate limit
+	 */
+	private static final long MIN_REQUEST_INTERVAL_MS = 200;
 
 	/**
 	 * Maximum number of accessions asked for in a single batch request. The API takes
@@ -46,12 +71,12 @@ public class UniProtConnection {
 	 */
 	private static final int MAX_ACCESSIONS_PER_REQUEST = 100;
 
-	private static final String REST_BASE = "https://rest.uniprot.org";
+	static final String DEFAULT_REST_BASE = "https://rest.uniprot.org";
 
 	/**
 	 * A single UniProtKB entry: https://rest.uniprot.org/uniprotkb/P12345
 	 */
-	private static final String UNIPROT_ENDPOINT = REST_BASE + "/uniprotkb/";
+	private final String uniprotEndpoint;
 
 	/**
 	 * Several UniProtKB entries in one request:
@@ -59,7 +84,7 @@ public class UniProtConnection {
 	 * It answers with {"results": [...]}, leaving out the accessions it does not know
 	 * about or that are inactive (deleted, merged, demerged).
 	 */
-	private static final String UNIPROT_BATCH_ENDPOINT = REST_BASE + "/uniprotkb/accessions";
+	private final String uniprotBatchEndpoint;
 
 	/**
 	 * Only what we read in {@link #parseEntry(JsonNode)}. organism_name brings the whole
@@ -69,14 +94,14 @@ public class UniProtConnection {
 	 */
 	private static final String UNIPROT_FIELDS = "accession,organism_name,sequence";
 
-	private static final String UNIPARC_ENDPOINT = REST_BASE + "/uniparc/";
+	private final String uniparcEndpoint;
 
 	private static final String UNIPARC_FIELDS = "upi,sequence";
 
 	/**
 	 * Any small entry will do: we only read the release from the response headers.
 	 */
-	private static final String VERSION_URL = UNIPROT_ENDPOINT + "P12345?fields=accession";
+	private final String versionUrl;
 
 	private static final String RELEASE_HEADER = "X-UniProt-Release";
 
@@ -86,10 +111,24 @@ public class UniProtConnection {
 	private final Client client;
 	private final ObjectMapper objectMapper;
 	private HashSet<String> nonReturnedIdsLastMultipleRequest;
-	
+	private HashSet<String> notRetrievedIdsLastBatch = new HashSet<>();
+	private long lastRequestStartMs = 0;
+
 	/*----------------------------- constructors ----------------------------*/
 
 	public UniProtConnection() {
+		this(DEFAULT_REST_BASE);
+	}
+
+	/**
+	 * @param restBase the base url of the UniProt REST API, only ever changed by tests
+	 */
+	UniProtConnection(String restBase) {
+
+		uniprotEndpoint = restBase + "/uniprotkb/";
+		uniprotBatchEndpoint = restBase + "/uniprotkb/accessions";
+		uniparcEndpoint = restBase + "/uniparc/";
+		versionUrl = uniprotEndpoint + "P12345?fields=accession";
 
 		ClientConfig clientConfig = new ClientConfig();
 		//clientConfig.register(MultiPartFeature.class);
@@ -113,7 +152,7 @@ public class UniProtConnection {
 	 */
 	public UniprotEntry getEntry(String uniProtId) throws NoMatchFoundException, IOException {
 
-		String request = UNIPROT_ENDPOINT + uniProtId + "?fields=" + UNIPROT_FIELDS;
+		String request = uniprotEndpoint + uniProtId + "?fields=" + UNIPROT_FIELDS;
 		Response response = getServiceResponse(request);
 
 		JsonNode node = objectMapper.readValue(response.readEntity(String.class), JsonNode.class);
@@ -185,7 +224,7 @@ public class UniProtConnection {
 			return entries;
 		}
 
-		String request = UNIPROT_BATCH_ENDPOINT + "?size=" + MAX_ACCESSIONS_PER_REQUEST +
+		String request = uniprotBatchEndpoint + "?size=" + MAX_ACCESSIONS_PER_REQUEST +
 				"&fields=" + UNIPROT_FIELDS +
 				"&accessions=" + String.join(",", uniProtIds);
 		Response response;
@@ -219,7 +258,7 @@ public class UniProtConnection {
 	 */
 	public UniprotEntry getUniparcEntry(String uniparcId) throws NoMatchFoundException, IOException {
 
-		String request = UNIPARC_ENDPOINT + uniparcId + "?fields=" + UNIPARC_FIELDS;
+		String request = uniparcEndpoint + uniparcId + "?fields=" + UNIPARC_FIELDS;
 		Response response = getServiceResponse(request);
 
 		JsonNode node = objectMapper.readValue(response.readEntity(String.class), JsonNode.class);
@@ -287,67 +326,80 @@ public class UniProtConnection {
 	 * If the batch request keeps failing (or fails with a client error, e.g. a 400 for a
 	 * malformed accession, which is not retried), the ids are requested one by one, once
 	 * each, so that a single id the API chokes on does not take the other 99 down with
-	 * it. Ids that fail on their own are left out of the returned map and logged.
+	 * it. Ids that fail on their own are left out of the returned map, logged, and listed
+	 * by {@link #getNotRetrievedIdsLastBatch()}.
+	 * <p>
+	 * Being rate limited (429) is different: the request is retried after a growing wait
+	 * (see {@link #withRetry}), and never falls back to one request per id.
 	 * @param uniProtIds the UniProt ids, at most {@link #getMaxAccessionsPerRequest()}
 	 * @return the entries found, keyed by UniProt id
 	 * @throws IOException if the batch fails and so does every single id request, i.e.
-	 * the API is down rather than choking on some ids
+	 * the API is down rather than choking on some ids, or if still rate limited after
+	 * {@value #MAX_NUM_RATE_LIMITED_RETRIES} waits
 	 */
 	public Map<String, UnirefEntry> getUnirefEntriesWithRetry(List<String> uniProtIds) throws IOException {
-		for (int i=1; i<=MAX_NUM_RETRIES; i++) {
-			if (i!=1) {
-				try {
-					LOGGER.info("Waiting {} s before next retry", RETRY_INTERVAL);
-					Thread.sleep(RETRY_INTERVAL * 1000);
-				} catch (InterruptedException e1) {
-					LOGGER.error("Got InterruptedException while retrying to retrieve a batch of {} ids. Will not retry more", uniProtIds.size());
-					Thread.currentThread().interrupt();
-					throw new IOException("Interrupted while retrieving a batch of " + uniProtIds.size() + " ids", e1);
-				}
-			}
-			try {
-				Map<String, UniprotEntry> entries = getEntries(uniProtIds);
-				Map<String, UnirefEntry> unirefEntries = new LinkedHashMap<>();
-				for (Map.Entry<String, UniprotEntry> e : entries.entrySet()) {
-					unirefEntries.put(e.getKey(), toUnirefEntry(e.getValue(), e.getKey()));
-				}
-				return unirefEntries;
-			} catch (ClientErrorException e) {
-				LOGGER.warn("Client error while retrieving a batch of {} ids, not retrying it. Error: {}",
-						uniProtIds.size(), e.getMessage());
-				break;
-			} catch (IOException e) {
-				LOGGER.warn("Got IOException while retrieving a batch of {} ids on attempt {}. Error: {}",
-						uniProtIds.size(), i, e.getMessage());
-			}
+		notRetrievedIdsLastBatch = new HashSet<>();
+		String what = "a batch of " + uniProtIds.size() + " ids";
+		Map<String, UniprotEntry> entries;
+		try {
+			entries = withRetry(() -> getEntries(uniProtIds), what, MAX_NUM_RETRIES);
+		} catch (NoMatchFoundException e) {
+			// getEntries answers an empty map instead, but the compiler doesn't know
+			return new LinkedHashMap<>();
+		} catch (RateLimitedException e) {
+			// one request per id would only make the rate limiting worse
+			notRetrievedIdsLastBatch.addAll(uniProtIds);
+			throw e;
+		} catch (IOException e) {
+			LOGGER.warn("Could not retrieve {}. Will request them one by one. Error: {}", what, e.getMessage());
+			return getUnirefEntriesOneByOne(uniProtIds);
 		}
+		Map<String, UnirefEntry> unirefEntries = new LinkedHashMap<>();
+		for (Map.Entry<String, UniprotEntry> e : entries.entrySet()) {
+			unirefEntries.put(e.getKey(), toUnirefEntry(e.getValue(), e.getKey()));
+		}
+		return unirefEntries;
+	}
 
-		LOGGER.warn("Could not retrieve a batch of {} ids. Will request them one by one", uniProtIds.size());
-		return getUnirefEntriesOneByOne(uniProtIds);
+	/**
+	 * The ids of the last {@link #getUnirefEntriesWithRetry(List)} call that are absent
+	 * from its answer because they could not be retrieved (errors, rate limiting), as
+	 * opposed to the API not knowing about them or them being inactive.
+	 * @return the ids, empty if all could be retrieved
+	 */
+	public Set<String> getNotRetrievedIdsLastBatch() {
+		return notRetrievedIdsLastBatch;
 	}
 
 	/**
 	 * The fallback of {@link #getUnirefEntriesWithRetry(List)}: one request per id, a
-	 * single attempt each.
+	 * single attempt each, except for waiting out rate limiting.
 	 * @param uniProtIds the UniProt ids
 	 * @return the entries found, keyed by UniProt id
-	 * @throws IOException if every id failed with an IOException
+	 * @throws IOException if every id failed with an IOException, or if still rate
+	 * limited after {@value #MAX_NUM_RATE_LIMITED_RETRIES} waits
 	 */
 	private Map<String, UnirefEntry> getUnirefEntriesOneByOne(List<String> uniProtIds) throws IOException {
 		Map<String, UnirefEntry> unirefEntries = new LinkedHashMap<>();
 		List<String> failed = new ArrayList<>();
 		IOException lastError = null;
-		for (String uniProtId : uniProtIds) {
+		for (int i = 0; i < uniProtIds.size(); i++) {
+			String uniProtId = uniProtIds.get(i);
 			try {
-				unirefEntries.put(uniProtId, getUnirefEntry(uniProtId));
+				unirefEntries.put(uniProtId, withRetry(() -> getUnirefEntry(uniProtId), uniProtId, 1));
 			} catch (NoMatchFoundException e) {
 				// unknown or inactive: absent from the map, like in the batch answer
 				LOGGER.debug("{} not found: {}", uniProtId, e.getMessage());
+			} catch (RateLimitedException e) {
+				notRetrievedIdsLastBatch.addAll(failed);
+				notRetrievedIdsLastBatch.addAll(uniProtIds.subList(i, uniProtIds.size()));
+				throw e;
 			} catch (IOException e) {
 				failed.add(uniProtId);
 				lastError = e;
 			}
 		}
+		notRetrievedIdsLastBatch.addAll(failed);
 		if (!failed.isEmpty() && failed.size() == uniProtIds.size()) {
 			throw new IOException("Could not retrieve any of the " + uniProtIds.size() +
 					" ids of the batch, neither as a batch nor one by one. Last error: " + lastError.getMessage(), lastError);
@@ -361,36 +413,75 @@ public class UniProtConnection {
 
 	/**
 	 * As {@link #getUnirefEntry(String)} but with retries every {@value #RETRY_INTERVAL} seconds, up to a
-	 * maximum of {@value #MAX_NUM_RETRIES}
+	 * maximum of {@value #MAX_NUM_RETRIES} attempts, and waiting out rate limiting (429)
 	 * @param uniProtId the uniprot identifier
 	 * @return
 	 * @throws NoMatchFoundException if no match returned by UniProt REST API
-	 * @throws IOException if all {@value #MAX_NUM_RETRIES} retries result in ServiceExceptions
+	 * @throws IOException if all attempts fail
 	 */
 	public UnirefEntry getUnirefEntryWithRetry(String uniProtId) throws NoMatchFoundException, IOException {
-		for (int i=1; i<=MAX_NUM_RETRIES; i++) {
-			if (i!=1) {
-				try {
-					LOGGER.info("Waiting {} s before next retry", RETRY_INTERVAL);
-					Thread.sleep(RETRY_INTERVAL * 1000);
-				} catch (InterruptedException e1) {
-					LOGGER.error("Got InterruptedException while retrying to retrieve {}. Will not retry more", uniProtId);
-					break;
-				}
-			}
-			try {
-				return getUnirefEntry(uniProtId);
-			} catch (ClientErrorException e) {
-				LOGGER.warn("Client error while retrieving {}, not retrying it. Error: {}", uniProtId, e.getMessage());
-				break;
-			} catch (IOException e) {
-				LOGGER.warn("Got IOException while retrieving {} on attempt {}. Error: {}", uniProtId, i, e.getMessage());
+		return withRetry(() -> getUnirefEntry(uniProtId), uniProtId, MAX_NUM_RETRIES);
+	}
 
+	@FunctionalInterface
+	private interface ApiCall<T> {
+		T call() throws IOException, NoMatchFoundException;
+	}
+
+	/**
+	 * Runs an API call, retrying it:
+	 * <ul>
+	 * <li>after a 429 (rate limited): waiting what the API asks for in Retry-After, or
+	 * else doubling waits from {@value #RETRY_INTERVAL} s up to {@value #MAX_BACKOFF} s,
+	 * at most {@value #MAX_NUM_RATE_LIMITED_RETRIES} times, then a
+	 * {@link RateLimitedException} is thrown</li>
+	 * <li>after any other IOException: every {@value #RETRY_INTERVAL} s, up to
+	 * maxAttempts attempts in all</li>
+	 * <li>never after a {@link ClientErrorException} (asking again won't change the
+	 * answer) or a {@link NoMatchFoundException}</li>
+	 * </ul>
+	 * Being rate limited does not use up the error attempts.
+	 */
+	private <T> T withRetry(ApiCall<T> call, String what, int maxAttempts) throws IOException, NoMatchFoundException {
+		int errors = 0;
+		int rateLimited = 0;
+		while (true) {
+			try {
+				return call.call();
+			} catch (ClientErrorException e) {
+				throw e;
+			} catch (RateLimitedException e) {
+				rateLimited++;
+				if (rateLimited > MAX_NUM_RATE_LIMITED_RETRIES) {
+					throw new RateLimitedException("Still rate limited (429) while retrieving " + what + " after waiting " +
+							MAX_NUM_RATE_LIMITED_RETRIES + " times. Giving up", null);
+				}
+				long wait = e.getRetryAfterSeconds() != null ?
+						Math.max(1, Math.min(e.getRetryAfterSeconds(), MAX_BACKOFF)) :
+						Math.min((long) RETRY_INTERVAL << (rateLimited - 1), MAX_BACKOFF);
+				LOGGER.warn("Rate limited (429) while retrieving {}, for the {} time. Waiting {} s{}", what, rateLimited, wait,
+						e.getRetryAfterSeconds() != null ? " as asked by Retry-After" : "");
+				sleep(wait * 1000, what);
+			} catch (IOException e) {
+				errors++;
+				if (errors >= maxAttempts) {
+					throw new IOException("Could not retrieve " + what + " from UniProt REST API after " + errors +
+							" attempts. Giving up. Last error: " + e.getMessage(), e);
+				}
+				LOGGER.warn("Got IOException while retrieving {} on attempt {}. Error: {}", what, errors, e.getMessage());
+				LOGGER.info("Waiting {} s before next retry", RETRY_INTERVAL);
+				sleep(RETRY_INTERVAL * 1000L, what);
 			}
 		}
+	}
 
-		// after MAX_NUM_RETRIES, we got exceptions in all, give up and throw exception
-		throw new IOException("Could not retrieve "+uniProtId+" from UniProt REST API after "+MAX_NUM_RETRIES+" attempts. Giving up");
+	private static void sleep(long millis, String what) throws IOException {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IOException("Interrupted while retrieving " + what, e);
+		}
 	}
 	
 	/**
@@ -443,19 +534,19 @@ public class UniProtConnection {
 	public String getVersion() throws IOException {
 		Response response;
 		try {
-			response = client.target(VERSION_URL)
+			response = client.target(versionUrl)
 					.request(MediaType.APPLICATION_JSON)
 					.head();
 		} catch (ProcessingException e) {
-			throw new IOException("Could not connect to " + VERSION_URL + ": " + e.getMessage(), e);
+			throw new IOException("Could not connect to " + versionUrl + ": " + e.getMessage(), e);
 		}
 		if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-			throw new IOException("Could not get UniProt version from headers of url request: " + VERSION_URL +
+			throw new IOException("Could not get UniProt version from headers of url request: " + versionUrl +
 					". Response status was " + response.getStatus());
 		}
 		String version = response.getHeaderString(RELEASE_HEADER);
 		if (version == null) {
-			throw new IOException("No " + RELEASE_HEADER + " header in the response of " + VERSION_URL);
+			throw new IOException("No " + RELEASE_HEADER + " header in the response of " + versionUrl);
 		}
 		return version;
 
@@ -469,6 +560,7 @@ public class UniProtConnection {
 	}
 
 	private Response getServiceResponse(String uri) throws IOException, NoMatchFoundException {
+		throttle();
 		Response response;
 		try {
 			response = client.target(uri)
@@ -484,7 +576,11 @@ public class UniProtConnection {
 		if (status == Response.Status.NOT_FOUND.getStatusCode()) {
 			throw new NoMatchFoundException("Response status for " + uri + " was " + status);
 		}
-		if (status >= 400 && status < 500 && status != TOO_MANY_REQUESTS) {
+		if (status == TOO_MANY_REQUESTS) {
+			throw new RateLimitedException("Response status for " + uri + " was " + status,
+					parseRetryAfter(response.getHeaderString("Retry-After")));
+		}
+		if (status >= 400 && status < 500) {
 			// e.g. a 400 for a malformed accession: asking again won't change the answer
 			throw new ClientErrorException("Response status for " + uri + " was " + status +
 					": " + response.readEntity(String.class));
@@ -496,6 +592,58 @@ public class UniProtConnection {
 	}
 
 	private static final int TOO_MANY_REQUESTS = 429;
+
+	/**
+	 * Waits as needed so that requests start at least {@value #MIN_REQUEST_INTERVAL_MS} ms
+	 * apart.
+	 */
+	private synchronized void throttle() throws IOException {
+		long wait = lastRequestStartMs + MIN_REQUEST_INTERVAL_MS - System.currentTimeMillis();
+		if (wait > 0) {
+			sleep(wait, "the next request");
+		}
+		lastRequestStartMs = System.currentTimeMillis();
+	}
+
+	/**
+	 * Parses a Retry-After header, which is either a number of seconds or an HTTP date.
+	 * @return the seconds to wait, or null if absent or not understood
+	 */
+	static Long parseRetryAfter(String value) {
+		if (value == null || value.trim().isEmpty()) {
+			return null;
+		}
+		try {
+			return Math.max(0, Long.parseLong(value.trim()));
+		} catch (NumberFormatException e) {
+			// not seconds, so it should be a date
+		}
+		try {
+			ZonedDateTime when = ZonedDateTime.parse(value.trim(), DateTimeFormatter.RFC_1123_DATE_TIME);
+			return Math.max(0, Duration.between(ZonedDateTime.now(when.getZone()), when).getSeconds());
+		} catch (DateTimeParseException e) {
+			LOGGER.debug("Could not understand Retry-After header '{}'", value);
+			return null;
+		}
+	}
+
+	/**
+	 * A 429 answer: we are asking too fast. Worth retrying, but only after a wait.
+	 */
+	private static class RateLimitedException extends IOException {
+		private static final long serialVersionUID = 1L;
+		private final Long retryAfterSeconds;
+		RateLimitedException(String message, Long retryAfterSeconds) {
+			super(message);
+			this.retryAfterSeconds = retryAfterSeconds;
+		}
+		/**
+		 * @return what the API asked us to wait for in Retry-After, null if it didn't say
+		 */
+		Long getRetryAfterSeconds() {
+			return retryAfterSeconds;
+		}
+	}
 
 	/**
 	 * A 4xx answer other than 404 and 429: the request itself is wrong, so it is not
