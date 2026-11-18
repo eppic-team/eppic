@@ -188,9 +188,6 @@ public class EppicParams {
 	public static final double	  DEF_HOM_ID_STEP = 0.05;
 	private static final double   DEF_MIN_QUERY_COV_FOR_IDENTICALS_REMOVAL = 0.85;
 	
-	// default pdb2uniprot mapping blast thresholds
-	private static final double   DEF_PDB2UNIPROT_ID_THRESHOLD = 0.90;
-	private static final double   DEF_PDB2UNIPROT_QCOV_THRESHOLD = 0.85;
 	
 	private static final boolean  DEF_ALLOW_CHIMERAS = false;
 	
@@ -334,8 +331,6 @@ public class EppicParams {
 	
 	private double   minQueryCovForIdenticalsRemoval;
 	
-	private double   pdb2uniprotIdThreshold;
-	private double   pdb2uniprotQcovThreshold;
 	
 	private boolean  allowChimeras;
 	
@@ -835,8 +830,6 @@ public class EppicParams {
 			
 			homIdStep = Double.parseDouble(p.getProperty("HOM_ID_STEP", Double.valueOf(DEF_HOM_ID_STEP).toString()));
 			
-			pdb2uniprotIdThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_ID_THRESHOLD", Double.valueOf(DEF_PDB2UNIPROT_ID_THRESHOLD).toString()));
-			pdb2uniprotQcovThreshold = Double.parseDouble(p.getProperty("PDB2UNIPROT_QCOV_THRESHOLD", Double.valueOf(DEF_PDB2UNIPROT_QCOV_THRESHOLD).toString()));
 			
 			allowChimeras = Boolean.parseBoolean(p.getProperty("ALLOW_CHIMERAS", Boolean.valueOf(DEF_ALLOW_CHIMERAS).toString()));
 			
@@ -912,14 +905,6 @@ public class EppicParams {
 
 	public double getMinQueryCovForIdenticalsRemoval() {
 		return minQueryCovForIdenticalsRemoval;
-	}
-	
-	public double getPdb2uniprotIdThreshold() {
-		return pdb2uniprotIdThreshold;
-	}
-
-	public double getPdb2uniprotQcovThreshold() {
-		return pdb2uniprotQcovThreshold;
 	}
 	
 	public boolean isAllowChimeras() {
