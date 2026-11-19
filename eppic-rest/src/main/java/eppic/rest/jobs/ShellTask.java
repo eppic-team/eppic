@@ -10,6 +10,7 @@ import eppic.db.loaders.EntryData;
 import eppic.db.loaders.UploadToDb;
 import eppic.model.db.BlobIdentifierDB;
 import eppic.model.db.FileTypeEnum;
+import eppic.model.shared.StatusOfJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,19 +44,21 @@ public class ShellTask implements Callable<Integer> {
 
     private Process process;
 
-    private boolean isRunning;
+    private volatile boolean isRunning;
+    private volatile boolean started;
 
-    private Future<Integer> output;
+    private volatile Future<Integer> output;
 
     // in milliseconds
     private long submissionTime;
-    private long executionTime;
+    private volatile long executionTime;
     private long finishTime;
 
     private final File jobDirectory;
 
     private final MongoDatabase mongoDb;
     private final EmailData emailData;
+    private final JobStatusStore jobStatusStore;
 
     /**
      *
@@ -64,8 +67,9 @@ public class ShellTask implements Callable<Integer> {
      * @param submissionId the submission id
      * @param mongoDb the Mongo db, if null no writing to DB will be performed
      * @param emailData the email data for email notification, if null no email is sent
+     * @param jobStatusStore the shared store to record status changes to, if null statuses are not recorded
      */
-    public ShellTask(List<String> cmd, File jobDirectory, String submissionId, MongoDatabase mongoDb, EmailData emailData) {
+    public ShellTask(List<String> cmd, File jobDirectory, String submissionId, MongoDatabase mongoDb, EmailData emailData, JobStatusStore jobStatusStore) {
         this.cmd = cmd;
         this.stdErr = new File(jobDirectory, submissionId + ".e");
         this.stdOut = new File(jobDirectory, submissionId + ".o");
@@ -75,11 +79,28 @@ public class ShellTask implements Callable<Integer> {
         this.jobDirectory = jobDirectory;
         this.mongoDb = mongoDb;
         this.emailData = emailData;
+        this.jobStatusStore = jobStatusStore;
+    }
+
+    /**
+     * Maps the exit code of a finished task to the job status.
+     * @param exitStatus the exit code returned by {@link #call()}
+     * @return the job status
+     */
+    public static StatusOfJob statusForExitCode(int exitStatus) {
+        if (exitStatus == 0) {
+            return StatusOfJob.FINISHED;
+        } else if (exitStatus == SIGTERM_ERROR_CODE) {
+            return StatusOfJob.STOPPED;
+        } else {
+            return StatusOfJob.ERROR;
+        }
     }
 
     @Override
     public Integer call() throws Exception {
 
+        started = true;
         logger.info("Running shell task with submissionId {}", submissionId);
 
         notifyByEmailOnSubmit();
@@ -101,10 +122,13 @@ public class ShellTask implements Callable<Integer> {
         } catch (IOException e) {
             logger.error("Could not start shell command. Error: {}", e.getMessage());
             // if file not found or can't be executed
+            recordStatus(StatusOfJob.ERROR);
+            notifyByEmailOnFinish(CANT_START_PROCESS_ERROR_CODE);
             return CANT_START_PROCESS_ERROR_CODE;
         }
 
         isRunning = true;
+        recordStatus(StatusOfJob.RUNNING);
 
         executionTime = System.currentTimeMillis();
 
@@ -123,19 +147,53 @@ public class ShellTask implements Callable<Integer> {
                     exitStatus = CANT_WRITE_TO_DB_ERROR_CODE;
                 }
             }
+            // only now, after results are in the db, can the job be reported as finished
+            recordStatus(statusForExitCode(exitStatus));
             notifyByEmailOnFinish(exitStatus);
 
             return exitStatus;
 
         } catch (InterruptedException e){
+            // the job manager is shutting down (e.g. the pod is being terminated): the job can't complete
+            logger.warn("Shell task with submissionId {} was interrupted. Killing its process and marking it as error", submissionId);
+            process.destroy();
             isRunning = false;
+            recordStatus(StatusOfJob.ERROR);
+            notifyByEmailOnFinish(CANT_START_PROCESS_ERROR_CODE);
             throw e;
+        }
+    }
+
+    /**
+     * Marks as error a task that was queued but will never run, because the job manager is shutting down.
+     */
+    void abortBeforeStart() {
+        logger.warn("Shell task with submissionId {} was still queued at shutdown. Marking it as error", submissionId);
+        recordStatus(StatusOfJob.ERROR);
+        notifyByEmailOnFinish(CANT_START_PROCESS_ERROR_CODE);
+    }
+
+    private void recordStatus(StatusOfJob status) {
+        if (jobStatusStore == null) {
+            return;
+        }
+        try {
+            jobStatusStore.setStatus(submissionId, status);
+        } catch (JobHandlerException e) {
+            logger.error("Could not record status {} for job {}. Other replicas may report a wrong status for it. Error: {}", status, submissionId, e.getMessage());
         }
     }
 
     public void stop() {
         process.destroy();
         isRunning = false;
+    }
+
+    /**
+     * @return true if the executor has picked up this task, i.e. it is no longer queued
+     */
+    public boolean isStarted() {
+        return started;
     }
 
     public boolean isRunning() {
