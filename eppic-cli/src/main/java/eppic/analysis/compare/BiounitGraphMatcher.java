@@ -16,6 +16,7 @@ import java.util.TreeSet;
 
 import org.biojava.nbio.structure.Chain;
 import org.biojava.nbio.structure.Structure;
+import org.biojava.nbio.structure.contact.GroupContact;
 import org.biojava.nbio.structure.contact.InterfaceFinder;
 import org.biojava.nbio.structure.contact.StructureInterface;
 import org.biojava.nbio.structure.contact.StructureInterfaceList;
@@ -158,14 +159,22 @@ public class BiounitGraphMatcher {
 		finder.setCutoff(EppicParams.INTERFACE_DIST_CUTOFF);
 		StructureInterfaceList contacts = finder.getAllInterfaces();
 
-		// 2. label contacts with EPPIC interface clusters
-		StructureInterfaceList unlabelled = new StructureInterfaceList();
+		// 2. label contacts with EPPIC interface clusters.
+		// Symmetry-equivalent contacts have identical residue contact sets: we label (and calculate areas for)
+		// only one contact per distinct residue contact set
+		Map<String, Integer> labelCache = new HashMap<>();
+		Map<String, StructureInterface> unlabelledReps = new LinkedHashMap<>();
+		List<StructureInterface> unlabelled = new ArrayList<>();
+		List<String> unlabelledKeys = new ArrayList<>();
 		int numLabelled = 0;
 		Set<Integer> clusterIds = new TreeSet<>();
 		for (StructureInterface contact : contacts) {
-			int clusterId = findBestCluster(contact);
+			String key = getContactKey(contact);
+			int clusterId = labelCache.computeIfAbsent(key, k -> findBestCluster(contact));
 			if (clusterId < 0) {
 				unlabelled.add(contact);
+				unlabelledKeys.add(key);
+				unlabelledReps.putIfAbsent(key, contact);
 				continue;
 			}
 			if (addEdge(buGraph, contact, clusterId)) {
@@ -175,13 +184,17 @@ public class BiounitGraphMatcher {
 		}
 
 		int numUnlabelled = 0;
-		if (unlabelled.size() > 0) {
-			unlabelled.calcAsas(ASA_SPHERE_POINTS, numThreads, minCofactorSize);
-			for (StructureInterface contact : unlabelled) {
-				if (contact.getTotalArea() >= EppicParams.MIN_INTERFACE_AREA_TO_KEEP) {
+		if (!unlabelled.isEmpty()) {
+			StructureInterfaceList reps = new StructureInterfaceList();
+			unlabelledReps.values().forEach(reps::add);
+			reps.calcAsas(ASA_SPHERE_POINTS, numThreads, minCofactorSize);
+			for (int i = 0; i < unlabelled.size(); i++) {
+				StructureInterface contact = unlabelled.get(i);
+				double area = unlabelledReps.get(unlabelledKeys.get(i)).getTotalArea();
+				if (area >= EppicParams.MIN_INTERFACE_AREA_TO_KEEP) {
 					logger.info("Biounit {} contact {}-{} (area {}) does not match any EPPIC interface cluster",
 							bioUnit.getId(), contact.getMoleculeIds().getFirst(), contact.getMoleculeIds().getSecond(),
-							String.format("%.0f", contact.getTotalArea()));
+							String.format("%.0f", area));
 					if (addEdge(buGraph, contact, Link.UNLABELLED)) numUnlabelled++;
 				}
 			}
@@ -300,6 +313,28 @@ public class BiounitGraphMatcher {
 			}
 		}
 		return bestId;
+	}
+
+	/**
+	 * A key identifying the residue contact set of a contact, independent of chain names and of the order of the 2 chains:
+	 * entity ids and sorted residue-pair list, in the canonical of the 2 possible orders.
+	 */
+	private static String getContactKey(StructureInterface contact) {
+		int e1 = getEntityId(contact.getParentChains().getFirst());
+		int e2 = getEntityId(contact.getParentChains().getSecond());
+		List<String> direct = new ArrayList<>();
+		List<String> inverse = new ArrayList<>();
+		for (GroupContact gc : contact.getGroupContacts()) {
+			String r1 = gc.getPair().getFirst().getResidueNumber().toString();
+			String r2 = gc.getPair().getSecond().getResidueNumber().toString();
+			direct.add(r1 + "-" + r2);
+			inverse.add(r2 + "-" + r1);
+		}
+		Collections.sort(direct);
+		Collections.sort(inverse);
+		String d = e1 + "|" + e2 + "|" + String.join(",", direct);
+		String i = e2 + "|" + e1 + "|" + String.join(",", inverse);
+		return d.compareTo(i) <= 0 ? d : i;
 	}
 
 	private static boolean addEdge(LabelledGraph g, StructureInterface contact, int label) {
