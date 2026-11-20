@@ -82,12 +82,12 @@ public class Main {
 		this.stepCount = 1;
 	}
 	
-	protected Structure getStructure() {
+	public Structure getStructure() {
 		return pdb;
 	}
 
 	// needed for testing
-	protected CrystalAssemblies getCrystalAssemblies() {
+	public CrystalAssemblies getCrystalAssemblies() {
 	    return validAssemblies;
     }
 

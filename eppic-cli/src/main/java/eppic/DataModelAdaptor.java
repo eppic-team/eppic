@@ -31,6 +31,8 @@ import org.jgrapht.UndirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eppic.analysis.compare.BiounitGraphMatcher;
+import eppic.analysis.compare.BiounitMatchResult;
 import eppic.analysis.compare.InterfaceMatcher;
 import eppic.analysis.compare.SimpleInterface;
 import eppic.commons.util.CallType;
@@ -94,6 +96,9 @@ public class DataModelAdaptor {
 	// data required to deal with entries with NCS ops (viral capsids mostly), if not an NCS entry then both should be null
 	private Map<String,String> chainOrigNames;
 	private Map<String, Matrix4d > chainNcsOps;
+
+	private BiounitGraphMatcher biounitGraphMatcher;
+	private CrystalAssemblies biounitGraphMatcherAssemblies;
 	
 	public DataModelAdaptor() {
 		pdbInfo = new PdbInfoDB();
@@ -941,26 +946,23 @@ public class DataModelAdaptor {
 			return;
 		}
 		
-		CrystalCell cell = null;
-		if (validAssemblies.getStructure().getCrystallographicInfo()!=null && validAssemblies.getStructure().isCrystallographic()) {
-			cell = validAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
+		BiounitMatchResult match;
+		if (params != null && params.getBiounitMatcher() == EppicParams.BiounitMatcher.GRAPH) {
+			match = matchBioUnitByGraph(bioAssembly, validAssemblies);
+		} else {
+			match = matchBioUnitByOperators(bioAssembly, validAssemblies);
 		}
-		
-		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);
 
-		// Cases like 1m4x_1 (5040 operators) or 1m4x_3 (420 operators) take forever to run
-		// matchToInterfaceClusters() and SimpleInterface.createSimpleInterfaceListFromPdbBioUnit() within
-		// Because algorithm is O(n2) currently
-		if (matchingClusterIds==null)
+		if (match.getType() == BiounitMatchResult.MatchType.SKIPPED) {
+			LOGGER.warn("Matching of PDB biounit {} skipped: {}", bioAssemblyNumber, match.getReason());
 			return;
+		}
 
-		int[] matchingClusterIdsArray = new int[matchingClusterIds.size()];
-		Iterator<Integer> it = matchingClusterIds.iterator();
-		for (int i=0;i<matchingClusterIds.size();i++) matchingClusterIdsArray[i] = it.next(); 
-		
-		Assembly pdbAssembly = validAssemblies.generateAssembly(matchingClusterIdsArray);
-		
-		Assembly matchingAssembly = getMatchingAssembly(pdbAssembly, validAssemblies);
+		Set<Integer> matchingClusterIds = match.getClusterIds();
+
+		Assembly pdbAssembly = validAssemblies.generateAssembly(matchingClusterIds);
+
+		Assembly matchingAssembly = match.getAssembly();
 		AssemblyDB matchingAssemblyDB = null;
 		if (matchingAssembly!=null) {
 			for (AssemblyDB a:pdbInfo.getAssemblies()) {
@@ -1028,8 +1030,21 @@ public class DataModelAdaptor {
 			
 			// other data
 			assembly.setInterfaceClusterIds(pdbAssembly.toString());
-						
-			// TODO fill the AssemblyContents
+
+			if (match.getNumNodes() > 0) {
+				// the graph matcher knows the biounit's size: we fill the contents with it and with biojava's symmetry
+				String[] symmetries = getSymmetry(pdb, bioAssemblyNumber);
+				AssemblyContentDB acDB = new AssemblyContentDB();
+				acDB.setAssembly(assembly);
+				acDB.setMmSize(match.getNumNodes());
+				acDB.setSymmetry(symmetries[0]);
+				acDB.setStoichiometry(symmetries[1]);
+				List<AssemblyContentDB> acDBs = new ArrayList<>();
+				acDBs.add(acDB);
+				assembly.setAssemblyContents(acDBs);
+			}
+
+			// TODO fill the AssemblyContents for the operators matcher
 			//assembly.setMmSize(invalidAssembly.getSize());
 			//assembly.setComposition(composition);			
 			//assembly.setSymmetry(sym);
@@ -1068,6 +1083,70 @@ public class DataModelAdaptor {
 		}
 	}
 	
+	/**
+	 * Matches the given PDB biounit to the valid assemblies with the original operator-based algorithm:
+	 * biounit operator pairs are matched to EPPIC interfaces, the matched interface clusters generate an assembly that
+	 * is compared to the valid ones.
+	 * @param bioAssembly the PDB biounit
+	 * @param validAssemblies the valid assemblies
+	 * @return the result
+	 */
+	public BiounitMatchResult matchBioUnitByOperators(BioAssemblyInfo bioAssembly, CrystalAssemblies validAssemblies) {
+		long start = System.currentTimeMillis();
+
+		CrystalCell cell = null;
+		if (validAssemblies.getStructure().getCrystallographicInfo()!=null && validAssemblies.getStructure().isCrystallographic()) {
+			cell = validAssemblies.getStructure().getCrystallographicInfo().getCrystalCell();
+		}
+
+		Set<Integer> matchingClusterIds = matchToInterfaceClusters(bioAssembly, cell);
+
+		// Cases like 1m4x_1 (5040 operators) or 1m4x_3 (420 operators) take forever to run
+		// matchToInterfaceClusters() and SimpleInterface.createSimpleInterfaceListFromPdbBioUnit() within
+		// Because algorithm is O(n2) currently
+		if (matchingClusterIds==null) {
+			BiounitMatchResult r = BiounitMatchResult.skipped("too many interface combinations");
+			r.setTimeMs(System.currentTimeMillis() - start);
+			return r;
+		}
+
+		Assembly pdbAssembly = validAssemblies.generateAssembly(matchingClusterIds);
+
+		BiounitMatchResult.MatchType type = BiounitMatchResult.MatchType.NONE;
+		Assembly matchingAssembly = null;
+		for (Assembly a:validAssemblies) {
+			if (a.equals(pdbAssembly)) {
+				matchingAssembly = a;
+				type = BiounitMatchResult.MatchType.EXACT;
+				break;
+			}
+		}
+		if (matchingAssembly == null) {
+			matchingAssembly = getMatchingAssembly(pdbAssembly, validAssemblies);
+			if (matchingAssembly != null) type = BiounitMatchResult.MatchType.PARENT;
+		}
+
+		BiounitMatchResult r = new BiounitMatchResult(type, matchingAssembly, matchingClusterIds);
+		r.setTimeMs(System.currentTimeMillis() - start);
+		return r;
+	}
+
+	/**
+	 * Matches the given PDB biounit to the valid assemblies with {@link BiounitGraphMatcher}
+	 * @param bioAssembly the PDB biounit
+	 * @param validAssemblies the valid assemblies
+	 * @return the result
+	 */
+	public BiounitMatchResult matchBioUnitByGraph(BioAssemblyInfo bioAssembly, CrystalAssemblies validAssemblies) {
+		if (biounitGraphMatcher == null || biounitGraphMatcherAssemblies != validAssemblies) {
+			int numThreads = params == null ? 1 : params.getNumThreads();
+			int minCofactorSize = params == null ? EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA : params.getMinSizeCofactorForAsa();
+			biounitGraphMatcher = new BiounitGraphMatcher(validAssemblies, numThreads, minCofactorSize);
+			biounitGraphMatcherAssemblies = validAssemblies;
+		}
+		return biounitGraphMatcher.match(bioAssembly);
+	}
+
 	private static Assembly getMatchingAssembly(Assembly pdbAssembly, CrystalAssemblies validAssemblies) {
 		
 		for (Assembly a:validAssemblies) {

@@ -300,6 +300,18 @@ public class EppicParams {
 	
 	// an internal-only parameter, useful for testing
 	private boolean forceContractedAssemblyEnumeration;
+
+	/**
+	 * The algorithm used to match PDB-annotated biounits to EPPIC assemblies
+	 */
+	public enum BiounitMatcher {
+		/** The original algorithm: matching biounit operators to EPPIC interface operators */
+		OPERATORS,
+		/** Comparison of entity/interface-cluster labelled graphs, see {@link eppic.analysis.compare.BiounitGraphMatcher} */
+		GRAPH
+	}
+	public static final BiounitMatcher DEF_BIOUNIT_MATCHER = BiounitMatcher.OPERATORS;
+	private BiounitMatcher biounitMatcher;
 	
 	// some other fields
 	private File inFile;
@@ -368,6 +380,7 @@ public class EppicParams {
 		this.progressLog = System.out;
 		this.debug = false;
 		this.forceContractedAssemblyEnumeration = false; // should only be set to true for testing
+		this.biounitMatcher = DEF_BIOUNIT_MATCHER;
 	}
 
 	public void checkConfigFileInput() throws EppicException {
@@ -966,4 +979,12 @@ public class EppicParams {
 		this.forceContractedAssemblyEnumeration = forceContractedAssemblyEnumeration;
 	}
 	
+	public BiounitMatcher getBiounitMatcher() {
+		return biounitMatcher;
+	}
+
+	public void setBiounitMatcher(BiounitMatcher biounitMatcher) {
+		this.biounitMatcher = biounitMatcher;
+	}
+
 }

@@ -224,6 +224,14 @@ public class CommonCliParams {
     )
     private File dbConfigFile;
 
+    @Option(
+            names = "--biounit-matcher",
+            paramLabel = "<string>",
+            description = "Algorithm to match PDB biounit annotations to EPPIC assemblies: OPERATORS (original) " +
+                    "or GRAPH (labelled graph comparison). Default: ${DEFAULT-VALUE}"
+    )
+    private EppicParams.BiounitMatcher biounitMatcher = EppicParams.DEF_BIOUNIT_MATCHER;
+
     // We parse the raw string from the CLI and convert it to HomologsSearchMode after parsing.
     @Option(
             names = "-H",
@@ -309,6 +317,7 @@ public class CommonCliParams {
         eppicParams.setGenerateThumbnails(generateThumbnails);
         eppicParams.setGeneratePdbFiles(generatePdbFiles);
 
+        eppicParams.setBiounitMatcher(biounitMatcher);
         eppicParams.setNumThreads(numThreads);
         eppicParams.setOutDir(outDir);
         // note: if null (-t not specified), the coord files go to the output dir, which for multiple
