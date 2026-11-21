@@ -224,11 +224,6 @@ public class MongoUtils {
         return new Document("$and", list);
     }
 
-    public static boolean isCollectionEmpty(MongoDatabase mongoDb, Class<?> modelClass) {
-        long count = mongoDb.getCollection(getTableMetadataFromJpa(modelClass).name()).countDocuments();
-        return count == 0;
-    }
-
     public static long remove(MongoDatabase mongoDb, String collectionName, String field, List<String> ids) {
         List<Document> allIds = ids.stream().map(id -> new Document(field, id)).toList();
         Bson q = new Document("$or", allIds);

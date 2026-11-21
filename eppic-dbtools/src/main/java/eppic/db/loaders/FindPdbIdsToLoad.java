@@ -161,12 +161,12 @@ public class FindPdbIdsToLoad {
                 MongoUtils.createIndices(mongoDb, coll);
             });
         } else {
-            // we might be doing incremental but start from an empty db: we must add indexes in this case too
+            // we might be doing incremental but start from an empty db: we must add indexes in this case too.
+            // createIndex is a no-op for an index that already exists, so they are always created rather than
+            // checking first whether the collection is empty, which on a full db meant counting every document.
             COLLECTIONS_TO_RESET.forEach(coll -> {
-                        if (MongoUtils.isCollectionEmpty(mongoDb, coll)) {
-                            logger.info("Empty {} collection. Creating indices for it, even though we are in INCREMENTAL mode", coll.getName());
-                            MongoUtils.createIndices(mongoDb, coll);
-                        }
+                logger.info("Ensuring indices exist for {} collection (INCREMENTAL mode)", coll.getName());
+                MongoUtils.createIndices(mongoDb, coll);
             });
         }
 
