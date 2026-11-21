@@ -1249,7 +1249,9 @@ public class DataModelAdaptor {
 			// we first retrieved the corresponding chainClusterDB added in setPdbMetaData
 			ChainClusterDB chainClusterDB = pdbInfo.getChainCluster(cec.getRepresentativeChainCode());
 			
-			chainClusterDB.setHasUniProtRef(cec.hasQueryMatch());
+			// false also when the evolutionary analysis is done on the chain's own sequence with no UniProt reference
+			// (e.g. user jobs): then refUniProtId and taxons are null, but all other evolutionary data is set
+			chainClusterDB.setHasUniProtRef(cec.hasUniProtRef());
 			
 			List<UniProtRefWarningDB> queryWarningItemDBs = new ArrayList<UniProtRefWarningDB>();
 			for(String queryWarning : cec.getQueryWarnings()) {
@@ -1265,7 +1267,9 @@ public class DataModelAdaptor {
 			if (cec.hasQueryMatch()) { //all other fields remain null otherwise
 				
 				chainClusterDB.setNumHomologs(cec.getNumHomologs());
-				chainClusterDB.setRefUniProtId(cec.getQuery().getUniId()); 
+				if (cec.hasUniProtRef()) {
+					chainClusterDB.setRefUniProtId(cec.getQuery().getUniId());
+				}
 				chainClusterDB.setFirstTaxon(cec.getQuery().getFirstTaxon());
 				chainClusterDB.setLastTaxon(cec.getQuery().getLastTaxon());
 				

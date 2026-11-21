@@ -191,7 +191,9 @@ public class JobService {
             return null;
         }
         Map<String, String> seqs = new LinkedHashMap<>();
-        String queryId = constructSeqId(chainClusterDB.getRefUniProtId(), chainClusterDB.getRefUniProtStart(), chainClusterDB.getRefUniProtEnd());
+        // when there is no UniProt reference (e.g. user jobs) the evolutionary analysis is done on the chain's own sequence
+        String queryName = chainClusterDB.getRefUniProtId() != null ? chainClusterDB.getRefUniProtId() : "query_" + chainClusterDB.getRepChain();
+        String queryId = constructSeqId(queryName, chainClusterDB.getRefUniProtStart(), chainClusterDB.getRefUniProtEnd());
         seqs.put(queryId, chainClusterDB.getMsaAlignedSeq());
         for (HomologDB hom : chainClusterDB.getHomologs()) {
             String upId = hom.getUniProtId();

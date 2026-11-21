@@ -22,18 +22,14 @@ import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.structure.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import eppic.commons.blast.BlastException;
 import eppic.commons.blast.BlastHit;
 import eppic.commons.blast.BlastHitList;
 import eppic.commons.blast.BlastHsp;
-import eppic.commons.blast.BlastRunner;
-import eppic.commons.blast.BlastXMLParser;
 import eppic.commons.sequence.AAAlphabet;
 import eppic.commons.sequence.MultipleSequenceAlignment;
 import eppic.commons.sequence.NoMatchFoundException;
-import eppic.commons.sequence.Sequence;
 import eppic.commons.sequence.SiftsConnection;
 import eppic.commons.sequence.SiftsFeature;
 import eppic.commons.sequence.UnirefEntry;
@@ -50,12 +46,10 @@ public class ChainEvolContext implements Serializable {
 	
 	private static final Pattern ALLX_SEQ_PATTERN = Pattern.compile("^X+$");
 	
-	// blast constants
-	private static final String BLASTOUT_SUFFIX = "blast.out.xml";
-	private static final String BLAST_BASENAME = "pdb2unimapping";
-	private static final String FASTA_SUFFIX = ".fa";	
-	private static final boolean BLAST_NO_FILTERING = true;
-	private static final boolean DEBUG = false;
+	/**
+	 * Prefix of the id given to the query when there is no UniProt reference and the chain's sequence is used as is
+	 */
+	public static final String QUERY_ID_PREFIX = "query_";
 
 	
 	// members 
@@ -67,8 +61,9 @@ public class ChainEvolContext implements Serializable {
 	private final String sequenceId;
 	private final String sequence;
 	
-	private UnirefEntry query;							// the uniprot info (id,seq) corresponding to this chain's sequence
-	private boolean hasQueryMatch;						// whether we could find the query's uniprot match or not
+	private UnirefEntry query;							// the query (id,seq) for this chain: the UniProt reference or the chain's sequence itself
+	private boolean hasQueryMatch;						// whether we have a query to do the evolutionary analysis with
+	private boolean queryIsUniProt;						// whether the query is a UniProt reference (true) or the chain's own sequence (false)
 	
 	private PdbToUniProtMapper pdbToUniProtMapper;
 	
@@ -141,22 +136,16 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Retrieves the UniProt mapping corresponding to the query PDB sequence 
+	 * Finds the query sequence to use for the evolutionary analysis of this chain.
+	 * For PDB entries whose SIFTS mapping can be used, the query is the mapped UniProt reference sequence.
+	 * Otherwise (input from file, no SIFTS mapping found or SIFTS disabled) the chain's own sequence
+	 * is taken at face value as the query, with no UniProt reference: see {@link #hasUniProtRef()}
 	 * @throws IOException
-	 * @throws BlastException
-	 * @throws InterruptedException
 	 */
-	public void retrieveQueryData(EppicParams params) throws IOException, BlastException, InterruptedException {
+	public void retrieveQueryData(EppicParams params) throws IOException {
 		
 		String siftsLocation = params.getSiftsFile();
 		boolean useSifts = params.isUseSifts();
-		File blastPlusBlastp = params.getBlastpBin();
-		String blastDbDir = params.getBlastDbDir();
-		String blastDb = params.getBlastDb();
-		int blastNumThreads = params.getNumThreads();
-		double pdb2uniprotIdThreshold = params.getPdb2uniprotIdThreshold();
-		double pdb2uniprotQcovThreshold = params.getPdb2uniprotQcovThreshold();
-		boolean useUniparc = params.isUseUniparc();
 		
 		String queryUniprotId = null;
 		query = null;
@@ -183,7 +172,7 @@ public class ChainEvolContext implements Serializable {
 		// two possible cases: 
 		// 1) PDB code known and so SiftsFeatures can be taken from SiftsConnection (unless useSifts is set to false)
 		SiftsFeature siftsMappings = null;
-		boolean findMappingWithBlast = false;
+		boolean useSequenceAsQuery = false;
 
 		Interval pdbInterv = null;
 		Interval uniProtInterv = null;
@@ -193,7 +182,7 @@ public class ChainEvolContext implements Serializable {
 			if (useSifts) {
 				if (pdbId == null) {
 					LOGGER.info("Could not read a PDB code in file.");
-					findMappingWithBlast = true;
+					useSequenceAsQuery = true;
 				} else {
 					String pdbCode = pdbId.getId().toLowerCase();
 					SiftsConnection siftsConn = parent.getSiftsConn(siftsLocation);
@@ -209,29 +198,30 @@ public class ChainEvolContext implements Serializable {
 
 					} catch (NoMatchFoundException e) {
 						LOGGER.warn("No SIFTS mapping could be found for "+pdbCode+sequenceId);
-						findMappingWithBlast = true;
+						useSequenceAsQuery = true;
 					}
 				}
 				
 			} else {
 				LOGGER.info("Using SIFTS feature is turned off.");
-				findMappingWithBlast = true;
+				useSequenceAsQuery = true;
 			}
-		// 2) PDB code not known and so SiftsFeatures have to be found by blasting, aligning etc.
+		// 2) PDB code not known: there is no UniProt reference, the sequence is used as is
 		} else {
 			LOGGER.info("Input is from file, won't use SIFTS. "
 					+ "Set the property USE_PDB_CODE_FROM_FILE to true if you want to change this behavior.");
-			findMappingWithBlast = true;
+			useSequenceAsQuery = true;
 		}
 		
-		if (findMappingWithBlast) {
+		if (useSequenceAsQuery) {
 			if (params.isNoBlast()) {
-				LOGGER.info("Will not blast to find query to UniProt mapping. Blasting is disabled (-B option)."
-						+ " No UniProt reference mapping will be available and thus no homologs alignment.");
+				// without blast the homologs can only come from the sequence search cache, which is keyed by UniProt reference
+				LOGGER.info("No UniProt reference available for chain {} and blasting is disabled (-B option). "
+						+ "Will not do evolutionary analysis for it.", sequenceId);
 			} else {
-				LOGGER.info("Will blast to find query to UniProt mapping.");
-				queryUniprotId = findUniprotMapping(blastPlusBlastp, blastDbDir, blastDb, blastNumThreads, pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold, useUniparc);
+				initQueryFromSequence(params);
 			}
+			return;
 		}
 		
 		if (queryUniprotId!=null) hasQueryMatch = true;
@@ -269,28 +259,11 @@ public class ChainEvolContext implements Serializable {
 				}
 
 				if (query != null) {
+					queryIsUniProt = true;
 					// this initialises the alignment that maps PDB-to-UniProt,
 					// if SIFTS mapping was found then intervals will be used (https://github.com/eppic-team/eppic/issues/188),
 					// otherwise intervals will be false
-					pdbToUniProtMapper.setUniProtReference(query, uniProtInterv, pdbInterv);
-
-					String warning = pdbToUniProtMapper.checkAlignments();
-					if (warning != null) {
-						queryWarnings.add(warning);
-						query = null;
-						hasQueryMatch = false;
-					} else {
-						int length = pdbToUniProtMapper.getHomologsSearchInterval(params.getHomologsSearchMode()).getLength();
-						if (length <= EppicParams.PEPTIDE_LENGTH_CUTOFF) {
-							// it can happen when the pdb length is above cutoff but the search length is below
-							// e.g. 2mre_B, 3gj5_B
-							LOGGER.warn("The search interval length {} is below the peptide length cutoff ({}). Will not do evolutionary analysis for chain {}", length, EppicParams.PEPTIDE_LENGTH_CUTOFF, sequenceId);
-							queryWarnings.add("Search interval length " + length + " for " + query.getId() +
-									" is below the peptide length cutoff (" + EppicParams.PEPTIDE_LENGTH_CUTOFF + ")");
-							hasQueryMatch = false;
-							query = null;
-						}
-					}
+					initQueryMapping(uniProtInterv, pdbInterv, params);
 				}
 				// the back-mapping to pdb is not working well yet, commented out
 				//LOGGER.info("Our mapping in SIFTS tab format: "+pdbToUniProtMapper.getMappingSiftsFormat(sequenceId));
@@ -315,17 +288,84 @@ public class ChainEvolContext implements Serializable {
 				LOGGER.warn("Won't do evolution analysis for chain "+sequenceId);
 				query = null;
 				hasQueryMatch = false;
-			} catch (CompoundNotFoundException e) {
-                LOGGER.warn("Some unknown compounds in PDB or UniProt protein sequences, error: {}", e.getMessage());
-				LOGGER.warn("Sequences: ");
-				LOGGER.warn("PDB: {}",sequence);
-				LOGGER.warn("UniProt ({}): {}",query.getUniId(), query.getSequence());
-				query = null;
-				hasQueryMatch = false;
 			}
 
 		}
 		
+	}
+
+	/**
+	 * Sets the query to the chain's own sequence, taken at face value, with no UniProt reference.
+	 * The homologs are then searched for with that sequence and the evolutionary analysis is done on it.
+	 * The PDB-to-reference mapping is then a mapping of the PDB sequence to itself.
+	 * @param params
+	 * @since 3.6.0
+	 */
+	private void initQueryFromSequence(EppicParams params) {
+		// we have to skip sequences composed of all unknown/non-standard (all Xs), blast fails otherwise
+		Matcher m = ALLX_SEQ_PATTERN.matcher(this.sequence);
+		if (m.matches()) {
+			LOGGER.info("Chain {} is composed only of unknown or non-standard aminoacids. Won't do evolutionary analysis for it.", sequenceId);
+			queryWarnings.add("Sequence is composed only of unknown or non-standard aminoacids, no evolutionary analysis is performed for this chain");
+			return;
+		}
+
+		LOGGER.info("No UniProt reference for chain {}. Will use its sequence as is to search for homologs", sequenceId);
+
+		query = new UnirefEntry();
+		// the id serves as the query's tag in the sequence search and the alignment, so it must not clash with UniProt/UniParc ids
+		String queryId = QUERY_ID_PREFIX + sequenceId;
+		query.setId(queryId);
+		query.setUniprotId(queryId);
+		query.setSequence(this.sequence);
+		if (query.replaceNonStandardByX()) {
+			LOGGER.warn("Replacing 'O' by 'X' in query sequence of chain {}", sequenceId);
+		}
+
+		hasQueryMatch = true;
+		queryIsUniProt = false;
+
+		initQueryMapping(null, null, params);
+	}
+
+	/**
+	 * Initialises the mapping of the PDB sequence(s) to the query sequence and checks that it can be used.
+	 * If it can't, the query is discarded and hasQueryMatch set to false.
+	 * @param queryInterv the interval in the query sequence of the SIFTS mapping, or null
+	 * @param pdbInterv the interval in the PDB sequence of the SIFTS mapping, or null
+	 * @param params
+	 */
+	private void initQueryMapping(Interval queryInterv, Interval pdbInterv, EppicParams params) {
+		try {
+			pdbToUniProtMapper.setUniProtReference(query, queryInterv, pdbInterv);
+		} catch (CompoundNotFoundException e) {
+			LOGGER.warn("Some unknown compounds in PDB or UniProt protein sequences, error: {}", e.getMessage());
+			LOGGER.warn("Sequences: ");
+			LOGGER.warn("PDB: {}",sequence);
+			LOGGER.warn("Query ({}): {}",query.getUniId(), query.getSequence());
+			query = null;
+			hasQueryMatch = false;
+			return;
+		}
+
+		String warning = pdbToUniProtMapper.checkAlignments();
+		if (warning != null) {
+			queryWarnings.add(warning);
+			query = null;
+			hasQueryMatch = false;
+			return;
+		}
+
+		int length = pdbToUniProtMapper.getHomologsSearchInterval(params.getHomologsSearchMode()).getLength();
+		if (length <= EppicParams.PEPTIDE_LENGTH_CUTOFF) {
+			// it can happen when the pdb length is above cutoff but the search length is below
+			// e.g. 2mre_B, 3gj5_B
+			LOGGER.warn("The search interval length {} is below the peptide length cutoff ({}). Will not do evolutionary analysis for chain {}", length, EppicParams.PEPTIDE_LENGTH_CUTOFF, sequenceId);
+			queryWarnings.add("Search interval length " + length + " for " + query.getId() +
+					" is below the peptide length cutoff (" + EppicParams.PEPTIDE_LENGTH_CUTOFF + ")");
+			hasQueryMatch = false;
+			query = null;
+		}
 	}
 	
 	/**
@@ -462,13 +502,13 @@ public class ChainEvolContext implements Serializable {
         LOGGER.info("Homologs search mode: {}", searchMode.getName());
 		if (searchMode==HomologsSearchMode.GLOBAL) {
 						
-			LOGGER.info("Using full UniProt sequence {} {}-{} for blast search (entity {})",
+			LOGGER.info("Using full query sequence {} {}-{} for blast search (entity {})",
 					query.getUniId(), queryInterv.beg, queryInterv.end, entity.getMolId());
 
 			searchWithFullUniprot = true;
 		} else if (searchMode==HomologsSearchMode.LOCAL) {
 						
-			LOGGER.info("Using UniProt {} subsequence {}-{} for blast search (entity {})",
+			LOGGER.info("Using query {} subsequence {}-{} for blast search (entity {})",
 					query.getUniId(), queryInterv.beg, queryInterv.end, entity.getMolId());
 			searchWithFullUniprot = false;			
 		} 
@@ -481,7 +521,10 @@ public class ChainEvolContext implements Serializable {
 		homologs.setUseUniparc(useUniparc);
 
 		BlastHitList cachedHitList;
-		if (params.getDbConfigFile()!=null) {
+		if (!queryIsUniProt) {
+			// the cache is keyed by UniProt reference, it can't have anything for a query without one
+			cachedHitList = null;
+		} else if (params.getDbConfigFile()!=null) {
 			cachedHitList = getCachedHspsForQuery(getQuery(), queryInterv);
 		} else {
 			LOGGER.info("Not using sequence search cache from db because the db config file was not supplied.");
@@ -574,7 +617,8 @@ public class ChainEvolContext implements Serializable {
 		// 3) alignment of the protein sequences
 		File alnCacheFile = null;
 		// beware we only try to use cache file if we are in default mode: uniparc=true, filter by domain=false
-		if (params.getAlnCacheDir()!=null && params.isUseUniparc() && !params.isFilterByDomain()) {
+		// and only for UniProt references: cache files are named after the query id
+		if (params.getAlnCacheDir()!=null && queryIsUniProt && params.isUseUniparc() && !params.isFilterByDomain()) {
 
 			Interval interv = pdbToUniProtMapper.getHomologsSearchInterval(params.getHomologsSearchMode());
 			String intervStr = "."+interv.beg+"-"+interv.end;
@@ -696,131 +740,9 @@ public class ChainEvolContext implements Serializable {
 	
 
 	
-	private String findUniprotMapping(File blastPlusBlastp, String blastDbDir, String blastDb, int blastNumThreads, double pdb2uniprotIdThreshold, double pdb2uniprotQcovThreshold, boolean useUniparc) 
-			throws IOException, BlastException, InterruptedException {
-		// for too short sequence it doesn't make sense to blast
-		if (this.sequence.length()<EppicParams.PEPTIDE_LENGTH_CUTOFF) {
-			LOGGER.info("Chain "+sequenceId+" too short for blasting. Won't try to find a UniProt reference for it.");
-			// query warnings for peptides (with a higher cutoff than this) are already logged before, see above
-			// note that then as no reference is found, there won't be blasting for homologs either
-			return null;
-		}
-		// we have to skip sequences composed of all unknown/non-standard (all Xs), blast fails otherwise
-		Matcher m = ALLX_SEQ_PATTERN.matcher(this.sequence);
-		if (m.matches()) {
-			LOGGER.info("Chain "+sequenceId+" is composed only of unknown or non-standard aminoacids. Won't try to find a UniProt reference for it.");
-			queryWarnings.add("Sequence is composed only of unknown or non-standard aminoacids, cannot find a UniProt reference for it");
-			return null;
-		}
-		
-		File outBlast = File.createTempFile(BLAST_BASENAME,BLASTOUT_SUFFIX);
-		File inputSeqFile = File.createTempFile(BLAST_BASENAME,FASTA_SUFFIX);
-		if (!DEBUG) {
-			outBlast.deleteOnExit();
-			inputSeqFile.deleteOnExit();
-		}
-		
-		new Sequence("chain"+sequenceId,this.sequence).writeToFastaFile(inputSeqFile);
-
-		BlastRunner blastRunner = new BlastRunner(blastDbDir);
-		blastRunner.runBlastp(blastPlusBlastp, inputSeqFile, blastDb, outBlast, BlastRunner.BLASTPLUS_XML_OUTPUT_TYPE, BLAST_NO_FILTERING, blastNumThreads, 500);
-
-		BlastHitList blastList = null;
-		try {
-			// note that by setting second parameter to true we are ignoring the DTD url to avoid unnecessary network connections
-			BlastXMLParser blastParser = new BlastXMLParser(outBlast, true);
-			blastList = blastParser.getHits();
-		} catch (SAXException e) {
-			// if this happens it means that blast doesn't format correctly its XML, i.e. has a bug
-			LOGGER.error("Unexpected error while parsing blast XML output: ",e);
-			System.exit(1);
-		}
-
-		String uniprotMapping = null;
-
-		if (!blastList.isEmpty()) {
-			BlastHit best = null;
-			blastList.sort();
-			for (int i=0;i<blastList.size();i++) {
-				best = blastList.get(i);
-				if (isHitUniprot(best)) break;
-				if (i==blastList.size()-1) { // if not a single hit is uniprot then we get to here and we have to catch it
-                    LOGGER.warn("No UniProt match could be found for the query chain {}: no blast hit was a UniProt match (total {} blast hits)", sequenceId, blastList.size());
-					queryWarnings.add("Blast didn't find a UniProt match for the chain. All blast hits were non-UniProt matches (total "+blastList.size()+" blast hits).");
-					return null;
-				}
-			}
-			BlastHsp bestHsp = best.getMaxScoringHsp();
-			if ((bestHsp.getQueryPercentIdentity()/100.0)>pdb2uniprotIdThreshold && bestHsp.getQueryCoverage()>pdb2uniprotQcovThreshold) {
-				uniprotMapping = getDeflineAccession(best);
-                LOGGER.info("Blast found UniProt id {} as best hit with {}", uniprotMapping, String.format("%5.2f%% id and %4.2f coverage", bestHsp.getQueryPercentIdentity(), bestHsp.getQueryCoverage()));
-			} else {
-                LOGGER.warn("No UniProt match could be found with blast for the query chain {} within cutoffs {}", sequenceId, String.format("%5.2f%% id and %4.2f coverage", pdb2uniprotIdThreshold, pdb2uniprotQcovThreshold));
-                LOGGER.warn("Best match was {}, with {}", best.getSubjectId(), String.format("%5.2f%% id and %4.2f coverage", bestHsp.getQueryPercentIdentity(), bestHsp.getQueryCoverage()));
-                LOGGER.info("Alignment of best UniProt match found by blast: \n{}", bestHsp.getAlignment().getFastaString(null, true));
-				queryWarnings.add("Blast didn't find a UniProt match for the chain. Best match was "+getDeflineAccession(best)+", with "+
-						String.format("%5.2f%% id and %4.2f coverage",bestHsp.getQueryPercentIdentity(),bestHsp.getQueryCoverage()));
-			}			
-		} else {
-            LOGGER.warn("No UniProt match could be found for the query chain {}. Blast returned no hits.", sequenceId);
-			queryWarnings.add("Blast didn't find a UniProt match for the chain (no hits returned by blast)");
-		}
-
-		return uniprotMapping;
-	}
-
 	/**
-	 * Gets the UniProt id, UniProt isoform id or UniParc id given a blast hit
-	 * @param hit
-	 * @return the id or null if the defline doesn't match the regexes for UniProt, UniProt isoform or UniParc ids
-	 */
-	private String getDeflineAccession(BlastHit hit) {
-		String sid = hit.getSubjectId();
-		Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
-		if (m.matches()) {
-			return m.group(1); 
-		} else {
-			Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
-			if (m2.matches()) {
-				return m2.group(1);
-			} else {
-				return null;
-			}
-		}
-	}
-	
-	/**
-	 * Tells whether given BlastHit's defline matches a UniProt id
-	 * @param hit
-	 * @return
-	 */
-	private boolean isHitUniprot(BlastHit hit) {
-		String sid = hit.getSubjectId();
-		Matcher m = Sequence.DEFLINE_PRIM_ACCESSION_REGEX.matcher(sid);
-		if (m.matches()) {
-			return true;
-		} else {
-			Matcher m2 = Sequence.DEFLINE_PRIM_ACCESSION_UNIREF_REGEX.matcher(sid);
-			if (m2.matches()) {
-				String uniId = m2.group(1);
-				if (uniId.contains("-")) {
-                    LOGGER.info("Blast hit {} is a UniProt isoform id. Skipping it", uniId);
-					return false;
-				} else if (uniId.startsWith("UPI")) {
-                    LOGGER.info("Blast hit {} is a UniParc id. Skipping it", uniId);
-					return false;
-				} else {
-					return true;
-				}
-			} else {
-				LOGGER.warn("Could not find UniProt id in blast subject id "+sid+". Skipping it");
-				return false;
-			}
-		}
-	}
-	
-	/**
-	 * The uniprot match for the query, use {@link #hasQueryMatch()} to check whether this can be called. 
+	 * The query: the UniProt reference or, if there is none, the chain's own sequence (see {@link #hasUniProtRef()}).
+	 * Use {@link #hasQueryMatch()} to check whether this can be called.
 	 * @return
 	 */
 	public UnirefEntry getQuery() {
@@ -832,11 +754,21 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Whether the query's UniProt match could be found or not.
+	 * Whether there is a query to do the evolutionary analysis with, either a UniProt reference
+	 * or the chain's own sequence. See {@link #hasUniProtRef()}
 	 * @return
 	 */
 	public boolean hasQueryMatch() {
 		return hasQueryMatch;
+	}
+
+	/**
+	 * Whether the query is a UniProt reference sequence. If false and {@link #hasQueryMatch()} is true,
+	 * the query is the chain's own sequence, used as is.
+	 * @return
+	 */
+	public boolean hasUniProtRef() {
+		return hasQueryMatch && queryIsUniProt;
 	}
 	
 	/**
