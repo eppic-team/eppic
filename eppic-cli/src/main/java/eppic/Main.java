@@ -259,6 +259,16 @@ public class Main {
 		}
 		
 		
+		// NCS operators that aren't rotations would deform the chains they generate: nothing computed from them makes sense
+		List<String> invalidNcsOps = NcsOpsUtils.findInvalidNcsOps(pdb);
+		if (!invalidNcsOps.isEmpty()) {
+			for (String invalid : invalidNcsOps) {
+				LOGGER.error("Invalid {}", invalid);
+			}
+			throw new EppicException(null, invalidNcsOps.size() + " of the NCS operators (MTRIX or _struct_ncs_oper) of "
+					+ (params.getInFile()==null?params.getPdbCode():params.getInFile().getName()) + " are not valid rotations, the file is likely malformed. Can't continue", true);
+		}
+
 		// NCS operators that are redundant with crystallographic symmetry would result in overlapping chains when expanded
 		NcsOpsUtils.removeCrystallographicNcsOps(pdb);
 
