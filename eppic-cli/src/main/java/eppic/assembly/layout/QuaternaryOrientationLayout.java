@@ -53,10 +53,21 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 				// this happens for cases like 5cti, assembly {1,2,3} since biojava 5
 				pointgroup = null;// helical case, we set this to null so that we go to helical case below
 			}
-			AxisAligner aligner = AxisAligner.getInstance(gSymmetry);
-			Point3d center = aligner.getGeometricCenter();
+			Point3d center;
 			AxisAngle4d axis = null;
-			if (pointgroup==null) {
+			try {
+				AxisAligner aligner = AxisAligner.getInstance(gSymmetry);
+				center = aligner.getGeometricCenter();
+			} catch (IllegalArgumentException e) {
+				// e.g. "RotationGroup is empty", when vertices are on top of each other because of
+				// overlapping chains (1qpi): no symmetry axis to align to
+				logger.warn("Could not align Connected Component containing {} to its symmetry axis ({}), "
+						+ "most likely there are overlapping chains. Using its centroid and a default axis",
+						connected.iterator().next(), e.getMessage());
+				center = getCentroid(connected, vertexPositioner);
+				axis = new AxisAngle4d();
+			}
+			if (axis == null && pointgroup==null) {
 				// pointgroup is null for 1y4m 
 				// that's because Helical symmetry is detected, let's check
 				if (gSymmetry.getSymmetry().equals("H")) {
@@ -69,7 +80,7 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 							+ "for Connected Component containing {}", connected.iterator().next());
 					axis = new AxisAngle4d();
 				}
-			} else {
+			} else if (axis == null) {
 				// We orient along the principal axis (the one with highest order).
 				// Note that RotationGroup.getHigherOrderRotationAxis() is not an index but the count of axes with order above 2
 				// that are not along the principal axis: it can't be used to get a rotation.
@@ -95,6 +106,15 @@ public class QuaternaryOrientationLayout<V, E> extends AbstractGraphLayout<V, E>
 			StereographicLayout<V, E> stereo = new StereographicLayout<>(vertexPositioner, center, zenith);
 			stereo.projectLatticeGraph(subgraph);
 		}
+	}
+
+	private static <V> Point3d getCentroid(Set<V> vertices, VertexPositioner<V> vertexPositioner) {
+		Point3d centroid = new Point3d();
+		for (V vert : vertices) {
+			centroid.add(vertexPositioner.getPosition(vert));
+		}
+		centroid.scale(1.0 / vertices.size());
+		return centroid;
 	}
 
 	public static <V,E> QuatSymmetryResults getQuatSymm(

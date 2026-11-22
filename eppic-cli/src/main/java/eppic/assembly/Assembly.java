@@ -473,13 +473,16 @@ public class Assembly {
 		// Transform to be centered with the major axis vertically
 		QuatSymmetryResults symm = getQuatSymm(chains);
 		RotationGroup pointgroup = symm.getRotationGroup();
-		AxisAligner aligner = AxisAligner.getInstance(symm);
+		// only created when there is a point group: AxisAligner throws for an empty one
+		// ("RotationGroup is empty", e.g. with overlapping chains as in 1qpi)
+		AxisAligner aligner = null;
 
 		Matrix4d transformation;
 		// pointgroup==null condition is to solve #155
 		if(pointgroup==null || pointgroup.getOrder() < 1) {
 			// Failed?
-			logger.warn("Error finding point group for complex containing {}",cc.vertexSet().iterator().next());
+			logger.warn("Error finding point group for complex containing {} (e.g. because of overlapping chains). "
+					+ "Centering it at its centroid without aligning it to a symmetry axis", cc.vertexSet().iterator().next());
 			
 			// Find centroid
 			List<Chain> chainList = new ArrayList<Chain>(cc.vertexSet().size());
@@ -544,6 +547,7 @@ public class Assembly {
 //				}
 
 
+			aligner = AxisAligner.getInstance(symm);
 			Point3d center = aligner.getGeometricCenter();
 			transformation = GeomTools.matrixFromPlane(center, normal, otheraxis);
 			transformation.invert();
@@ -555,7 +559,26 @@ public class Assembly {
 			ops.get(vert).mul(transformation, ops.get(vert));
 		}
 		//TODO is this really half the bounding box?
-		return aligner.getDimension();
+		if (aligner != null) {
+			return aligner.getDimension();
+		}
+		return getHalfExtent(chains);
+	}
+
+	/**
+	 * Half the dimensions of the axis-aligned bounding box of the given chains, which are
+	 * expected to be centered at the origin. Used when there is no symmetry to get it from.
+	 */
+	private static Vector3d getHalfExtent(List<ChainVertex> chains) {
+		Vector3d halfExtent = new Vector3d();
+		for (ChainVertex vert : chains) {
+			for (Atom atom : StructureTools.getAllAtomArray(vert.getChain())) {
+				halfExtent.x = Math.max(halfExtent.x, Math.abs(atom.getX()));
+				halfExtent.y = Math.max(halfExtent.y, Math.abs(atom.getY()));
+				halfExtent.z = Math.max(halfExtent.z, Math.abs(atom.getZ()));
+			}
+		}
+		return halfExtent;
 	}
 
 	/**

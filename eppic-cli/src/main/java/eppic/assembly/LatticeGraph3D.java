@@ -47,6 +47,10 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 
 	public static final double defaultInterfaceRadius = 2.5;
 	public static final double defaultArcHeight = 4;
+	/** Edges shorter than this (in A) are considered to join vertices at the same position */
+	private static final double MIN_EDGE_LENGTH = 0.01;
+	/** Length (in A) with which an edge between vertices at the same position is drawn */
+	private static final double COINCIDENT_EDGE_LENGTH = 2 * defaultInterfaceRadius;
 	//private final double defaultArrowOffset = 6;
 
 	public enum WrappingPolicy {
@@ -195,6 +199,17 @@ public class LatticeGraph3D extends LatticeGraph<ChainVertex3D,InterfaceEdge3D> 
 				Matrix4d transBOrtho = cell.transfToOrthonormal(transB);
 				transBOrtho.transform(unwrappedTarget);
 				getUnitCellTransformationOrthonormal(source.getChainId(), source.getOpId()).transform(unwrappedTarget);
+
+				// Chains on top of each other (e.g. whole-chain alternate conformations deposited as
+				// separate chains, as in 1qpi) give an edge of zero length, for which no arc can be
+				// built. Draw it instead as a short edge in a fixed direction, so that the rest of
+				// the graph can still be laid out.
+				if (sourcePos.distance(unwrappedTarget) < MIN_EDGE_LENGTH) {
+					logger.warn("Interface edge {} joins vertices {} and {} at the same position, most likely overlapping chains. "
+							+ "Drawing it with a default length of {} A", edge, source, target, COINCIDENT_EDGE_LENGTH);
+					unwrappedTarget = new Point3d(sourcePos);
+					unwrappedTarget.x += COINCIDENT_EDGE_LENGTH;
+				}
 
 				// Location of interface circle
 				Point3d midPoint = new Point3d();
