@@ -171,6 +171,11 @@ public class WriteUniqueUniprots {
 				counter++;
 
 				UnirefEntry uniEntry = batchEntries.get(uniprotid);
+				if (uniEntry == null && wuni.uc.getNotRetrievedIdsLastBatch().contains(uniprotid)) {
+					// an error, not an unknown id: logged by UniProtConnection already
+					countCantRetrieve++;
+					continue;
+				}
 				if (uniEntry == null) {
 					logger.warn("Could not find {} from UniProt REST API. Skipping", uniprotid);
 					countNotFound++;

@@ -8,23 +8,43 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Native java implementation of JobManager.
+ * Native java implementation of JobManager. Jobs run as processes in this replica. If a {@link JobStatusStore}
+ * is given, every status change is recorded there and refreshed with a periodic heartbeat, so that other
+ * replicas can report the status of jobs they don't run, and can tell when the replica running a job died.
  * @author Jose Duarte
  */
 public class NativeJobManager implements JobManager
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(NativeJobManager.class);
+
+	/**
+	 * How often the heartbeat of this replica's unfinished jobs is written to the job status store
+	 */
+	static final long HEARTBEAT_INTERVAL_MS = 30 * 1000;
+	/**
+	 * A job that is processing according to the job status store, but whose heartbeat is older than this,
+	 * is considered dead (the replica that ran it is gone) and reported as error
+	 */
+	static final long HEARTBEAT_STALE_MS = 3 * 60 * 1000;
+	/**
+	 * Time to wait on close for running tasks to record their final status
+	 */
+	private static final long CLOSE_TIMEOUT_MS = 15 * 1000;
+
 	private final ExecutorService executor;
+	private final ScheduledExecutorService heartbeatScheduler;
 
 	/**
 	 * Submission ids to tasks
@@ -33,20 +53,57 @@ public class NativeJobManager implements JobManager
 
 	private final String jobsDirectory;
 
+	private final JobStatusStore jobStatusStore;
+
 	/**
-	 * Creates instance of native job manager.
+	 * Creates instance of native job manager that doesn't record statuses in a shared store.
 	 * @param jobsDirectory directory where results of jobs are stored
 	 * @param numWorkers the number of worker slots
 	 */
 	public NativeJobManager(String jobsDirectory, int numWorkers) {
+		this(jobsDirectory, numWorkers, null);
+	}
+
+	/**
+	 * Creates instance of native job manager.
+	 * @param jobsDirectory directory where results of jobs are stored
+	 * @param numWorkers the number of worker slots
+	 * @param jobStatusStore the store shared by all replicas to record job statuses in, if null statuses are
+	 *                       only known to this instance
+	 */
+	public NativeJobManager(String jobsDirectory, int numWorkers, JobStatusStore jobStatusStore) {
 
 		executor = Executors.newFixedThreadPool(numWorkers);
-		tasks = new HashMap<>();
+		tasks = new ConcurrentHashMap<>();
 
 		this.jobsDirectory = jobsDirectory;
+		this.jobStatusStore = jobStatusStore;
 
 		checkJobsDirWritable();
 
+		if (jobStatusStore != null) {
+			heartbeatScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+				Thread t = new Thread(r, "job-status-heartbeat");
+				t.setDaemon(true);
+				return t;
+			});
+			heartbeatScheduler.scheduleAtFixedRate(this::writeHeartbeat, HEARTBEAT_INTERVAL_MS, HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
+		} else {
+			heartbeatScheduler = null;
+		}
+	}
+
+	private void writeHeartbeat() {
+		List<String> unfinished = tasks.entrySet().stream()
+				.filter(e -> !e.getValue().getOutput().isDone())
+				.map(Map.Entry::getKey)
+				.toList();
+		try {
+			jobStatusStore.heartbeat(unfinished);
+		} catch (Exception e) {
+			// catching everything: an exception would cancel the scheduled heartbeats
+			logger.error("Could not write heartbeat for {} unfinished jobs. Error: {}", unfinished.size(), e.getMessage());
+		}
 	}
 
 	private void checkJobsDirWritable() {
@@ -88,10 +145,15 @@ public class NativeJobManager implements JobManager
 
 			logger.info("About to submit shell task with submissionId '{}', in jobDirectory '{}' for command: '{}'",
 					submissionId, jobDirectory, command);
-			ShellTask shellTask = new ShellTask(command, jobDirectory, submissionId, mongoDb, emailData);
+			ShellTask shellTask = new ShellTask(command, jobDirectory, submissionId, mongoDb, emailData, jobStatusStore);
+
+			// recorded before the task can run, so that a later RUNNING status can't be overwritten.
+			// If it can't be recorded, other replicas couldn't report the job: better to reject it now
+			if (jobStatusStore != null) {
+				jobStatusStore.setStatus(submissionId, StatusOfJob.QUEUING);
+			}
 
 			Future<Integer> future = executor.submit(shellTask);
-
 			shellTask.setOutput(future);
 			tasks.put(submissionId, shellTask);
 
@@ -109,9 +171,15 @@ public class NativeJobManager implements JobManager
 		try {
 			ShellTask task = tasks.get(submissionId);
 			if (task == null) {
-				// task==null : job is not present in this instance of NativeJobManager, which happens if jetty was restarted
-				// we still try to see if we can find it in file system, in case the process kept running and could finish
-				if(checkIfJobWasFinishedSuccessfully(submissionId)) {
+				// task==null : job is not run by this instance of NativeJobManager: it is run by another replica,
+				// or by a previous instance (before a restart). The shared job status store knows about it
+				JobStatusStore.JobStatusRecord jobStatusRecord = jobStatusStore == null ? null : jobStatusStore.get(submissionId);
+				if (jobStatusRecord != null) {
+					statusOfJob = statusFromRecord(submissionId, jobStatusRecord);
+				}
+				// no record: a job submitted before the store existed (or without one). We still try to see if we
+				// can find it in file system, in case the process kept running and could finish
+				else if(checkIfJobWasFinishedSuccessfully(submissionId)) {
 					logger.info("Job '{}' is unknown to the native job manager. However its finish file was found. Considering it FINISHED", submissionId);
 					statusOfJob = StatusOfJob.FINISHED;
 				} else {
@@ -143,7 +211,8 @@ public class NativeJobManager implements JobManager
 
 				} else {
 
-					if (task.isRunning()) {
+					// the process started at some point: running, or past it and writing results to db
+					if (task.getExecutionTime() > 0) {
 						statusOfJob = StatusOfJob.RUNNING;
 					} else {
 						statusOfJob = StatusOfJob.QUEUING;
@@ -158,6 +227,25 @@ public class NativeJobManager implements JobManager
 		}
 
 		return statusOfJob;
+	}
+
+	/**
+	 * Gets the status of a job run by another replica from its record in the job status store. A job that is
+	 * processing but whose heartbeat is stale is reported as error: the replica running it is gone.
+	 */
+	static StatusOfJob statusFromRecord(String submissionId, JobStatusStore.JobStatusRecord jobStatusRecord) {
+		StatusOfJob status = jobStatusRecord.status();
+		boolean processing = status == StatusOfJob.QUEUING || status == StatusOfJob.RUNNING || status == StatusOfJob.WAITING;
+		if (processing) {
+			long heartbeatAge = jobStatusRecord.heartbeatAt() == null ?
+					Long.MAX_VALUE : System.currentTimeMillis() - jobStatusRecord.heartbeatAt().getTime();
+			if (heartbeatAge > HEARTBEAT_STALE_MS) {
+				logger.warn("Job '{}' is {} in job status store, but its last heartbeat from host '{}' was {} s ago. Considering it ERROR",
+						submissionId, status, jobStatusRecord.host(), heartbeatAge / 1000);
+				return StatusOfJob.ERROR;
+			}
+		}
+		return status;
 	}
 
 	@Override
@@ -235,7 +323,24 @@ public class NativeJobManager implements JobManager
 	public void close() throws JobHandlerException {
 		try {
 			logger.info("Shutting down native job manager");
+			if (heartbeatScheduler != null) {
+				heartbeatScheduler.shutdownNow();
+			}
+			// interrupts the running tasks: they kill their processes and record themselves as error
 			executor.shutdownNow();
+			if (!executor.awaitTermination(CLOSE_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
+				logger.warn("Some running tasks did not terminate within {} s", CLOSE_TIMEOUT_MS / 1000);
+			}
+			// the queued tasks will never run
+			for (ShellTask task : tasks.values()) {
+				if (!task.isStarted() && !task.getOutput().isDone()) {
+					task.abortBeforeStart();
+				}
+			}
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new JobHandlerException(e);
 		}
 		catch (Exception e) {
 			throw new JobHandlerException(e);

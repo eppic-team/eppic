@@ -6,6 +6,8 @@
 # Build stage
 #
 FROM maven:3.9.7-eclipse-temurin-21-alpine AS build
+# git is needed by the buildnumber plugin to put the git SHA in about.properties (otherwise it is "na")
+RUN apk add --no-cache git
 ENV HOME=/usr/app
 RUN mkdir -p $HOME
 WORKDIR $HOME

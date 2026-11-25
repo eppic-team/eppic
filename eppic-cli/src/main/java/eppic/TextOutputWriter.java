@@ -350,7 +350,7 @@ public class TextOutputWriter {
 		List<ChainClusterDB> chainClusters = pdbInfo.getChainClusters();
 		
 		for (ChainClusterDB cc:chainClusters) {
-			if (cc.isHasUniProtRef()) {
+			if (hasEvolData(cc)) {
 				writeHomologsSummaryPerChain(cc);
 			}
 		}
@@ -360,7 +360,7 @@ public class TextOutputWriter {
 		PrintStream ps = new PrintStream(params.getOutputFile("."+chainCluster.getRepChain()+".log"));
 		ps.println("Query: chain "+chainCluster.getRepChain());
 		ps.println("UniProt id for query:");
-		ps.print(chainCluster.getRefUniProtId());
+		ps.print(chainCluster.isHasUniProtRef()?chainCluster.getRefUniProtId():"none (sequence used as is)");
 		
 		if (chainCluster.getFirstTaxon()!=null && chainCluster.getLastTaxon()!=null) 
 			ps.println("\t"+chainCluster.getFirstTaxon()+"\t"+chainCluster.getLastTaxon());
@@ -387,12 +387,30 @@ public class TextOutputWriter {
 		ps.close();
 	}
 	
+	/**
+	 * Whether the chain cluster has evolutionary data (homologs, alignment, entropies), with or without a UniProt reference
+	 * @param cc
+	 * @return
+	 */
+	private static boolean hasEvolData(ChainClusterDB cc) {
+		return cc.getMsaAlignedSeq()!=null;
+	}
+
+	/**
+	 * The name of the query: its UniProt reference id or, when it has none, a name based on the representative chain
+	 * @param cc
+	 * @return
+	 */
+	private static String getQueryName(ChainClusterDB cc) {
+		return cc.isHasUniProtRef()?cc.getRefUniProtId():ChainEvolContext.QUERY_ID_PREFIX+cc.getRepChain();
+	}
+
 	public void writeEntropyFiles() throws IOException {
 		
 		List<ChainClusterDB> chainClusters = pdbInfo.getChainClusters();
 		
 		for (ChainClusterDB cc:chainClusters) {
-			if (cc.isHasUniProtRef()) {
+			if (hasEvolData(cc)) {
 				writeEntropyFile(cc);
 			}
 		}
@@ -408,7 +426,7 @@ public class TextOutputWriter {
 		int numGroupsAlphabet = alphabet.split(":").length;
 		
 		ps.println("# Entropies for all observed residues of query sequence (reference UniProt: " +
-				chainCluster.getRefUniProtId()+") based on a(n) " + numGroupsAlphabet + "-letter alphabet.");
+				(chainCluster.isHasUniProtRef()?chainCluster.getRefUniProtId():"none")+") based on a(n) " + numGroupsAlphabet + "-letter alphabet.");
 		ps.println("# The maximum entropy value is " + Math.log(numGroupsAlphabet) / Math.log(2) + ".");
 		ps.println("# seqres\tpdb\tuniprot\tpdb_res\tentropy");
  
@@ -452,7 +470,7 @@ public class TextOutputWriter {
 		List<ChainClusterDB> chainClusters = pdbInfo.getChainClusters();
 		
 		for (ChainClusterDB cc:chainClusters) {
-			if (cc.isHasUniProtRef()) {
+			if (hasEvolData(cc)) {
 				writeAlnFile(cc);
 			}
 		}
@@ -467,7 +485,7 @@ public class TextOutputWriter {
 
 		// query sequence
 		String seq = chainCluster.getMsaAlignedSeq();
-		String name = chainCluster.getRefUniProtId()+"_"+chainCluster.getRefUniProtStart()+"-"+chainCluster.getRefUniProtEnd();
+		String name = getQueryName(chainCluster)+"_"+chainCluster.getRefUniProtStart()+"-"+chainCluster.getRefUniProtEnd();
 		ps.print('>' + name+"\n");
 		for(int i=0; i<seq.length(); i+=len) {
 			ps.print(seq.substring(i, Math.min(i+len,seq.length()))+"\n");

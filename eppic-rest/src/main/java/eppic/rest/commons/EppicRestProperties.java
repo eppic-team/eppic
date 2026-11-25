@@ -26,7 +26,9 @@ public class EppicRestProperties {
 
     private String emailReplytoAddress;
     private String emailUsername;
-    private String emailPassword;
+    private String emailOauth2ClientId;
+    private String emailOauth2ClientSecret;
+    private String emailOauth2RefreshToken;
     private String emailHost;
     private int emailPort;
 
@@ -137,12 +139,28 @@ public class EppicRestProperties {
         this.emailUsername = emailUsername;
     }
 
-    public String getEmailPassword() {
-        return emailPassword;
+    public String getEmailOauth2ClientId() {
+        return emailOauth2ClientId;
     }
 
-    public void setEmailPassword(String emailPassword) {
-        this.emailPassword = emailPassword;
+    public void setEmailOauth2ClientId(String emailOauth2ClientId) {
+        this.emailOauth2ClientId = emailOauth2ClientId;
+    }
+
+    public String getEmailOauth2ClientSecret() {
+        return emailOauth2ClientSecret;
+    }
+
+    public void setEmailOauth2ClientSecret(String emailOauth2ClientSecret) {
+        this.emailOauth2ClientSecret = emailOauth2ClientSecret;
+    }
+
+    public String getEmailOauth2RefreshToken() {
+        return emailOauth2RefreshToken;
+    }
+
+    public void setEmailOauth2RefreshToken(String emailOauth2RefreshToken) {
+        this.emailOauth2RefreshToken = emailOauth2RefreshToken;
     }
 
     public String getEmailHost() {

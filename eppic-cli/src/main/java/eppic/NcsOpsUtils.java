@@ -3,6 +3,7 @@ package eppic;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 
 import org.biojava.nbio.structure.PDBCrystallographicInfo;
@@ -25,6 +26,69 @@ public class NcsOpsUtils {
 	 * Tolerance to consider 2 operators (in crystal coordinates) equal
 	 */
 	private static final double TOLERANCE = 0.001;
+
+	/**
+	 * Tolerance to accept the rotation part of a deposited NCS operator as a proper rotation
+	 * (orthonormal rows, determinant 1). Deposited matrices have 5 or 6 decimals, so a correct one
+	 * is well within it, while a malformed one (e.g. values in the wrong order) is far off.
+	 */
+	private static final double ROTATION_TOLERANCE = 0.01;
+
+	/**
+	 * Checks that all NCS operators of the given structure are proper rotations plus a translation:
+	 * the rows of the rotation part must be orthonormal and its determinant 1. An operator that isn't
+	 * deforms the chains it generates (in the 3zfg mmCIF the values of _struct_ncs_oper are in MTRIX
+	 * order, so translations end up in the matrices), which makes the expanded structure meaningless
+	 * and can exhaust memory when finding interfaces.
+	 * @param structure
+	 * @return a description of each invalid operator, empty if all are valid or there are none
+	 */
+	public static List<String> findInvalidNcsOps(Structure structure) {
+		List<String> invalid = new ArrayList<>();
+
+		PDBCrystallographicInfo xtalInfo = structure.getCrystallographicInfo();
+		if (xtalInfo == null) return invalid;
+
+		Matrix4d[] ncsOps = xtalInfo.getNcsOperators();
+		if (ncsOps == null) return invalid;
+
+		for (int k = 0; k < ncsOps.length; k++) {
+			String problem = getRotationProblem(ncsOps[k]);
+			if (problem != null) {
+				invalid.add(String.format("NCS operator %d of %d: %s. Matrix:%n%s", k + 1, ncsOps.length, problem, ncsOps[k]));
+			}
+		}
+		return invalid;
+	}
+
+	/**
+	 * @param m
+	 * @return why the rotation part of m is not a proper rotation, or null if it is
+	 */
+	private static String getRotationProblem(Matrix4d m) {
+		for (int i = 0; i < 3; i++) {
+			for (int j = i; j < 3; j++) {
+				double dot = 0;
+				for (int c = 0; c < 3; c++) {
+					dot += m.getElement(i, c) * m.getElement(j, c);
+				}
+				double expected = (i == j) ? 1 : 0;
+				if (Double.isNaN(dot) || Math.abs(dot - expected) > ROTATION_TOLERANCE) {
+					if (i == j) {
+						return String.format("row %d of the rotation has length %.4f instead of 1", i + 1, Math.sqrt(dot));
+					}
+					return String.format("rows %d and %d of the rotation are not orthogonal (dot product %.4f)", i + 1, j + 1, dot);
+				}
+			}
+		}
+		Matrix3d rot = new Matrix3d();
+		m.getRotationScale(rot);
+		double det = rot.determinant();
+		if (Math.abs(det - 1) > ROTATION_TOLERANCE) {
+			return String.format("the determinant of the rotation is %.4f instead of 1 (an improper rotation)", det);
+		}
+		return null;
+	}
 
 	/**
 	 * Removes from the given structure the NCS operators that are redundant with the

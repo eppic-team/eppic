@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import com.mongodb.client.MongoDatabase;
+import eppic.commons.util.FileTypeGuesser;
 import eppic.db.adaptors.ViewsAdaptor;
 import eppic.db.dao.mongo.BlobsDAOMongo;
 import eppic.db.dao.mongo.ContactDAOMongo;
@@ -54,6 +55,12 @@ public class JobService {
     private static final Pattern PDBID_REGEX = Pattern.compile("^\\d\\w\\w\\w$");
 
     private static final String CIFGZ_BASE_URL = "https://files.rcsb.org/download/";
+
+    /**
+     * The original coordinates of a user job, as stored when the job finished: the uploaded file gzipped, and whether
+     * it is in mmCIF format (otherwise PDB format)
+     */
+    public record GzippedCoordinates(byte[] gzippedData, boolean isCif) {}
 
     private PDBInfoDAO pdbInfoDAO;
     private PDBInfoDAO pdbInfoDAOUserJobs;
@@ -184,7 +191,9 @@ public class JobService {
             return null;
         }
         Map<String, String> seqs = new LinkedHashMap<>();
-        String queryId = constructSeqId(chainClusterDB.getRefUniProtId(), chainClusterDB.getRefUniProtStart(), chainClusterDB.getRefUniProtEnd());
+        // when there is no UniProt reference (e.g. user jobs) the evolutionary analysis is done on the chain's own sequence
+        String queryName = chainClusterDB.getRefUniProtId() != null ? chainClusterDB.getRefUniProtId() : "query_" + chainClusterDB.getRepChain();
+        String queryId = constructSeqId(queryName, chainClusterDB.getRefUniProtStart(), chainClusterDB.getRefUniProtEnd());
         seqs.put(queryId, chainClusterDB.getMsaAlignedSeq());
         for (HomologDB hom : chainClusterDB.getHomologs()) {
             String upId = hom.getUniProtId();
@@ -491,6 +500,44 @@ public class JobService {
             throw new RuntimeException("Unsupported file type ");
         }
         return data;
+    }
+
+    /**
+     * URL of the original coordinates (the asymmetric unit) of a precomputed PDB entry, in mmCIF format, in the PDB
+     * archive. Note the archive serves it with gzip transfer encoding.
+     * @param pdbId the PDB id
+     * @return the URL
+     */
+    public String getPdbArchiveCoordinatesUrl(String pdbId) {
+        return CIFGZ_BASE_URL + pdbId.toUpperCase() + ".cif";
+    }
+
+    /**
+     * The original coordinates (the asymmetric unit) of a user job, as uploaded. They are stored gzipped and are returned
+     * as such, with their format.
+     * @param jobId the user job identifier
+     * @return the gzipped coordinates and their format
+     * @throws DaoException if the job has no stored coordinates (with a NoResultException cause, i.e. a 404)
+     * @throws IOException if the format of the coordinates can't be read
+     */
+    public GzippedCoordinates getUserJobCoordinates(String jobId) throws DaoException, IOException {
+        byte[] gzippedData;
+        try {
+            gzippedData = blobsDaoUserJobs.get(new BlobIdentifierDB(jobId, FileTypeEnum.COORDS, null));
+        } catch (DaoException e) {
+            logger.info("No coordinates found for job '{}': {}", jobId, e.getMessage());
+            throw new DaoException(new NoResultException("No coordinates found for job " + jobId));
+        }
+        // the guesser only reads the first lines, gunzipping just those
+        int fileType = FileTypeGuesser.guessFileType(new ByteArrayInputStream(gzippedData));
+        if (fileType != FileTypeGuesser.CIF_FILE && fileType != FileTypeGuesser.PDB_FILE && fileType != FileTypeGuesser.RAW_PDB_FILE) {
+            throw new IOException("Coordinates of job " + jobId + " are not in one of the supported formats");
+        }
+        return new GzippedCoordinates(gzippedData, fileType == FileTypeGuesser.CIF_FILE);
+    }
+
+    public boolean isUserJobId(String entryId) {
+        return isUserJob(entryId);
     }
 
     public byte[] getImageFile(String entryId, FileTypeEnum type, String id) throws IOException, DaoException {

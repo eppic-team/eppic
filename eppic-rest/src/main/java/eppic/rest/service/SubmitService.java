@@ -13,6 +13,8 @@ import eppic.rest.jobs.EppicCliGenerator;
 import eppic.rest.jobs.JobHandlerException;
 import eppic.rest.jobs.JobManager;
 import eppic.rest.jobs.JobManagerFactory;
+import eppic.rest.jobs.MongoJobStatusStore;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,14 +77,18 @@ public class SubmitService {
         memForEppicProcess = eppicRestProperties.getMemEppicProcess();
         eppicJarPath = eppicRestProperties.getEppicJarPath();
         cliConfigFile = new File(eppicRestProperties.getCliConfigFile());
+        mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs(), MongoUtils.MONGO_USERJOBS_USER_ENV_VAR, MongoUtils.MONGO_USERJOBS_PASSWORD_ENV_VAR);
         if (jobManager == null) {
-            // init only first time, it is a singleton
-            jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager);
+            // init only first time, it is a singleton.
+            // Job statuses go to the user jobs db, so that any replica can report on any job
+            jobManager = JobManagerFactory.getJobManager(baseOutDir.getAbsolutePath(), numThreadsJobManager, new MongoJobStatusStore(mongoDbUserJobs));
         }
         emailData = new EmailData();
         emailData.setHost(eppicRestProperties.getEmailHost());
         emailData.setPort(String.valueOf(eppicRestProperties.getEmailPort()));
-        emailData.setEmailSenderPassword(eppicRestProperties.getEmailPassword());
+        emailData.setOauth2ClientId(eppicRestProperties.getEmailOauth2ClientId());
+        emailData.setOauth2ClientSecret(eppicRestProperties.getEmailOauth2ClientSecret());
+        emailData.setOauth2RefreshToken(eppicRestProperties.getEmailOauth2RefreshToken());
         emailData.setEmailSenderUserName(eppicRestProperties.getEmailUsername());
         emailData.setReplyToAddress(eppicRestProperties.getEmailReplytoAddress());
         EmailMessageData emailMessageData = new EmailMessageData();
@@ -96,8 +102,23 @@ public class SubmitService {
         emailMessageData.setBaseUrlJobRetrieval(eppicRestProperties.getEmailBaseUrlJobRetrieval());
 
         logger.info("Initialised email data: {}", emailData);
+    }
 
-        mongoDbUserJobs = MongoUtils.getMongoDatabase(eppicRestProperties.getDbNameUserjobs(), eppicRestProperties.getMongoUriUserjobs(), MongoUtils.MONGO_USERJOBS_USER_ENV_VAR, MongoUtils.MONGO_USERJOBS_PASSWORD_ENV_VAR);
+    /**
+     * On shutdown (e.g. pod termination), the jobs of this replica can't complete: mark them as error so that
+     * users get notified, instead of them waiting until their heartbeat goes stale
+     */
+    @PreDestroy
+    public void shutdown() {
+        if (jobManager == null) {
+            return;
+        }
+        try {
+            jobManager.close();
+        } catch (JobHandlerException e) {
+            logger.error("Error while shutting down job manager: {}", e.getMessage());
+        }
+        jobManager = null;
     }
 
     /**

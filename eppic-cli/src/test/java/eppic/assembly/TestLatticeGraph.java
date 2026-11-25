@@ -407,6 +407,33 @@ public class TestLatticeGraph {
 
 	}
 	
+	/**
+	 * 1qpi has its DNA in 2 alternate orientations, deposited as 2 chains (M all altloc A, N all
+	 * altloc B) on top of each other. The edge between them has zero length, for which no arc can
+	 * be built: it must be drawn with a default length instead of failing the 3D layout.
+	 */
+	@Test
+	public void testCoincidentVertices1qpi() throws IOException, StructureException {
+		Structure s = getStructure("1qpi");
+		StructureInterfaceList interfaces = getAllInterfaces(s);
+
+		// the same way DataModelAdaptor.setAssemblies builds it
+		CrystalAssemblies assemblies = new CrystalAssemblies(s, interfaces);
+		LatticeGraph3D lg3d = new LatticeGraph3D(assemblies.getLatticeGraph());
+
+		assertFalse(lg3d.getGraph().edgeSet().isEmpty());
+		for (InterfaceEdge3D edge : lg3d.getGraph().edgeSet()) {
+			assertFalse("No segments for edge " + edge, edge.getSegments().isEmpty());
+			for (ParametricCircularArc arc : edge.getSegments()) {
+				assertTrue("Arc of edge " + edge + " has zero length", arc.getStart().distance(arc.getEnd()) > 0);
+				assertTrue("Arc of edge " + edge + " has no valid radius", Double.isFinite(arc.getRadius()));
+			}
+			for (OrientedCircle circle : edge.getCircles()) {
+				assertTrue("Circle of edge " + edge + " has no orientation", circle.getCenter().distance(circle.getPerpendicular()) > 0);
+			}
+		}
+	}
+
 	@Test
 	public void testCellMmcifGeneration() throws IOException, StructureException {
 		

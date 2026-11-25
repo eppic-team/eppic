@@ -3,6 +3,8 @@ package eppic.commons.sequence;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -44,6 +46,32 @@ public class TestUniProtConnection {
 		String upid = "L8NZJ8";
 		UniProtConnection upc = new UniProtConnection();
 		upc.getEntry(upid);
+	}
+
+	@Test
+	public void testGetEntriesBatch() throws IOException {
+		UniProtConnection upc = new UniProtConnection();
+		// L8NZJ8 is inactive (deleted): left out of the answer, like unknown ids
+		Map<String, UniprotEntry> entries = upc.getEntries(Arrays.asList("P30340", "P69905", "L8NZJ8"));
+		assertEquals(2, entries.size());
+		assertFalse(entries.containsKey("L8NZJ8"));
+		UniprotEntry entry = entries.get("P30340");
+		assertEquals(122, entry.getUniprotSeq().getLength());
+		assertEquals(1140, entry.getTaxId());
+		assertEquals("Bacteria", entry.getFirstTaxon());
+		assertEquals("Synechococcus", entry.getLastTaxon());
+		assertEquals(142, entries.get("P69905").getUniprotSeq().getLength());
+	}
+
+	@Test
+	public void testBatchWithMalformedIdFallsBackToOneByOne() throws IOException {
+		UniProtConnection upc = new UniProtConnection();
+		// a malformed accession makes the whole batch request fail with a 400. The good
+		// ids must still come back, through the one by one fallback
+		Map<String, UnirefEntry> entries = upc.getUnirefEntriesWithRetry(Arrays.asList("P30340", "NOT_AN_ID", "P69905"));
+		assertEquals(2, entries.size());
+		assertEquals(1140, entries.get("P30340").getNcbiTaxId());
+		assertEquals(142, entries.get("P69905").getSeq().getLength());
 	}
 
 	@Test

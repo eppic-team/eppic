@@ -309,6 +309,32 @@ public class JobResource {
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(os);
     }
 
+    @GetMapping(value = "/coordsFile/{jobId}")
+    @Tag(name = "Original coordinate file service",
+            description = "Returns the coordinates the job was run on (the asymmetric unit), as in the original file: for " +
+                    "PDB entries a redirect to the mmCIF file in the PDB archive, for user jobs the uploaded file (mmCIF " +
+                    "or PDB format), with gzip content encoding")
+    public ResponseEntity<?> getOriginalCoordinateFile(
+            @PathVariable("jobId") String jobId) throws DaoException, IOException {
+
+        if (!jobService.isUserJobId(jobId)) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(java.net.URI.create(jobService.getPdbArchiveCoordinatesUrl(jobId)))
+                    .build();
+        }
+
+        JobService.GzippedCoordinates coords = jobService.getUserJobCoordinates(jobId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDisposition(ContentDisposition.builder("attachment")
+                .filename(jobId + (coords.isCif() ? ".cif" : ".pdb"))
+                .build());
+        headers.setContentType(MediaType.parseMediaType(coords.isCif() ? "chemical/x-cif" : "chemical/x-pdb"));
+        // stored gzipped: sent as is, for the client to decompress transparently (this also stops the server
+        // compressing it again)
+        headers.set(HttpHeaders.CONTENT_ENCODING, "gzip");
+        return ResponseEntity.status(HttpStatus.OK).headers(headers).body(coords.gzippedData());
+    }
+
     @GetMapping(value = "/msaFastaFile/{jobId}/{repChainId}", produces = MediaType.TEXT_PLAIN_VALUE)
     @Tag(name = "Alignment file service",
             description = "returns the Multiple Sequence Alignment used to find evolutionary scores in FASTA format.")

@@ -111,8 +111,8 @@ public class UnirefEntry implements Serializable {
 	 * Uniprot ids get obsoleted (inactive) when they are merged, demerged, deleted, etc
 	 * The ids are then never reused and kept in an inactive ids database.
 	 * e.g. Q31NP8 is an obsoleted entry replaced by P30340
-	 * See http://www.uniprot.org/help/query-fields and 
-	 * http://www.uniprot.org/uniprot/?query=active:no 
+	 * See https://www.uniprot.org/help/query-fields and
+	 * https://rest.uniprot.org/uniprotkb/search?query=active:false
 	 * @param uniprotId
 	 */
 	public void addInactiveUniprotId(String uniprotId) {

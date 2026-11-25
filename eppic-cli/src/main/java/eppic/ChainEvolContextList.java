@@ -194,7 +194,7 @@ public class ChainEvolContextList implements Serializable {
 	}
 	
 	public void retrieveQueryData(EppicParams params) throws EppicException {
-		params.getProgressLog().println("Finding query's UniProt mappings through SIFTS or blasting");
+		params.getProgressLog().println("Finding query's UniProt mappings through SIFTS");
 		params.getProgressLog().print("chains: ");
 		
 		openConnections(params);
@@ -204,13 +204,9 @@ public class ChainEvolContextList implements Serializable {
 			try {
 				chainEvCont.retrieveQueryData(params);
 
-			} catch (BlastException e) {
-				throw new EppicException(e,"Couldn't run blast to retrieve query's UniProt mapping: "+e.getMessage(),true);
 			} catch (IOException e) {
 				throw new EppicException(e,"Problems while retrieving query data: "+e.getMessage(),true);
-			} catch (InterruptedException e) {
-				throw new EppicException(e,"Thread interrupted while running blast for retrieving query data: "+e.getMessage(),true);
-			} 
+			}
 			catch (Exception e) { // for any kind of exceptions thrown while connecting through uniprot REST API
 				String msg = null;
 				if (useLocalUniprot) {
