@@ -30,6 +30,8 @@
 		<log4j.version>2.25.5</log4j.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jgrapht.version>1.0.1</jgrapht.version>
+		<!-- Jersey 3, i.e. the jakarta.ws.rs namespace. Used by eppic-util (UniProt client) and eppic-rest -->
+		<jersey.version>3.1.12</jersey.version>
 		<biojava.version>7.4.0</biojava.version>
 		<!-- keep in sync with the jackson-databind that biojava brings in -->
 		<jackson.version>2.18.11</jackson.version>

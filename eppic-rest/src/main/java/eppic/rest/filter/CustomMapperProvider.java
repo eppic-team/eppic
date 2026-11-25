@@ -3,8 +3,8 @@ package eppic.rest.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eppic.db.mongoutils.ConfigurableMapper;
 
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.ContextResolver;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * A custom object mapper provider that serves to configure the way objects are serialized

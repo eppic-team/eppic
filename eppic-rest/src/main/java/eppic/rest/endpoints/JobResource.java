@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.Produces;
+import jakarta.ws.rs.Produces;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
