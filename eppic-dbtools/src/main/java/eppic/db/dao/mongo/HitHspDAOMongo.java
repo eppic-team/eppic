@@ -6,7 +6,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.HitHspDAO;
 import eppic.model.db.HitHspDB;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

@@ -10,7 +10,7 @@ import eppic.model.db.AssemblyDB;
 import eppic.model.db.PdbInfoDB;
 import org.bson.Document;
 
-import javax.persistence.NoResultException;
+import jakarta.persistence.NoResultException;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package eppic.model.db;
 
-import javax.persistence.Index;
-import javax.persistence.Table;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 

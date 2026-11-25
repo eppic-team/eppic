@@ -40,7 +40,7 @@ import eppic.db.dao.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.NoResultException;
+import jakarta.persistence.NoResultException;
 
 /**
  * The service implementation to retrieve data as needed by the REST endpoints.

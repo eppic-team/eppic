@@ -6,7 +6,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtInfoDAO;
 import eppic.model.db.UniProtInfoDB;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 import java.util.Collections;
 import java.util.List;
 

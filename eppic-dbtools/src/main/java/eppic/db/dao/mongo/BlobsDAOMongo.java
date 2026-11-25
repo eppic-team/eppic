@@ -6,7 +6,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.BlobDB;
 import eppic.model.db.BlobIdentifierDB;
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 

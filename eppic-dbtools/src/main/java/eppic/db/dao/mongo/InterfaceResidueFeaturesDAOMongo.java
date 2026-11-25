@@ -6,7 +6,7 @@ import eppic.db.dao.InterfaceResidueFeaturesDAO;
 import eppic.db.mongoutils.MongoUtils;
 import eppic.model.db.InterfaceResidueFeaturesDB;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 import java.util.Arrays;
 
 public class InterfaceResidueFeaturesDAOMongo implements InterfaceResidueFeaturesDAO {

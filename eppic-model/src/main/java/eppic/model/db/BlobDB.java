@@ -1,7 +1,7 @@
 package eppic.model.db;
 
-import javax.persistence.Index;
-import javax.persistence.Table;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 
 @Table(name = "Blob",
         indexes = {@Index(name = "blobId_idx", columnList = "blobId.jobId,blobId.type,blobId.id", unique = true), @Index(name = "blobId-jobId_idx", columnList = "blobId.jobId")})

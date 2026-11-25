@@ -1,6 +1,6 @@
 package eppic.model.db;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 
 @Table(name="UniProtMetadata")

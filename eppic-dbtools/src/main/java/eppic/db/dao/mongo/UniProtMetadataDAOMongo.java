@@ -6,7 +6,7 @@ import eppic.db.dao.DaoException;
 import eppic.db.dao.UniProtMetadataDAO;
 import eppic.model.db.UniProtMetadataDB;
 
-import javax.persistence.Table;
+import jakarta.persistence.Table;
 
 public class UniProtMetadataDAOMongo implements UniProtMetadataDAO {
 
