@@ -30,10 +30,9 @@
 		<log4j.version>2.25.5</log4j.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jgrapht.version>1.0.1</jgrapht.version>
-		<!-- TODO a snapshot for PairwiseStatisticsAligner, to be replaced by the release that has it -->
-		<biojava.version>7.3.1-SNAPSHOT</biojava.version>
+		<biojava.version>7.4.0</biojava.version>
 		<!-- keep in sync with the jackson-databind that biojava brings in -->
-		<jackson.version>2.18.9</jackson.version>
+		<jackson.version>2.18.11</jackson.version>
 	</properties>
 
 	<build>
