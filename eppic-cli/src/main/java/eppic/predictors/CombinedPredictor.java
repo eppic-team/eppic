@@ -11,6 +11,8 @@ import eppic.DataModelAdaptor;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 import eppic.commons.util.CallType;
+import eppic.model.db.InterfaceWarningDB;
+import eppic.model.db.InterfaceWarningType;
 
 /**
  * The CombinedPredictor takes as input all other predictors (scores) and
@@ -37,7 +39,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	private static final Logger LOGGER = LoggerFactory.getLogger(CombinedPredictor.class);
 	
 	private String callReason;
-	private List<String> warnings;
+	private List<InterfaceWarningDB> warnings;
 
 	private InterfaceEvolContext iec;
 	
@@ -56,7 +58,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 		this.gp=gp;
 		this.ecrp=ecrp;
 		this.ecsp=ecsp;
-		this.warnings = new ArrayList<String>();
+		this.warnings = new ArrayList<>();
 		
 	}
 	
@@ -72,7 +74,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 	}
 
 	@Override
-	public List<String> getWarnings() {
+	public List<InterfaceWarningDB> getWarnings() {
 		return warnings;
 	}
 	
@@ -154,7 +156,7 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 				String msg = disulfides.size()+" disulfide bridges present, can't determine whether they are wild-type or not.";
 				msg += " Between CYS residues: ";
 				msg += getPairInteractionsString(disulfides);
-				warnings.add(msg);
+				warnings.add(WarningDataHelper.createAtomPairsWarning(InterfaceWarningType.DISULFIDE_UNDETERMINED, msg, disulfides));
 			}
 		}
 		// disulfides: they are only warnings
@@ -162,14 +164,14 @@ public class CombinedPredictor implements InterfaceTypePredictor {
 			String msg = engineeredDisulfides.size()+" engineered disulfide bridges present.";
 			msg += " Between CYS residues: ";
 			msg += getPairInteractionsString(engineeredDisulfides);
-			warnings.add(msg);
+			warnings.add(WarningDataHelper.createAtomPairsWarning(InterfaceWarningType.DISULFIDE_ENGINEERED, msg, engineeredDisulfides));
 		}
 		
 		if (!wildTypeDisulfides.isEmpty()) {
 			String msg = wildTypeDisulfides.size()+" wild-type disulfide bridges present.";
 			msg += " Between CYS residues: ";
 			msg += getPairInteractionsString(wildTypeDisulfides);			
-			warnings.add(msg);
+			warnings.add(WarningDataHelper.createAtomPairsWarning(InterfaceWarningType.DISULFIDE_WILD_TYPE, msg, wildTypeDisulfides));
 		}
 
 		

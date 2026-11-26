@@ -86,7 +86,8 @@ public class DataModelAdaptor {
 	private RunParametersDB runParameters;
 	
 	// a temp map to hold the warnings per interface, used in order to eliminate duplicate warnings
-	private HashMap<Integer,HashSet<String>> interfId2Warnings;
+	// (several predictors can produce the same warning). Inner maps are keyed by warning text, in insertion order
+	private HashMap<Integer,LinkedHashMap<String,InterfaceWarningDB>> interfId2Warnings;
 	
 	// a map to convert between asym ids and chain ids so that we can match PDB biounits correctly
 	private HashMap<String,String> asymIds2chainIds;
@@ -98,7 +99,7 @@ public class DataModelAdaptor {
 	public DataModelAdaptor() {
 		pdbInfo = new PdbInfoDB();
 		interfFeatures = new ArrayList<>();
-		interfId2Warnings = new HashMap<Integer, HashSet<String>>();
+		interfId2Warnings = new HashMap<>();
 	}
 	
 	public PdbInfoDB getPdbInfo() {
@@ -385,7 +386,7 @@ public class DataModelAdaptor {
 				iDBs.add(interfaceDB);				
 				interfaceDB.setInterfaceCluster(icDB);
 				
-				interfId2Warnings.put(interf.getId(),new HashSet<String>());
+				interfId2Warnings.put(interf.getId(),new LinkedHashMap<>());
 				
 				
 				// the contacts table
@@ -1204,12 +1205,12 @@ public class DataModelAdaptor {
 			
 			if(gps.get(i).getWarnings() != null) {
 				
-				List<String> warnings = gps.get(i).getWarnings();
-				for(String warning: warnings) {
+				List<InterfaceWarningDB> warnings = gps.get(i).getWarnings();
+				for(InterfaceWarningDB warning: warnings) {
 					
-					// we first add warning to the temp HashSets in order to eliminate duplicates, 
-					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
+					// we first add warning to the temp maps in order to eliminate duplicates, 
+					// in the end we fill the InterfaceItemDBs by calling setInterfaceWarnings
+					addInterfaceWarning(ii.getInterfaceId(), warning);
 				}
 			}
 
@@ -1385,11 +1386,11 @@ public class DataModelAdaptor {
 			isCS.setCallReason(ecsp.getCallReason());
 			
 			if(ecsp.getWarnings() != null) {
-				List<String> warnings = ecsp.getWarnings();
-				for(String warning: warnings) {
-					// we first add warning to the temp HashSets in order to eliminate duplicates, 
-					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
+				List<InterfaceWarningDB> warnings = ecsp.getWarnings();
+				for(InterfaceWarningDB warning: warnings) {
+					// we first add warning to the temp maps in order to eliminate duplicates, 
+					// in the end we fill the InterfaceItemDBs by calling setInterfaceWarnings
+					addInterfaceWarning(ii.getInterfaceId(), warning);
 				}
 			}
 
@@ -1413,11 +1414,11 @@ public class DataModelAdaptor {
 			isCR.setCallReason(ecrp.getCallReason());
 			
 			if(ecrp.getWarnings() != null) {
-				List<String> warnings = ecrp.getWarnings();
-				for(String warning: warnings) {
-					// we first add warning to the temp HashSets in order to eliminate duplicates, 
-					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
+				List<InterfaceWarningDB> warnings = ecrp.getWarnings();
+				for(InterfaceWarningDB warning: warnings) {
+					// we first add warning to the temp maps in order to eliminate duplicates, 
+					// in the end we fill the InterfaceItemDBs by calling setInterfaceWarnings
+					addInterfaceWarning(ii.getInterfaceId(), warning);
 				}
 			}
 
@@ -1491,12 +1492,12 @@ public class DataModelAdaptor {
 			
 			if(cps.get(i).getWarnings() != null) {
 				
-				List<String> warnings = cps.get(i).getWarnings();
-				for(String warning: warnings) {
+				List<InterfaceWarningDB> warnings = cps.get(i).getWarnings();
+				for(InterfaceWarningDB warning: warnings) {
 					
-					// we first add warning to the temp HashSets in order to eliminate duplicates, 
-					// in the end we fill the InterfaceItemDBs by calling addInterfaceWarnings
-					interfId2Warnings.get(ii.getInterfaceId()).add(warning);
+					// we first add warning to the temp maps in order to eliminate duplicates, 
+					// in the end we fill the InterfaceItemDBs by calling setInterfaceWarnings
+					addInterfaceWarning(ii.getInterfaceId(), warning);
 				}
 			}
 		}
@@ -1670,6 +1671,15 @@ public class DataModelAdaptor {
 	}
 	
 	/**
+	 * Caches the given warning for the interface, unless a warning with the same text is already there
+	 * @param interfaceId the interface id
+	 * @param warning the warning
+	 */
+	private void addInterfaceWarning(int interfaceId, InterfaceWarningDB warning) {
+		interfId2Warnings.get(interfaceId).putIfAbsent(warning.getText(), warning);
+	}
+
+	/**
 	 * Add to the pdbInfo member the cached warnings interfId2Warnings, compiled in
 	 * {@link #setGeometryScores(List, List)}, {@link #setCombinedPredictors(List, List)}
 	 * and {@link #setEvolScores(InterfaceEvolContextList)}
@@ -1678,9 +1688,7 @@ public class DataModelAdaptor {
 		
 		for (InterfaceClusterDB ic:pdbInfo.getInterfaceClusters()) {
 			for (InterfaceDB ii:ic.getInterfaces()) {
-				for (String warning : interfId2Warnings.get(ii.getInterfaceId())) {
-					InterfaceWarningDB warningItem = new InterfaceWarningDB();
-					warningItem.setText(warning);
+				for (InterfaceWarningDB warningItem : interfId2Warnings.get(ii.getInterfaceId()).values()) {
 					warningItem.setInterfaceItem(ii);
 					ii.getInterfaceWarnings().add(warningItem);
 				}

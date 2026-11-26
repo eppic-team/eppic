@@ -3,6 +3,7 @@ package eppic.predictors;
 import java.util.List;
 
 import eppic.commons.util.CallType;
+import eppic.model.db.InterfaceWarningDB;
 
 public class CombinedClusterPredictor implements InterfaceTypePredictor {
 
@@ -63,7 +64,7 @@ public class CombinedClusterPredictor implements InterfaceTypePredictor {
 	}
 
 	@Override
-	public List<String> getWarnings() {
+	public List<InterfaceWarningDB> getWarnings() {
 		return null;
 	}
 

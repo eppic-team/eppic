@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 import eppic.commons.util.CallType;
+import eppic.model.db.InterfaceWarningDB;
+import eppic.model.db.InterfaceWarningType;
 
 
 public class EvolCoreRimPredictor implements InterfaceTypePredictor {
@@ -19,7 +21,7 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 	private InterfaceEvolContext iec;
 	
 	private String callReason;
-	private List<String> warnings;
+	private List<InterfaceWarningDB> warnings;
 	
 	private String[] callReasonSides; // temp array (length 2) to hold call reasons per side
 
@@ -41,7 +43,7 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 
 	public EvolCoreRimPredictor(InterfaceEvolContext iec) {
 		this.iec = iec;
-		this.warnings = new ArrayList<String>();
+		this.warnings = new ArrayList<>();
 		this.callReasonSides = new String[2];
 		
 		this.veto = null;
@@ -63,7 +65,7 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 	}
 	
 	@Override
-	public List<String> getWarnings() {
+	public List<InterfaceWarningDB> getWarnings() {
 		return this.warnings;
 	}
 
@@ -204,12 +206,12 @@ public class EvolCoreRimPredictor implements InterfaceTypePredictor {
 			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
 			if (msg!=null) {
 				LOGGER.info(msg);
-				warnings.add(msg);
+				warnings.add(WarningDataHelper.createResiduesWarning(InterfaceWarningType.REFERENCE_MISMATCH_CORE, msg, molecId, unreliableCoreRes));
 			}
 			msg = iec.getReferenceMismatchWarningMsg(unreliableRimRes,"rim");
 			if (msg!=null) {
 				LOGGER.info(msg);
-				warnings.add(msg);
+				warnings.add(WarningDataHelper.createResiduesWarning(InterfaceWarningType.REFERENCE_MISMATCH_RIM, msg, molecId, unreliableRimRes));
 			}
 		}
 		int[] unrelRes = {countUnrelCoreRes, countUnrelRimRes};

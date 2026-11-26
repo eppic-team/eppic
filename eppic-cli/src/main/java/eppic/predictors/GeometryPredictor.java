@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 import eppic.commons.util.CallType;
+import eppic.model.db.InterfaceWarningDB;
+import eppic.model.db.InterfaceWarningType;
 
 public class GeometryPredictor implements InterfaceTypePredictor {
 
@@ -27,7 +29,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	private int minCoreSizeForBio;
 	private CallType call;
 	private String callReason;
-	private List<String> warnings;
+	private List<InterfaceWarningDB> warnings;
 	
 	private int size;
 	
@@ -36,7 +38,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 		
 	public GeometryPredictor(StructureInterface interf) {
 		this.interf = interf;
-		this.warnings = new ArrayList<String>();
+		this.warnings = new ArrayList<>();
 	}
 	
 	@Override
@@ -75,7 +77,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 	}
 	
 	@Override
-	public List<String> getWarnings() {
+	public List<InterfaceWarningDB> getWarnings() {
 		return warnings;
 	}
 	
@@ -127,7 +129,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 				}
 			}
 			
-			warnings.add(warning.toString());
+			warnings.add(WarningDataHelper.createAtomPairsWarning(InterfaceWarningType.CLASHES, warning.toString(), clashes));
 			LOGGER.warn("Interface "+interf.getId()+" has "+clashes.size()+" clashes: "+warning.toString());
 		} 
 		// if no clashes then we report on any other kind of short distances
@@ -155,7 +157,7 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 				if (i!=closeInteracting.size()-1) warning.append(", ");
 			}
 			
-			warnings.add(warning.toString());
+			warnings.add(WarningDataHelper.createAtomPairsWarning(InterfaceWarningType.CLOSE_INTERACTIONS, warning.toString(), closeInteracting));
 			LOGGER.warn("Interface "+interf.getId()+" has closely interacting atoms: "+warning.toString());
 		}
 		// 4) checking whether either first or second member of interface are peptides
@@ -291,7 +293,9 @@ public class GeometryPredictor implements InterfaceTypePredictor {
 					"Ratio of buried residues to total residues: "+
 					String.format("%4.2f",(double)numResWitBsaAbove0/(double)groupAsas.size());			
 			LOGGER.info("Chain "+chainId+" of interface "+interf.getId()+" is a peptide. "+msg);
-			warnings.add("Chain "+chainId+" is a peptide.");
+			InterfaceWarningDB warning = new InterfaceWarningDB(InterfaceWarningType.PEPTIDE, "Chain "+chainId+" is a peptide.");
+			warning.setMolecId(WarningDataHelper.getSide(molecId));
+			warnings.add(warning);
 		}
 
 	}

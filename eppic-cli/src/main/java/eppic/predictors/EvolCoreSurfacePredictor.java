@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import eppic.EppicParams;
 import eppic.InterfaceEvolContext;
 import eppic.commons.util.CallType;
+import eppic.model.db.InterfaceWarningDB;
+import eppic.model.db.InterfaceWarningType;
 
 public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 
@@ -28,7 +30,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 
 	private CallType call;
 	private String callReason;
-	private List<String> warnings;
+	private List<InterfaceWarningDB> warnings;
 
 	private String[] callReasonSides;
 	
@@ -54,7 +56,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	
 	public EvolCoreSurfacePredictor(InterfaceEvolContext iec) {
 		this.iec = iec;
-		this.warnings = new ArrayList<String>();
+		this.warnings = new ArrayList<>();
 		this.callReasonSides = new String[2];
 		this.veto = null;
 	}
@@ -76,7 +78,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 	}
 
 	@Override
-	public List<String> getWarnings() {
+	public List<InterfaceWarningDB> getWarnings() {
 		return warnings;
 	}
 
@@ -233,7 +235,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			String msg = iec.getReferenceMismatchWarningMsg(unreliableCoreRes,"core");
 			if (msg!=null) {
 				LOGGER.info(msg);
-				warnings.add(msg);
+				warnings.add(WarningDataHelper.createResiduesWarning(InterfaceWarningType.REFERENCE_MISMATCH_CORE, msg, molecId, unreliableCoreRes));
 			}			
 			
 			List<Group> unreliableSurfaceRes = new ArrayList<Group>();
@@ -243,7 +245,7 @@ public class EvolCoreSurfacePredictor implements InterfaceTypePredictor {
 			msg = iec.getReferenceMismatchWarningMsg(unreliableSurfaceRes,"surface");
 			if (msg!=null) {
 				LOGGER.info(msg);
-				warnings.add(msg);
+				warnings.add(WarningDataHelper.createResiduesWarning(InterfaceWarningType.REFERENCE_MISMATCH_SURFACE, msg, molecId, unreliableSurfaceRes));
 			}
 		}
 		

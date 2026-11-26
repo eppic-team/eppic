@@ -3,6 +3,7 @@ package eppic.predictors;
 import java.util.List;
 
 import eppic.commons.util.CallType;
+import eppic.model.db.InterfaceWarningDB;
 
 
 public interface InterfaceTypePredictor {
@@ -39,7 +40,7 @@ public interface InterfaceTypePredictor {
 	 * 
 	 * @return
 	 */
-	public List<String> getWarnings();
+	public List<InterfaceWarningDB> getWarnings();
 	
 	/**
 	 * Returns the final score calculated for the method, the call from 

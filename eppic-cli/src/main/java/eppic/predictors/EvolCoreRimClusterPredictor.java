@@ -3,6 +3,7 @@ package eppic.predictors;
 import java.util.List;
 
 import eppic.commons.util.CallType;
+import eppic.model.db.InterfaceWarningDB;
 
 public class EvolCoreRimClusterPredictor implements InterfaceTypePredictor {
 
@@ -78,7 +79,7 @@ public class EvolCoreRimClusterPredictor implements InterfaceTypePredictor {
 	}
 
 	@Override
-	public List<String> getWarnings() {
+	public List<InterfaceWarningDB> getWarnings() {
 		return null;
 	}
 
