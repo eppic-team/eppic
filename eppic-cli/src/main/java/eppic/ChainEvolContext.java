@@ -18,6 +18,8 @@ import eppic.db.dao.mongo.UniProtMetadataDAOMongo;
 import eppic.model.db.HitHspDB;
 import eppic.model.db.UniProtInfoDB;
 import eppic.model.db.UniProtMetadataDB;
+import eppic.model.db.UniProtRefWarningDB;
+import eppic.model.db.UniProtRefWarningType;
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.structure.*;
 import org.slf4j.Logger;
@@ -74,7 +76,7 @@ public class ChainEvolContext implements Serializable {
 		
 	private boolean searchWithFullUniprot;  // mode of searching, true=we search with full uniprot seq, false=we search with PDB matching part only
 	
-	private final List<String> queryWarnings;
+	private final List<UniProtRefWarningDB> queryWarnings;
 	
 	private final ChainEvolContextList parent;
 	
@@ -154,13 +156,13 @@ public class ChainEvolContext implements Serializable {
 		if (!isProtein) {
 			// nothing to do if it is not protein: query will remain null and hasQueryMatch will remain false
 			LOGGER.info("Chain {} is not a protein, will not do evolutionary analysis for it", sequenceId);
-			queryWarnings.add("Chain is not a protein, no evolutionary analysis is performed for this chain");
+			queryWarnings.add(new UniProtRefWarningDB(UniProtRefWarningType.NOT_PROTEIN, "Chain is not a protein, no evolutionary analysis is performed for this chain"));
 			return;
 		}
 		
 		if (sequence.length()<=EppicParams.PEPTIDE_LENGTH_CUTOFF) {
 			LOGGER.info("Chain {} is a peptide (length {}, below cutoff {}), will not do evolutionary analysis for it.", sequenceId, sequence.length(), EppicParams.PEPTIDE_LENGTH_CUTOFF);
-			queryWarnings.add("Chain is a peptide ("+sequence.length()+" residues)");
+			queryWarnings.add(new UniProtRefWarningDB(UniProtRefWarningType.PEPTIDE, "Chain is a peptide ("+sequence.length()+" residues)"));
 			// since 3.2.0 we don't do evol analysis of peptides for several reasons
 			// a) it's difficult to find sequence homologs, due to high evalues and needing to use special
 			//    substitution matrices (see https://github.com/soedinglab/MMseqs2/issues/125)
@@ -306,7 +308,7 @@ public class ChainEvolContext implements Serializable {
 		Matcher m = ALLX_SEQ_PATTERN.matcher(this.sequence);
 		if (m.matches()) {
 			LOGGER.info("Chain {} is composed only of unknown or non-standard aminoacids. Won't do evolutionary analysis for it.", sequenceId);
-			queryWarnings.add("Sequence is composed only of unknown or non-standard aminoacids, no evolutionary analysis is performed for this chain");
+			queryWarnings.add(new UniProtRefWarningDB(UniProtRefWarningType.ALL_UNKNOWN_RESIDUES, "Sequence is composed only of unknown or non-standard aminoacids, no evolutionary analysis is performed for this chain"));
 			return;
 		}
 
@@ -350,7 +352,11 @@ public class ChainEvolContext implements Serializable {
 
 		String warning = pdbToUniProtMapper.checkAlignments();
 		if (warning != null) {
-			queryWarnings.add(warning);
+			UniProtRefWarningDB warningDB = new UniProtRefWarningDB(UniProtRefWarningType.LOW_REFERENCE_IDENTITY, warning);
+			if (queryIsUniProt) {
+				warningDB.setUniProtIds(List.of(query.getUniId()));
+			}
+			queryWarnings.add(warningDB);
 			query = null;
 			hasQueryMatch = false;
 			return;
@@ -361,8 +367,9 @@ public class ChainEvolContext implements Serializable {
 			// it can happen when the pdb length is above cutoff but the search length is below
 			// e.g. 2mre_B, 3gj5_B
 			LOGGER.warn("The search interval length {} is below the peptide length cutoff ({}). Will not do evolutionary analysis for chain {}", length, EppicParams.PEPTIDE_LENGTH_CUTOFF, sequenceId);
-			queryWarnings.add("Search interval length " + length + " for " + query.getId() +
-					" is below the peptide length cutoff (" + EppicParams.PEPTIDE_LENGTH_CUTOFF + ")");
+			queryWarnings.add(new UniProtRefWarningDB(UniProtRefWarningType.SEARCH_INTERVAL_TOO_SHORT,
+					"Search interval length " + length + " for " + query.getId() +
+					" is below the peptide length cutoff (" + EppicParams.PEPTIDE_LENGTH_CUTOFF + ")"));
 			hasQueryMatch = false;
 			query = null;
 		}
@@ -389,7 +396,7 @@ public class ChainEvolContext implements Serializable {
 		//we do a sanity check on the SIFTS data: negative intervals are surely errors, we need to reject
 		if (siftsMapping.hasNegativeLength()) {
             LOGGER.warn("Negative intervals present in SIFTS mapping for chain {}. Will not use the SIFTS mapping.", sequenceId);
-			queryWarnings.add("Problem with SIFTS PDB to UniProt mapping: negative intervals present in mapping");
+			queryWarnings.add(new UniProtRefWarningDB(UniProtRefWarningType.SIFTS_NEGATIVE_INTERVALS, "Problem with SIFTS PDB to UniProt mapping: negative intervals present in mapping"));
 			// We continue with a null query, i.e. no match, of course we could try to still find a mapping ourselves
 			// by calling findUniprotMapping if we return a null, but for the chimera case below there's also null returned
 			// and we don't really want to search again in that case
@@ -399,7 +406,7 @@ public class ChainEvolContext implements Serializable {
 		// second sanity check: negative or 0 coordinates are surely errors: reject
 		if (siftsMapping.hasNegatives()) {
             LOGGER.warn("0 or negative coordinates present in SIFTS mapping for chain {}. Will not use the SIFTS mapping.", sequenceId);
-			queryWarnings.add("Problem with SIFTS PDB to UniProt mapping: 0 or negative coordinates present in mapping");
+			queryWarnings.add(new UniProtRefWarningDB(UniProtRefWarningType.SIFTS_NON_POSITIVE_COORDINATES, "Problem with SIFTS PDB to UniProt mapping: 0 or negative coordinates present in mapping"));
 			// We continue with a null query, i.e. no match, of course we could try to still find a mapping ourselves
 			// by calling findUniprotMapping if we return a null, but for the chimera case below there's also null returned
 			// and we don't really want to search again in that case
@@ -438,7 +445,9 @@ public class ChainEvolContext implements Serializable {
 					warning.append(uniId).append(" (total coverage ").append(siftsMapping.getUniProtLengthCoverage(uniId)).append(") ");
 				}
 				warning.append(". This is most likely a chimeric chain");
-				queryWarnings.add(warning.toString());
+				UniProtRefWarningDB warningDB = new UniProtRefWarningDB(UniProtRefWarningType.CHIMERIC, warning.toString());
+				warningDB.setUniProtIds(new ArrayList<>(siftsMapping.getUniqueUniprotIds()));
+				queryWarnings.add(warningDB);
 
 				return null;
 			}
@@ -471,7 +480,9 @@ public class ChainEvolContext implements Serializable {
 			String warning = "More than one UniProt segment of id " + siftsMapping.getUniprotIds().get(0) +
 					" correspond to chain " + sequenceId + ":" + msg +
 					". This is most likely an engineered chain";
-			queryWarnings.add(warning);
+			UniProtRefWarningDB warningDB = new UniProtRefWarningDB(UniProtRefWarningType.MULTIPLE_UNIPROT_SEGMENTS, warning);
+			warningDB.setUniProtIds(List.of(siftsMapping.getUniprotIds().get(0)));
+			queryWarnings.add(warningDB);
 
 			return null;
 
@@ -797,10 +808,10 @@ public class ChainEvolContext implements Serializable {
 	}
 	
 	/**
-	 * Returns a list of strings containing warnings related to the query sequence matching
+	 * Returns the warnings related to the query sequence matching. The chain cluster parent is not set.
 	 * @return
 	 */
-	public List<String> getQueryWarnings() {
+	public List<UniProtRefWarningDB> getQueryWarnings() {
 		return queryWarnings;
 	}
 	

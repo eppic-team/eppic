@@ -14,6 +14,9 @@ import org.biojava.nbio.structure.io.StructureFiletype;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import eppic.model.db.UniProtRefWarningDB;
+import eppic.model.db.UniProtRefWarningType;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -39,6 +42,28 @@ public class TestChainEvolContext {
         params.setInFile(new File("user_job.cif"));
         params.setHomologsSearchMode(HomologsSearchMode.LOCAL);
         return params;
+    }
+
+    /**
+     * Peptide chains (insulin) are not analysed and get a typed warning
+     */
+    @Test
+    public void testPeptideWarningIsTyped() throws IOException, StructureException {
+        Structure s = StructureIO.getStructure("4ins");
+        EppicParams params = getUserJobParams();
+
+        ChainEvolContextList cecl = new ChainEvolContextList(s, params);
+        int count = 0;
+        for (ChainEvolContext cec : cecl.getAllChainEvolContext()) {
+            cec.retrieveQueryData(params);
+            assertFalse(cec.hasQueryMatch());
+            assertEquals(1, cec.getQueryWarnings().size());
+            UniProtRefWarningDB warning = cec.getQueryWarnings().get(0);
+            assertEquals(UniProtRefWarningType.PEPTIDE, warning.getType());
+            assertTrue(warning.getText().startsWith("Chain is a peptide"));
+            count++;
+        }
+        assertEquals(2, count);
     }
 
     /**

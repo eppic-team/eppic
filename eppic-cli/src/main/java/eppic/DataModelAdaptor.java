@@ -1255,11 +1255,8 @@ public class DataModelAdaptor {
 			chainClusterDB.setHasUniProtRef(cec.hasUniProtRef());
 			
 			List<UniProtRefWarningDB> queryWarningItemDBs = new ArrayList<UniProtRefWarningDB>();
-			for(String queryWarning : cec.getQueryWarnings()) {
-				
-				UniProtRefWarningDB queryWarningItemDB = new UniProtRefWarningDB();
+			for(UniProtRefWarningDB queryWarningItemDB : cec.getQueryWarnings()) {
 				queryWarningItemDB.setChainCluster(chainClusterDB);
-				queryWarningItemDB.setText(queryWarning);
 				queryWarningItemDBs.add(queryWarningItemDB);
 			}
 			
