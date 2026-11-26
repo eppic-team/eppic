@@ -564,7 +564,7 @@ public class Main {
 		// writing to the model: for the webui and csv output files
 		modelAdaptor.setInterfaces(interfaces); // this writes all interface geom info, including h-bonds, disulfides etc
 		modelAdaptor.setGeometryScores(gps, gcps);
-		modelAdaptor.setResidueBurialDetails(interfaces);
+		modelAdaptor.setResidueBurialDetails(interfaces, cofactorBurial);
 
 		return System.currentTimeMillis() - start;
 	}

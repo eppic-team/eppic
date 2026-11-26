@@ -1550,7 +1550,12 @@ public class DataModelAdaptor {
 		}
 	}
 	
-	public void setResidueBurialDetails(StructureInterfaceList interfaces) {
+	/**
+	 * Stores the burial details of all residues of each interface.
+	 * @param interfaces the interfaces
+	 * @param cofactorBurial the residues buried by cofactors: they are not assigned to the surface region
+	 */
+	public void setResidueBurialDetails(StructureInterfaceList interfaces, CofactorBurial cofactorBurial) {
 		
 		boolean noseqres = false;
 		if (interfaces.size()>0) {
@@ -1575,12 +1580,12 @@ public class DataModelAdaptor {
 				continue;
 			}
 
-			interfFeatures.add(createInterfaceResidueFeatures(interf));
+			interfFeatures.add(createInterfaceResidueFeatures(interf, cofactorBurial));
 
 		}
 	}
 	
-	private InterfaceResidueFeaturesDB createInterfaceResidueFeatures(StructureInterface interf) {
+	private InterfaceResidueFeaturesDB createInterfaceResidueFeatures(StructureInterface interf, CofactorBurial cofactorBurial) {
 
 		InterfaceResidueFeaturesDB features = new InterfaceResidueFeaturesDB();
 
@@ -1592,18 +1597,21 @@ public class DataModelAdaptor {
 		features.setResBurials1(resBurials1);
 		features.setResBurials2(resBurials2);
 
-		addResBurials(InterfaceEvolContext.FIRST, resBurials1, interf);
-		addResBurials(InterfaceEvolContext.SECOND, resBurials2, interf);
+		addResBurials(InterfaceEvolContext.FIRST, resBurials1, interf, cofactorBurial);
+		addResBurials(InterfaceEvolContext.SECOND, resBurials2, interf, cofactorBurial);
 		return features;
 	}
 
-	private void addResBurials(int molecId, List<ResidueBurialDB> resBurials, StructureInterface interf) {
+	private void addResBurials(int molecId, List<ResidueBurialDB> resBurials, StructureInterface interf, CofactorBurial cofactorBurial) {
 		Chain chain;
-		if (molecId == InterfaceEvolContext.FIRST)
+		String molecChainName;
+		if (molecId == InterfaceEvolContext.FIRST) {
 			chain = interf.getParentChains().getFirst();
-		else if (molecId == InterfaceEvolContext.SECOND)
+			molecChainName = interf.getMoleculeIds().getFirst();
+		} else if (molecId == InterfaceEvolContext.SECOND) {
 			chain = interf.getParentChains().getSecond();
-		else
+			molecChainName = interf.getMoleculeIds().getSecond();
+		} else
 			throw new IllegalArgumentException("Molecule id " +molecId+" is invalid");
 
 		String repChainId = chain.getEntityInfo().getRepresentative().getName();
@@ -1646,8 +1654,10 @@ public class DataModelAdaptor {
 					assignment = ResidueBurialDB.CORE_GEOMETRY;
 				}
 
-				// residues not in interface but still with more ASA than minimum required are called surface
-			} else if (groupAsa.getAsaU()>params.getMinAsaForSurface()) {
+				// residues not in interface but still with more ASA than minimum required are called surface,
+				// unless they are buried by the chain's cofactors
+			} else if (groupAsa.getAsaU()>params.getMinAsaForSurface() &&
+					!cofactorBurial.isBuried(molecChainName, group.getResidueNumber())) {
 				assignment = ResidueBurialDB.SURFACE;
 			}
 
