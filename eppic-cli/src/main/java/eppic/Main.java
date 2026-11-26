@@ -65,6 +65,7 @@ public class Main {
 	
 	private Structure pdb;
 	private StructureInterfaceList interfaces;
+	private CofactorBurial cofactorBurial;
 	private ChainEvolContextList cecs;
 	private InterfaceEvolContextList iecList;
 	private List<GeometryPredictor> gps;
@@ -374,6 +375,18 @@ public class Main {
 		interfaces.removeInterfacesBelowArea(EppicParams.MIN_INTERFACE_AREA_TO_KEEP);
 		
 		LOGGER.info("Interfaces calculated with "+params.getnSpherePointsASAcalc()+" sphere points.");
+
+		// the interface ASAs above don't include cofactors (non-polymer groups are not part of the
+		// interface molecules), so the residues they bury are calculated separately
+		LOGGER.info("Calculating residues buried by cofactors");
+		Set<String> interfChainNames = new TreeSet<>();
+		for (StructureInterface interf : interfaces) {
+			interfChainNames.add(interf.getMoleculeIds().getFirst());
+			interfChainNames.add(interf.getMoleculeIds().getSecond());
+		}
+		cofactorBurial = CofactorBurial.calculate(pdb, interfChainNames, chainOrigNames,
+				params.getMinSizeCofactorForAsa(), params.getMinAsaForSurface(), params.getCAcutoffForZscore(),
+				params.getnSpherePointsASAcalc(), params.getNumThreads());
 
 		LOGGER.info("Calculating interface clusters");
 
@@ -968,7 +981,7 @@ public class Main {
 
 		if (interfaces.size()==0) return System.currentTimeMillis() - start;
 
-		iecList = new InterfaceEvolContextList(interfaces, cecs);
+		iecList = new InterfaceEvolContextList(interfaces, cecs, cofactorBurial);
 		iecList.setUsePdbResSer(params.isUsePdbResSer());
 
 		writeStep("Scoring Interfaces");

@@ -29,6 +29,8 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	
 	//private StructureInterfaceList chainInterfList; 
 	private final ChainEvolContextList cecs;
+
+	private final CofactorBurial cofactorBurial;
 		
 	private int minNumSeqs;
 	
@@ -47,6 +49,19 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param cecs
 	 */
 	public InterfaceEvolContextList(StructureInterfaceList interfaces, ChainEvolContextList cecs) {
+		this(interfaces, cecs, CofactorBurial.none());
+	}
+
+	/**
+	 * Constructs a InterfaceEvolContextList as {@link #InterfaceEvolContextList(StructureInterfaceList, ChainEvolContextList)},
+	 * excluding from the surface of each chain the residues buried by its cofactors.
+	 * @param interfaces
+	 * @param cecs
+	 * @param cofactorBurial the residues buried by cofactors
+	 */
+	public InterfaceEvolContextList(StructureInterfaceList interfaces, ChainEvolContextList cecs, CofactorBurial cofactorBurial) {
+
+		this.cofactorBurial = cofactorBurial;
 		
 		this.minNumSeqs = cecs.getMinNumSeqs();
 		
@@ -205,6 +220,10 @@ public class InterfaceEvolContextList implements Iterable<InterfaceEvolContext>,
 	 * @param pdbChainCode
 	 * @return
 	 */
+	public CofactorBurial getCofactorBurial() {
+		return cofactorBurial;
+	}
+
 	public ChainEvolContext getChainEvolContext(String pdbChainCode) {
 		return getChainEvolContextList().getChainEvolContext(pdbChainCode);
 	}

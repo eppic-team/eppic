@@ -99,13 +99,26 @@ public class InterfaceEvolContext implements Serializable {
 	 * @return
 	 */
 	public List<Group> getUnreliableSurfaceRes(int molecId, double minAsaForSurface) {
-		List<Group> surfResidues = null;
+		return getReferenceMismatchResidues(getSurfaceResidues(molecId, minAsaForSurface), molecId);
+	}
+
+	/**
+	 * Returns the residues of the given side of the interface that belong to the surface of the protein,
+	 * excluding those buried by the chain's cofactors.
+	 * @param molecId the molecule id: either {@link #FIRST} or {@link #SECOND}
+	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
+	 * @return
+	 */
+	public List<Group> getSurfaceResidues(int molecId, double minAsaForSurface) {
+		List<Group> surfResidues;
 		if (molecId==FIRST) {
 			surfResidues = interf.getSurfaceResidues(minAsaForSurface).getFirst();
 		} else if (molecId == SECOND) {
 			surfResidues = interf.getSurfaceResidues(minAsaForSurface).getSecond();
+		} else {
+			throw new IllegalArgumentException("Molecule id " + molecId + " is invalid");
 		}
-		return getReferenceMismatchResidues(surfResidues, molecId);
+		return parent.getCofactorBurial().removeBuried(getChainId(molecId), surfResidues);
 	}
 	
 	/**
@@ -185,9 +198,7 @@ public class InterfaceEvolContext implements Serializable {
 
 		double[] dist = new double[numSamples];
 		
-		List<Group> surfResidues = null;
-		if (molecId==FIRST) surfResidues = interf.getSurfaceResidues(minAsaForSurface).getFirst();
-		if (molecId==SECOND) surfResidues = interf.getSurfaceResidues(minAsaForSurface).getSecond();
+		List<Group> surfResidues = getSurfaceResidues(molecId, minAsaForSurface);
 		
 		RandomDataImpl rd = new RandomDataImpl();
 		for (int i=0;i<numSamples;i++) {
@@ -210,9 +221,8 @@ public class InterfaceEvolContext implements Serializable {
 	 * @return
 	 */
 	public int getNumSurfaceResidues(int molecId, double minAsaForSurface) {
-		if (molecId==FIRST) return interf.getSurfaceResidues(minAsaForSurface).getFirst().size();
-		if (molecId==SECOND) return interf.getSurfaceResidues(minAsaForSurface).getSecond().size();
-		return -1;
+		if (molecId!=FIRST && molecId!=SECOND) return -1;
+		return getSurfaceResidues(molecId, minAsaForSurface).size();
 	}
 	
 	/**
