@@ -30,7 +30,13 @@ public class ConfigurableMapper {
         mapper.configure(MapperFeature.USE_ANNOTATIONS, true);
 
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+        // Lenient reading, for forward compatibility: a reader built from an older eppic-model must be able to read
+        // documents written by a newer one (e.g. a REST server that hasn't been redeployed yet reading new data).
+        // Unknown properties are ignored and unknown enum constants fall back to the @JsonEnumDefaultValue constant
+        // (or null if the enum has none)
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE, true);
+        mapper.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
 
         mapper.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, true);
         // keep the original camel case in java types by not setting anything
