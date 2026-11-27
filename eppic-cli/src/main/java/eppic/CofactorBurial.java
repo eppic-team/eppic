@@ -75,8 +75,7 @@ public class CofactorBurial implements Serializable {
 	 * @param chainNames the author names of the polymer chains to calculate (possibly NCS-expanded names)
 	 * @param chainOrigNames map of NCS-expanded chain names to original chain names, or null if no NCS expansion.
 	 * NCS copies have the same cofactors as their original chain, so only the original chains are calculated
-	 * @param minSizeCofactor minimum number of non-Hydrogen atoms of a non-polymer group to be considered a cofactor,
-	 * if negative no cofactors are considered
+	 * @param cofactorFilter decides which non-polymer groups are cofactors
 	 * @param minAsaForSurface the minimum ASA for a residue to be considered surface
 	 * @param burialCutoff the minimum fraction of a residue's ASA buried by cofactors for the residue to be considered buried
 	 * @param nSpherePoints number of sphere points for the ASA calculation
@@ -84,12 +83,12 @@ public class CofactorBurial implements Serializable {
 	 * @return
 	 */
 	public static CofactorBurial calculate(Structure structure, Collection<String> chainNames, Map<String, String> chainOrigNames,
-										   int minSizeCofactor, double minAsaForSurface, double burialCutoff,
+										   CofactorFilter cofactorFilter, double minAsaForSurface, double burialCutoff,
 										   int nSpherePoints, int nThreads) {
 
 		Map<String, Set<String>> buriedResidues = new HashMap<>();
 
-		if (minSizeCofactor < 0) {
+		if (cofactorFilter.isDisabled()) {
 			LOGGER.info("Cofactors are ignored for ASA calculations");
 			return new CofactorBurial(buriedResidues, chainOrigNames);
 		}
@@ -106,23 +105,22 @@ public class CofactorBurial implements Serializable {
 				continue;
 			}
 
-			List<Group> cofactors = new ArrayList<>();
+			Map<Group, CofactorFilter.Rule> cofactorRules = new LinkedHashMap<>();
 			for (Chain nonPolyChain : structure.getNonPolyChainsByPDB(chainName)) {
 				for (Group g : nonPolyChain.getAtomGroups()) {
-					if (g.isWater()) continue;
-					if (getNonHAtoms(g).size() >= minSizeCofactor) {
-						cofactors.add(g);
-					}
+					CofactorFilter.Rule rule = cofactorFilter.getCofactorRule(g);
+					if (rule != null) cofactorRules.put(g, rule);
 				}
 			}
+			List<Group> cofactors = new ArrayList<>(cofactorRules.keySet());
 
 			if (cofactors.isEmpty()) continue;
 
 			Set<String> buried = calcBuriedResidues(polyChain, cofactors, minAsaForSurface, burialCutoff, nSpherePoints, nThreads);
 			buriedResidues.put(chainName, buried);
 
-			LOGGER.info("Chain {}: {} cofactor(s) of at least {} atoms ({}) bury {} residue(s) that will not be considered surface",
-					chainName, cofactors.size(), minSizeCofactor, getCofactorsString(cofactors), buried.size());
+			LOGGER.info("Chain {}: {} cofactor(s) ({}) bury {} residue(s) that will not be considered surface",
+					chainName, cofactors.size(), getCofactorsString(cofactorRules), buried.size());
 			if (!buried.isEmpty())
 				LOGGER.info("Chain {}: residues buried by cofactors: {}", chainName, String.join(" ", buried));
 		}
@@ -202,10 +200,11 @@ public class CofactorBurial implements Serializable {
 		return atoms;
 	}
 
-	private static String getCofactorsString(List<Group> cofactors) {
+	private static String getCofactorsString(Map<Group, CofactorFilter.Rule> cofactorRules) {
 		List<String> names = new ArrayList<>();
-		for (Group g : cofactors) {
-			names.add(g.getPDBName() + "-" + g.getResidueNumber().toString());
+		for (Map.Entry<Group, CofactorFilter.Rule> entry : cofactorRules.entrySet()) {
+			Group g = entry.getKey();
+			names.add(g.getPDBName() + "-" + g.getResidueNumber().toString() + " by " + entry.getValue().name().toLowerCase());
 		}
 		return String.join(", ", names);
 	}

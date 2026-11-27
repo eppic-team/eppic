@@ -385,7 +385,8 @@ public class Main {
 			interfChainNames.add(interf.getMoleculeIds().getSecond());
 		}
 		cofactorBurial = CofactorBurial.calculate(pdb, interfChainNames, chainOrigNames,
-				params.getMinSizeCofactorForAsa(), params.getMinAsaForSurface(), params.getCAcutoffForZscore(),
+				new CofactorFilter(params.getMinSizeCofactorForAsa(), params.getMinSizeMetalCofactorForAsa()),
+				params.getMinAsaForSurface(), params.getCAcutoffForZscore(),
 				params.getnSpherePointsASAcalc(), params.getNumThreads());
 
 		LOGGER.info("Calculating interface clusters");

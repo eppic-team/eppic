@@ -41,7 +41,8 @@ public class TestCofactorBurial {
 		Structure s = StructureIO.getStructure("4HHB");
 
 		CofactorBurial cb = CofactorBurial.calculate(s, Arrays.asList("A", "B", "C", "D"), null,
-				EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA, EppicParams.DEF_MIN_ASA_FOR_SURFACE, EppicParams.DEF_CA_CUTOFF_FOR_ZSCORE,
+				new CofactorFilter(EppicParams.DEF_MIN_SIZE_COFACTOR_FOR_ASA, EppicParams.DEF_MIN_SIZE_METAL_COFACTOR_FOR_ASA),
+				EppicParams.DEF_MIN_ASA_FOR_SURFACE, EppicParams.DEF_CA_CUTOFF_FOR_ZSCORE,
 				1000, 1);
 
 		for (String chainName : Arrays.asList("A", "B", "C", "D")) {
@@ -52,7 +53,7 @@ public class TestCofactorBurial {
 
 		// no cofactors considered
 		CofactorBurial noCofactors = CofactorBurial.calculate(s, Arrays.asList("A", "B", "C", "D"), null,
-				-1, EppicParams.DEF_MIN_ASA_FOR_SURFACE, EppicParams.DEF_CA_CUTOFF_FOR_ZSCORE, 1000, 1);
+				new CofactorFilter(-1, EppicParams.DEF_MIN_SIZE_METAL_COFACTOR_FOR_ASA), EppicParams.DEF_MIN_ASA_FOR_SURFACE, EppicParams.DEF_CA_CUTOFF_FOR_ZSCORE, 1000, 1);
 		assertEquals(0, noCofactors.getNumBuried("A"));
 
 		// the filtering removes exactly the buried residues

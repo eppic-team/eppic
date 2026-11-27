@@ -178,6 +178,8 @@ public class EppicParams {
 	public static final double    DEF_MIN_ASA_FOR_SURFACE = 5;
 	// default minimum number of atoms for a cofactor to be considered for ASA calculations purposes, if -1 all ignored
 	public static final int		  DEF_MIN_SIZE_COFACTOR_FOR_ASA = 40;
+	// default minimum number of atoms for a group with biological metals to be considered a cofactor (see CofactorFilter)
+	public static final int		  DEF_MIN_SIZE_METAL_COFACTOR_FOR_ASA = 10;
 	
 	// default alphabet for entropy calculation 
 	public static final AAAlphabet DEF_ENTROPY_ALPHABET = new AAAlphabet(AAAlphabet.MIRNY_6);
@@ -324,7 +326,8 @@ public class EppicParams {
 	private int 	 nSpherePointsASAcalc;
 	
 	private double 	 minAsaForSurface;
-	private int 	 minSizeCofactorForAsa;	
+	private int 	 minSizeCofactorForAsa = DEF_MIN_SIZE_COFACTOR_FOR_ASA;	
+	private int 	 minSizeMetalCofactorForAsa = DEF_MIN_SIZE_METAL_COFACTOR_FOR_ASA;
 	
 	private double   queryCoverageCutoff;
 	private int      minNumSeqs;
@@ -591,6 +594,10 @@ public class EppicParams {
 	public int getMinSizeCofactorForAsa() {
 		return minSizeCofactorForAsa;
 	}
+
+	public int getMinSizeMetalCofactorForAsa() {
+		return minSizeMetalCofactorForAsa;
+	}
 	
 	public int getMinCoreSizeForBio() {
 		return minCoreSizeForBio;
@@ -822,6 +829,8 @@ public class EppicParams {
 			minAsaForSurface = Double.parseDouble(p.getProperty("MIN_ASA_FOR_SURFACE", Double.valueOf(DEF_MIN_ASA_FOR_SURFACE).toString()));
 			
 			minSizeCofactorForAsa = Integer.parseInt(p.getProperty("MIN_SIZE_COFACTOR_FOR_ASA", Integer.valueOf(DEF_MIN_SIZE_COFACTOR_FOR_ASA).toString()));
+
+			minSizeMetalCofactorForAsa = Integer.parseInt(p.getProperty("MIN_SIZE_METAL_COFACTOR_FOR_ASA", Integer.valueOf(DEF_MIN_SIZE_METAL_COFACTOR_FOR_ASA).toString()));
 
 			queryCoverageCutoff = Double.parseDouble(p.getProperty("QUERY_COVERAGE_CUTOFF", Double.valueOf(DEF_QUERY_COVERAGE_CUTOFF).toString()));
 			minNumSeqs = Integer.parseInt(p.getProperty("MIN_NUM_SEQUENCES", Integer.valueOf(DEF_MIN_NUM_SEQUENCES).toString()));
